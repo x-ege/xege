@@ -1,0 +1,54 @@
+name: BUILD and DEPLOY MSVC 2019
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+      - name: checkout
+        uses: actions/Checkout@v1
+
+      - name: make directory
+        run: |
+          mkdir build
+  
+      - name: MSVC 2019 X64 Release
+        run: |
+          cd build
+          cmake .. -G "Visual Studio 16 2019" -A x64
+          cmake --build . --config Release -j 2
+
+      - name: Upload File
+        env:
+          UPYOPR_KEY: ${{ secrets.UPYOPR_KEY }}
+          UPYOPR_NAME: ${{ secrets.UPYOPR_NAME }}
+          UPY_BUCKET: ${{ secrets.UPY_BUCKET }}
+        run: |
+          Invoke-WebRequest -uri "http://collection.b0.upaiyun.com/softwares/upx/upx-windows-amd64-v0.3.1.exe" -OutFile "upx.exe"
+          $date = Get-Date -Format "yy/MM/dd"
+          ./upx login $env:UPY_BUCKET $env:UPYOPR_NAME $env:UPYOPR_KEY
+          ./upx put ./build/Release/graphics64.lib /$date/VS2019/graphics64.lib
+          
+      - name: Clean Folder
+        run: |
+          cd build
+          Get-ChildItem . | Remove-Item -Recurse
+
+      - name: MSVC 2019 x86 Release
+        run: |
+          cd build
+          cmake .. -G "Visual Studio 16 2019" -A Win32
+          cmake --build . --config Release -j 2
+      
+      - name: Upload File
+        run: |
+          $date = Get-Date -Format "yy/MM/dd"
+          ./upx put ./build/Release/graphics.lib /$date/VS2019/graphics.lib
+          
