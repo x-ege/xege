@@ -89,7 +89,7 @@
 #define _GRAPH_LIB_BUILD_
 #define EGE_DEPRECATE(text)
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(__GNUC__) && (__GNUC__ >= 9)
 #include <windows.h>
 #endif
 

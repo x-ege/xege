@@ -1,7 +1,7 @@
 #ifndef _EGECONTROLBASE_H_
 #define _EGECONTROLBASE_H_
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(__GNUC__) && (__GNUC__ >= 9)
 #include <windows.h>
 #endif
 #ifndef _EGE_H_

@@ -81,7 +81,7 @@
 
 #endif
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(__GNUC__) && (__GNUC__ >= 9)
 #include <windef.h>
 #include <winuser.h>
 #include <wingdi.h>
