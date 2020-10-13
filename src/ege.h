@@ -81,9 +81,13 @@
 
 #endif
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
 #include <windef.h>
 #include <winuser.h>
 #include <wingdi.h>
+#else
+#include <windows.h>	
+#endif
 
 #if defined(_MSC_VER) && _MSC_VER <= 1200 && !defined(SetWindowLongPtr)
 #	define SetWindowLongPtrW   SetWindowLongW

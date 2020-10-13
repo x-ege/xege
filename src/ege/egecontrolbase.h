@@ -1,10 +1,13 @@
 #ifndef _EGECONTROLBASE_H_
 #define _EGECONTROLBASE_H_
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#include <windows.h>
+#endif
 #ifndef _EGE_H_
 #error include "egectlbase.h" must after include "ege.h" or "graphics.h"
 #endif
-#include <windows.h>
+
 
 namespace ege {
 

@@ -88,8 +88,12 @@
 
 #define _GRAPH_LIB_BUILD_
 #define EGE_DEPRECATE(text)
-#include "ege.h"
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
 #include <windows.h>
+#endif
+
+#include "ege.h"
 #include "ege/egecontrolbase.h"
 #include "thread_queue.h"
 
