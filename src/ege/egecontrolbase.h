@@ -5,7 +5,6 @@
 #error include "egectlbase.h" must after include "ege.h" or "graphics.h"
 #endif
 
-
 namespace ege {
 
 class PushTarget {

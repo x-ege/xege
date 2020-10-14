@@ -88,7 +88,6 @@
 
 #define _GRAPH_LIB_BUILD_
 #define EGE_DEPRECATE(text)
-
 #include "ege.h"
 #include "ege/egecontrolbase.h"
 #include "thread_queue.h"

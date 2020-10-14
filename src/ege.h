@@ -81,6 +81,11 @@
 
 #endif
 
+/* 
+	if we are using DEV_CPP 2020 IDE to parse this header, 
+	only include the following header files instead of windows.h,
+	to make the defines exposed to users less.
+*/
 #if defined(_DEV_CPP_2020_)
 #include <windef.h>
 #include <winuser.h>

@@ -28,5 +28,6 @@ int main()
 	//put and rotate
 	putimage_rotatetransparent(NULL,img,300,200,100,100,WHITE,45.0/180*PI,2);
 	getch();
+	closegraph();
 	return 0;
 }
