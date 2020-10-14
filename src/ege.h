@@ -81,7 +81,7 @@
 
 #endif
 
-#if defined(__GNUC__) && (__GNUC__ >= 9)
+#if defined(_DEV_CPP_2020_)
 #include <windef.h>
 #include <winuser.h>
 #include <wingdi.h>

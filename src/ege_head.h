@@ -89,10 +89,6 @@
 #define _GRAPH_LIB_BUILD_
 #define EGE_DEPRECATE(text)
 
-#if defined(__GNUC__) && (__GNUC__ >= 9)
-#include <windows.h>
-#endif
-
 #include "ege.h"
 #include "ege/egecontrolbase.h"
 #include "thread_queue.h"

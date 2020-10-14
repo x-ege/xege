@@ -1,9 +1,6 @@
 #ifndef _EGECONTROLBASE_H_
 #define _EGECONTROLBASE_H_
 
-#if defined(__GNUC__) && (__GNUC__ >= 9)
-#include <windows.h>
-#endif
 #ifndef _EGE_H_
 #error include "egectlbase.h" must after include "ege.h" or "graphics.h"
 #endif
