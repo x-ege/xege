@@ -428,10 +428,117 @@ IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight) {
 	return grOk;
 }
 
+
+
 // private function
 static
 int
-saveimagetofile(PCIMAGE img, FILE* fp) {
+saveimagetopngfile(PCIMAGE img, FILE* fp) {
+	BITMAP Bitmap;
+	GetObject(img->m_hBmp, sizeof(Bitmap), (LPSTR)&Bitmap);
+	unsigned int bitmap_bytes_per_pixel = 4;
+	unsigned int bitmap_scanline_size = (((Bitmap.bmWidth * bitmap_bytes_per_pixel) + (4 - 1)) & ~(4 - 1));
+	unsigned int bitmap_buffer_size = bitmap_scanline_size * Bitmap.bmHeight;
+    unsigned char *bitmap_buffer = static_cast<unsigned char*>(malloc(bitmap_buffer_size));
+    if( !bitmap_buffer )
+        return grIOerror;
+
+	HDC hDC = GetDC(NULL);
+
+    BITMAPINFO bitmap_info;
+    memset(&bitmap_info, 0, sizeof(bitmap_info));
+    bitmap_info.bmiHeader.biSize = sizeof(bitmap_info.bmiHeader);
+    bitmap_info.bmiHeader.biWidth  = Bitmap.bmWidth;
+    bitmap_info.bmiHeader.biHeight = Bitmap.bmHeight /** -1*/;
+    bitmap_info.bmiHeader.biPlanes = 1;
+    bitmap_info.bmiHeader.biBitCount = 32;
+    bitmap_info.bmiHeader.biCompression = BI_RGB;
+    bitmap_info.bmiHeader.biClrUsed = 0;
+    bitmap_info.bmiHeader.biClrImportant = 0;
+    if( !GetDIBits(hDC, img->m_hBmp, 0, Bitmap.bmHeight, bitmap_buffer, &bitmap_info, DIB_RGB_COLORS ) ) 
+	{
+		ReleaseDC( NULL, hDC );
+        free(bitmap_buffer);
+        return grIOerror;
+    }
+
+
+	const int width = Bitmap.bmWidth;
+	const int height = Bitmap.bmHeight;
+	const int pixel_size = 4;
+    const int depth = 8;
+	const int bytesPerPixel = sizeof(unsigned char) * pixel_size;
+	
+    png_structp png_ptr = NULL;
+    png_infop info_ptr = NULL;
+    size_t x, y;
+    png_byte ** row_pointers = NULL;
+    int status = grIOerror;
+
+    
+    png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (png_ptr == NULL) {
+        goto png_create_write_struct_failed;
+    }
+    
+    info_ptr = png_create_info_struct (png_ptr);
+    if (info_ptr == NULL) {
+        goto png_create_info_struct_failed;
+    }
+    
+    png_set_IHDR (png_ptr,
+                  info_ptr,
+                  width,
+                  height,
+                  depth,
+                  PNG_COLOR_TYPE_RGB_ALPHA,
+                  PNG_INTERLACE_NONE,
+                  PNG_COMPRESSION_TYPE_DEFAULT,
+                  PNG_FILTER_TYPE_DEFAULT);
+    
+    row_pointers = static_cast<png_byte**>( png_malloc (png_ptr, height * sizeof (png_byte *)) );
+    for (y = 0; y < height; ++y) 
+	{
+        png_byte *row = static_cast<png_byte*>( png_malloc(png_ptr, bytesPerPixel * width) );
+        row_pointers[y] = row;
+        for (x = 0; x < width; ++x) 
+		{
+            //pixel_t * pixel = pixel_at (bitmap, x, y);
+
+			unsigned char* r = &bitmap_buffer[y * Bitmap.bmWidth * 4 + x * 4 + 0];
+			unsigned char* g = &bitmap_buffer[y * Bitmap.bmWidth * 4 + x * 4 + 1];
+			unsigned char* b = &bitmap_buffer[y * Bitmap.bmWidth * 4 + x * 4 + 2];
+			unsigned char* a = &bitmap_buffer[y * Bitmap.bmWidth * 4 + x * 4 + 3];
+			
+            *row++ = *b;
+            *row++ = *g;
+            *row++ = *r;
+			*row++ = *a;
+        }
+    }
+    
+    png_init_io (png_ptr, fp);
+    png_set_rows (png_ptr, info_ptr, row_pointers);
+    png_write_png (png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+
+    status = 0;    
+    for (y = 0; y < height; y++) {
+        png_free (png_ptr, row_pointers[y]);
+    }
+    png_free (png_ptr, row_pointers);
+    
+ png_create_info_struct_failed:
+    png_destroy_write_struct (&png_ptr, &info_ptr);
+ png_create_write_struct_failed:
+	free(bitmap_buffer);
+	ReleaseDC(NULL, hDC);
+    return status;
+}
+
+
+static
+int
+saveimagetobmpfile(PCIMAGE img, FILE* fp) {
 	BITMAPFILEHEADER bmpfHead = {0};
 	BITMAPINFOHEADER bmpinfo = {0};
 	int pitch = img->m_width * 3, addbit, y, x, zero = 0;
@@ -472,7 +579,7 @@ IMAGE::saveimage(LPCSTR  filename) const {
 	int ret;
 	fp = fopen(filename, "wb");
 	if (fp == NULL) return grIOerror;
-	ret = saveimagetofile(this, fp);
+	ret = saveimagetopngfile(this, fp);
 	fclose(fp);
 	return ret;
 }
@@ -483,7 +590,7 @@ IMAGE::saveimage(LPCWSTR filename) const {
 	int ret;
 	fp = _wfopen(filename, L"wb");
 	if (fp == NULL) return grIOerror;
-	ret = saveimagetofile(this, fp);
+	ret = saveimagetopngfile(this, fp);
 	fclose(fp);
 	return ret;
 }
