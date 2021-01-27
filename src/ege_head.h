@@ -481,7 +481,7 @@ struct _graph_setting {
 	bool    use_force_exit; //强制关闭进程标记
 	bool    lock_window;
 	bool    timer_stop_mark;
-	bool    skip_timer_mark; 
+	bool    skip_timer_mark;
 
 	thread_queue<EGEMSG> *msgkey_queue, *msgmouse_queue;
 

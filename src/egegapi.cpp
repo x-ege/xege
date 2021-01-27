@@ -313,8 +313,7 @@ api_sleep(long dwMilliseconds) {
 
 void
 ege_sleep(long ms) {
-	if (ms <= 0) return;
-	
+	if (ms <= 0) return;	
 	if (0) { // 经济模式，占CPU极少
 		::Sleep(ms);
 	} else if (0) { //精确模式，占CPU略高
@@ -357,8 +356,7 @@ delay_ms(long ms) {
 	
 	//清除鼠标点击消息
 	if (pg->mouse_pressed_tested)
-		clearmousepressed();
-	
+		clearmousepressed();	
 	pg->skip_timer_mark = true;
 	if (ms == 0) {
 		if (pg->update_mark_count < UPDATE_MAX_CALL) {
@@ -488,7 +486,6 @@ delay_jfps(double fps) {
 	//清除鼠标点击消息
 	if (pg->mouse_pressed_tested)
 		clearmousepressed();
-
 	if (pg->delay_fps_dwLast == 0) {
 		pg->delay_fps_dwLast = get_highfeq_time_ls(pg) * 1000.0;
 	}
