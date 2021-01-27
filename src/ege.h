@@ -1108,6 +1108,8 @@ double          EGEAPI randomf();
 int EGEAPI inputbox_getline(LPCSTR  title, LPCSTR  text, LPSTR  buf, int len);  //µ¯³ö¶Ô»°¿ò£¬ÈÃÓÃ»§ÊäÈë£¬µ±Ç°³ÌĞòÔËĞĞÔİÍ££¬·µ»Ø·Ç0±íÊ¾ÊäÈëÓĞĞ§£¬0ÎªÎŞĞ§
 int EGEAPI inputbox_getline(LPCWSTR title, LPCWSTR text, LPWSTR buf, int len);  //µ¯³ö¶Ô»°¿ò£¬ÈÃÓÃ»§ÊäÈë£¬µ±Ç°³ÌĞòÔËĞĞÔİÍ££¬·µ»Ø·Ç0±íÊ¾ÊäÈëÓĞĞ§£¬0ÎªÎŞĞ§
 
+//¼üÅÌÊó±êÍ¨ÓÃº¯Êı 
+int     EGEAPI keystate(int key);       // »ñµÃ¼üÂëÎªkeyµÄ¼ü£¨¼ûkey_code_e£©ÊÇ·ñ°´ÏÂ£¬Èç¹ûkeyÊ¹ÓÃÊó±ê°´¼üµÄ¼üÂë£¬Ôò»ñµÃµÄÊÇÊó±ê¼ü×´Ì¬
 
 //¼üÅÌ´¦Àíº¯Êı
 int     EGEAPI kbmsg();
@@ -1116,7 +1118,6 @@ EGE_DEPRECATE(getchEx)
 int     EGEAPI getchEx(int flag);
 EGE_DEPRECATE(kbhitEx)
 int     EGEAPI kbhitEx(int flag);
-int     EGEAPI keystate(int key);       // »ñµÃ¼üÂëÎªkeyµÄ¼ü£¨¼ûkey_code_e£©ÊÇ·ñ°´ÏÂ£¬Èç¹ûkeyÊ¹ÓÃÊó±ê°´¼üµÄ¼üÂë£¬Ôò»ñµÃµÄÊÇÊó±ê¼ü×´Ì¬
 void    EGEAPI flushkey();              // Çå¿Õ¼üÅÌÏûÏ¢»º³åÇø
 
 #if !defined(_INC_CONIO) && !defined(_CONIO_H_)
@@ -1138,6 +1139,9 @@ MOUSEMSG    EGEAPI GetMouseMsg();               // £¨²»ÍÆ¼öÊ¹ÓÃµÄº¯Êı£©»ñÈ¡Ò»¸öÊ
 void        EGEAPI flushmouse();                // Çå¿ÕÊó±êÏûÏ¢»º³åÇø
 int         EGEAPI showmouse(int bShow);        // ÉèÖÃÊÇ·ñÏÔÊ¾Êó±ê
 int         EGEAPI mousepos(int *x, int *y); // »ñÈ¡µ±Ç°Êó±êÎ»ÖÃ
+int			EGEAPI mousepressed();              // ¼ì²éÊÇ·ñÓĞÊó±êµã»÷ 
+void		EGEAPI clearmousepressed();              //Çå³ıÊó±êµã»÷ÊÂ¼ş 
+
 
 /*
 callback function define as:

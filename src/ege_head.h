@@ -439,6 +439,11 @@ public:
 	friend void getimage_from_png_struct(PIMAGE, void*, void*);
 };
 
+#define LBUTTON_PRESSED 0x01
+#define MBUTTON_PRESSED 0x02
+#define RBUTTON_PRESSED 0x04
+
+
 // 定义ege全局状态对象
 struct _graph_setting {
 	bool has_init;
@@ -476,7 +481,7 @@ struct _graph_setting {
 	bool    use_force_exit; //强制关闭进程标记
 	bool    lock_window;
 	bool    timer_stop_mark;
-	bool    skip_timer_mark;
+	bool    skip_timer_mark; 
 
 	thread_queue<EGEMSG> *msgkey_queue, *msgmouse_queue;
 
@@ -489,6 +494,8 @@ struct _graph_setting {
 	int mouse_lastclick_x, mouse_lastclick_y;
 	int mouse_lastup_x, mouse_lastup_y;
 	int mouse_show;
+	int mouse_pressed;
+	int mouse_pressed_tested; 
 
 	LPMSG_KEY_PROC callback_key;
 	void* callback_key_param;

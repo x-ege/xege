@@ -481,6 +481,30 @@ flushmouse() {
 }
 
 int
+mousepressed() {
+	int result;
+	struct _graph_setting * pg = &graph_setting;
+	if (pg->exit_window)
+		return 0;
+	result = (pg->mouse_pressed != 0); 
+	if (result) {
+		pg->mouse_pressed_tested = 1;
+	} else {
+		pg->mouse_pressed_tested = 0;
+	}
+	return result;
+} 
+
+void
+clearmousepressed() {
+	struct _graph_setting * pg = &graph_setting;
+	if (pg->exit_window)
+		return;
+	pg->mouse_pressed_tested = 0; 
+	pg->mouse_pressed = 0;	
+}
+
+int
 mousemsg() {
 	struct _graph_setting * pg = &graph_setting;
 	if (pg->exit_window)
@@ -966,6 +990,7 @@ wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 		}
 		break;
 	case WM_LBUTTONDOWN:
+		pg->mouse_pressed |= LBUTTON_PRESSED; 
 	case WM_LBUTTONDBLCLK:
 		pg->mouse_lastclick_x = (short int)((UINT)lParam & 0xFFFF);
 		pg->mouse_lastclick_y = (short int)((UINT)lParam >> 16);
@@ -975,6 +1000,7 @@ wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 		if (hWnd == pg->hwnd) push_mouse_msg(pg, message, wParam, lParam);
 		break;
 	case WM_MBUTTONDOWN:
+		pg->mouse_pressed |= MBUTTON_PRESSED; 
 	case WM_MBUTTONDBLCLK:
 		pg->mouse_lastclick_x = (short int)((UINT)lParam & 0xFFFF);
 		pg->mouse_lastclick_y = (short int)((UINT)lParam >> 16);
@@ -984,6 +1010,7 @@ wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 		if (hWnd == pg->hwnd) push_mouse_msg(pg, message, wParam, lParam);
 		break;
 	case WM_RBUTTONDOWN:
+		pg->mouse_pressed |= RBUTTON_PRESSED; 		
 	case WM_RBUTTONDBLCLK:
 		pg->mouse_lastclick_x = (short int)((UINT)lParam & 0xFFFF);
 		pg->mouse_lastclick_y = (short int)((UINT)lParam >> 16);
@@ -1342,6 +1369,8 @@ messageloopthread(LPVOID lpParameter) {
 			graph_init(pg);
 
 		{
+			pg->mouse_pressed = 0;
+			pg->mouse_pressed_tested = 0;
 			pg->mouse_show = 0;
 			pg->exit_flag = 0;
 			pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT ? false : true);

@@ -1,0 +1,48 @@
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mousepressed</title>
+</head>
+<body>
+
+<pre><font size="4"><a href="../../index.htm">主页</a>-＞<a href="../index.htm">库函数目录</a>-＞<a href="index.htm">键盘鼠标输入函数</a>-＞mousepressed</font>
+<font size="4">
+<font size="5" color="#0000FF"><strong>功能：</strong></font>
+这个函数用于检测是否有鼠标点击事件发生并立即返回。
+当执行该函数并且检测到鼠标点击事件后，执行delay_fps/delay_ms/delay_jfps函数会清除鼠标点击状态。
+
+<font size="5" color="#0000FF"><strong>声明：</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>mousepressed</font>();</pre>
+<font size="5" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="5" color="#0000FF"><strong>返回值：</strong></font>
+如果有鼠标点击发生，返回 1；否则返回 0。
+
+<font size="5" color="#0000FF"><strong>示例：</strong></font>
+#include <graphics.h>
+
+int main() {
+	initgraph(800,600);
+	setrendermode(RENDER_MANUAL);
+	
+
+	int count = 0;
+	for(;is_run();delay_fps(60)) {
+		if (mousepressed()) {
+            //检测到鼠标点击事件
+			count += 1;
+            //清除屏幕原有内容，然后输出点击提示
+			cleardevice();
+			xyprintf(50,50,"clicked %d times",count);
+		}
+	}
+	closegraph();
+	return 0;
+}
+
+</font>
+</pre>
+
+</body>
+
+

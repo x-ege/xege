@@ -314,6 +314,7 @@ api_sleep(long dwMilliseconds) {
 void
 ege_sleep(long ms) {
 	if (ms <= 0) return;
+	
 	if (0) { // 经济模式，占CPU极少
 		::Sleep(ms);
 	} else if (0) { //精确模式，占CPU略高
@@ -353,6 +354,11 @@ void
 delay_ms(long ms) {
 	struct _graph_setting * pg = &graph_setting;
 	egeControlBase* &root = pg->egectrl_root;
+	
+	//清除鼠标点击消息
+	if (pg->mouse_pressed_tested)
+		clearmousepressed();
+	
 	pg->skip_timer_mark = true;
 	if (ms == 0) {
 		if (pg->update_mark_count < UPDATE_MAX_CALL) {
@@ -430,6 +436,9 @@ delay_fps(double fps) {
 	double dw = get_highfeq_time_ls(pg) * 1000.0;
 	int nloop = 0;
 
+	//清除鼠标点击消息
+	if (pg->mouse_pressed_tested)
+		clearmousepressed();
 	if (pg->delay_fps_dwLast == 0) {
 		pg->delay_fps_dwLast = get_highfeq_time_ls(pg) * 1000.0;
 	}
@@ -475,6 +484,10 @@ delay_jfps(double fps) {
 	double avg_max_time = delay_time * 10.0;
 	double dw = get_highfeq_time_ls(pg) * 1000.0;
 	int nloop = 0;
+
+	//清除鼠标点击消息
+	if (pg->mouse_pressed_tested)
+		clearmousepressed();
 
 	if (pg->delay_fps_dwLast == 0) {
 		pg->delay_fps_dwLast = get_highfeq_time_ls(pg) * 1000.0;
