@@ -9,25 +9,25 @@
 * E-Mail:       mailto:misakamm[at gmail com]
 *
 * FileName: ege.h
-* �� VC ��ģ�� Borland BGI ��ͼ�⣬ʵ�ּ򵥵Ļ�ͼ֮�࣬��չ�˽ϸ��ӵĻ�ͼ����
+* 在 VC 下模拟 Borland BGI 绘图库，实现简单的绘图之余，扩展了较复杂的绘图能力
 *
-* ������ʹ�ñ���ʱ����Ҫ����conio.hͷ�ļ�
-* ��Щͷ�ļ���Ӧ���棬������ܻ�������
-* ����getch��conio.h�ڵĸ��ǣ��ɰ����������������ע��
-* ���蹲�棬��ʹ�ö��ļ��ֿ�������ģʽʹ�ã�
-* ������һ��cppͬʱ�����������Էֿ�����
-* ʹ�ñ��⣬������C++���룬��֧�ֵı�������
+* 包含并使用本库时，不要包含conio.h头文件
+* 这些头文件不应共存，否则可能会编译错误，
+* 或者getch被conio.h内的覆盖（由包含次序决定），请注意
+* 如需共存，请使用多文件分开包含的模式使用，
+* 即不能一个cpp同时包含，但可以分开包含
+* 使用本库，必须用C++编译，可支持的编译器：
 * VC6/VC2008/VC2010/VC2012/VC2013/MinGW3.4.5/MinGW4.7.1/MinGW4.8.1
 *********************************************************/
 
 /****************************************************************************
-** ע�����
-* �������Ҫ��ʾ����̨���ڣ����ڰ������ļ���ǰ���һ��define SHOW_CONSOLE
-* �����Sleep���APIʱ�����ߵ���delay��ʵ�ʾ���ת��Ϊ����delay_ms����������API��ʹ��api_sleep
-* ��delay_ms(0)�������ж���û�и��µı�Ҫ��������ε��������ĵ��ò��������֡�ʵ�Ӱ��
-* �����delay_ms, delay_fps, getch, getkey, getmouse ʱ���������ݿ��ܻ���£���Щ�����൱��������delay_ms(0)��
-*   �����ֻ��Ҫ���´��ڣ�������ȴ���������delay_ms(0)��ע��delayֻ��ʱ�������´���
-* �������ʹ��delay_ms/delay_fps���������Լ�����ĳ���ռ�õ�CPU������һ����û�е���ͬʱҲû��getch/getmouse�Ļ�������ռ��һ��CPU��ʱ��
+** 注意事项：
+* ★如果需要显示控制台窗口，请在包含本文件的前面加一行define SHOW_CONSOLE
+* ★调用Sleep这个API时，或者调用delay，实际均会转化为调用delay_ms，如必需调用API请使用api_sleep
+* ★delay_ms(0)能自行判断有没有更新的必要，连续多次但不大量的调用并不会产生帧率的影响
+* ★调用delay_ms, delay_fps, getch, getkey, getmouse 时，窗口内容可能会更新，这些函数相当于内置了delay_ms(0)，
+*   如果你只需要更新窗口，而不想等待，可以用delay_ms(0)。注意delay只延时而不更新窗口
+* ★合理地使用delay_ms/delay_fps函数，可以减少你的程序占用的CPU，否则一个都没有调用同时也没有getch/getmouse的话，程序将占满一个CPU的时间
 ****************************************************************************/
 
 #ifndef EGE_H
@@ -142,9 +142,9 @@
 #	endif
 #endif
 
-#define EGE_GDIPLUS     //����GDIPLUS
+#define EGE_GDIPLUS     //启用GDIPLUS
 
-#define SHOWCONSOLE             1       // ����ͼ��ģʽʱ����������̨����ʾ
+#define SHOWCONSOLE             1       // 进入图形模式时，保留控制台的显示
 #define EGERGBA(r, g, b, a)     (color_t)( ((r)<<16) | ((g)<<8) | (b) | ((a)<<24) )
 #define EGERGB(r, g, b)         EGERGBA(r, g, b, 0xFF)
 #define EGEARGB(a, r, g, b)     EGERGBA(r, g, b, a)
@@ -157,10 +157,10 @@
 #define EGEGRAY(gray)           EGERGB(gray, gray, gray)
 #define EGEGRAYA(gray, a)       EGERGBA(gray, gray, gray, a)
 #define EGEAGRAY(a, gray)       EGEGRAYA(gray, a)
-#define NAMESPACE_EGE_L         namespace ege {
-#define NAMESPACE_EGE_R         }
 
-NAMESPACE_EGE_L
+
+
+namespace ege {
 
 const double PI = 3.1415926535897932384626;
 
@@ -246,7 +246,7 @@ enum message_mouse {
 };
 
 typedef DWORD color_t;
-// ��ɫ
+// 颜色
 enum COLORS {
 	ALICEBLUE              = EGERGB(0xF0, 0xF8, 0xFF),
 	ANTIQUEWHITE           = EGERGB(0xFA, 0xEB, 0xD7),
@@ -392,7 +392,7 @@ enum COLORS {
 	YELLOWGREEN            = EGERGB(0x9A, 0xCD, 0x32),
 };
 
-// ���ģʽ
+// 填充模式
 enum fill_patterns {/* Fill patterns for get/setfillstyle */
 	EMPTY_FILL,     /* fills area in background color */
 	SOLID_FILL,     /* fills area in solid fill color */
@@ -681,17 +681,17 @@ typedef struct ege_colpoint {
 	color_t color;
 }ege_colpoint;
 
-// �����Ϣ
+// 鼠标消息
 struct MOUSEMSG {
-	UINT uMsg;              // ��ǰ�����Ϣ
-	bool mkCtrl;            // Ctrl ���Ƿ���
-	bool mkShift;           // Shift ���Ƿ���
-	bool mkLButton;         // �������Ƿ���
-	bool mkMButton;         // ����м��Ƿ���
-	bool mkRButton;         // ����Ҽ��Ƿ���
-	short x;                // ��ǰ��� x ����
-	short y;                // ��ǰ��� y ����
-	short wheel;            // �����ֹ���ֵ(120Ϊ����)
+	UINT uMsg;              // 当前鼠标消息
+	bool mkCtrl;            // Ctrl 键是否按下
+	bool mkShift;           // Shift 键是否按下
+	bool mkLButton;         // 鼠标左键是否按下
+	bool mkMButton;         // 鼠标中键是否按下
+	bool mkRButton;         // 鼠标右键是否按下
+	short x;                // 当前鼠标 x 坐标
+	short y;                // 当前鼠标 y 坐标
+	short wheel;            // 鼠标滚轮滚动值(120为基数)
 };
 
 struct msg_createwindow {
@@ -705,7 +705,7 @@ struct msg_createwindow {
 };
 
 
-//�������
+//音乐类宏
 #define MUSIC_ERROR  0xFFFFFFFF
 
 
@@ -717,13 +717,13 @@ typedef MSG_KEY_PROC        * LPMSG_KEY_PROC;
 typedef MSG_MOUSE_PROC      * LPMSG_MOUSE_PROC;
 
 /*
-ע�⣺���º�����ע�ͺ��'###'�ĺ�����ʾδʵ��
+注意：以下函数的注释后带'###'的函数表示未实现
 */
 
 struct VECTOR3D;
 
-// 3d ���㸨������
-void EGEAPI rotate_point3d_x(VECTOR3D  * pt, float r); //���ȣ����ֶ���
+// 3d 计算辅助函数
+void EGEAPI rotate_point3d_x(VECTOR3D  * pt, float r); //弧度，右手定则
 void EGEAPI rotate_point3d_y(VECTOR3D  * pt, float r);
 void EGEAPI rotate_point3d_z(VECTOR3D  * pt, float r);
 
@@ -746,11 +746,11 @@ struct VECTOR3D {
 	VECTOR3D& operator -= (const VECTOR3D& _fp);
 	VECTOR3D operator + (const VECTOR3D& _fp) const;
 	VECTOR3D operator - (const VECTOR3D& _fp) const;
-	VECTOR3D& operator *= (float f); //����
-	VECTOR3D operator * (float f) const; //����
-	float operator * (const VECTOR3D& _fp) const; //���
-	VECTOR3D operator & (const VECTOR3D& _fp) const; //���
-	VECTOR3D& operator &= (const VECTOR3D& _fp); //���
+	VECTOR3D& operator *= (float f); //缩放
+	VECTOR3D operator * (float f) const; //缩放
+	float operator * (const VECTOR3D& _fp) const; //点乘
+	VECTOR3D operator & (const VECTOR3D& _fp) const; //叉乘
+	VECTOR3D& operator &= (const VECTOR3D& _fp); //叉乘
 	float GetModule() const;
 	float GetSqrModule() const {
 		return float(x*x + y*y + z*z);
@@ -760,12 +760,12 @@ struct VECTOR3D {
 		*this *= t;
 		return *this;
 	}
-	VECTOR3D& Rotate(float rad, const VECTOR3D& v); //����������ת�����ֶ���radΪ����
+	VECTOR3D& Rotate(float rad, const VECTOR3D& v); //绕任意轴旋转，右手定则，rad为弧度
 	VECTOR3D& Rotate(float rad, float x, float y, float z) {
 		VECTOR3D v(x, y, z);
 		return Rotate(rad, v);
 	}
-	VECTOR3D& Rotate(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f)); //��s��e֮��ļн�ȷ����ת
+	VECTOR3D& Rotate(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f)); //从s到e之间的夹角确定旋转
 	static float GetAngel(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
 };
 
@@ -774,11 +774,11 @@ class IMAGE;
 typedef IMAGE *PIMAGE;
 typedef const IMAGE *PCIMAGE;
 
-// ��ͼ������غ���
-void EGEAPI setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT); //���ó�ʼ��ģʽ��mode=0Ϊ��ͨ��1Ϊ�ޱ߿򴰿ڣ�xy�ǳ�ʼ��������
+// 绘图环境相关函数
+void EGEAPI setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT); //设置初始化模式，mode=0为普通，1为无边框窗口，xy是初始窗口坐标
 int  EGEAPI getinitmode();
-void EGEAPI initgraph(int Width, int Height, int Flag);        // ��ʼ��ͼ�λ���
-// Debug ������Ĭ�ϲ���ʾ LOGO��Release ģʽ��Ĭ����ʾ��
+void EGEAPI initgraph(int Width, int Height, int Flag);        // 初始化图形环境
+// Debug 配置下默认不显示 LOGO，Release 模式下默认显示。
 #if !defined(NDEBUG) || defined(DEBUG) || defined(_DEBUG)
 inline void EGEAPI initgraph(int Width, int Height) {
 	initgraph(Width, Height, getinitmode());
@@ -788,142 +788,142 @@ inline void EGEAPI initgraph(int Width, int Height) {
 	initgraph(Width, Height, getinitmode()|INIT_WITHLOGO);
 }
 #endif
-void EGEAPI initgraph(int* gdriver, int* gmode, const char* path);  // ���� Borland C++ 3.1 �����أ�ֻʹ�� 640x480x24bit
-void EGEAPI closegraph();                                           // �ر�ͼ�λ���
-bool EGEAPI is_run();                                               // �ж�UI�Ƿ��˳�
+void EGEAPI initgraph(int* gdriver, int* gmode, const char* path);  // 兼容 Borland C++ 3.1 的重载，只使用 640x480x24bit
+void EGEAPI closegraph();                                           // 关闭图形环境
+bool EGEAPI is_run();                                               // 判断UI是否退出
 void EGEAPI setcaption(LPCSTR  caption);
 void EGEAPI setcaption(LPCWSTR caption);
 void EGEAPI seticon(int icon_id);
 int  EGEAPI attachHWND(HWND hWnd);
 
-void EGEAPI movewindow(int x, int y, bool redraw = true);	//�ƶ�����
-void EGEAPI resizewindow(int width, int height);			//���贰�ڳߴ�
+void EGEAPI movewindow(int x, int y, bool redraw = true);	//移动窗口
+void EGEAPI resizewindow(int width, int height);			//重设窗口尺寸
 
 void EGEAPI setrendermode(rendermode_e mode);
 
-// ��ͼ��������
+// 绘图环境设置
 PIMAGE  gettarget();
-int     settarget(PIMAGE pbuf); // �� NULL ���ô���Ϊ��ͼĿ��
+int     settarget(PIMAGE pbuf); // 用 NULL 设置窗口为绘图目标
 
-void EGEAPI cleardevice(PIMAGE pimg = NULL);                   // ����
+void EGEAPI cleardevice(PIMAGE pimg = NULL);                   // 清屏
 
-void EGEAPI getviewport(int *pleft, int *ptop, int *pright, int *pbottom, int *pclip = 0, PCIMAGE pimg = NULL); // ��ȡ��ͼ��Ϣ
-void EGEAPI setviewport(int left, int top, int right, int bottom, int clip = 1, PIMAGE pimg = NULL);           // ������ͼ
-void EGEAPI clearviewport(PIMAGE pimg = NULL);                                                                 // �����ͼ
+void EGEAPI getviewport(int *pleft, int *ptop, int *pright, int *pbottom, int *pclip = 0, PCIMAGE pimg = NULL); // 获取视图信息
+void EGEAPI setviewport(int left, int top, int right, int bottom, int clip = 1, PIMAGE pimg = NULL);           // 设置视图
+void EGEAPI clearviewport(PIMAGE pimg = NULL);                                                                 // 清空视图
 
 EGE_DEPRECATE(setactivepage)
-void EGEAPI setactivepage(int page); // ���õ�ǰ��ͼҳ������ͼ����Ĭ�ϵ�������壬��Χ0-1��Ĭ��Ϊ0
+void EGEAPI setactivepage(int page); // 设置当前绘图页，即绘图函数默认的输出缓冲，范围0-1，默认为0
 EGE_DEPRECATE(setvisualpage)
-void EGEAPI setvisualpage(int page); // ���õ�ǰ��ʾҳ������������ʾ�������ϵ�ҳ����Χ0-1��Ĭ��Ϊ0
+void EGEAPI setvisualpage(int page); // 设置当前显示页，用于设置显示到窗口上的页，范围0-1，默认为0
 EGE_DEPRECATE(swappage)
 void EGEAPI swappage();
 void EGEAPI window_getviewport(struct viewporttype * viewport);
 void EGEAPI window_getviewport(int* left, int* top, int* right, int* bottom);
 void EGEAPI window_setviewport(int  left, int  top, int  right, int  bottom);
 
-// ��ͼ����
+// 绘图属性
 EGE_DEPRECATE(getlinestyle)
-void EGEAPI getlinestyle(int *plinestyle, unsigned short *pupattern = NULL, int *pthickness = NULL, PCIMAGE pimg = NULL); // ��ȡ��ǰ����
-void EGEAPI setlinestyle(int linestyle, unsigned short upattern = 0, int thickness = 1, PIMAGE pimg = NULL);          // ���õ�ǰ����
-void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);          // ���õ�ǰ�߿�
+void EGEAPI getlinestyle(int *plinestyle, unsigned short *pupattern = NULL, int *pthickness = NULL, PCIMAGE pimg = NULL); // 获取当前线形
+void EGEAPI setlinestyle(int linestyle, unsigned short upattern = 0, int thickness = 1, PIMAGE pimg = NULL);          // 设置当前线形
+void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);          // 设置当前线宽
 //EGE_DEPRECATE(getfillstyle)
-//void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // ��ȡ������� ###
+//void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // 获取填充类型 ###
 EGE_DEPRECATE(setfillstyle)
-void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);  // �����������
+void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);  // 设置填充类型
 
-void EGEAPI setwritemode(int mode, PIMAGE pimg = NULL);         // ���û�ͼλ����ģʽ
+void EGEAPI setwritemode(int mode, PIMAGE pimg = NULL);         // 设置绘图位操作模式
 
-//void EGEAPI graphdefaults(PIMAGE pimg = NULL);                  // �������л�ͼ����ΪĬ��ֵ ###
+//void EGEAPI graphdefaults(PIMAGE pimg = NULL);                  // 重置所有绘图设置为默认值 ###
 
-// ɫ�ʺ���
-color_t EGEAPI getcolor(PCIMAGE pimg = NULL);                   // ��ȡ��ǰ��ͼǰ��ɫ
-color_t EGEAPI getfillcolor(PCIMAGE pimg = NULL);               // ��ȡ��ǰ��ͼ���ɫ
-color_t EGEAPI getbkcolor(PCIMAGE pimg = NULL);                 // ��ȡ��ǰ��ͼ����ɫ
-void EGEAPI setcolor(color_t color, PIMAGE pimg = NULL);        // ���õ�ǰ��ͼǰ��ɫ
-void EGEAPI setfillcolor(color_t color, PIMAGE pimg = NULL);    // ���õ�ǰ��ͼ���ɫ
-void EGEAPI setbkcolor(color_t color, PIMAGE pimg = NULL);      // ���õ�ǰ��ͼ����ɫ�����ò�������ɫ�����滻��
-void EGEAPI setbkcolor_f(color_t color, PIMAGE pimg = NULL);    // �������õ�ǰ��ͼ����ɫ��ֻ���ò��滭��
-void EGEAPI setfontbkcolor(color_t color, PIMAGE pimg = NULL);  // ���õ�ǰ���ֱ���ɫ
-void EGEAPI setbkmode(int iBkMode, PIMAGE pimg = NULL);         // ���ñ������ģʽ(0=OPAQUE, 1=TRANSPARENT)
+// 色彩函数
+color_t EGEAPI getcolor(PCIMAGE pimg = NULL);                   // 获取当前绘图前景色
+color_t EGEAPI getfillcolor(PCIMAGE pimg = NULL);               // 获取当前绘图填充色
+color_t EGEAPI getbkcolor(PCIMAGE pimg = NULL);                 // 获取当前绘图背景色
+void EGEAPI setcolor(color_t color, PIMAGE pimg = NULL);        // 设置当前绘图前景色
+void EGEAPI setfillcolor(color_t color, PIMAGE pimg = NULL);    // 设置当前绘图填充色
+void EGEAPI setbkcolor(color_t color, PIMAGE pimg = NULL);      // 设置当前绘图背景色（设置并做背景色像素替换）
+void EGEAPI setbkcolor_f(color_t color, PIMAGE pimg = NULL);    // 快速设置当前绘图背景色（只设置不绘画）
+void EGEAPI setfontbkcolor(color_t color, PIMAGE pimg = NULL);  // 设置当前文字背景色
+void EGEAPI setbkmode(int iBkMode, PIMAGE pimg = NULL);         // 设置背景混合模式(0=OPAQUE, 1=TRANSPARENT)
 
-// ���ݺ�
+// 兼容宏
 #define RGBtoGRAY   rgb2gray
 #define RGBtoHSL    rgb2hsl
 #define RGBtoHSV    rgb2hsv
 #define HSLtoRGB    hsl2rgb
 #define HSVtoRGB    hsv2rgb
 
-// ��ɫģ��ת������
+// 颜色模型转换函数
 color_t     EGEAPI rgb2gray(color_t rgb);
 void        EGEAPI rgb2hsl(color_t rgb, float *H, float *S, float *L);
 void        EGEAPI rgb2hsv(color_t rgb, float *H, float *S, float *V);
 color_t     EGEAPI hsl2rgb(float H, float S, float L);
 color_t     EGEAPI hsv2rgb(float H, float S, float V);
 
-// �� Alpha ͨ�������ɫ���� src ��Ϊ����ɫ��dst ��Ϊǰ��ɫ���л��
-color_t     EGEAPI alphablend(color_t dst, color_t src); // ʹ�� EGEGET_A(src) ��Ϊ Alpha ֵ
+// 按 Alpha 通道混合颜色，将 src 作为背景色，dst 作为前景色进行混合
+color_t     EGEAPI alphablend(color_t dst, color_t src); // 使用 EGEGET_A(src) 作为 Alpha 值
 color_t     EGEAPI alphablend(color_t dst, color_t src, unsigned char alpha);
 
 
-// ������ͼ����
+// 基本绘图函数
 
-color_t     EGEAPI getpixel  (int x, int y, PCIMAGE pimg = NULL);               // ��ȡ�����ɫ
-void        EGEAPI putpixel  (int x, int y, color_t color, PIMAGE pimg = NULL); // ����
-color_t     EGEAPI getpixel_f(int x, int y, PCIMAGE pimg = NULL);               // ��ȡ�����ɫ
-void        EGEAPI putpixel_f(int x, int y, color_t color, PIMAGE pimg = NULL); // �������껭��
-void        EGEAPI putpixels  (int nPoint, int* pPoints, PIMAGE pimg = NULL);   // ��������
-void        EGEAPI putpixels_f(int nPoint, int* pPoints, PIMAGE pimg = NULL);   // ��������
+color_t     EGEAPI getpixel  (int x, int y, PCIMAGE pimg = NULL);               // 获取点的颜色
+void        EGEAPI putpixel  (int x, int y, color_t color, PIMAGE pimg = NULL); // 画点
+color_t     EGEAPI getpixel_f(int x, int y, PCIMAGE pimg = NULL);               // 获取点的颜色
+void        EGEAPI putpixel_f(int x, int y, color_t color, PIMAGE pimg = NULL); // 绝对坐标画点
+void        EGEAPI putpixels  (int nPoint, int* pPoints, PIMAGE pimg = NULL);   // 批量画点
+void        EGEAPI putpixels_f(int nPoint, int* pPoints, PIMAGE pimg = NULL);   // 批量画点
 
-void        EGEAPI putpixel_withalpha  (int x, int y, color_t color, PIMAGE pimg = NULL); // ��͸���Ȼ���
-void        EGEAPI putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg = NULL); // ��͸���Ⱦ������껭��
-void        EGEAPI putpixel_savealpha  (int x, int y, color_t color, PIMAGE pimg = NULL); // �������ص����ɫ��ͬʱ����ԭ��alphaֵ��
-void        EGEAPI putpixel_savealpha_f(int x, int y, color_t color, PIMAGE pimg = NULL); // �������ص����ɫ��ͬʱ����ԭ��alphaֵ��ʹ�þ������꣩
+void        EGEAPI putpixel_withalpha  (int x, int y, color_t color, PIMAGE pimg = NULL); // 带透明度画点
+void        EGEAPI putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg = NULL); // 带透明度绝对坐标画点
+void        EGEAPI putpixel_savealpha  (int x, int y, color_t color, PIMAGE pimg = NULL); // 设置像素点的颜色（同时保留原有alpha值）
+void        EGEAPI putpixel_savealpha_f(int x, int y, color_t color, PIMAGE pimg = NULL); // 设置像素点的颜色（同时保留原有alpha值，使用绝对坐标）
 
-void EGEAPI moveto(int x, int y, PIMAGE pimg = NULL);                      // �ƶ���ǰ��(��������)
-void EGEAPI moverel(int dx, int dy, PIMAGE pimg = NULL);                   // �ƶ���ǰ��(�������)
+void EGEAPI moveto(int x, int y, PIMAGE pimg = NULL);                      // 移动当前点(绝对坐标)
+void EGEAPI moverel(int dx, int dy, PIMAGE pimg = NULL);                   // 移动当前点(相对坐标)
 
-void EGEAPI line(int x1, int y1, int x2, int y2, PIMAGE pimg = NULL);      // ����
-void EGEAPI linerel(int dx, int dy, PIMAGE pimg = NULL);                   // ����(���������)
-void EGEAPI lineto(int x, int y, PIMAGE pimg = NULL);                      // ����(����������)
-void EGEAPI line_f(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);  // ����
-void EGEAPI linerel_f(float dx, float dy, PIMAGE pimg = NULL);                   // ����(���������)
-void EGEAPI lineto_f(float x, float y, PIMAGE pimg = NULL);                      // ����(����������)
+void EGEAPI line(int x1, int y1, int x2, int y2, PIMAGE pimg = NULL);      // 画线
+void EGEAPI linerel(int dx, int dy, PIMAGE pimg = NULL);                   // 画线(至相对坐标)
+void EGEAPI lineto(int x, int y, PIMAGE pimg = NULL);                      // 画线(至绝对坐标)
+void EGEAPI line_f(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);  // 画线
+void EGEAPI linerel_f(float dx, float dy, PIMAGE pimg = NULL);                   // 画线(至相对坐标)
+void EGEAPI lineto_f(float x, float y, PIMAGE pimg = NULL);                      // 画线(至绝对坐标)
 
 
-void EGEAPI rectangle(int left, int top, int right, int bottom, PIMAGE pimg = NULL);   // ������
+void EGEAPI rectangle(int left, int top, int right, int bottom, PIMAGE pimg = NULL);   // 画矩形
 
-//void EGEAPI getarccoords(int *px, int *py, int *pxstart, int *pystart, int *pxend, int *pyend, PIMAGE pimg = NULL);    // ��ȡԲ��������Ϣ ###
-void EGEAPI arc(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg = NULL);                  // ��Բ��
-void EGEAPI circle(int x, int y, int radius, PIMAGE pimg = NULL);                                          // ��Բ
-void EGEAPI pieslice(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg = NULL);             // �����Բ����
-void EGEAPI ellipse(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg = NULL);// ����Բ����
-void EGEAPI fillellipse(int x, int y, int xradius, int yradius, PIMAGE pimg = NULL);                       // �������Բ
-void EGEAPI sector(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg = NULL); // �������Բ����
-void EGEAPI roundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg = NULL); //��Բ�Ǿ��� 
+//void EGEAPI getarccoords(int *px, int *py, int *pxstart, int *pystart, int *pxend, int *pyend, PIMAGE pimg = NULL);    // 获取圆弧坐标信息 ###
+void EGEAPI arc(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg = NULL);                  // 画圆弧
+void EGEAPI circle(int x, int y, int radius, PIMAGE pimg = NULL);                                          // 画圆
+void EGEAPI pieslice(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg = NULL);             // 画填充圆扇形
+void EGEAPI ellipse(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg = NULL);// 画椭圆弧线
+void EGEAPI fillellipse(int x, int y, int xradius, int yradius, PIMAGE pimg = NULL);                       // 画填充椭圆
+void EGEAPI sector(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg = NULL); // 画填充椭圆扇形
+void EGEAPI roundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg = NULL); //画圆角矩形 
 
-void EGEAPI arcf(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg = NULL);                    // ��Բ��
-void EGEAPI circlef(float x, float y, float radius, PIMAGE pimg = NULL);                                                // ��Բ
-void EGEAPI pieslicef(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg = NULL);               // �����Բ����
-void EGEAPI ellipsef(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg = NULL);// ����Բ����
-void EGEAPI fillellipsef(float x, float y, float xradius, float yradius, PIMAGE pimg = NULL);                           // �������Բ
-void EGEAPI sectorf(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg = NULL); // �������Բ����
+void EGEAPI arcf(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg = NULL);                    // 画圆弧
+void EGEAPI circlef(float x, float y, float radius, PIMAGE pimg = NULL);                                                // 画圆
+void EGEAPI pieslicef(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg = NULL);               // 画填充圆扇形
+void EGEAPI ellipsef(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg = NULL);// 画椭圆弧线
+void EGEAPI fillellipsef(float x, float y, float xradius, float yradius, PIMAGE pimg = NULL);                           // 画填充椭圆
+void EGEAPI sectorf(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg = NULL); // 画填充椭圆扇形
 
-void EGEAPI bar(int left, int top, int right, int bottom, PIMAGE pimg = NULL);                             // ���ޱ߿�������
-void EGEAPI bar3d(int left, int top, int right, int bottom, int depth, int topflag, PIMAGE pimg = NULL);   // ���б߿���ά������
+void EGEAPI bar(int left, int top, int right, int bottom, PIMAGE pimg = NULL);                             // 画无边框填充矩形
+void EGEAPI bar3d(int left, int top, int right, int bottom, int depth, int topflag, PIMAGE pimg = NULL);   // 画有边框三维填充矩形
 
-void EGEAPI fillrect(int left, int top, int right, int bottom, PIMAGE pimg = NULL);                      //�������� 
-void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg = NULL); //�����Բ�Ǿ��� 
+void EGEAPI fillrect(int left, int top, int right, int bottom, PIMAGE pimg = NULL);                      //画填充矩形 
+void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg = NULL); //画填充圆角矩形 
 
-void EGEAPI drawpoly(int numpoints, const int *polypoints, PIMAGE pimg = NULL);     // �������
-void EGEAPI drawlines(int numlines, const int *polypoints, PIMAGE pimg = NULL);     // �������������ߣ���չ������
-void EGEAPI drawbezier(int numpoints, const int *polypoints, PIMAGE pimg = NULL);   // ��bezier���ߣ���չ������
-void EGEAPI fillpoly(int numpoints, const int *polypoints, PIMAGE pimg = NULL);     // �����Ķ����
-void EGEAPI fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pimg = NULL); // ���������Ķ����
-void EGEAPI floodfill(int x, int y, int border, PIMAGE pimg = NULL);                // ���߽���ɫ�������
-void EGEAPI floodfillsurface(int x, int y, color_t areacolor, PIMAGE pimg = NULL);  // ����ʼ����ɫ�������
+void EGEAPI drawpoly(int numpoints, const int *polypoints, PIMAGE pimg = NULL);     // 画多边形
+void EGEAPI drawlines(int numlines, const int *polypoints, PIMAGE pimg = NULL);     // 画多条不连续线（扩展函数）
+void EGEAPI drawbezier(int numpoints, const int *polypoints, PIMAGE pimg = NULL);   // 画bezier曲线（扩展函数）
+void EGEAPI fillpoly(int numpoints, const int *polypoints, PIMAGE pimg = NULL);     // 画填充的多边形
+void EGEAPI fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pimg = NULL); // 画渐变填充的多边形
+void EGEAPI floodfill(int x, int y, int border, PIMAGE pimg = NULL);                // 按边界颜色填充区域
+void EGEAPI floodfillsurface(int x, int y, color_t areacolor, PIMAGE pimg = NULL);  // 按起始点颜色填充区域
 
 #ifdef EGE_GDIPLUS
-// �߼���ͼ��������AA��
+// 高级绘图函数（带AA）
 // ege new_api
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
@@ -999,60 +999,60 @@ BOOL close_console(); //close the console and restore the old STD I/O
 //int  EGEAPI Begin2d();
 //void EGEAPI EndRender();
 
-//ʱ�亯�������º��������ڶ��߳���ʹ�ã�ֻ�ܸ���ͼ���̵߳��ã�
-void EGEAPI ege_sleep(long ms);     // �����ӳ�ms����
-void EGEAPI delay(long ms);         // �����ӳ�ms����
-void EGEAPI delay_ms(long ms);      // ƽ���ӳ�ms����
-void EGEAPI delay_fps(int fps);    // ƽ���ӳ�1000/fps���룬�����ȶ�֡�ʿ���
-void EGEAPI delay_fps(long fps);    // ƽ���ӳ�1000/fps���룬�����ȶ�֡�ʿ���
-void EGEAPI delay_fps(double fps);  // ƽ���ӳ�1000/fps���룬�����ȶ�֡�ʿ���
-void EGEAPI delay_jfps(int fps);   // ƽ���ӳ�1000/fps���룬�����ȶ��߼�֡�ʿ��ƣ���ͼ����֡
-void EGEAPI delay_jfps(long fps);   // ƽ���ӳ�1000/fps���룬�����ȶ��߼�֡�ʿ��ƣ���ͼ����֡
-void EGEAPI delay_jfps(double fps); // ƽ���ӳ�1000/fps���룬�����ȶ��߼�֡�ʿ��ƣ���ͼ����֡
-// ���º������Զ��߳���ʹ�ã���ͼ��(worker)�̵߳�sleepʹ�����
+//时间函数（以下函数不能在多线程下使用，只能给绘图主线程调用）
+void EGEAPI ege_sleep(long ms);     // 至少延迟ms毫秒
+void EGEAPI delay(long ms);         // 至少延迟ms毫秒
+void EGEAPI delay_ms(long ms);      // 平均延迟ms毫秒
+void EGEAPI delay_fps(int fps);    // 平均延迟1000/fps毫秒，用于稳定帧率控制
+void EGEAPI delay_fps(long fps);    // 平均延迟1000/fps毫秒，用于稳定帧率控制
+void EGEAPI delay_fps(double fps);  // 平均延迟1000/fps毫秒，用于稳定帧率控制
+void EGEAPI delay_jfps(int fps);   // 平均延迟1000/fps毫秒，用于稳定逻辑帧率控制，绘图带跳帧
+void EGEAPI delay_jfps(long fps);   // 平均延迟1000/fps毫秒，用于稳定逻辑帧率控制，绘图带跳帧
+void EGEAPI delay_jfps(double fps); // 平均延迟1000/fps毫秒，用于稳定逻辑帧率控制，绘图带跳帧
+// 以下函数可以多线程下使用，非图形(worker)线程的sleep使用这个
 void EGEAPI api_sleep(long dwMilliseconds);
-double EGEAPI fclock(); // ��ȡ����Ϊ��λ�ĸ���ʱ�䣬ֻ���ڼ�ʱ�ã�����0.01�룬
+double EGEAPI fclock(); // 获取以秒为单位的浮点时间，只用于计时用，精度0.01秒，
 
-// ������غ���
-void EGEAPI outtext(LPCSTR  textstring, PIMAGE pimg = NULL);                   // �ڵ�ǰλ���������
-void EGEAPI outtext(LPCWSTR textstring, PIMAGE pimg = NULL);                   // �ڵ�ǰλ���������
-void EGEAPI outtext(CHAR  c, PIMAGE pimg = NULL);                              // �ڵ�ǰλ������ַ�
-void EGEAPI outtext(WCHAR c, PIMAGE pimg = NULL);                              // �ڵ�ǰλ������ַ�
-void EGEAPI outtextxy(int x, int y, LPCSTR  textstring, PIMAGE pimg = NULL);   // ��ָ��λ���������
-void EGEAPI outtextxy(int x, int y, LPCWSTR textstring, PIMAGE pimg = NULL);   // ��ָ��λ���������
-void EGEAPI outtextxy(int x, int y, CHAR c, PIMAGE pimg = NULL);               // ��ָ��λ������ַ�
-void EGEAPI outtextxy(int x, int y, WCHAR c, PIMAGE pimg = NULL);              // ��ָ��λ������ַ�
-void EGEAPI outtextrect(int x, int y, int w, int h, LPCSTR  textstring, PIMAGE pimg = NULL); // ��ָ�����η�Χ�������
-void EGEAPI outtextrect(int x, int y, int w, int h, LPCWSTR textstring, PIMAGE pimg = NULL); // ��ָ�����η�Χ�������
-void EGEAPI xyprintf(int x, int y, LPCSTR  fmt, ...); // ��ָ��λ�������ʽ���ַ�����ָ����ͼĿ�����settarget
-void EGEAPI xyprintf(int x, int y, LPCWSTR fmt, ...); // ��ָ��λ�������ʽ���ַ�����ָ����ͼĿ�����settarget
-void EGEAPI rectprintf(int x, int y, int w, int h, LPCSTR  fmt, ...); // ��ָ�����������ʽ���ַ�����ָ����ͼĿ�����settarget
-void EGEAPI rectprintf(int x, int y, int w, int h, LPCWSTR fmt, ...); // ��ָ�����������ʽ���ַ�����ָ����ͼĿ�����settarget
-int  EGEAPI textwidth(LPCSTR  textstring, PIMAGE pimg = NULL);                 // ��ȡ�ַ���ռ�õ����ؿ�
-int  EGEAPI textwidth(LPCWSTR textstring, PIMAGE pimg = NULL);                 // ��ȡ�ַ���ռ�õ����ؿ�
+// 文字相关函数
+void EGEAPI outtext(LPCSTR  textstring, PIMAGE pimg = NULL);                   // 在当前位置输出文字
+void EGEAPI outtext(LPCWSTR textstring, PIMAGE pimg = NULL);                   // 在当前位置输出文字
+void EGEAPI outtext(CHAR  c, PIMAGE pimg = NULL);                              // 在当前位置输出字符
+void EGEAPI outtext(WCHAR c, PIMAGE pimg = NULL);                              // 在当前位置输出字符
+void EGEAPI outtextxy(int x, int y, LPCSTR  textstring, PIMAGE pimg = NULL);   // 在指定位置输出文字
+void EGEAPI outtextxy(int x, int y, LPCWSTR textstring, PIMAGE pimg = NULL);   // 在指定位置输出文字
+void EGEAPI outtextxy(int x, int y, CHAR c, PIMAGE pimg = NULL);               // 在指定位置输出字符
+void EGEAPI outtextxy(int x, int y, WCHAR c, PIMAGE pimg = NULL);              // 在指定位置输出字符
+void EGEAPI outtextrect(int x, int y, int w, int h, LPCSTR  textstring, PIMAGE pimg = NULL); // 在指定矩形范围输出文字
+void EGEAPI outtextrect(int x, int y, int w, int h, LPCWSTR textstring, PIMAGE pimg = NULL); // 在指定矩形范围输出文字
+void EGEAPI xyprintf(int x, int y, LPCSTR  fmt, ...); // 在指定位置输出格式化字符串，指定绘图目标调用settarget
+void EGEAPI xyprintf(int x, int y, LPCWSTR fmt, ...); // 在指定位置输出格式化字符串，指定绘图目标调用settarget
+void EGEAPI rectprintf(int x, int y, int w, int h, LPCSTR  fmt, ...); // 在指定矩形输出格式化字符串，指定绘图目标调用settarget
+void EGEAPI rectprintf(int x, int y, int w, int h, LPCWSTR fmt, ...); // 在指定矩形输出格式化字符串，指定绘图目标调用settarget
+int  EGEAPI textwidth(LPCSTR  textstring, PIMAGE pimg = NULL);                 // 获取字符串占用的像素宽
+int  EGEAPI textwidth(LPCWSTR textstring, PIMAGE pimg = NULL);                 // 获取字符串占用的像素宽
 int  EGEAPI textwidth(CHAR  c, PIMAGE pimg = NULL);
 int  EGEAPI textwidth(WCHAR c, PIMAGE pimg = NULL);
-int  EGEAPI textheight(LPCSTR  textstring, PIMAGE pimg = NULL);                // ��ȡ�ַ���ռ�õ����ظ�
-int  EGEAPI textheight(LPCWSTR textstring, PIMAGE pimg = NULL);                // ��ȡ�ַ���ռ�õ����ظ�
+int  EGEAPI textheight(LPCSTR  textstring, PIMAGE pimg = NULL);                // 获取字符串占用的像素高
+int  EGEAPI textheight(LPCWSTR textstring, PIMAGE pimg = NULL);                // 获取字符串占用的像素高
 int  EGEAPI textheight(CHAR  c, PIMAGE pimg = NULL);
 int  EGEAPI textheight(WCHAR c, PIMAGE pimg = NULL);
 void EGEAPI settextjustify(int horiz, int vert, PIMAGE pimg = NULL);
 
-// ���õ�ǰ������ʽ(�������)
-//      nHeight: �ַ���ƽ���߶ȣ�
-//      nWidth: �ַ���ƽ������(0 ��ʾ����Ӧ)��
-//      lpszFace: �������ƣ�
-//      nEscapement: �ַ�������д�Ƕ�(��λ 0.1 ��)��
-//      nOrientation: ÿ���ַ�����д�Ƕ�(��λ 0.1 ��)��
-//      nWeight: �ַ��ıʻ���ϸ(0 ��ʾĬ�ϴ�ϸ)��
-//      bItalic: �Ƿ�б�壻
-//      bUnderline: �Ƿ��»��ߣ�
-//      bStrikeOut: �Ƿ�ɾ���ߣ�
-//      fbCharSet: ָ���ַ�����
-//      fbOutPrecision: ָ�����ֵ�������ȣ�
-//      fbClipPrecision: ָ�����ֵļ������ȣ�
-//      fbQuality: ָ�����ֵ����������
-//      fbPitchAndFamily: ָ���Գ��淽ʽ�������������ϵ�С�
+// 设置当前字体样式(详见帮助)
+//      nHeight: 字符的平均高度；
+//      nWidth: 字符的平均宽度(0 表示自适应)；
+//      lpszFace: 字体名称；
+//      nEscapement: 字符串的书写角度(单位 0.1 度)；
+//      nOrientation: 每个字符的书写角度(单位 0.1 度)；
+//      nWeight: 字符的笔画粗细(0 表示默认粗细)；
+//      bItalic: 是否斜体；
+//      bUnderline: 是否下划线；
+//      bStrikeOut: 是否删除线；
+//      fbCharSet: 指定字符集；
+//      fbOutPrecision: 指定文字的输出精度；
+//      fbClipPrecision: 指定文字的剪辑精度；
+//      fbQuality: 指定文字的输出质量；
+//      fbPitchAndFamily: 指定以常规方式描述字体的字体系列。
 void EGEAPI setfont(int nHeight, int nWidth, LPCSTR lpszFace,  PIMAGE pimg = NULL);
 void EGEAPI setfont(int nHeight, int nWidth, LPCWSTR lpszFace, PIMAGE pimg = NULL);
 void EGEAPI setfont(int nHeight, int nWidth, LPCSTR lpszFace,  int nEscapement, int nOrientation,
@@ -1065,41 +1065,41 @@ void EGEAPI setfont(int nHeight, int nWidth, LPCSTR lpszFace,  int nEscapement, 
 void EGEAPI setfont(int nHeight, int nWidth, LPCWSTR lpszFace, int nEscapement, int nOrientation,
 					int nWeight, int bItalic, int bUnderline, int bStrikeOut, BYTE fbCharSet,
 					BYTE fbOutPrecision, BYTE fbClipPrecision, BYTE fbQuality, BYTE fbPitchAndFamily, PIMAGE pimg = NULL);
-void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL); // ���õ�ǰ������ʽ
-void EGEAPI setfont(const LOGFONTW *font, PIMAGE pimg = NULL); // ���õ�ǰ������ʽ
-void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);      // ��ȡ��ǰ������ʽ
-void EGEAPI getfont(LOGFONTW *font, PCIMAGE pimg = NULL);      // ��ȡ��ǰ������ʽ
+void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL); // 设置当前字体样式
+void EGEAPI setfont(const LOGFONTW *font, PIMAGE pimg = NULL); // 设置当前字体样式
+void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);      // 获取当前字体样式
+void EGEAPI getfont(LOGFONTW *font, PCIMAGE pimg = NULL);      // 获取当前字体样式
 
 
-//ͼƬ����
+//图片函数
 #define getmaxx getwidth
 #define getmaxy getheight
 
-int EGEAPI getwidth(PCIMAGE pimg = NULL);          // ��ȡͼƬ����
-int EGEAPI getheight(PCIMAGE pimg = NULL);         // ��ȡͼƬ�߶�
-int EGEAPI getx(PCIMAGE pimg = NULL);              // ��ȡ��ǰ x ����
-int EGEAPI gety(PCIMAGE pimg = NULL);              // ��ȡ��ǰ y ����
+int EGEAPI getwidth(PCIMAGE pimg = NULL);          // 获取图片宽度
+int EGEAPI getheight(PCIMAGE pimg = NULL);         // 获取图片高度
+int EGEAPI getx(PCIMAGE pimg = NULL);              // 获取当前 x 坐标
+int EGEAPI gety(PCIMAGE pimg = NULL);              // 获取当前 y 坐标
 
-PIMAGE         EGEAPI newimage();                      // ���� PIMAGE
-PIMAGE         EGEAPI newimage(int width, int height); // ���� PIMAGE
-void           EGEAPI delimage(PCIMAGE pImg);          // ɾ�� PIMAGE
+PIMAGE         EGEAPI newimage();                      // 创建 PIMAGE
+PIMAGE         EGEAPI newimage(int width, int height); // 创建 PIMAGE
+void           EGEAPI delimage(PCIMAGE pImg);          // 删除 PIMAGE
 color_t*       EGEAPI getbuffer(PIMAGE pImg);
 const color_t* EGEAPI getbuffer(PCIMAGE pImg);
 
-int  EGEAPI resize_f(PIMAGE pDstImg, int width, int height);  //����ߴ磬������䱳��ɫ
-int  EGEAPI resize(PIMAGE pDstImg, int width, int height); //����ߴ磬����䱳��ɫ
-int EGEAPI getimage(PIMAGE pDstImg, int srcX, int srcY, int srcWidth, int srcHeight);                             // ����Ļ��ȡͼ��
-int EGEAPI getimage(PIMAGE pDstImg, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight);            // ����һ�� PIMAGE �����л�ȡͼ��
-int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pImgFile, int zoomWidth = 0, int zoomHeight = 0);                     // ��ͼƬ�ļ���ȡͼ��(bmp/jpg/gif/emf/wmf)
-int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pImgFile, int zoomWidth = 0, int zoomHeight = 0);                     // ��ͼƬ�ļ���ȡͼ��(bmp/jpg/gif/emf/wmf)
-int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pResType, LPCSTR  pResName, int zoomWidth = 0, int zoomHeight = 0);   // ����Դ�ļ���ȡͼ��(bmp/jpg/gif/emf/wmf)
-int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pResType, LPCWSTR pResName, int zoomWidth = 0, int zoomHeight = 0);   // ����Դ�ļ���ȡͼ��(bmp/jpg/gif/emf/wmf)
-void EGEAPI putimage(int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);                                  // ����ͼ����Ļ
-void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);                                // ����ͼ����Ļ(ָ������)
-void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);   // ����ͼ����Ļ(ָ��Դ���ߺ�Ŀ����߽�������)
-void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);                                                                 // ����ͼ����һͼ����
-void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);                // ����ͼ����һͼ����(ָ������)
-void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);   // ����ͼ����һͼ����(ָ��Դ���ߺ�Ŀ����߽�������)
+int  EGEAPI resize_f(PIMAGE pDstImg, int width, int height);  //重设尺寸，但不填充背景色
+int  EGEAPI resize(PIMAGE pDstImg, int width, int height); //重设尺寸，并填充背景色
+int EGEAPI getimage(PIMAGE pDstImg, int srcX, int srcY, int srcWidth, int srcHeight);                             // 从屏幕获取图像
+int EGEAPI getimage(PIMAGE pDstImg, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight);            // 从另一个 PIMAGE 对象中获取图像
+int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pImgFile, int zoomWidth = 0, int zoomHeight = 0);                     // 从图片文件获取图像(bmp/jpg/gif/emf/wmf)
+int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pImgFile, int zoomWidth = 0, int zoomHeight = 0);                     // 从图片文件获取图像(bmp/jpg/gif/emf/wmf)
+int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pResType, LPCSTR  pResName, int zoomWidth = 0, int zoomHeight = 0);   // 从资源文件获取图像(bmp/jpg/gif/emf/wmf)
+int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pResType, LPCWSTR pResName, int zoomWidth = 0, int zoomHeight = 0);   // 从资源文件获取图像(bmp/jpg/gif/emf/wmf)
+void EGEAPI putimage(int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);                                  // 绘制图像到屏幕
+void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);                                // 绘制图像到屏幕(指定宽高)
+void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);   // 绘制图像到屏幕(指定源宽高和目标宽高进行拉伸)
+void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);                                                                 // 绘制图像到另一图像中
+void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);                // 绘制图像到另一图像中(指定宽高)
+void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);   // 绘制图像到另一图像中(指定源宽高和目标宽高进行拉伸)
 int  EGEAPI saveimage(PCIMAGE pimg, LPCSTR  filename);
 int  EGEAPI saveimage(PCIMAGE pimg, LPCWSTR filename);
 int  EGEAPI savepng(PCIMAGE pimg, LPCSTR  filename, int bAlpha = 0);
@@ -1238,36 +1238,36 @@ int EGEAPI putimage_rotatetransparent(
 	float zoom=1.0 /* zoom factor */
 ); 
 
-// ��������
+// 其它函数
 
-HWND        EGEAPI getHWnd();         // ��ȡ��ͼ���ھ��
+HWND        EGEAPI getHWnd();         // 获取绘图窗口句柄
 HINSTANCE   EGEAPI getHInstance();
 HDC         EGEAPI getHDC(PCIMAGE pImg = NULL);
 
 PVOID       EGEAPI getProcfunc();
-int         EGEAPI getGraphicsVer();   // ��ȡ��ǰ�汾
-float       EGEAPI getfps();           // ��ȡ��ǰ֡��
+int         EGEAPI getGraphicsVer();   // 获取当前版本
+float       EGEAPI getfps();           // 获取当前帧率
 
-//�������
+//随机函数
 void            EGEAPI randomize();
 unsigned int    EGEAPI random(unsigned int n);
 double          EGEAPI randomf();
 
-//�߼����뺯��
-// title �Ի�����⣬ text �Ի�����ʾ���֣� buf�����������ݵ��ַ���ָ�룬 lenָ��buf����󳤶ȣ�Ҳͬʱ�������������ݳ���
-int EGEAPI inputbox_getline(LPCSTR  title, LPCSTR  text, LPSTR  buf, int len);  //�����Ի������û����룬��ǰ����������ͣ�����ط�0��ʾ������Ч��0Ϊ��Ч
-int EGEAPI inputbox_getline(LPCWSTR title, LPCWSTR text, LPWSTR buf, int len);  //�����Ի������û����룬��ǰ����������ͣ�����ط�0��ʾ������Ч��0Ϊ��Ч
+//高级输入函数
+// title 对话框标题， text 对话框提示文字， buf接收输入数据的字符串指针， len指出buf的最大长度，也同时会限制输入内容长度
+int EGEAPI inputbox_getline(LPCSTR  title, LPCSTR  text, LPSTR  buf, int len);  //弹出对话框，让用户输入，当前程序运行暂停，返回非0表示输入有效，0为无效
+int EGEAPI inputbox_getline(LPCWSTR title, LPCWSTR text, LPWSTR buf, int len);  //弹出对话框，让用户输入，当前程序运行暂停，返回非0表示输入有效，0为无效
 
 
-//���̴�������
+//键盘处理函数
 int     EGEAPI kbmsg();
 key_msg EGEAPI getkey();
 EGE_DEPRECATE(getchEx)
 int     EGEAPI getchEx(int flag);
 EGE_DEPRECATE(kbhitEx)
 int     EGEAPI kbhitEx(int flag);
-int     EGEAPI keystate(int key);       // ��ü���Ϊkey�ļ�����key_code_e���Ƿ��£����keyʹ����갴���ļ��룬���õ�������״̬
-void    EGEAPI flushkey();              // ��ռ�����Ϣ������
+int     EGEAPI keystate(int key);       // 获得键码为key的键（见key_code_e）是否按下，如果key使用鼠标按键的键码，则获得的是鼠标键状态
+void    EGEAPI flushkey();              // 清空键盘消息缓冲区
 
 #if !defined(_INC_CONIO) && !defined(_CONIO_H_)
 #define _INC_CONIO
@@ -1279,15 +1279,15 @@ int EGEAPI kbhit();
 #define kbhit kbhitEx
 #endif
 
-//��괦������
-int         EGEAPI mousemsg();                  // ����Ƿ���������Ϣ
-mouse_msg   EGEAPI getmouse();                  // ��ȡһ�������Ϣ�����û�У��͵ȴ�
+//鼠标处理函数
+int         EGEAPI mousemsg();                  // 检查是否存在鼠标消息
+mouse_msg   EGEAPI getmouse();                  // 获取一个鼠标消息。如果没有，就等待
 EGE_DEPRECATE(GetMouseMsg)
-MOUSEMSG    EGEAPI GetMouseMsg();               // �����Ƽ�ʹ�õĺ�������ȡһ�������Ϣ�����û�У��͵ȴ�
+MOUSEMSG    EGEAPI GetMouseMsg();               // （不推荐使用的函数）获取一个鼠标消息。如果没有，就等待
 
-void        EGEAPI flushmouse();                // ��������Ϣ������
-int         EGEAPI showmouse(int bShow);        // �����Ƿ���ʾ���
-int         EGEAPI mousepos(int *x, int *y); // ��ȡ��ǰ���λ��
+void        EGEAPI flushmouse();                // 清空鼠标消息缓冲区
+int         EGEAPI showmouse(int bShow);        // 设置是否显示鼠标
+int         EGEAPI mousepos(int *x, int *y); // 获取当前鼠标位置
 
 /*
 callback function define as:
@@ -1296,7 +1296,7 @@ msg: see 'enum message_event'
 key: keycode
 return zero means process this message, otherwise means pass it and then process with 'getkey' function
 */
-//int message_addkeyhandler(void* param, LPMSG_KEY_PROC func);        //���ü��̻ص�����
+//int message_addkeyhandler(void* param, LPMSG_KEY_PROC func);        //设置键盘回调函数
 /*
 callback function define as:
 int __stdcall on_msg_mouse(void* param, unsigned msg, int key, int x, int y);
@@ -1305,7 +1305,7 @@ key: see 'enum message_mouse', if msg==MSG_EVENT_WHELL, key is a int number that
 x,y: current mouse (x, y)
 return zero means process this message, otherwise means pass it and then process with 'GetMouseMsg' function
 */
-//int message_addmousehandler(void* param, LPMSG_MOUSE_PROC func);    //�������ص�����
+//int message_addmousehandler(void* param, LPMSG_MOUSE_PROC func);    //设置鼠标回调函数
 int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 
 
@@ -1321,36 +1321,36 @@ public:
 	DWORD OpenFile(LPCWSTR filepath);
 	DWORD Play(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
 	DWORD Pause();
-	DWORD Seek(DWORD dwTo); //����λ�ö�λ����λΪms
+	DWORD Seek(DWORD dwTo); //播放位置定位，单位为ms
 	DWORD SetVolume(float value);
 	DWORD Close();
 	DWORD Stop();
 	DWORD GetPosition();
 	DWORD GetLength();
-	// ���º���GetPlayStatus�ķ���ֵΪ����֮һ�����忴��׺����
-	// MUSIC_MODE_NOT_OPEN   //û����ȷ��
-	// MUSIC_MODE_NOT_READY  //�豸û׼���� ������ʹ�ã�
-	// MUSIC_MODE_PAUSE  //��ͣ��
-	// MUSIC_MODE_PLAY   //���ڲ���
-	// MUSIC_MODE_STOP   //�ɹ��򿪺󣬻��߲����������״̬
-	// MUSIC_MODE_OPEN   //���� ������ʹ�ã�
-	// MUSIC_MODE_SEEK   //��λ�� ������ʹ�ã�
+	// 以下函数GetPlayStatus的返回值为以下之一（意义看后缀）：
+	// MUSIC_MODE_NOT_OPEN   //没有正确打开
+	// MUSIC_MODE_NOT_READY  //设备没准备好 （较少使用）
+	// MUSIC_MODE_PAUSE  //暂停中
+	// MUSIC_MODE_PLAY   //正在播放
+	// MUSIC_MODE_STOP   //成功打开后，或者播放完是这个状态
+	// MUSIC_MODE_OPEN   //打开中 （较少使用）
+	// MUSIC_MODE_SEEK   //定位中 （较少使用）
 	DWORD GetPlayStatus();
 private:
 	DWORD       m_DID;
 	PVOID       m_dwCallBack;
 };
 
-/* ѹ������ */
-/* ѹ��ʱdest������Ҫ��֤��С��СΪsourceLen * 1.001 + 16 */
-/* ����compress/compress2ǰ��*destLen������ֵ����ʾdest������������С������ʱ���ֵ��ʾʵ�ʴ�С */
-/* compress2 ��level ��0-9��0��ѹ����9���ѹ����compress����ʹ��Ĭ��ֵ6 */
+/* 压缩函数 */
+/* 压缩时dest缓冲区要保证最小大小为sourceLen * 1.001 + 16 */
+/* 调用compress/compress2前，*destLen必须有值，表示dest缓冲区的最大大小，返回时这个值表示实际大小 */
+/* compress2 的level 从0-9，0不压缩，9最大压缩，compress函数使用默认值6 */
 int             EGEAPI ege_compress(void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen);
 int             EGEAPI ege_compress2(void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen, int level);
 int             EGEAPI ege_uncompress(void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen);
-unsigned long   EGEAPI ege_uncompress_size(const void *source, unsigned long sourceLen); /* ����0��ʾ����������ʾ��С */
+unsigned long   EGEAPI ege_uncompress_size(const void *source, unsigned long sourceLen); /* 返回0表示错误，其它表示大小 */
 
-NAMESPACE_EGE_R
+}
 
 #ifndef EGE_GRAPH_LIB_BUILD
 
