@@ -145,6 +145,20 @@
 #define EGE_GDIPLUS     //ÆôÓÃGDIPLUS
 
 #define SHOWCONSOLE             1       // ½øÈëÍ¼ÐÎÄ£Ê½Ê±£¬±£Áô¿ØÖÆÌ¨µÄÏÔÊ¾
+#if __cplusplus >= 201103L
+#define EGERGBA 				::ege::rgba
+#define EGERGB					::ege::rgb
+#define EGEARGB					::ege::argb
+#define EGEACOLOR				::ege::acolor
+#define EGECOLORA				::ege::colora
+#define EGEGET_R				::ege::get_r
+#define EGEGET_G             	::ege::get_g
+#define EGEGET_B				::ege::get_b
+#define EGEGET_A				::ege::get_a
+#define EGEGRAY					::ege::gray
+#define EGEGRAYA				::ege::graya
+#define EGEAGRAY				::ege::agray
+#else
 #define EGERGBA(r, g, b, a)     ((::ege::color_t)( ((r)<<16) | ((g)<<8) | (b) | ((a)<<24) ))
 #define EGERGB(r, g, b)         EGERGBA(r, g, b, 0xFF)
 #define EGEARGB(a, r, g, b)     EGERGBA(r, g, b, a)
@@ -157,6 +171,8 @@
 #define EGEGRAY(gray)           EGERGB(gray, gray, gray)
 #define EGEGRAYA(gray, a)       EGERGBA(gray, gray, gray, a)
 #define EGEAGRAY(a, gray)       EGEGRAYA(gray, a)
+#endif
+
 //#define NAMESPACE_EGE_L         namespace ege {
 //#define NAMESPACE_EGE_R         }
 
@@ -864,11 +880,11 @@ void EGEAPI setfontbkcolor(color_t color, PIMAGE pimg = NULL);  // ÉèÖÃµ±Ç°ÎÄ×Ö±
 void EGEAPI setbkmode(int iBkMode, PIMAGE pimg = NULL);         // ÉèÖÃ±³¾°»ìºÏÄ£Ê½(0=OPAQUE, 1=TRANSPARENT)
 
 // ¼æÈÝºê
-#define RGBtoGRAY   rgb2gray
-#define RGBtoHSL    rgb2hsl
-#define RGBtoHSV    rgb2hsv
-#define HSLtoRGB    hsl2rgb
-#define HSVtoRGB    hsv2rgb
+#define RGBtoGRAY   ::ege::rgb2gray
+#define RGBtoHSL    ::ege::rgb2hsl
+#define RGBtoHSV    ::ege::rgb2hsv
+#define HSLtoRGB    ::ege::hsl2rgb
+#define HSVtoRGB    ::ege::hsv2rgb
 
 // ÑÕÉ«Ä£ÐÍ×ª»»º¯Êý
 color_t     EGEAPI rgb2gray(color_t rgb);
