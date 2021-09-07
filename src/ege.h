@@ -146,18 +146,18 @@
 
 #define SHOWCONSOLE             1       // 进入图形模式时，保留控制台的显示
 #if __cplusplus >= 201103L
-#define EGERGBA 				::ege::rgba
-#define EGERGB					::ege::rgb
-#define EGEARGB					::ege::argb
-#define EGEACOLOR				::ege::acolor
-#define EGECOLORA				::ege::colora
-#define EGEGET_R				::ege::get_r
-#define EGEGET_G             	::ege::get_g
-#define EGEGET_B				::ege::get_b
-#define EGEGET_A				::ege::get_a
-#define EGEGRAY					::ege::gray
-#define EGEGRAYA				::ege::graya
-#define EGEAGRAY				::ege::agray
+#define EGERGBA                 ::ege::rgba
+#define EGERGB                  ::ege::rgb
+#define EGEARGB                 ::ege::argb
+#define EGEACOLOR               ::ege::acolor
+#define EGECOLORA               ::ege::colora
+#define EGEGET_R                ::ege::get_r
+#define EGEGET_G                ::ege::get_g
+#define EGEGET_B                ::ege::get_b
+#define EGEGET_A                ::ege::get_a
+#define EGEGRAY                 ::ege::gray
+#define EGEGRAYA                ::ege::graya
+#define EGEAGRAY                ::ege::agray
 #else
 #define EGERGBA(r, g, b, a)     ((::ege::color_t)( ((r)<<16) | ((g)<<8) | (b) | ((a)<<24) ))
 #define EGERGB(r, g, b)         EGERGBA(r, g, b, 0xFF)
