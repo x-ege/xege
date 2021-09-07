@@ -157,7 +157,7 @@
 #define EGEGRAY(gray)           EGERGB(gray, gray, gray)
 #define EGEGRAYA(gray, a)       EGERGBA(gray, gray, gray, a)
 #define EGEAGRAY(a, gray)       EGEGRAYA(gray, a)
-#//#define NAMESPACE_EGE_L         namespace ege {
+//#define NAMESPACE_EGE_L         namespace ege {
 //#define NAMESPACE_EGE_R         }
 
 namespace ege {
