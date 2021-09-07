@@ -145,6 +145,8 @@
 #define EGE_GDIPLUS     //启用GDIPLUS
 
 #define SHOWCONSOLE             1       // 进入图形模式时，保留控制台的显示
+// 当使用的编译器不支持C++11时，使用宏定义
+#if __cplusplus < 201103L
 #define EGERGBA(r, g, b, a)     ((::ege::color_t)( ((r)<<16) | ((g)<<8) | (b) | ((a)<<24) ))
 #define EGERGB(r, g, b)         EGERGBA(r, g, b, 0xFF)
 #define EGEARGB(a, r, g, b)     EGERGBA(r, g, b, a)
@@ -157,6 +159,7 @@
 #define EGEGRAY(gray)           EGERGB(gray, gray, gray)
 #define EGEGRAYA(gray, a)       EGERGBA(gray, gray, gray, a)
 #define EGEAGRAY(a, gray)       EGEGRAYA(gray, a)
+#endif
 //#define NAMESPACE_EGE_L         namespace ege {
 //#define NAMESPACE_EGE_R         }
 
@@ -246,6 +249,23 @@ enum message_mouse {
 };
 
 typedef DWORD color_t;
+
+//对于支持C++11 constexpr的编译器，使用内联函数定义
+#if __cplusplus >= 201103L
+constexpr color_t EGERGBA(int r, int g, int b, int a) { return ( ((r & 0xFF)<<16) | ((g & 0xFF)<<8) | (b & 0xFF) | ((a & 0xFF)<<24) ); }
+constexpr color_t EGERGB(int r, int g, int b) { return EGERGBA(r, g, b, 0xFF); }
+constexpr color_t EGEARGB(int a, int r, int g, int b) { return EGERGBA(r, g, b, a); }
+constexpr color_t EGEACOLOR(int  a, color_t color) { return ( ((color) & 0xFFFFFF) | ((a & 0xFF)<<24) ); }
+constexpr color_t EGECOLORA(color_t color, int  a)  { return EGEACOLOR(a, color); }
+constexpr unsigned char EGEGET_R(color_t c) { return ( ((c)>>16) & 0xFF ); }
+constexpr unsigned char EGEGET_G(color_t c) { return ( ((c)>> 8) & 0xFF ); }
+constexpr unsigned char EGEGET_B(color_t c) { return ( ((c)) & 0xFF ); }
+constexpr unsigned char EGEGET_A(color_t c) { return ( ((c)>>24) & 0xFF); }
+constexpr color_t EGEGRAY(int gray) { return EGERGB(gray, gray, gray); }
+constexpr color_t EGEGRAYA(int gray, int  a) { return EGERGBA(gray, gray, gray, a); }
+constexpr color_t EGEAGRAY(int a, int gray) { return EGEGRAYA(gray, a); }
+#endif
+
 // 颜色
 enum COLORS {
 	ALICEBLUE              = EGERGB(0xF0, 0xF8, 0xFF),
