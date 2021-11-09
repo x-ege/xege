@@ -87,8 +87,16 @@ endif ()
 
 # 打印编译器信息
 if (MSVC)
+  # MSVC utf-8 转换到默认编码
+  add_compile_options("$<$<C_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+  add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
   message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  # GNU utf-8 转换到默认编码
+  add_compile_options("$<$<C_COMPILER_ID:GNU>:-fexec-charset=GBK>")
+  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-fexec-charset=GBK>")
+  add_compile_options("$<$<C_COMPILER_ID:GNU>:-finput-charset=utf-8>")
+  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-finput-charset=utf-8>")
   message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else ()
   if (CMAKE_CXX_COMPILER_ID)
@@ -97,6 +105,19 @@ else ()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER}")
   endif ()
 endif ()
+
+# 输出操作系统平台信息
+if (WIN32)
+  message(STATUS "Building on Windows platform.")
+elseif (APPLE)
+  message(STATUS "Building on MacOS platform.")
+  add_compile_definitions(TARGET_OS_MAC)
+elseif (UNIX)
+  message(STATUS "Building on UNIX-like OS platform.")
+elseif (MinGW)
+  message(STATUS "Building on UNIX-like OS platform.")
+endif ()
+
 
 # 增加链接 ege 的可执行目标
 macro(ege_add_executable name source)
