@@ -87,8 +87,16 @@ endif ()
 
 # 打印编译器信息
 if (MSVC)
+  # MSVC utf-8 转换到默认编码
+  add_compile_options("$<$<C_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+  add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
   message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  # GNU utf-8 转换到默认编码
+  add_compile_options("$<$<C_COMPILER_ID:GNU>:-fexec-charset=GBK>")
+  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-fexec-charset=GBK>")
+  add_compile_options("$<$<C_COMPILER_ID:GNU>:-finput-charset=utf-8>")
+  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-finput-charset=utf-8>")
   message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else ()
   if (CMAKE_CXX_COMPILER_ID)
