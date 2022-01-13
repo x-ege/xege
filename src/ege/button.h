@@ -150,7 +150,7 @@ class button : public egeControlBase
             CTL_INIT; // must be the first line
             size(64, 32);
             _font_height = 12;
-            strcpy(_face, "宋体");
+            strcpy(_face, "SimSun");
             _line_color=BLACK;
             _bg_color=EGERGB(100,100,100);
             _text_color=BLACK;
