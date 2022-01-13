@@ -196,11 +196,12 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = "//由两个斜杠\'//\'开始后面的内容为注释，不影响编译\n//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意\n//要正确编译本程序，请先为你的VC或者C-Free安装好PEX\n加了包含这个头文件后，就可以使用图形函数了\n#include \"graphics.h\"\n\nint main() //请使用int声明main，作为规范\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置字体高度为20，宽度为默认值的宋体字\n    setfont(20, 0, \"宋体\");\n\n    //在x=100,y=0的地方开始，显示一段文字\n    outtextxy(100, 0, \"Hello World\");\n\n    //等待用户按键，相当于暂停，注意这是图形库的函数\n    getch();\n    return 0;\n}";
+        char str[] = "//由两个斜杠\'//\'开始后面的内容为注释，不影响编译\n//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意\n//要正确编译本程序，请先为你的VC或者C-Free安装好PEX\n加了包含这个头文件后，就可以使用图形函数了\n#include \"graphics.h\"\n\nint main() //请使用int声明main，作为规范\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置字体高度为20，宽度为默认值的
+        字\n    setfont(20, 0, \"SimSun\");\n\n    //在x=100,y=0的地方开始，显示一段文字\n    outtextxy(100, 0, \"Hello World\");\n\n    //等待用户按键，相当于暂停，注意这是图形库的函数\n    getch();\n    return 0;\n}";
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
-        setfont(20, 0, "宋体");
+        setfont(20, 0, "SimSun");
         outtextxy(100, 0, "Hello World");
         {
             setfont(12, 0, "SimSun");
