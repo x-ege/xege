@@ -336,7 +336,7 @@ public:
 \n    }\
 \n    getch();\n    return 0;\n}";
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, "SimSun", img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
@@ -920,7 +920,7 @@ public:
 \n        arr[a] = random(32);\
 \n    }\
 \n    display(arr, 20);\
-\n    setfont(12, 0, \"宋体\");\
+\n    setfont(12, 0, \"SimSun\");\
 \n    outtextxy(0, 0, \"请按任意键开始演示\");\
 \n    getch();\
 \n    cleardevice();\
