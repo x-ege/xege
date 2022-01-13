@@ -37,7 +37,7 @@ public:
         setcolor(WHITE, pimg);
         setfillcolor(BLACK, pimg);
         setbkmode(OPAQUE, pimg);
-        setfont(12, 0, "ËÎÌå", pimg);
+        setfont(12, 0, "å®‹ä½“", pimg);
         outtextxy(0, 0, str, pimg);
     }
 };
