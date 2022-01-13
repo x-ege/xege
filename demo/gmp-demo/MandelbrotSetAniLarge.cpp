@@ -5,9 +5,9 @@
 
 //using namespace std;
 
-#define BASEITERATIONS 1   //Ê×´Îµü´ú´ÎÊı
-#define ITERATIONS 256     //ÔöÁ¿µü´ú´ÎÊı
-#define MAXCOLOR 0x20      //ÑÕÉ«Êı
+#define BASEITERATIONS 1   //é¦–æ¬¡è¿­ä»£æ¬¡æ•°
+#define ITERATIONS 256     //å¢é‡è¿­ä»£æ¬¡æ•°
+#define MAXCOLOR 0x20      //é¢œè‰²æ•°
 #define COLORMASK (0x200 - 1)
 
 #define SC_W (640 * 2) //1280
@@ -16,11 +16,11 @@
 #define for if(1) for
 
 /////////////////////////////////////////////////
-// ¶¨Òå¸´Êı¼°³Ë¡¢¼ÓÔËËã
+// å®šä¹‰å¤æ•°åŠä¹˜ã€åŠ è¿ç®—
 /////////////////////////////////////////////////
 
 /*
-// ¶¨Òå¸´Êı
+// å®šä¹‰å¤æ•°
 template <class TFLOAT>
 struct complex
 {
@@ -72,7 +72,7 @@ struct COMPLEX
     Float& imag() { return im; }
 };//*/
 
-// ¶¨Òå¸´Êı¡°³Ë¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œä¹˜â€è¿ç®—
 COMPLEX operator * (const COMPLEX& a, const double& b)
 {
     COMPLEX c;
@@ -81,7 +81,7 @@ COMPLEX operator * (const COMPLEX& a, const double& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°³Ë¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œä¹˜â€è¿ç®—
 inline
 COMPLEX operator * (const COMPLEX& a, const COMPLEX& b)
 {
@@ -91,7 +91,7 @@ COMPLEX operator * (const COMPLEX& a, const COMPLEX& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°³Ë¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œä¹˜â€è¿ç®—
 inline
 COMPLEX& operator *= (COMPLEX& a, const COMPLEX& b)
 {
@@ -101,7 +101,7 @@ COMPLEX& operator *= (COMPLEX& a, const COMPLEX& b)
     return a;
 }
 
-// ¶¨Òå¸´Êı¡°¼Ó¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œåŠ â€è¿ç®—
 inline
 COMPLEX& operator += (COMPLEX& a, const COMPLEX& b)
 {
@@ -110,7 +110,7 @@ COMPLEX& operator += (COMPLEX& a, const COMPLEX& b)
     return a;
 }
 
-// ¶¨Òå¸´Êı¡°³ı¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œé™¤â€è¿ç®—
 COMPLEX operator / (const COMPLEX& a, const double& b)
 {
     COMPLEX c = a;
@@ -119,7 +119,7 @@ COMPLEX operator / (const COMPLEX& a, const double& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°¼Ó¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œåŠ â€è¿ç®—
 COMPLEX operator + (const COMPLEX& a, const double& b)
 {
     COMPLEX c;
@@ -128,7 +128,7 @@ COMPLEX operator + (const COMPLEX& a, const double& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°¼Ó¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œåŠ â€è¿ç®—
 inline
 COMPLEX operator + (const COMPLEX& a, const COMPLEX& b)
 {
@@ -252,10 +252,10 @@ struct updatelist
 updatelist& g_udlist = *g_pudlist;
 
 /////////////////////////////////////////////////
-// ¶¨ÒåÑÕÉ«¼°³õÊ¼»¯ÑÕÉ«
+// å®šä¹‰é¢œè‰²åŠåˆå§‹åŒ–é¢œè‰²
 /////////////////////////////////////////////////
 
-// ¶¨ÒåÑÕÉ«
+// å®šä¹‰é¢œè‰²
 int Color[COLORMASK+1];
 
 void fixcolor(int* color)
@@ -288,10 +288,10 @@ void setinitcolor(int* color, int len, int h1, int h2, float s = 0.8f)
         fixcolor(&color[len- 1 - i]);
     }
 }
-// ³õÊ¼»¯ÑÕÉ«
+// åˆå§‹åŒ–é¢œè‰²
 void InitColor()
 {
-    // Ê¹ÓÃ HSL ÑÕÉ«Ä£Ê½²úÉú½Ç¶È h1 µ½ h2 µÄ½¥±äÉ«
+    // ä½¿ç”¨ HSL é¢œè‰²æ¨¡å¼äº§ç”Ÿè§’åº¦ h1 åˆ° h2 çš„æ¸å˜è‰²
     int h1, h2 = 0;
     h1 = 240; h2 = h1 - 60;
     setinitcolor(Color+MAXCOLOR*0, MAXCOLOR, h1, h2);
@@ -416,7 +416,7 @@ int MandelbrotEx(PIXEL& z)
 }
 
 /////////////////////////////////////////////////
-// »æÖÆ Mandelbrot Set (ÂüµÂ²¼ÂåÌØ¼¯)
+// ç»˜åˆ¶ Mandelbrot Set (æ›¼å¾·å¸ƒæ´›ç‰¹é›†)
 /////////////////////////////////////////////////
 
 void initqueue(int bcross)
@@ -720,24 +720,24 @@ void setgprec(Float f)
 #include <stdio.h>
 #include <io.h>
 /////////////////////////////////////////////////
-// Ö÷º¯Êı
+// ä¸»å‡½æ•°
 /////////////////////////////////////////////////
 int WinMain()
 {
-    // ³õÊ¼»¯»æÍ¼´°¿Ú¼°ÑÕÉ«
+    // åˆå§‹åŒ–ç»˜å›¾çª—å£åŠé¢œè‰²
     int w = SC_W, h = SC_H, dh = 48;
     setinitmode(0);
     initgraph(w, h + dh, INIT_DEFAULT|INIT_RENDERMANUAL);
     randomize();
     InitColor();
     setfillstyle(0x0, getcolor());
-    setfont(12, 0, "ËÎÌå");
+    setfont(12, 0, "SimSun");
     SetWindowTextA(getHWnd(), "Mandelbrot Set");
-    //SetWindowTextA(getHWnd(), "Mandelbrot Set by ÓùÛàÃÀÇÙ -- PowerEasyX V0.3.4 Release (20110129)");
+    //SetWindowTextA(getHWnd(), "Mandelbrot Set by å¾¡å‚ç¾ç´ -- PowerEasyX V0.3.4 Release (20110129)");
     //mpf_set_prec(100);
 
 
-    // ³õÊ¼»¯ Mandelbrot Set(ÂüµÂ²¼ÂåÌØ¼¯)×ø±êÏµ
+    // åˆå§‹åŒ– Mandelbrot Set(æ›¼å¾·å¸ƒæ´›ç‰¹é›†)åæ ‡ç³»
     IMAGE& mimage = *newimage();
     COMPLEX center, delta, mindelta;
     COMPLEX from, to;
