@@ -106,9 +106,9 @@ int info_scene()
     setcolor(0xFFFFFF);
     Mira mira(640, 300);
     IMAGE imgtext(440, 130);
-    char infostr[] = "��ӭʹ��Easy Graphics Enginge (EGE) V0.3.8 ��������һ���������֣������������ͼ�γ��򿪷���ͼ�ο⣬ʹ�÷����ݣ��������֣��ر��ʺ�������ѧϰͼ�γ�����ơ�������Ϊ��װ���������Ҫ������װ���밴'y'������";
+    char infostr[] = "欢迎使用Easy Graphics Enginge (EGE) V0.3.8 ，本库是一个面向新手，或者面向快速图形程序开发的图形库，使用方便快捷，容易上手，特别适合于新手学习图形程序设计。本程序为安装程序，如果你要继续安装，请按'y'键继续";
     setcolor(0xFFFF, &imgtext);
-    setfont(18, 0, "����", &imgtext);
+    setfont(18, 0, "SimSun", &imgtext);
     setbkmode(TRANSPARENT, &imgtext);
     for (int i = 0; i < 8; ++i)
     {
@@ -136,9 +136,9 @@ int getpath_scene()
     HKEY key;
     int it;
     cleardevice();
-    setfont(18, 0, "����");
+    setfont(18, 0, "SimSun");
 
-    outtextrect(100, 30, 440, 280, "������ʾ����������������IDE��װ·����������Ҳ����ģ���ѱ�������ͬ���ļ���һ���Ƶ���װĿ¼�£�Ȼ�������Ǹ�Ŀ¼�����б��������������ʹ�õ���VC6����ɫ�棬�ǾͿ��ܻ��Ҳ����������㰲װ��'D:\\Program Files\\Microsoft Visual Studio\\'������ֻ��Ҫ�ѱ�����Ŀ¼�µ�include, libĿ¼���Ƶ�'D:\\Program Files\\Microsoft Visual Studio\\VC98\\'����ȷ���ļ��кϲ��Ϳ����ˡ�\n�����Ҫ������װ���밴Y������");
+    outtextrect(100, 30, 440, 280, "以下显示本程序所搜索到的IDE安装路径，如果有找不到的，请把本程序连同子文件夹一起复制到安装目录下，然后再在那个目录下运行本程序。例如如果你使用的是VC6的绿色版，那就可能会找不到，假如你安装在'D:\\Program Files\\Microsoft Visual Studio\\'，那你只需要把本程序目录下的include, lib目录复制到'D:\\Program Files\\Microsoft Visual Studio\\VC98\\'，并确认文件夹合并就可以了。\n如果你要继续安装，请按Y键继续");
 
     for (it = 0; ver[it][0]; ++it)
     {
@@ -201,7 +201,7 @@ int setup_scene()
     cleardevice();
     int it;
     g_output[0] = 0;
-    setfont(14, 0, "����");
+    setfont(14, 0, "SimSun");
     for (it = 0; ver[it][0]; ++it)
     {
         if (installpath[it][0] == 0) continue;
@@ -213,10 +213,10 @@ int setup_scene()
     }
     if (g_output[0])
     {
-        outtextxy(10, 10, "����Ϊ���Ƽ�¼�б�������з�������Ļ���������Ҫ���ֹ���װ");
+        outtextxy(10, 10, "以下为复制记录列表，如果有发生错误的话，可能需要你手工安装");
     }
     outtextrect(10, 30, 600, 400, g_output);
-    outtextxy(10, 400, "��װ����ִ����ɣ���������˳�������");
+    outtextxy(10, 400, "安装步骤执行完成，按任意键退出本程序");
     return getch();
 }
 
