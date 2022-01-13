@@ -6,9 +6,9 @@
 
 //using namespace std;
 
-#define BASEITERATIONS 1  //Ê×´Îµü´ú´ÎÊı
-#define ITERATIONS 16     //ÔöÁ¿µü´ú´ÎÊı
-#define MAXCOLOR 0x40     //ÑÕÉ«Êı
+#define BASEITERATIONS 1  //é¦–æ¬¡è¿­ä»£æ¬¡æ•°
+#define ITERATIONS 16     //å¢é‡è¿­ä»£æ¬¡æ•°
+#define MAXCOLOR 0x40     //é¢œè‰²æ•°
 #define COLORMASK (0x200 - 1)
 
 #define SC_W 160
@@ -17,11 +17,11 @@
 //#define for if(1) for
 
 /////////////////////////////////////////////////
-// ¶¨Òå¸´Êı¼°³Ë¡¢¼ÓÔËËã
+// å®šä¹‰å¤æ•°åŠä¹˜ã€åŠ è¿ç®—
 /////////////////////////////////////////////////
 
 /*
-// ¶¨Òå¸´Êı
+// å®šä¹‰å¤æ•°
 template <class TFLOAT>
 struct complex
 {
@@ -65,7 +65,7 @@ struct COMPLEX
     Float& imag() { return im; }
 };//*/
 
-// ¶¨Òå¸´Êı¡°³Ë¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œä¹˜â€è¿ç®—
 COMPLEX operator * (const COMPLEX& a, const double& b)
 {
     COMPLEX c;
@@ -74,7 +74,7 @@ COMPLEX operator * (const COMPLEX& a, const double& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°³Ë¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œä¹˜â€è¿ç®—
 inline
 COMPLEX operator * (const COMPLEX& a, const COMPLEX& b)
 {
@@ -84,7 +84,7 @@ COMPLEX operator * (const COMPLEX& a, const COMPLEX& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°³Ë¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œä¹˜â€è¿ç®—
 inline
 COMPLEX& operator *= (COMPLEX& a, const COMPLEX& b)
 {
@@ -94,7 +94,7 @@ COMPLEX& operator *= (COMPLEX& a, const COMPLEX& b)
     return a;
 }
 
-// ¶¨Òå¸´Êı¡°¼Ó¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œåŠ â€è¿ç®—
 inline
 COMPLEX& operator += (COMPLEX& a, const COMPLEX& b)
 {
@@ -103,7 +103,7 @@ COMPLEX& operator += (COMPLEX& a, const COMPLEX& b)
     return a;
 }
 
-// ¶¨Òå¸´Êı¡°³ı¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œé™¤â€è¿ç®—
 COMPLEX operator / (const COMPLEX& a, const double& b)
 {
     COMPLEX c = a;
@@ -112,7 +112,7 @@ COMPLEX operator / (const COMPLEX& a, const double& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°¼Ó¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œåŠ â€è¿ç®—
 COMPLEX operator + (const COMPLEX& a, const double& b)
 {
     COMPLEX c;
@@ -121,7 +121,7 @@ COMPLEX operator + (const COMPLEX& a, const double& b)
     return c;
 }
 
-// ¶¨Òå¸´Êı¡°¼Ó¡±ÔËËã
+// å®šä¹‰å¤æ•°â€œåŠ â€è¿ç®—
 inline
 COMPLEX operator + (const COMPLEX& a, const COMPLEX& b)
 {
@@ -272,10 +272,10 @@ struct calclist
 };//*/
 
 /////////////////////////////////////////////////
-// ¶¨ÒåÑÕÉ«¼°³õÊ¼»¯ÑÕÉ«
+// å®šä¹‰é¢œè‰²åŠåˆå§‹åŒ–é¢œè‰²
 /////////////////////////////////////////////////
 
-// ¶¨ÒåÑÕÉ«
+// å®šä¹‰é¢œè‰²
 int Color[COLORMASK+1];
 
 void fixcolor(int* color)
@@ -307,10 +307,10 @@ void setinitcolor(int* color, int len, int h1, int h2)
         fixcolor(&color[len- 1 - i]);
     }
 }
-// ³õÊ¼»¯ÑÕÉ«
+// åˆå§‹åŒ–é¢œè‰²
 void InitColor()
 {
-    // Ê¹ÓÃ HSL ÑÕÉ«Ä£Ê½²úÉú½Ç¶È h1 µ½ h2 µÄ½¥±äÉ«
+    // ä½¿ç”¨ HSL é¢œè‰²æ¨¡å¼äº§ç”Ÿè§’åº¦ h1 åˆ° h2 çš„æ¸å˜è‰²
     int h1, h2 = 0;
     h1 = 240;
     setinitcolor(Color+MAXCOLOR*0, MAXCOLOR, h1, h2);
@@ -405,7 +405,7 @@ int MandelbrotEx(PIXEL& z, COMPLEX& c)
 }
 
 /////////////////////////////////////////////////
-// »æÖÆ Mandelbrot Set (ÂüµÂ²¼ÂåÌØ¼¯)
+// ç»˜åˆ¶ Mandelbrot Set (æ›¼å¾·å¸ƒæ´›ç‰¹é›†)
 /////////////////////////////////////////////////
 void Draw(Float fromx, Float fromy, Float tox, Float toy, int mode = 0, COMPLEX _c = COMPLEX())
 {
@@ -596,11 +596,11 @@ void setgprec(Float f)
 
 #include <stdio.h>
 /////////////////////////////////////////////////
-// Ö÷º¯Êı
+// ä¸»å‡½æ•°
 /////////////////////////////////////////////////
 int WinMain()
 {
-    // ³õÊ¼»¯»æÍ¼´°¿Ú¼°ÑÕÉ«
+    // åˆå§‹åŒ–ç»˜å›¾çª—å£åŠé¢œè‰²
     int w = SC_W, h = SC_H, th = 12, tel = 4, tl = tel * 3 + 1;
     int rw = 640, rh = 280;
     freopen("log.txt", "w", stdout);
@@ -608,12 +608,12 @@ int WinMain()
     initgraph(rw, rh + th*tl, INIT_DEFAULT|INIT_RENDERMANUAL);
     randomize();
     InitColor();
-    setfont(12, 0, "ËÎÌå");
-    SetWindowTextA(getHWnd(), "Mandelbrot Set by ÓùÛàÃÀÇÙ -- PowerEasyX V0.3.4 Release (20110129)");
+    setfont(12, 0, "SimSun");
+    SetWindowTextA(getHWnd(), "Mandelbrot Set by å¾¡å‚ç¾ç´ -- PowerEasyX V0.3.4 Release (20110129)");
     //mpf_set_prec(100);
 
 
-    // ³õÊ¼»¯ Mandelbrot Set(ÂüµÂ²¼ÂåÌØ¼¯)×ø±êÏµ
+    // åˆå§‹åŒ– Mandelbrot Set(æ›¼å¾·å¸ƒæ´›ç‰¹é›†)åæ ‡ç³»
     COMPLEX from, to;
     COMPLEX from_b, to_b;
     from.re = -2.2; to.re = 2.2;
@@ -668,11 +668,11 @@ int WinMain()
     Draw(from.re, from.im, to.re, to.im);
 
 
-    // ²¶»ñÊó±ê²Ù×÷£¬ÊµÏÖ·Å´óÊó±êÑ¡ÖĞÇøÓò
+    // æ•è·é¼ æ ‡æ“ä½œï¼Œå®ç°æ”¾å¤§é¼ æ ‡é€‰ä¸­åŒºåŸŸ
     MOUSEMSG m;
     bool isLDown = false;
-    COMPLEXI self, selt;    // ¶¨ÒåÑ¡Çø
-    COMPLEXI self_b, selt_b;    // ¶¨ÒåÑ¡Çø
+    COMPLEXI self, selt;    // å®šä¹‰é€‰åŒº
+    COMPLEXI self_b, selt_b;    // å®šä¹‰é€‰åŒº
     COMPLEX js_c;
     int mode = 0;
     mp_bitcnt_t prec_b = 32;
@@ -727,11 +727,11 @@ int WinMain()
         if (mousemsg())
         {
             bmsg = 1;
-            m = GetMouseMsg();    // »ñÈ¡Ò»ÌõÊó±êÏûÏ¢
+            m = GetMouseMsg();    // è·å–ä¸€æ¡é¼ æ ‡æ¶ˆæ¯
 
             switch (m.uMsg)
             {
-                // °´Êó±êÓÒ¼ü»Ö¸´Ô­Í¼ĞÎ×ø±êÏµ
+                // æŒ‰é¼ æ ‡å³é”®æ¢å¤åŸå›¾å½¢åæ ‡ç³»
             case WM_RBUTTONUP:
                 if (mode == 0)
                 {
@@ -792,7 +792,7 @@ int WinMain()
                 }
                 flushmouse();
                 break;
-                // °´Êó±ê×ó¼ü²¢ÍÏ¶¯£¬Ñ¡ÔñÇøÓò
+                // æŒ‰é¼ æ ‡å·¦é”®å¹¶æ‹–åŠ¨ï¼Œé€‰æ‹©åŒºåŸŸ
             case WM_MOUSEMOVE:
                 if (isLDown)
                 {
@@ -819,7 +819,7 @@ int WinMain()
                 }
                 break;
 
-                // °´Êó±ê×ó¼ü²¢ÍÏ¶¯£¬Ñ¡ÔñÇøÓò
+                // æŒ‰é¼ æ ‡å·¦é”®å¹¶æ‹–åŠ¨ï¼Œé€‰æ‹©åŒºåŸŸ
             case WM_LBUTTONDOWN:
                 setcolor(WHITE);
                 setwritemode(R2_XORPEN);
@@ -830,7 +830,7 @@ int WinMain()
 
                 break;
 
-                // °´Êó±ê×ó¼ü²¢ÍÏ¶¯£¬Ñ¡ÔñÇøÓò
+                // æŒ‰é¼ æ ‡å·¦é”®å¹¶æ‹–åŠ¨ï¼Œé€‰æ‹©åŒºåŸŸ
             case WM_LBUTTONUP:
                 if (isLDown == true)
                 {
@@ -842,7 +842,7 @@ int WinMain()
 
                     if (self.re == selt.re || self.im == selt.im) break;
 
-                    // ĞŞÕıÑ¡ÇøÎª 4:3
+                    // ä¿®æ­£é€‰åŒºä¸º 4:3
                     int tmp;
                     if (self.re > selt.re)    {tmp = self.re; self.re = selt.re; selt.re = tmp;}
                     if (self.im > selt.im)    {tmp = self.im; self.im = selt.im; selt.im = tmp;}
@@ -860,7 +860,7 @@ int WinMain()
                         selt.im = self.im + (selt.re - self.re ) * 3 / 4;
                     }
 
-                    // ¸üĞÂ×ø±êÏµ
+                    // æ›´æ–°åæ ‡ç³»
                     Float f = from.re + (to.re - from.re) * self.re / w,
                           t = from.re + (to.re - from.re) * selt.re / w;
                     from.re = f;
@@ -878,7 +878,7 @@ int WinMain()
                         to.setprec();
                     }
 
-                    // »­Í¼ĞÎ
+                    // ç”»å›¾å½¢
                     Draw(from.re, from.im, to.re, to.im, mode, js_c);
                     flushmouse();
                 }
