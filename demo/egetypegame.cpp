@@ -1,4 +1,4 @@
-//打字小游戏
+//麓貌脳脰脨隆脫脦脧路
 #include <graphics.h>
 typedef struct chartarget
 {
@@ -44,7 +44,7 @@ int main()
     chartarget ct[256];
     int nobj = 0;
     int t = 1000;
-    setfont(36, 0, "宋体");
+    setfont(36, 0, "SimSun");
     setcolor(WHITE);
     setbkmode(TRANSPARENT);
     setrendermode(RENDER_MANUAL);
