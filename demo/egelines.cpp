@@ -1,4 +1,4 @@
-// ±ä»ÃÏßÆÁ±£
+// å˜å¹»çº¿å±ä¿
 #include <graphics.h>
 #include <stdio.h>
 #include <time.h>
@@ -7,7 +7,7 @@
 
 int width = 640, height = 480;
 
-struct point //¶¨Òåµã£¬°üº¬×ø±ê£¬ËÙ¶È
+struct point //å®šä¹‰ç‚¹ï¼ŒåŒ…å«åæ ‡ï¼Œé€Ÿåº¦
 {
     double x;
     double y;
@@ -15,28 +15,28 @@ struct point //¶¨Òåµã£¬°üº¬×ø±ê£¬ËÙ¶È
     double dy;
 };
 
-struct poly //¶¨Òå¶à±ßĞÎ£¬°üº¬µãµÄ¸öÊı£¬ºÍµãÊı×é
+struct poly //å®šä¹‰å¤šè¾¹å½¢ï¼ŒåŒ…å«ç‚¹çš„ä¸ªæ•°ï¼Œå’Œç‚¹æ•°ç»„
 {
     int n_point;
     point p[20];
 };
 
-struct polys //¶¨Òå¶à±ßĞÎ¶ÓÁĞ×é
+struct polys //å®šä¹‰å¤šè¾¹å½¢é˜Ÿåˆ—ç»„
 {
-    int n_poly;                 //¶à±ßĞÎ¶ÓÁĞ³¤¶È
-    int color;                  //ÑÕÉ«
-    int nextcolor, prevcolor;   //ÉÏÒ»´ÎµÄÑÕÉ«£¬Ä¿±êÑÕÉ«
-    int chtime, nowtime;        //¹ı¶É±ä»¯Ê±¼ä£¬µ±Ç°Ê±¼ä
-    int time;                   //¾àÀëÒ»ÏÂ´Î¸Ä±äÑÕÉ«µÄÊ±¼ä
-    poly p[100];                //¶à±ßĞÎÊı×é
+    int n_poly;                 //å¤šè¾¹å½¢é˜Ÿåˆ—é•¿åº¦
+    int color;                  //é¢œè‰²
+    int nextcolor, prevcolor;   //ä¸Šä¸€æ¬¡çš„é¢œè‰²ï¼Œç›®æ ‡é¢œè‰²
+    int chtime, nowtime;        //è¿‡æ¸¡å˜åŒ–æ—¶é—´ï¼Œå½“å‰æ—¶é—´
+    int time;                   //è·ç¦»ä¸€ä¸‹æ¬¡æ”¹å˜é¢œè‰²çš„æ—¶é—´
+    poly p[100];                //å¤šè¾¹å½¢æ•°ç»„
 };
 
-double rand_float(double dv, double db) //·µ»ØÒ»¸ödb µ½ db+dvÖ®¼äµÄËæ»ú¸¡µãÊı
+double rand_float(double dv, double db) //è¿”å›ä¸€ä¸ªdb åˆ° db+dvä¹‹é—´çš„éšæœºæµ®ç‚¹æ•°
 {
     return randomf()*dv + db;
 }
 
-void movepoint(struct point* b) //¸ù¾İµãµÄËÙ¶ÈÊôĞÔÒÆ¶¯Õâ¸öµã£¬Èç¹ûÒÆ³öÆÁÄ»Ôò½øĞĞ·´µ¯¼ÆËã
+void movepoint(struct point* b) //æ ¹æ®ç‚¹çš„é€Ÿåº¦å±æ€§ç§»åŠ¨è¿™ä¸ªç‚¹ï¼Œå¦‚æœç§»å‡ºå±å¹•åˆ™è¿›è¡Œåå¼¹è®¡ç®—
 {
     double dv = 1.0, db = 0.5;
     double tw = width / 640.0, th = height / 480.0;
@@ -48,7 +48,7 @@ void movepoint(struct point* b) //¸ù¾İµãµÄËÙ¶ÈÊôĞÔÒÆ¶¯Õâ¸öµã£¬Èç¹ûÒÆ³öÆÁÄ»Ôò½øĞĞ
     b->y += b->dy;
 }
 
-void movepoly(struct poly* p) //ÒÆ¶¯µ¥¸ö¶à±ßĞÎ£¬ÄÚ²¿µ÷ÓÃµãµÄÒÆ¶¯
+void movepoly(struct poly* p) //ç§»åŠ¨å•ä¸ªå¤šè¾¹å½¢ï¼Œå†…éƒ¨è°ƒç”¨ç‚¹çš„ç§»åŠ¨
 {
     int i;
     for (i=0; i<p->n_point; ++i)
@@ -57,7 +57,7 @@ void movepoly(struct poly* p) //ÒÆ¶¯µ¥¸ö¶à±ßĞÎ£¬ÄÚ²¿µ÷ÓÃµãµÄÒÆ¶¯
     }
 }
 
-void movepolys(struct polys* p) //ÒÆ¶¯¶à±ßĞÎ¶ÓÁĞ£¬°üº¬Ê±¼ä¼ì²â£¬ÑÕÉ«¼ÆËã
+void movepolys(struct polys* p) //ç§»åŠ¨å¤šè¾¹å½¢é˜Ÿåˆ—ï¼ŒåŒ…å«æ—¶é—´æ£€æµ‹ï¼Œé¢œè‰²è®¡ç®—
 {
     int i;
     for (i=p->n_poly-1; i>0; --i)
@@ -89,7 +89,7 @@ void movepolys(struct polys* p) //ÒÆ¶¯¶à±ßĞÎ¶ÓÁĞ£¬°üº¬Ê±¼ä¼ì²â£¬ÑÕÉ«¼ÆËã
     }
 }
 
-void initpolys(struct polys* p, int npoly, int npoint) //³õÊ¼»¯¶à±ßĞÎ¶ÓÁĞ×é
+void initpolys(struct polys* p, int npoly, int npoint) //åˆå§‹åŒ–å¤šè¾¹å½¢é˜Ÿåˆ—ç»„
 {
     int i,j;
     p->n_poly = npoly;
@@ -114,7 +114,7 @@ void initpolys(struct polys* p, int npoly, int npoint) //³õÊ¼»¯¶à±ßĞÎ¶ÓÁĞ×é
     }
 }
 
-void draw_poly(struct poly* p, int color) //»æÖÆÒ»¸ö¶à±ßĞÎ
+void draw_poly(struct poly* p, int color) //ç»˜åˆ¶ä¸€ä¸ªå¤šè¾¹å½¢
 {
     int points[100];
     int i;
@@ -129,7 +129,7 @@ void draw_poly(struct poly* p, int color) //»æÖÆÒ»¸ö¶à±ßĞÎ
     drawpoly(p->n_point+1, points);
 }
 
-void draw_polys(struct polys* p) //»æÖÆ¶à±ßĞÎ¶ÓÁĞ£¨Ö»»­µÚÒ»¸öºÍ×îºóÒ»¸ö£¬×îºóÒ»¸öÓÃÓÚ²Á³ı£©
+void draw_polys(struct polys* p) //ç»˜åˆ¶å¤šè¾¹å½¢é˜Ÿåˆ—ï¼ˆåªç”»ç¬¬ä¸€ä¸ªå’Œæœ€åä¸€ä¸ªï¼Œæœ€åä¸€ä¸ªç”¨äºæ“¦é™¤ï¼‰
 {
     draw_poly(&(p->p[p->n_poly-1]),        0);
     draw_poly(&(p->p[          0]), p->color);
@@ -144,7 +144,7 @@ int main()
     int n_poly[10] = {80,40,10,5,1};
     int n_polys = 2, i;
     randomize();
-    //Í¼ĞÎ³õÊ¼»¯
+    //å›¾å½¢åˆå§‹åŒ–
     {
         setinitmode(1, 0, 0);
         initgraph(-1, -1);
@@ -152,17 +152,17 @@ int main()
         height = getmaxy();
         setrendermode(RENDER_MANUAL);
     }
-    //¶à±ßĞÎ¶ÔÏó³õÊ¼»¯
+    //å¤šè¾¹å½¢å¯¹è±¡åˆå§‹åŒ–
     for (i=0; i< n_polys; ++i)
     {
         initpolys(&p[i], n_poly[i], n_points[i]);
     }
-    setfont(12, 6, "ËÎÌå");
+    setfont(12, 6, "SimSun");
     fps ui_fps;
-    //Ö÷Ñ­»·
+    //ä¸»å¾ªç¯
     for ( ; is_run(); delay_fps(60))
     {
-        if (kbhit() > 0) //ÓĞ°´¼ü°´ÏÂ¾ÍÍË³ö
+        if (kbhit() > 0) //æœ‰æŒ‰é”®æŒ‰ä¸‹å°±é€€å‡º
         {
             break;
         }
