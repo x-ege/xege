@@ -53,40 +53,40 @@ public:
 	enum inherit_e {
 		inherit_level_e = 0,
 	};
-	// ¹¹Ôìº¯Êı¿ÉÒÔ×Ô¶¨Òå£¬µ«Òª°´ĞèÒªÑ¡ÔñÊ¹²»Ê¹ÓÃºê£¬Ïê¼ûÇ°Ãæ´úÂë»òÕßÎÄµµÊ¾Àı´úÂë
+	// æ„é€ å‡½æ•°å¯ä»¥è‡ªå®šä¹‰ï¼Œä½†è¦æŒ‰éœ€è¦é€‰æ‹©ä½¿ä¸ä½¿ç”¨å®ï¼Œè¯¦è§å‰é¢ä»£ç æˆ–è€…æ–‡æ¡£ç¤ºä¾‹ä»£ç 
 	egeControlBase();
 	egeControlBase(int inherit, egeControlBase* pParent);
 	~egeControlBase();
 
-	// ÒÔÏÂĞéº¯Êı¶¼²»ÒªÖ±½ÓÏà»¥µ÷ÓÃ
+	// ä»¥ä¸‹è™šå‡½æ•°éƒ½ä¸è¦ç›´æ¥ç›¸äº’è°ƒç”¨
 	virtual LRESULT onMessage(UINT message, WPARAM wParam, LPARAM lParam) { (void)message; (void)wParam; (void)lParam; return 0; }
-	// ÒÔÏÂº¯ÊıÈç¹û·µ»Ø·Ç0Ôò²»Ïò×Ó¿Ø¼ş´«µİ¼üÅÌÊó±êÏûÏ¢
+	// ä»¥ä¸‹å‡½æ•°å¦‚æœè¿”å›é0åˆ™ä¸å‘å­æ§ä»¶ä¼ é€’é”®ç›˜é¼ æ ‡æ¶ˆæ¯
 	virtual int  onMouse(int x, int y, int flag) { (void)x; (void)y; (void)flag; return 0; }
 	virtual int  onKeyDown(int key, int flag) { (void)key; (void)flag; return 0; }
 	virtual int  onKeyUp(int key, int flag) { (void)key; (void)flag; return 0; }
 	virtual int  onKeyChar(int key, int flag) { (void)key; (void)flag; return 0; }
-	// ÆÁÄ»¸üĞÂºó»á±»µ÷ÓÃ£¬ÓÃÓÚ¸üĞÂÂß¼­
+	// å±å¹•æ›´æ–°åä¼šè¢«è°ƒç”¨ï¼Œç”¨äºæ›´æ–°é€»è¾‘
 	virtual int  onUpdate() { return 0; }
-	// ÒÔÏÂGetFocusÔÚÒª»ñµÃ½¹µãÊ±µ÷ÓÃ£¬·µ»ØÖµÒ»°ã·µ»Ø0±íÊ¾»ñÈ¡¼üÅÌÊäÈë½¹µã£¬·µ»Ø·Ç0·ÅÆú»ñµÃÊäÈë½¹µã
+	// ä»¥ä¸‹GetFocusåœ¨è¦è·å¾—ç„¦ç‚¹æ—¶è°ƒç”¨ï¼Œè¿”å›å€¼ä¸€èˆ¬è¿”å›0è¡¨ç¤ºè·å–é”®ç›˜è¾“å…¥ç„¦ç‚¹ï¼Œè¿”å›é0æ”¾å¼ƒè·å¾—è¾“å…¥ç„¦ç‚¹
 	virtual int  onGetFocus() { return 0; }
-	// Ê§È¥ÊäÈë½¹µãÊ±µ÷ÓÃ
+	// å¤±å»è¾“å…¥ç„¦ç‚¹æ—¶è°ƒç”¨
 	virtual void onLostFocus() { }
-	// ÉèÖÃ³ß´çÇ°µ÷ÓÃ£¬×Ô¶¨ÒåĞŞÕıº¯Êı
+	// è®¾ç½®å°ºå¯¸å‰è°ƒç”¨ï¼Œè‡ªå®šä¹‰ä¿®æ­£å‡½æ•°
 	virtual void onSizing(int *w, int *h) { (void)w; (void)h; }
-	// ÏìÓ¦³ß´ç±ä»¯º¯Êı
+	// å“åº”å°ºå¯¸å˜åŒ–å‡½æ•°
 	virtual void onSize(int w, int h) { (void)w; (void)h; }
-	// ÖØ»æº¯Êı£¬¾¡Á¿Çë»­µ½pimgÉÏ£¬ÒÔ±ãÄÜ¿ØÖÆ»æ»­Ä¿±ê
+	// é‡ç»˜å‡½æ•°ï¼Œå°½é‡è¯·ç”»åˆ°pimgä¸Šï¼Œä»¥ä¾¿èƒ½æ§åˆ¶ç»˜ç”»ç›®æ ‡
 	virtual void onDraw(PIMAGE pimg) const { (void)pimg; }
-	// ³ß´ç±ä»¯Ê±µ÷ÓÃ£¬ÓÃÓÚÖØ»­¹ıÂË»º³åÇøÄÚÈİ
+	// å°ºå¯¸å˜åŒ–æ—¶è°ƒç”¨ï¼Œç”¨äºé‡ç”»è¿‡æ»¤ç¼“å†²åŒºå†…å®¹
 	virtual void onResetFilter() {
 		setbkcolor(BLACK, m_mainFilter);
 		cleardevice(m_mainFilter);
 	}
 	virtual void onAddChild(egeControlBase* pChild) { (void)pChild; }
 	virtual void onDelChild(egeControlBase* pChild) { (void)pChild; }
-	virtual void onIdle() {} // ±£Áô½Ó¿Ú£¬Î´ÓÃ
-	// ÕâÀïÒÔÉÏµÄº¯Êı¿ÉÒÔ×ÔĞĞ¶¨Òå£¨×¢ÒâÉùÃ÷ÒªÒ»ÖÂ£¬²»ÒªÂ©µôOnDrawÀïµÄconst£©
-	// ÕâÀïÒÔÏÂµÄpublicº¯Êı¿ÉÒÔµ÷ÓÃ£¬²»¿É×Ô¶¨Òå£¬ÈÎºÎÔ¤¶¨Òå±äÁ¿¶¼²»ÒªÖ±½Ó·ÃÎÊ£¬ÇëÊ¹ÓÃÔ¤¶¨Òåº¯ÊıÀ´¿ØÖÆ
+	virtual void onIdle() {} // ä¿ç•™æ¥å£ï¼Œæœªç”¨
+	// è¿™é‡Œä»¥ä¸Šçš„å‡½æ•°å¯ä»¥è‡ªè¡Œå®šä¹‰ï¼ˆæ³¨æ„å£°æ˜è¦ä¸€è‡´ï¼Œä¸è¦æ¼æ‰OnDrawé‡Œçš„constï¼‰
+	// è¿™é‡Œä»¥ä¸‹çš„publicå‡½æ•°å¯ä»¥è°ƒç”¨ï¼Œä¸å¯è‡ªå®šä¹‰ï¼Œä»»ä½•é¢„å®šä¹‰å˜é‡éƒ½ä¸è¦ç›´æ¥è®¿é—®ï¼Œè¯·ä½¿ç”¨é¢„å®šä¹‰å‡½æ•°æ¥æ§åˆ¶
 public:
 	PIMAGE buf() { return m_mainbuf; }
 	PIMAGE filter() { return m_mainFilter; }
@@ -96,7 +96,7 @@ public:
 	const egeControlBase* parent() const { return m_parent; }
 
 	void blendmode(int mode) { m_AlphablendMode = mode; }
-	void setrop(int rop) { m_rop = rop; } // ÇëÓÃÃ¶¾ÙÀàĞÍROPÀïËù¶¨ÒåµÄ
+	void setrop(int rop) { m_rop = rop; } // è¯·ç”¨æšä¸¾ç±»å‹ROPé‡Œæ‰€å®šä¹‰çš„
 
 	void directdraw(bool bdraw) { m_bDirectDraw = (bdraw ? 1 : 0); }
 	bool isdirectdraw() const { return (m_bDirectDraw != 0); }
@@ -168,46 +168,46 @@ public:
 #endif
 	void initok();
 private:
-	PIMAGE   m_mainbuf;      // Ö÷»º³å
-	PIMAGE   m_mainFilter;   // ¹ıÂËÆ÷
+	PIMAGE   m_mainbuf;      // ä¸»ç¼“å†²
+	PIMAGE   m_mainFilter;   // è¿‡æ»¤å™¨
 
 protected:
-	int m_bVisible;     // ÊÇ·ñ¿É¼û
-	int m_bEnable;      // ÊÇ·ñ¿É»ñµÃÊäÈë£¨¼üÅÌºÍÊó±ê£©
-	int m_bAutoDraw;    // ÊÇ·ñ×Ô¶¯»æ»­µ½´°¿ÚÉÏ
-	int m_bCapture;     // ÊÇ·ñ¿É»ñµÃ¼üÅÌÊäÈë½¹µã
-	int m_bInputFocus;  // ÊÇ·ñÒÑ¾­»ñµÃÊäÈë½¹µã
-	int m_bCapMouse;    // ÊÇ·ñ²¶×½Êó±ê£¨¼´Ê¹²»ÔÚËùÔÚÇøÓòÄÚ£©
-	int m_zOrderLayer;  // Z´ÎĞò²ã£¨Öµ½Ï´óÕßÔÚÇ°£¬Öµ½ÏĞ¡Õß»á±»ÆäËü¿Ø¼şÕÚµ²£©
-	int m_zOrder;       // Z´ÎĞò£¨Öµ½Ï´óÕßÔÚÇ°£¬Öµ½ÏĞ¡Õß»á±»ÆäËü¿Ø¼şÕÚµ²£©
-	int m_allocId;      // ·ÖÅäid
-	int m_allocZorder;  // ·ÖÅäZ´ÎĞò
+	int m_bVisible;     // æ˜¯å¦å¯è§
+	int m_bEnable;      // æ˜¯å¦å¯è·å¾—è¾“å…¥ï¼ˆé”®ç›˜å’Œé¼ æ ‡ï¼‰
+	int m_bAutoDraw;    // æ˜¯å¦è‡ªåŠ¨ç»˜ç”»åˆ°çª—å£ä¸Š
+	int m_bCapture;     // æ˜¯å¦å¯è·å¾—é”®ç›˜è¾“å…¥ç„¦ç‚¹
+	int m_bInputFocus;  // æ˜¯å¦å·²ç»è·å¾—è¾“å…¥ç„¦ç‚¹
+	int m_bCapMouse;    // æ˜¯å¦æ•æ‰é¼ æ ‡ï¼ˆå³ä½¿ä¸åœ¨æ‰€åœ¨åŒºåŸŸå†…ï¼‰
+	int m_zOrderLayer;  // Zæ¬¡åºå±‚ï¼ˆå€¼è¾ƒå¤§è€…åœ¨å‰ï¼Œå€¼è¾ƒå°è€…ä¼šè¢«å…¶å®ƒæ§ä»¶é®æŒ¡ï¼‰
+	int m_zOrder;       // Zæ¬¡åºï¼ˆå€¼è¾ƒå¤§è€…åœ¨å‰ï¼Œå€¼è¾ƒå°è€…ä¼šè¢«å…¶å®ƒæ§ä»¶é®æŒ¡ï¼‰
+	int m_allocId;      // åˆ†é…id
+	int m_allocZorder;  // åˆ†é…Zæ¬¡åº
 
 
 private:
 	egeControlBase* m_parent;
-	static int s_maxchildid;   // ÏÂÒ»´Î×Ó¿Ø¼ş·ÖÅäIDÖµ
+	static int s_maxchildid;   // ä¸‹ä¸€æ¬¡å­æ§ä»¶åˆ†é…IDå€¼
 
 #ifdef EGE_GRAPH_LIB_BUILD
 public:
 #else
 private:
 #endif
-	void* m_childmap;       // ×Ó¿Ø¼ş
-	void* m_childzorder;    // ×Ó¿Ø¼şÅÅĞò
+	void* m_childmap;       // å­æ§ä»¶
+	void* m_childzorder;    // å­æ§ä»¶æ’åº
 
 protected:
-	int m_x, m_y;       // ×óÉÏ½Ç×ø±ê
-	int m_w, m_h;       // ¿í¸ß
+	int m_x, m_y;       // å·¦ä¸Šè§’åæ ‡
+	int m_w, m_h;       // å®½é«˜
 
 protected:
-	DWORD   m_rop;              // »ìºÏ·½Ê½
-	int     m_AlphablendMode;   // »æ»­»ìºÏ¹ıÂË·½Ê½
-	int     m_bDirectDraw;      // ÆôÓÃÖ±½Ó»æ»­
+	DWORD   m_rop;              // æ··åˆæ–¹å¼
+	int     m_AlphablendMode;   // ç»˜ç”»æ··åˆè¿‡æ»¤æ–¹å¼
+	int     m_bDirectDraw;      // å¯ç”¨ç›´æ¥ç»˜ç”»
 #if _MSC_VER <= 1200
 public:
 #endif
-	int     m_inheritlevel;     // ¼Ì³Ğ²ã´Î
+	int     m_inheritlevel;     // ç»§æ‰¿å±‚æ¬¡
 };
 
 } /* namespace ege */
