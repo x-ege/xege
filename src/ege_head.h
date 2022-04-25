@@ -55,6 +55,9 @@
 #	endif
 #	define COMPILER_VER     MSVC_VER SYSBITS
 #	define COMPILER_VER_W   EGE_L(MSVC_VER) SYSBITS_W
+#elif defined(__clang__)
+#	define COMPILER_VER     "Clang"    __clang_version__    SYSBITS
+#	define COMPILER_VER_W   L"Clang"  EGE_L(__clang_version__)  SYSBITS_W
 #else
 #	define GCC_VER          EGE_TOSTR(__GNUC__) "." EGE_TOSTR(__GNUC_MINOR__)
 #	define GCC_VER_W        EGE_L(EGE_TOSTR(__GNUC__)) L"." EGE_L(EGE_TOSTR(__GNUC_MINOR__))
@@ -78,10 +81,12 @@
 
 // MSVC 从 10.0（VS2010）开始有 stdint.h
 // GCC 从 4.5 开始有 stdint.h
+#ifndef __clang__
 #if _MSC_VER >= 1600 || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
 #  include <stdint.h>
 #elif !defined(_MSC_VER) || _MSC_VER > 1300
 #  include "stdint.h"
+#endif
 #endif
 
 #include <string>

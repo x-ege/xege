@@ -76,13 +76,17 @@ static int      g_initoption  = INIT_DEFAULT;
 static HWND     g_attach_hwnd = 0;
 static WNDPROC  DefWindowProcFunc = NULL;
 
+#ifndef __clang__
 #ifdef __cplusplus
 extern "C" {
 #endif
+#endif
 char* getlogodata();
 unsigned long getlogodatasize();
+#ifndef __clang__
 #ifdef __cplusplus
 }
+#endif
 #endif
 
 float EGE_PRIVATE_GetFPS(int add);

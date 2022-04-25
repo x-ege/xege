@@ -1,6 +1,10 @@
+#ifndef __clang__
 #ifdef __cplusplus
 extern "C"
 {
+#endif
+#else
+namespace ege {
 #endif
 static unsigned char logo_res[] = {
 	255,216,255,224,0,16,74,70,73,70,0,1,1,1,0,96,
@@ -979,6 +983,7 @@ unsigned long getlogodatasize() {
 char* getlogodata() {
 	return (char*)logo_res;
 }
+
 #ifdef __cplusplus
 }
 #endif

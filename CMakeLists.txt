@@ -22,6 +22,8 @@ if (MSVC)
   message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  message(STATUS "${TARGET_BITS}bit Clang target: Clang ${CMAKE_C_COMPILER_VERSION}")  
 else ()
   if (CMAKE_CXX_COMPILER_ID)
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
@@ -37,6 +39,9 @@ macro(ege_add_executable name source)
   if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_link_options(${name}
       PRIVATE -mwindows)
+  elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_link_options(${name}
+      PRIVATE -mwindows)      
   endif ()
 endmacro()
 
