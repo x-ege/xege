@@ -692,7 +692,13 @@ init_instance(HINSTANCE hInstance) {
 	} //*/
 
 
-	pg->exit_window = 0;	
+	pg->exit_window = 0;
+	
+	ShowWindow(pg->hwnd, SW_SHOW);
+	if (g_windowexstyle & WS_EX_TOPMOST) {
+		SetWindowPos(pg->hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	}
+	
 	return TRUE;
 }
 
@@ -1283,11 +1289,6 @@ initgraph(int *gdriver, int *gmode, const char *path) {
 	}
 
 	UpdateWindow(pg->hwnd);
-
-	ShowWindow(pg->hwnd, SW_SHOW);
-	if (g_windowexstyle & WS_EX_TOPMOST) {
-		SetWindowPos(pg->hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-	}
 
 	//初始化鼠标位置数据
 	POINT pt;
