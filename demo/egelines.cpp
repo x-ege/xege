@@ -1,9 +1,9 @@
 /**********************************************************************
- * �ļ�����egelines.cpp
+ * 文件名：egelines.cpp
  * 
- * ����Ŀ�ģ�ʵ�ֱ��������Ч��
+ * 程序目的：实现变幻线屏保效果
  * 
- * ʹ�õ�ͼ�ο⣺EGE
+ * 使用的图形库：EGE
  * 
  **********************************************************************/
 
@@ -16,43 +16,43 @@
 int width = 640, height = 480;
 
 /**
- * @brief ��ṹ�壬�������������ٶ�
+ * @brief 点结构体，包含点的坐标和速度
  */
 struct point
 {
-	double x;   /**< ��ĺ����� */
-	double y;   /**< ��������� */
-	double dx;  /**< ���ں����ϵ��ٶ� */
-	double dy;  /**< ���������ϵ��ٶ� */
+	double x;   /**< 点的横坐标 */
+	double y;   /**< 点的纵坐标 */
+	double dx;  /**< 点在横向上的速度 */
+	double dy;  /**< 点在纵向上的速度 */
 };
 
 /**
- * @brief ����νṹ�壬������ĸ����͵������
+ * @brief 多边形结构体，包含点的个数和点的数组
  */
 struct poly
 {
-	int n_point;        /**< ��ĸ��� */
-	point p[20];        /**< ������� */
+	int n_point;        /**< 点的个数 */
+	point p[20];        /**< 点的数组 */
 };
 
 /**
- * @brief ����ζ�����ṹ��
+ * @brief 多边形队列组结构体
  */
 struct polys
 {
-	int n_poly;                 /**< ����ζ��еĳ��� */
-	int color;                  /**< ��ǰ��ɫ */
-	int nextcolor, prevcolor;   /**< ��һ�ε���ɫ��Ŀ����ɫ */
-	int chtime, nowtime;        /**< ���ɱ仯ʱ��͵�ǰʱ�� */
-	int time;                   /**< �����´θı���ɫ��ʱ�� */
-	poly p[100];                /**< ��������� */
+	int n_poly;                 /**< 多边形队列的长度 */
+	int color;                  /**< 当前颜色 */
+	int nextcolor, prevcolor;   /**< 上一次的颜色和目标颜色 */
+	int chtime, nowtime;        /**< 过渡变化时间和当前时间 */
+	int time;                   /**< 距离下次改变颜色的时间 */
+	poly p[100];                /**< 多边形数组 */
 };
 
 /**
- * @brief ����һ��λ�� [db, db+dv] ��Χ�ڵ����������
- * @param dv �������Χ�Ĵ�С
- * @param db �������Χ����ʼ��
- * @return ������ɵĸ�����
+ * @brief 返回一个位于 [db, db+dv] 范围内的随机浮点数
+ * @param dv 随机数范围的大小
+ * @param db 随机数范围的起始点
+ * @return 随机生成的浮点数
  */
 double rand_float(double dv, double db)
 {
@@ -60,8 +60,8 @@ double rand_float(double dv, double db)
 }
 
 /**
- * @brief ���ݵ���ٶ������ƶ����λ�ã����Ƴ���Ļ����з�������
- * @param b ��Ҫ�ƶ��ĵ�
+ * @brief 根据点的速度属性移动点的位置，若移出屏幕则进行反弹计算
+ * @param b 需要移动的点
  */
 void movepoint(struct point* b)
 {
@@ -82,8 +82,8 @@ void movepoint(struct point* b)
 }
 
 /**
- * @brief �ƶ���������Σ��ڲ����õ���ƶ�
- * @param p ��Ҫ�ƶ��Ķ����
+ * @brief 移动单个多边形，内部调用点的移动
+ * @param p 需要移动的多边形
  */
 void movepoly(struct poly* p)
 {
@@ -96,8 +96,8 @@ void movepoly(struct poly* p)
 }
 
 /**
- * @brief �ƶ�����ζ��У�����ʱ�������ɫ����
- * @param p ��Ҫ�ƶ��Ķ���ζ���
+ * @brief 移动多边形队列，包含时间检测和颜色计算
+ * @param p 需要移动的多边形队列
  */
 void movepolys(struct polys* p)
 {
@@ -138,10 +138,10 @@ void movepolys(struct polys* p)
 }
 
 /**
- * @brief ��ʼ������ζ�����
- * @param p ����ζ�����
- * @param npoly ����ζ��еĳ���
- * @param npoint ������е�ĸ���
+ * @brief 初始化多边形队列组
+ * @param p 多边形队列组
+ * @param npoly 多边形队列的长度
+ * @param npoint 多边形中点的个数
  */
 void initpolys(struct polys* p, int npoly, int npoint)
 {
@@ -175,9 +175,9 @@ void initpolys(struct polys* p, int npoly, int npoint)
 /**
  * @brief
   
-  ����һ�������
- * @param p ����ζ���
- * @param color ��ɫֵ
+  绘制一个多边形
+ * @param p 多边形对象
+ * @param color 颜色值
  */
 void draw_poly(struct poly* p, int color)
 {
@@ -198,8 +198,8 @@ void draw_poly(struct poly* p, int color)
 }
 
 /**
- * @brief ���ƶ���ζ��еĶ���Σ�ֻ���Ƶ�һ�������һ�������һ�����ڲ�����
- * @param p ����ζ��ж���
+ * @brief 绘制多边形队列的多边形（只绘制第一个和最后一个，最后一个用于擦除）
+ * @param p 多边形队列对象
  */
 void draw_polys(struct polys* p)
 {
@@ -215,7 +215,7 @@ int main()
 	int n_polys = 2, i;
 	randomize();
 	
-	// ͼ�γ�ʼ��
+	// 图形初始化
 {
 	setinitmode(1, 0, 0);
 	initgraph(-1, -1);
@@ -224,19 +224,19 @@ int main()
 	setrendermode(RENDER_MANUAL);
 }
 	
-	// ����ζ����ʼ��
+	// 多边形对象初始化
 	for (i = 0; i < n_polys; ++i)
 	{
 		initpolys(&p[i], n_poly[i], n_points[i]);
 	}
 	
-	setfont(12, 6, "����");
+	setfont(12, 6, "宋体");
 	fps ui_fps;
 	
-	// ��ѭ��
+	// 主循环
 	for (; is_run(); delay_fps(60))
 	{
-		if (kbhit() > 0) // �а������¾��˳�
+		if (kbhit() > 0) // 有按键按下就退出
 		{
 			break;
 		}

@@ -1,11 +1,11 @@
 ////////////////////////////////////////
 /// @file ege5star.cpp
-/// @brief ege»ù´¡¶¯»­ demo£¬ÊµÏÖÎå½ÇĞÇĞı×ª¶¯»­
+/// @brief egeåŸºç¡€åŠ¨ç”» demoï¼Œå®ç°äº”è§’æ˜Ÿæ—‹è½¬åŠ¨ç”»
 ///
-/// 1. ÊµÏÖ¶¯»­¿ò¼Ü¡£
-/// 2. ¸ù¾İ½Ç¶È»æÖÆÎå½ÇĞÇ¡£
+/// 1. å®ç°åŠ¨ç”»æ¡†æ¶ã€‚
+/// 2. æ ¹æ®è§’åº¦ç»˜åˆ¶äº”è§’æ˜Ÿã€‚
 ///
-/// @date 2023-07-07 (´´½¨ÈÕÆÚ: 2020-10-25)
+/// @date 2023-07-07 (åˆ›å»ºæ—¥æœŸ: 2020-10-25)
 ///
 ////////////////////////////////////////
 
@@ -13,17 +13,17 @@
 #include <time.h>
 #include <math.h>
 
-const double rotatingSpeed = -0.03; ///< Ğı×ªËÙ¶È£¨µ¥Î»£º»¡¶È/Ãë£©
-const double fullCircleRatation = PI * 2; ///< ÍêÕûÔ²ÖÜ½Ç¶È£¨µ¥Î»£º»¡¶È£©
-const double starAngle = PI * 4 / 5; ///< Îå½ÇĞÇ½Ç¶È
+const double rotatingSpeed = -0.03; ///< æ—‹è½¬é€Ÿåº¦ï¼ˆå•ä½ï¼šå¼§åº¦/ç§’ï¼‰
+const double fullCircleRatation = PI * 2; ///< å®Œæ•´åœ†å‘¨è§’åº¦ï¼ˆå•ä½ï¼šå¼§åº¦ï¼‰
+const double starAngle = PI * 4 / 5; ///< äº”è§’æ˜Ÿè§’åº¦
 
 /**
   
-  @brief »æÖÆÎå½ÇĞÇ
-  @param x ÖĞĞÄµã x ×ø±ê
-  @param y ÖĞĞÄµã y ×ø±ê
-  @param r °ë¾¶
-  @param a Ğı×ª½Ç¶È
+  @brief ç»˜åˆ¶äº”è§’æ˜Ÿ
+  @param x ä¸­å¿ƒç‚¹ x åæ ‡
+  @param y ä¸­å¿ƒç‚¹ y åæ ‡
+  @param r åŠå¾„
+  @param a æ—‹è½¬è§’åº¦
  */
 void paintstar(double x, double y, double r, double a)
 {
@@ -37,7 +37,7 @@ void paintstar(double x, double y, double r, double a)
 }
 int main()
 {
-	initgraph(640, 480); // ³õÊ¼»¯»æÍ¼´°¿Ú
+	initgraph(640, 480); // åˆå§‹åŒ–ç»˜å›¾çª—å£
 	setrendermode(RENDER_MANUAL);
 	double r = 0;
 	for (; is_run(); delay_fps(60))
@@ -46,10 +46,10 @@ int main()
 		if (r > fullCircleRatation)
 			r -= fullCircleRatation;
 		
-		cleardevice(); // Çå¿ÕÆÁÄ»
-		setcolor(EGERGB(0xff, 0xff, 0xff)); // ÉèÖÃ»æÖÆÑÕÉ«
+		cleardevice(); // æ¸…ç©ºå±å¹•
+		setcolor(EGERGB(0xff, 0xff, 0xff)); // è®¾ç½®ç»˜åˆ¶é¢œè‰²
 		setfillcolor(EGERGB(0, 0, 0xff));
-		paintstar(300, 200, 100, r); // »æÖÆÎå½ÇĞÇ
+		paintstar(300, 200, 100, r); // ç»˜åˆ¶äº”è§’æ˜Ÿ
 	}
 	return 0;
 }

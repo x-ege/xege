@@ -1,20 +1,20 @@
 /**
   
   @file egearrow.cpp
-  @brief »­¼ıÍ·Ëã·¨ÑİÊ¾Ğ¡³ÌĞò
+  @brief ç”»ç®­å¤´ç®—æ³•æ¼”ç¤ºå°ç¨‹åº
  */
 #include <graphics.h>
 #include <math.h>
 
 /**
   
-  @brief »æÖÆ¼ıÍ·
-  @param sx ÆğÊ¼µã x ×ø±ê
-  @param sy ÆğÊ¼µã y ×ø±ê
-  @param ex ÖÕµã x ×ø±ê
-  @param ey ÖÕµã y ×ø±ê
-  @param r Ğı×ª½Ç¶È£¨»¡¶È£©
-  @param len ¼ıÍ·³¤¶È
+  @brief ç»˜åˆ¶ç®­å¤´
+  @param sx èµ·å§‹ç‚¹ x åæ ‡
+  @param sy èµ·å§‹ç‚¹ y åæ ‡
+  @param ex ç»ˆç‚¹ x åæ ‡
+  @param ey ç»ˆç‚¹ y åæ ‡
+  @param r æ—‹è½¬è§’åº¦ï¼ˆå¼§åº¦ï¼‰
+  @param len ç®­å¤´é•¿åº¦
  */
 void draw_arrow(float sx, float sy, float ex, float ey, float r, float len) {
 	float c = cos(r), s = sin(r);
