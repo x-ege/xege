@@ -1,3 +1,4 @@
+// @warning 该示例程序文本输出乱码了
 #include "graphics.h"
 #include <stdio.h>
 #include <string.h>
@@ -60,7 +61,7 @@ public:
     void smain()
     {
         setcolor(YELLOW);
-        setfillstyle(SOLID_FILL, MAGENTA);
+//        setfillstyle(SOLID_FILL, MAGENTA);
         fillellipse(150, 200, 50, 100);
     }
     SceneBase* Update()

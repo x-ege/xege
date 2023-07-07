@@ -1,37 +1,55 @@
-// æ—‹è½¬äº”è§’æ˜ŸåŠ¨ç”»æ¼”ç¤ºç¨‹åº
+////////////////////////////////////////
+/// @file ege5star.cpp
+/// @brief ege»ù´¡¶¯»­ demo£¬ÊµÏÖÎå½ÇĞÇĞı×ª¶¯»­
+///
+/// 1. ÊµÏÖ¶¯»­¿ò¼Ü¡£
+/// 2. ¸ù¾İ½Ç¶È»æÖÆÎå½ÇĞÇ¡£
+///
+/// @date 2023-07-07 (´´½¨ÈÕÆÚ: 2020-10-25)
+///
+////////////////////////////////////////
+
 #include <graphics.h>
-//#include <ege/fps.h>
 #include <time.h>
 #include <math.h>
 
-const double rotatingSpeed = -0.003, fullCircleRatation = PI * 2, starAngle = PI * 4 / 5;
+const double rotatingSpeed = -0.03; ///< Ğı×ªËÙ¶È£¨µ¥Î»£º»¡¶È/Ãë£©
+const double fullCircleRatation = PI * 2; ///< ÍêÕûÔ²ÖÜ½Ç¶È£¨µ¥Î»£º»¡¶È£©
+const double starAngle = PI * 4 / 5; ///< Îå½ÇĞÇ½Ç¶È
 
+/**
+  
+  @brief »æÖÆÎå½ÇĞÇ
+  @param x ÖĞĞÄµã x ×ø±ê
+  @param y ÖĞĞÄµã y ×ø±ê
+  @param r °ë¾¶
+  @param a Ğı×ª½Ç¶È
+ */
 void paintstar(double x, double y, double r, double a)
 {
 	int pt[10];
 	for (int n = 0; n < 5; ++n)
 	{
-		pt[n*2] = (int)( -cos( starAngle * n + a ) * r + x );
-		pt[n*2+1] = (int)( sin( starAngle * n + a) * r + y );
+		pt[n * 2] = (int)(-cos(starAngle * n + a) * r + x);
+		pt[n * 2 + 1] = (int)(sin(starAngle * n + a) * r + y);
 	}
 	fillpoly(5, pt);
 }
-
 int main()
 {
-	initgraph( 640, 480 );
+	initgraph(640, 480); // ³õÊ¼»¯»æÍ¼´°¿Ú
 	setrendermode(RENDER_MANUAL);
 	double r = 0;
-//	fps f;
-	for ( ; is_run(); delay_fps(1000) )
+	for (; is_run(); delay_fps(60))
 	{
 		r += rotatingSpeed;
-		if (r > fullCircleRatation) r -= fullCircleRatation;
+		if (r > fullCircleRatation)
+			r -= fullCircleRatation;
 		
-		cleardevice();
-		setcolor( EGERGB(0xff, 0xff, 0xff) );
-		setfillcolor( EGERGB(0, 0, 0xff) );
-		paintstar(300, 200, 100, r);
+		cleardevice(); // Çå¿ÕÆÁÄ»
+		setcolor(EGERGB(0xff, 0xff, 0xff)); // ÉèÖÃ»æÖÆÑÕÉ«
+		setfillcolor(EGERGB(0, 0, 0xff));
+		paintstar(300, 200, 100, r); // »æÖÆÎå½ÇĞÇ
 	}
 	return 0;
 }
