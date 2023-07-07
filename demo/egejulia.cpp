@@ -1,8 +1,8 @@
 /**
- * @file julia_set.cpp
+ * @file egejulia.cpp
  *
- * @brief Julia¼¯¼ÆËãÆÁ±£¶¯»­
- *        £¨±àÒëºó¸ÄÎªscrºó×ºÊ¹ÓÃ£©
+ * @brief Juliaé›†è®¡ç®—å±ä¿åŠ¨ç”»
+ *        ï¼ˆç¼–è¯‘åæ”¹ä¸ºscråç¼€ä½¿ç”¨ï¼‰
  */
 
 #include "graphics.h"
@@ -11,31 +11,31 @@
 #include <time.h>
 #include <math.h>
 
-// ¶¨Òå³£Á¿
-#define MAXCOLOR 64     // ÑÕÉ«Êı
+// å®šä¹‰å¸¸é‡
+#define MAXCOLOR 64     // é¢œè‰²æ•°
 #define BF_W 1200
 #define BF_H 1200
 
 int g_w, g_h;
 
 /////////////////////////////////////////////////
-// ¶¨Òå¸´Êı¼°³Ë¡¢¼ÓÔËËã
+// å®šä¹‰å¤æ•°åŠä¹˜ã€åŠ è¿ç®—
 /////////////////////////////////////////////////
 
 /**
- * @brief ¸´Êı½á¹¹Ìå
+ * @brief å¤æ•°ç»“æ„ä½“
  */
 struct COMPLEX
 {
-	double re; /**< Êµ²¿ */
-	double im; /**< Ğé²¿ */
+	double re; /**< å®éƒ¨ */
+	double im; /**< è™šéƒ¨ */
 };
 
 /**
- * @brief ¸´Êı³Ë·¨ÔËËã·ûÖØÔØ
- * @param a ¸´Êıa
- * @param b ¸´Êıb
- * @return Á½¸ö¸´ÊıµÄ³Ë»ı
+ * @brief å¤æ•°ä¹˜æ³•è¿ç®—ç¬¦é‡è½½
+ * @param a å¤æ•°a
+ * @param b å¤æ•°b
+ * @return ä¸¤ä¸ªå¤æ•°çš„ä¹˜ç§¯
  */
 COMPLEX operator * (COMPLEX a, COMPLEX b)
 {
@@ -46,10 +46,10 @@ COMPLEX operator * (COMPLEX a, COMPLEX b)
 }
 
 /**
- * @brief ¸´Êı¼Ó·¨ÔËËã·ûÖØÔØ
- * @param a ¸´Êıa
- * @param b ¸´Êıb
- * @return Á½¸ö¸´ÊıµÄºÍ
+ * @brief å¤æ•°åŠ æ³•è¿ç®—ç¬¦é‡è½½
+ * @param a å¤æ•°a
+ * @param b å¤æ•°b
+ * @return ä¸¤ä¸ªå¤æ•°çš„å’Œ
  */
 COMPLEX operator + (COMPLEX a, COMPLEX b)
 {
@@ -61,17 +61,17 @@ COMPLEX operator + (COMPLEX a, COMPLEX b)
 
 
 /////////////////////////////////////////////////
-// ¶¨ÒåÑÕÉ«¼°³õÊ¼»¯ÑÕÉ«
+// å®šä¹‰é¢œè‰²åŠåˆå§‹åŒ–é¢œè‰²
 /////////////////////////////////////////////////
 
-int Color[MAXCOLOR]; /**< ÑÕÉ«Êı×é */
+int Color[MAXCOLOR]; /**< é¢œè‰²æ•°ç»„ */
 
 /**
- * @brief ³õÊ¼»¯ÑÕÉ«
+ * @brief åˆå§‹åŒ–é¢œè‰²
  */
 void InitColor()
 {
-	// Ê¹ÓÃ HSL ÑÕÉ«Ä£Ê½²úÉú½Ç¶È h1 µ½ h2 µÄ½¥±äÉ«
+	// ä½¿ç”¨ HSL é¢œè‰²æ¨¡å¼äº§ç”Ÿè§’åº¦ h1 åˆ° h2 çš„æ¸å˜è‰²
 	int h1 = 240, h2 = 30;
 	for(int i=0; i<MAXCOLOR/2; i++)
 	{
@@ -89,16 +89,16 @@ double col_ar = 0, col_ag = 0, col_ab = 128;
 const double gc_lb = log(2.0);
 
 /**
- * @brief ¼ÆËãÒÔ2Îªµ×µÄ¶ÔÊı
- * @param d Ö¸Êı
- * @return ¶ÔÊıÖµ
+ * @brief è®¡ç®—ä»¥2ä¸ºåº•çš„å¯¹æ•°
+ * @param d æŒ‡æ•°
+ * @return å¯¹æ•°å€¼
  */
 double log2(double d) {
 	return log(d) / gc_lb;
 }
 
 /**
- * @brief ³õÊ¼»¯¶ÔÊıÓ³Éä±í
+ * @brief åˆå§‹åŒ–å¯¹æ•°æ˜ å°„è¡¨
  */
 void InitLog()
 {
@@ -110,9 +110,9 @@ void InitLog()
 }
 
 /**
- * @brief ½«µü´ú´ÎÊı×ª»»ÎªÑÕÉ«Öµ
- * @param iter µü´ú´ÎÊı
- * @return ÑÕÉ«Öµ
+ * @brief å°†è¿­ä»£æ¬¡æ•°è½¬æ¢ä¸ºé¢œè‰²å€¼
+ * @param iter è¿­ä»£æ¬¡æ•°
+ * @return é¢œè‰²å€¼
  */
 int iterToColor(double iter)
 {
@@ -120,10 +120,10 @@ int iterToColor(double iter)
 }
 
 /**
- * @brief ¸ù¾İ¸´ÊıºÍµü´ú´ÎÊıÉú³ÉÑÕÉ«
- * @param z ¸´Êı
- * @param iteration µü´ú´ÎÊı
- * @return ÑÕÉ«Öµ
+ * @brief æ ¹æ®å¤æ•°å’Œè¿­ä»£æ¬¡æ•°ç”Ÿæˆé¢œè‰²
+ * @param z å¤æ•°
+ * @param iteration è¿­ä»£æ¬¡æ•°
+ * @return é¢œè‰²å€¼
  */
 color_t colorMap(COMPLEX z, int iteration)
 {
@@ -136,10 +136,10 @@ int g_mi[BF_H][BF_W];
 
 struct state
 {
-	int iter; /**< µü´ú´ÎÊı */
-	int ed; /**< ÊÇ·ñÒÑ¾­ÍË³ö */
-	COMPLEX z; /**< ¸´Êız */
-	COMPLEX c; /**< ¸´Êıc */
+	int iter; /**< è¿­ä»£æ¬¡æ•° */
+	int ed; /**< æ˜¯å¦å·²ç»é€€å‡º */
+	COMPLEX z; /**< å¤æ•°z */
+	COMPLEX c; /**< å¤æ•°c */
 };
 
 state (*pMap)[BF_W] = new state[BF_H][BF_W];
@@ -189,10 +189,10 @@ updatelist& g_udlist = *g_pudlist;
 state *g_st = NULL;
 
 /**
- * @brief Ìí¼ÓÒ»¸öµãµ½¸üĞÂÁĞ±í
- * @param x x×ø±ê
- * @param y y×ø±ê
- * @param it µü´ú´ÎÊı
+ * @brief æ·»åŠ ä¸€ä¸ªç‚¹åˆ°æ›´æ–°åˆ—è¡¨
+ * @param x xåæ ‡
+ * @param y yåæ ‡
+ * @param it è¿­ä»£æ¬¡æ•°
  */
 void addpoint(int x, int y, int it = -1)
 {
@@ -204,10 +204,10 @@ void addpoint(int x, int y, int it = -1)
 }
 
 /**
- * @brief Ìí¼ÓÒ»¸öµãµ½Julia¼¯¸üĞÂÁĞ±í
- * @param x x×ø±ê
- * @param y y×ø±ê
- * @param it µü´ú´ÎÊı
+ * @brief æ·»åŠ ä¸€ä¸ªç‚¹åˆ°Juliaé›†æ›´æ–°åˆ—è¡¨
+ * @param x xåæ ‡
+ * @param y yåæ ‡
+ * @param it è¿­ä»£æ¬¡æ•°
  */
 void jaddpoint(int x, int y, int it = -1)
 {
@@ -219,9 +219,9 @@ void jaddpoint(int x, int y, int it = -1)
 }
 
 /**
- * @brief ¼ÆËãMandelbrot¼¯µÄµü´ú´ÎÊı
- * @param z Mandelbrot¼¯µÄµü´ú×´Ì¬
- * @return µü´ú´ÎÊı
+ * @brief è®¡ç®—Mandelbroté›†çš„è¿­ä»£æ¬¡æ•°
+ * @param z Mandelbroté›†çš„è¿­ä»£çŠ¶æ€
+ * @return è¿­ä»£æ¬¡æ•°
  */
 int MandelbrotEx(state& z)
 {
@@ -243,8 +243,8 @@ int MandelbrotEx(state& z)
 }
 
 /**
- * @brief ¼ì²é¼üÅÌºÍÊó±êÊÂ¼ş
- * @return ÊÇ·ñÓĞ¼üÅÌ»òÊó±êÊÂ¼ş·¢Éú
+ * @brief æ£€æŸ¥é”®ç›˜å’Œé¼ æ ‡äº‹ä»¶
+ * @return æ˜¯å¦æœ‰é”®ç›˜æˆ–é¼ æ ‡äº‹ä»¶å‘ç”Ÿ
  */
 int kbmouhit()
 {
@@ -254,12 +254,12 @@ int kbmouhit()
 }
 
 /**
- * @brief »æÖÆMandelbrot¼¯
- * @param fromx XÖáÆğÊ¼µã
- * @param fromy YÖáÆğÊ¼µã
- * @param tox XÖá½áÊøµã
- * @param toy YÖá½áÊøµã
- * @return ¸üĞÂµÄÏñËØµãÊıÄ¿
+ * @brief ç»˜åˆ¶Mandelbroté›†
+ * @param fromx Xè½´èµ·å§‹ç‚¹
+ * @param fromy Yè½´èµ·å§‹ç‚¹
+ * @param tox Xè½´ç»“æŸç‚¹
+ * @param toy Yè½´ç»“æŸç‚¹
+ * @return æ›´æ–°çš„åƒç´ ç‚¹æ•°ç›®
  */
 int MDraw(double fromx, double fromy, double tox, double toy)
 {
@@ -315,19 +315,19 @@ int MDraw(double fromx, double fromy, double tox, double toy)
 int g_updatepoint = 0;
 
 /////////////////////////////////////////////////
-// »æÖÆ Julia Set
+// ç»˜åˆ¶ Julia Set
 /////////////////////////////////////////////////
 
 /**
- * @brief »æÖÆJulia¼¯
- * @param c ¸´Êıc
- * @param fromx XÖáÆğÊ¼µã
- * @param fromy YÖáÆğÊ¼µã
- * @param tox XÖá½áÊøµã
- * @param toy YÖá½áÊøµã
+ * @brief ç»˜åˆ¶Juliaé›†
+ * @param c å¤æ•°c
+ * @param fromx Xè½´èµ·å§‹ç‚¹
+ * @param fromy Yè½´èµ·å§‹ç‚¹
+ * @param tox Xè½´ç»“æŸç‚¹
+ * @param toy Yè½´ç»“æŸç‚¹
  * @param sr sin(rotate)
  * @param cr cos(rotate)
- * @return ¸üĞÂµÄÏñËØµãÊıÄ¿
+ * @return æ›´æ–°çš„åƒç´ ç‚¹æ•°ç›®
  */
 int JDraw(COMPLEX c, double fromx, double fromy, double tox, double toy, double sr, double cr)
 {
@@ -394,13 +394,13 @@ int JDraw(COMPLEX c, double fromx, double fromy, double tox, double toy, double 
 }
 
 /**
- * @brief »æÖÆJulia¼¯£¨ÔöÁ¿¸üĞÂ£©
- * @param c ¸´Êıc
- * @param fromx XÖáÆğÊ¼µã
- * @param fromy YÖáÆğÊ¼µã
- * @param tox XÖá½áÊøµã
- * @param toy YÖá½áÊøµã
- * @return ¸üĞÂµÄÏñËØµãÊıÄ¿
+ * @brief ç»˜åˆ¶Juliaé›†ï¼ˆå¢é‡æ›´æ–°ï¼‰
+ * @param c å¤æ•°c
+ * @param fromx Xè½´èµ·å§‹ç‚¹
+ * @param fromy Yè½´èµ·å§‹ç‚¹
+ * @param tox Xè½´ç»“æŸç‚¹
+ * @param toy Yè½´ç»“æŸç‚¹
+ * @return æ›´æ–°çš„åƒç´ ç‚¹æ•°ç›®
  */
 int JDrawA(COMPLEX c, double fromx, double fromy, double tox, double toy)
 {
@@ -456,27 +456,27 @@ int JDrawA(COMPLEX c, double fromx, double fromy, double tox, double toy)
 }
 
 /**
- * @brief ³õÊ¼»¯×´Ì¬Êı×é
- * @param x XÖá´óĞ¡
- * @param y YÖá´óĞ¡ */
+ * @brief åˆå§‹åŒ–çŠ¶æ€æ•°ç»„
+ * @param x Xè½´å¤§å°
+ * @param y Yè½´å¤§å° */
 void init_st(int x, int y)
 {
 	memset(g_st, 0, x * y * sizeof(state));
 }
 
 /**
- * @brief Ö÷º¯Êı
- * @param argc ÃüÁîĞĞ²ÎÊı¸öÊı
- * @param argv ÃüÁîĞĞ²ÎÊıÊı×é
- * @return ³ÌĞòÍË³öÂë
+ * @brief ä¸»å‡½æ•°
+ * @param argc å‘½ä»¤è¡Œå‚æ•°ä¸ªæ•°
+ * @param argv å‘½ä»¤è¡Œå‚æ•°æ•°ç»„
+ * @return ç¨‹åºé€€å‡ºç 
  */
 int main(int argc, char* argv[])
 {
-	// ³õÊ¼»¯»æÍ¼´°¿Ú¼°ÑÕÉ«
+	// åˆå§‹åŒ–ç»˜å›¾çª—å£åŠé¢œè‰²
 	setinitmode(0x005, 0, 0);
 	// if (argc < 2)
 	// {
-	//     MessageBox(NULL, TEXT("±¾ÆÁÄ»±£»¤³ÌĞòÎŞÅäÖÃ"), TEXT("JuliaSet"), MB_OK);
+	//     MessageBox(NULL, TEXT("æœ¬å±å¹•ä¿æŠ¤ç¨‹åºæ— é…ç½®"), TEXT("JuliaSet"), MB_OK);
 	//     return 0;
 	// }
 	// else if (stricmp(argv[1], "/p") == 0)
@@ -488,7 +488,7 @@ int main(int argc, char* argv[])
 	// }
 	// else if (stricmp(argv[1], "/s"))
 	// {
-	//     MessageBox(NULL, TEXT("±¾ÆÁÄ»±£»¤³ÌĞòÎŞÅäÖÃ"), TEXT("JuliaSet"), MB_OK);
+	//     MessageBox(NULL, TEXT("æœ¬å±å¹•ä¿æŠ¤ç¨‹åºæ— é…ç½®"), TEXT("JuliaSet"), MB_OK);
 	//     return 0;
 	// }
 	
@@ -632,4 +632,3 @@ int main(int argc, char* argv[])
     closegraph();
     return 0;
 }
-
