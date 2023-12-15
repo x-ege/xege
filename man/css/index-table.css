@@ -8,7 +8,7 @@ table {
 }
 
 table th {
-	font-weight: 300;
+	font-weight: bold;
 	border-left: 1px solid #000000;
 	border-top: 1px solid #000000;
 	text-align: center;
