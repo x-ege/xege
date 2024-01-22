@@ -10,7 +10,8 @@
 <font size="4" color="#0000FF"><strong>功能：</strong></font>
 
 设置窗口（图像）的背景颜色。
-仅设置 cleardevice() 所使用的颜色，不立即生效，需要等 cleardevice() 调用。
+仅设置 cleardevice() 所使用的颜色，不会替换图像中的像素颜色。
+调用 setbkcolor_f() 后再调用 cleardevice()  即可将整个图像填充成新的背景颜色。
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
 <pre><font color=#0000FF>void </font><font color=#008080>setbkcolor_f</font>(

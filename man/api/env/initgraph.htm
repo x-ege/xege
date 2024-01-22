@@ -62,7 +62,8 @@ initmode
 
 <font size="4"><strong>说明：</strong></font>
 
-函数 initgraph(width, height); 在不同的编译模式下使用不同的初始化模式：
+    只有两个参数的函数 initgraph(width, height) 并未指定初始化模式，如果在此之前已经由 setinitmode() 指定
+，那么使用其指定的初始化模式。如果尚未指定，那么 initgraph(width, height) 将在不同的编译模式下使用不同的初始化模式：
 
 <table>
 	<tr><th>编译模式</th><th>初始化模式</th></tr>

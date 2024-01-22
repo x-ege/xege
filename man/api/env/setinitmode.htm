@@ -16,21 +16,26 @@
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
 
 mode
-初始化模式。每个模式使用一个二进制位，多个模式可使用位或运算(a|b)进行组合。
-如果为 INIT_DEFAULT 表示使用默认值，其它模式可以使用以下值的组合：
+初始化模式，每个二进制位控制是否启用某种模式（值为 0 表示仅使用普通窗口，不启用额外的模式）
+可以由以下模式进行组合：
 
 <table>
 	<tr> <th>初始化模式</th>		<th>值</th>		<th>说明</th></tr>
-	<tr> <td></td>		<td>0x0</td>	<td>普通窗口</td></tr>
-	<tr> <td>INIT_DEFAULT(默认)</td>		<td>0x0(debug)<br>INIT_WITHLOGO (release)</td>	<td>默认模式，Debug下为普通窗口，Release 下带 EGE logo 开场动画</td></tr>
-	<tr> <td>INIT_NOBORDER</td>		<td>0x1</td>	<td>无边框窗口</td></tr>
-	<tr> <td>INIT_CHILD</td>		<td>0x2</td>	<td>子窗口，需配合 attachHWND() 函数</td></tr>
-	<tr> <td>INIT_TOPMOST</td>		<td>0x4</td>	<td>顶层窗口(不会被其它窗口遮挡)</td></tr>
-	<tr> <td>INIT_RENDERMANUAL</td>	<td>0x8</td>	<td>手动渲染模式</td></tr>
-	<tr> <td>INIT_NOFORCEEXIT</td>	<td>0x10</td>	<td>退出时不强制结束程序，而是设置标志位，可由 is_run() 判断<br>当设置了 INIT_NOFORCEEXIT 模式后，用户进行关闭窗口操作时窗口不会关闭，程序也不会退出，此时 is_run() 返回 false。<br>同时 getch(), getmouse() 之类的阻塞性函数将不再阻塞，由于窗口没有主动关闭，所以后续需要在代码中自行做窗口关闭和程序退出的相关处理。</td></tr>
-	<tr> <td>INIT_UNICODE <font size="3" color="#82A14F" bold = "true"><strong>(ege20.08 起)</strong></font></td>		<td>0x20</td>	<td>窗口使用 Unicode 字符集</td></tr>
-	<tr> <td>INIT_WITHLOGO</td>		<td>0x100</td>	<td>带 EGE logo 出场动画</td></tr>
-	<tr> <td>INIT_ANIMATION</td>	<td>INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT</td>	<td>INIT_DEFAULT, INIT_RENDERMANUAL, INIT_NOFORCEEXIT 模式的组合</td></tr>
+	<tr> <td>INIT_DEFAULT</td>			<td align="center">   0x0 </td>	<td>普通窗口</td></tr>
+	<tr> <td>INIT_NOBORDER</td>			<td align="center">   0x1 </td>	<td>无边框窗口</td></tr>
+	<tr> <td>INIT_CHILD</td>			<td align="center">   0x2 </td>	<td>子窗口，需配合 attachHWND() 函数</td></tr>
+	<tr> <td>INIT_TOPMOST</td>			<td align="center">   0x4 </td>	<td>顶层窗口(不会被其它窗口遮挡)</td></tr>
+	<tr> <td>INIT_RENDERMANUAL</td>		<td align="center">   0x8 </td>	<td>手动渲染模式</td></tr>
+	<tr> <td>INIT_NOFORCEEXIT</td>		<td align="center">  0x10 </td>	<td>退出时不强制结束程序，而是设置标志位，可由 is_run() 判断<br>当设置了 INIT_NOFORCEEXIT 模式后，用户进行关闭窗口操作时窗口不会关闭，程序也不会退出，此时 is_run() 返回 false。<br>同时 getch(), getmouse() 之类的阻塞性函数将不再阻塞，由于窗口没有主动关闭，所以后续需要在代码中自行做窗口关闭和程序退出的相关处理。</td></tr>
+	<tr> <td>INIT_UNICODE <font size="3" color="#82A14F" bold = "true"><strong>(ege20.08 起)</strong></font></td>		<td align="center">  0x20 </td>	<td>窗口使用 Unicode 字符集</td></tr>
+	<tr> <td>INIT_HIDE <font size="3" color="#82A14F" bold = "true"><strong>(ege dev)</strong></font></td>		<td align="center">  0x40 </td>	<td>窗口使用 Unicode 字符集</td></tr>
+	<tr> <td>INIT_WITHLOGO</td>			<td align="center"> 0x100 </td>	<td>带 EGE logo 出场动画</td></tr>
+</table>
+
+设定的组合模式：
+<table>
+	<tr><th>组合模式</th><th>说明</th></tr>
+	<tr><td>INIT_ANIMATION</td><td>INIT_RENDERMANUAL 与 INIT_NOFORCEEXIT 模式的组合，用于动画</td></tr>
 </table>
 
 x, y
