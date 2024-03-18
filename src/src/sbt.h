@@ -1,4 +1,3 @@
-/* vim: set tabstop=4 shiftwidth=4: */
 #pragma once
 
 #define NULL_PTR 0
