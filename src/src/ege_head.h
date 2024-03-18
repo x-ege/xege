@@ -17,7 +17,7 @@
 
 #define EGE_GRAPH_LIB_BUILD
 #define EGE_DEPRECATE(text)
-#include "ege.h"
+#include "../ege.h"
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -81,7 +81,7 @@
 
 #include <string>
 
-#include "ege/egecontrolbase.h"
+#include "../ege/egecontrolbase.h"
 #include "thread_queue.h"
 
 #ifndef ERROR_SUCCESS

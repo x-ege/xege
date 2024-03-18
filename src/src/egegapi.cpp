@@ -25,7 +25,7 @@
 
 #include <zlib.h>
 
-#include "ege/sys_edit.h"
+#include "../ege/sys_edit.h"
 #include "ege_common.h"
 
 #include <stdio.h>
