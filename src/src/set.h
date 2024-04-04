@@ -2,7 +2,8 @@
 
 #include "sbt.h"
 
-namespace ege {
+namespace ege
+{
 
 #if 0
 template<typename T>

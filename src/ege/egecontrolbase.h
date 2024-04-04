@@ -1,9 +1,7 @@
 #ifndef EGECONTROLBASE_H
 #define EGECONTROLBASE_H
 
-#ifndef EGE_H
-#error include "egectlbase.h" must after include "ege.h" or "graphics.h"
-#endif
+#include "../ege.h"
 
 namespace ege
 {

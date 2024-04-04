@@ -2,7 +2,8 @@
 
 #include <stddef.h>
 
-namespace ege {
+namespace ege
+{
 
 template <typename T> class Array
 {

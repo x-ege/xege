@@ -34,7 +34,6 @@
 #define _CRT_NON_CONFORMING_SWPRINTFS
 #endif
 
-#include <math.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,11 +53,13 @@
 #pragma comment(lib, "Imm32.lib")
 #pragma comment(lib, "Msimg32.lib")
 #pragma comment(lib, "Winmm.lib")
+
 #ifdef EGE_GDIPLUS
 #if _MSC_VER > 1200
 #pragma comment(lib, "gdiplus.lib")
 #endif
 #endif
+
 #endif
 
 namespace ege
@@ -67,13 +68,12 @@ namespace ege
 // 静态分配，零初始化
 struct _graph_setting graph_setting;
 
-static DWORD   g_windowstyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
+static int     g_initoption      = INIT_DEFAULT;
+static DWORD   g_windowstyle     = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
+                                   WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
 static DWORD   g_windowexstyle   = WS_EX_LEFT | WS_EX_LTRREADING;
 static int     g_windowpos_x     = CW_USEDEFAULT;
 static int     g_windowpos_y     = CW_USEDEFAULT;
-static int     g_initoption      = INIT_DEFAULT;
-static HWND    g_attach_hwnd     = 0;
-static WNDPROC DefWindowProcFunc = NULL;
 
 #ifdef __cplusplus
 extern "C"
@@ -85,7 +85,6 @@ unsigned long getlogodatasize();
 }
 #endif
 
-float        EGE_PRIVATE_GetFPS(int add);
 DWORD WINAPI messageloopthread(LPVOID lpParameter);
 
 /*private function*/
@@ -184,7 +183,6 @@ static int graphupdate(_graph_setting* pg)
     }
 }
 
-/*private function*/
 int dealmessage(_graph_setting* pg, bool force_update)
 {
     if (force_update || pg->update_mark_count <= 0) {
@@ -202,7 +200,7 @@ void guiupdate(_graph_setting* pg, egeControlBase*& root)
 }
 
 /*private function*/
-static int waitdealmessage(_graph_setting* pg)
+int waitdealmessage(_graph_setting* pg)
 {
     // MSG msg;
     if (pg->update_mark_count < UPDATE_MAX_CALL) {
@@ -216,387 +214,17 @@ static int waitdealmessage(_graph_setting* pg)
     return !pg->exit_window;
 }
 
-/*private function*/
-static int _getkey(_graph_setting* pg)
-{
-    EGEMSG msg;
-
-    while (pg->msgkey_queue->pop(msg)) {
-        if (msg.message == WM_CHAR) {
-            return (KEYMSG_CHAR | ((int)msg.wParam & 0xFFFF));
-        } else if (msg.message == WM_KEYDOWN) {
-            return (KEYMSG_DOWN | ((int)msg.wParam & 0xFFFF) | (msg.lParam & 0x40000000 ? 0 : KEYMSG_FIRSTDOWN));
-        } else if (msg.message == WM_KEYUP) {
-            return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
-        }
-    }
-    return 0;
-}
 
 /*private function*/
-static int peekkey(_graph_setting* pg)
-{
-    EGEMSG msg;
-
-    while (pg->msgkey_queue->pop(msg)) {
-        if (msg.message == WM_CHAR || msg.message == WM_KEYDOWN) {
-            if (msg.message == WM_KEYDOWN) {
-                if (msg.wParam <= key_space || msg.wParam >= key_0 && msg.wParam < key_f1 ||
-                    msg.wParam >= key_semicolon && msg.wParam <= key_quote)
-                {
-                    continue;
-                }
-            }
-            pg->msgkey_queue->unpop();
-            if (msg.message == WM_CHAR) {
-                return (KEYMSG_CHAR | ((int)msg.wParam & 0xFFFF));
-            } else if (msg.message == WM_KEYDOWN) {
-                if (msg.wParam >= 0x70 && msg.wParam < 0x80) {
-                    return (KEYMSG_DOWN | ((int)msg.wParam + 0x100));
-                }
-                return (KEYMSG_DOWN | ((int)msg.wParam & 0xFFFF));
-            } else if (msg.message == WM_KEYUP) {
-                return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
-            }
-        }
-    }
-    return 0;
-}
-
-/*private function*/
-static int peekallkey(_graph_setting* pg, int flag)
-{
-    EGEMSG msg;
-
-    while (pg->msgkey_queue->pop(msg)) {
-        if ((msg.message == WM_CHAR    && (flag & KEYMSG_CHAR_FLAG)) ||
-            (msg.message == WM_KEYUP   && (flag & KEYMSG_UP_FLAG)) ||
-            (msg.message == WM_KEYDOWN && (flag & KEYMSG_DOWN_FLAG)))
-        {
-            pg->msgkey_queue->unpop();
-            if (msg.message == WM_CHAR) {
-                return (KEYMSG_CHAR | ((int)msg.wParam & 0xFFFF));
-            } else if (msg.message == WM_KEYDOWN) {
-                return (KEYMSG_DOWN | ((int)msg.wParam & 0xFFFF) | (msg.lParam & 0x40000000 ? 0 : KEYMSG_FIRSTDOWN));
-            } else if (msg.message == WM_KEYUP) {
-                return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
-            }
-        }
-    }
-    return 0;
-}
-
-int getflush()
-{
-    struct _graph_setting* pg = &graph_setting;
-    EGEMSG                 msg;
-    int                    lastkey = 0;
-
-    if (pg->msgkey_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
-
-    if (!pg->msgkey_queue->empty()) {
-        while (pg->msgkey_queue->pop(msg)) {
-            if (msg.message == WM_CHAR) {
-                if (msg.message == WM_CHAR) {
-                    lastkey = (int)msg.wParam;
-                }
-            }
-        }
-    }
-    return lastkey;
-}
-
-int kbmsg()
-{
-    struct _graph_setting* pg = &graph_setting;
-    if (pg->exit_window) {
-        return grNoInitGraph;
-    }
-    return peekallkey(pg, 3);
-}
-
-int kbhitEx(int flag)
-{
-    struct _graph_setting* pg = &graph_setting;
-    if (pg->exit_window) {
-        return grNoInitGraph;
-    }
-    if (flag == 0) {
-        return peekkey(pg);
-    } else {
-        return peekallkey(pg, flag);
-    }
-}
-
-int getchEx(int flag)
-{
-    struct _graph_setting* pg = &graph_setting;
-    if (pg->exit_window) {
-        return grNoInitGraph;
-    }
-
-    {
-        int    key;
-        EGEMSG msg;
-        DWORD  dw = GetTickCount();
-        do {
-            key = kbhitEx(flag);
-            if (key < 0) {
-                break;
-            }
-            if (key > 0) {
-                key = _getkey(pg);
-                if (key) {
-                    msg = pg->msgkey_queue->last();
-                    if (dw < msg.time + 1000) {
-                        int ogn_key  = key;
-                        int ret      = 0;
-                        key         &= 0xFFFF;
-                        ret          = key;
-                        if (flag) {
-                            ret = ogn_key;
-                        } else {
-                            if ((ogn_key & KEYMSG_DOWN) &&
-                                (msg.wParam >= 0x70 && msg.wParam < 0x80 || msg.wParam > ' ' && msg.wParam < '0'))
-                            {
-                                ret |= 0x100;
-                            }
-                        }
-                        return ret;
-                    }
-                }
-            }
-        } while (!pg->exit_window && !pg->exit_flag && waitdealmessage(pg));
-    }
-    return 0;
-}
-
-int kbhit()
-{
-    return kbhitEx(0);
-}
-
-int getch()
-{
-    return getchEx(0);
-}
-
-key_msg getkey()
-{
-    struct _graph_setting* pg  = &graph_setting;
-    key_msg                ret = {0};
-    if (pg->exit_window) {
-        return ret;
-    }
-
-    {
-        int key = 0;
-        do {
-            key = _getkey(pg);
-            if (key) {
-                key_msg msg = {0};
-                if (key & KEYMSG_DOWN) {
-                    msg.msg = key_msg_down;
-                } else if (key & KEYMSG_UP) {
-                    msg.msg = key_msg_up;
-                } else if (key & KEYMSG_CHAR) {
-                    msg.msg = key_msg_char;
-                }
-                msg.key = key & 0xFFFF;
-                if (key & KEYMSG_FIRSTDOWN) {
-                    msg.flags |= key_flag_first_down;
-                }
-                if (keystate(VK_CONTROL)) {
-                    msg.flags |= key_flag_ctrl;
-                }
-                if (keystate(VK_SHIFT)) {
-                    msg.flags |= key_flag_shift;
-                }
-                return msg;
-            }
-        } while (!pg->exit_window && !pg->exit_flag && waitdealmessage(pg));
-    }
-    return ret;
-}
-
-void flushkey()
-{
-    struct _graph_setting* pg = &graph_setting;
-    EGEMSG                 msg;
-    if (pg->msgkey_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
-    if (!pg->msgkey_queue->empty()) {
-        while (pg->msgkey_queue->pop(msg)) {
-            ;
-        }
-    }
-    return;
-}
-
-int keystate(int key)
-{
-    struct _graph_setting* pg = &graph_setting;
-    if (key < 0 || key >= MAX_KEY_VCODE) {
-        return -1;
-    }
-    SHORT s = GetKeyState(key);
-    if (((USHORT)s & 0x8000) == 0) {
-        pg->keystatemap[key] = 0;
-    }
-    return pg->keystatemap[key];
-}
-
-/*private function*/
-static EGEMSG _getmouse(_graph_setting* pg)
-{
-    EGEMSG msg = {0};
-
-    while (pg->msgmouse_queue->pop(msg)) {
-        return msg;
-    }
-    return msg;
-}
-
-/*private function*/
-static EGEMSG peekmouse(_graph_setting* pg)
-{
-    EGEMSG msg = {0};
-
-    if (pg->msgmouse_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
-    while (pg->msgmouse_queue->pop(msg)) {
-        pg->msgmouse_queue->unpop();
-        return msg;
-    }
-    return msg;
-}
-
-void flushmouse()
-{
-    struct _graph_setting* pg = &graph_setting;
-    EGEMSG                 msg;
-    if (pg->msgmouse_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
-    if (!pg->msgmouse_queue->empty()) {
-        while (pg->msgmouse_queue->pop(msg)) {
-            ;
-        }
-    }
-    return;
-}
-
-int mousemsg()
-{
-    struct _graph_setting* pg = &graph_setting;
-    if (pg->exit_window) {
-        return 0;
-    }
-    EGEMSG msg;
-    msg = peekmouse(pg);
-    if (msg.hwnd) {
-        return 1;
-    }
-    return 0;
-}
-
-mouse_msg getmouse()
-{
-    struct _graph_setting* pg   = &graph_setting;
-    mouse_msg              mmsg = {0};
-    if (pg->exit_window) {
-        return mmsg;
-    }
-
-    {
-        EGEMSG msg;
-        do {
-            msg = _getmouse(pg);
-            if (msg.hwnd) {
-                mmsg.flags |= ((msg.wParam & MK_CONTROL) != 0 ? mouse_flag_ctrl : 0);
-                mmsg.flags |= ((msg.wParam & MK_SHIFT) != 0 ? mouse_flag_shift : 0);
-                mmsg.x      = (short)((int)msg.lParam & 0xFFFF);
-                mmsg.y      = (short)((unsigned)msg.lParam >> 16);
-                mmsg.msg    = mouse_msg_move;
-                if (msg.message == WM_LBUTTONDOWN) {
-                    mmsg.msg    = mouse_msg_down;
-                    mmsg.flags |= mouse_flag_left;
-                } else if (msg.message == WM_RBUTTONDOWN) {
-                    mmsg.msg    = mouse_msg_down;
-                    mmsg.flags |= mouse_flag_right;
-                } else if (msg.message == WM_MBUTTONDOWN) {
-                    mmsg.msg    = mouse_msg_down;
-                    mmsg.flags |= mouse_flag_mid;
-                } else if (msg.message == WM_LBUTTONUP) {
-                    mmsg.msg    = mouse_msg_up;
-                    mmsg.flags |= mouse_flag_left;
-                } else if (msg.message == WM_RBUTTONUP) {
-                    mmsg.msg    = mouse_msg_up;
-                    mmsg.flags |= mouse_flag_right;
-                } else if (msg.message == WM_MBUTTONUP) {
-                    mmsg.msg    = mouse_msg_up;
-                    mmsg.flags |= mouse_flag_mid;
-                } else if (msg.message == WM_MOUSEWHEEL) {
-                    mmsg.msg   = mouse_msg_wheel;
-                    mmsg.wheel = (short)((unsigned)msg.wParam >> 16);
-                }
-                return mmsg;
-            }
-        } while (!pg->exit_window && !pg->exit_flag && waitdealmessage(pg));
-    }
-    return mmsg;
-}
-
-MOUSEMSG GetMouseMsg()
-{
-    struct _graph_setting* pg   = &graph_setting;
-    MOUSEMSG               mmsg = {0};
-    if (pg->exit_window) {
-        return mmsg;
-    }
-
-    {
-        EGEMSG msg;
-        do {
-            msg = _getmouse(pg);
-            if (msg.hwnd) {
-                mmsg.uMsg    = msg.message;
-                mmsg.mkCtrl  = ((msg.wParam & MK_CONTROL) != 0);
-                mmsg.mkShift = ((msg.wParam & MK_SHIFT) != 0);
-                mmsg.x       = (short)((int)msg.lParam & 0xFFFF);
-                mmsg.y       = (short)((unsigned)msg.lParam >> 16);
-                if (msg.mousekey & 1) {
-                    mmsg.mkLButton = 1;
-                }
-                if (msg.mousekey & 4) {
-                    mmsg.mkMButton = 1;
-                }
-                if (msg.mousekey & 2) {
-                    mmsg.mkRButton = 1;
-                }
-                if (msg.message == WM_MOUSEWHEEL) {
-                    mmsg.wheel = (short)((unsigned)msg.wParam >> 16);
-                }
-                return mmsg;
-            }
-        } while (!pg->exit_window && waitdealmessage(pg));
-    }
-    return mmsg;
-}
-
-/*private function*/
-static void setmode(int gdriver, int gmode)
+void setmode(int gdriver, int gmode)
 {
     struct _graph_setting* pg = &graph_setting;
 
     if (gdriver == TRUECOLORSIZE) {
         RECT rect;
-        if (g_attach_hwnd) {
-            GetClientRect(g_attach_hwnd, &rect);
+        HWND parentWindow = getParentWindow();
+        if (parentWindow) {
+            GetClientRect(parentWindow, &rect);
         } else {
             GetWindowRect(GetDesktopWindow(), &rect);
         }
@@ -614,80 +242,7 @@ static void setmode(int gdriver, int gmode)
     }
 }
 
-/*private function*/
-static BOOL init_instance(HINSTANCE hInstance)
-{
-    struct _graph_setting* pg = &graph_setting;
-    int                    dw = 0, dh = 0;
-    // WCHAR Title[256] = {0};
-    // WCHAR Title2[256] = {0};
 
-    // WideCharToMultiByte(CP_UTF8, 0, pg->window_caption, lstrlenW(pg->window_caption), (LPSTR)Title, 256, 0, 0);
-    // MultiByteToWideChar(CP_UTF8, 0, (LPSTR)Title, -1, Title2, 256);
-    dw = GetSystemMetrics(SM_CXFRAME) * 2;
-    dh = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) * 2;
-    if (g_attach_hwnd) {
-        LONG_PTR style  = GetWindowLongPtrW(g_attach_hwnd, GWL_STYLE);
-        style          |= WS_CHILDWINDOW | WS_CLIPCHILDREN;
-        SetWindowLongPtrW(g_attach_hwnd, GWL_STYLE, style);
-    }
-
-    if (pg->is_unicode) {
-        pg->hwnd =
-            CreateWindowExW(g_windowexstyle, EGE_WNDCLSNAME_W, pg->window_caption.c_str(), g_windowstyle & ~WS_VISIBLE,
-                g_windowpos_x, g_windowpos_y, pg->dc_w + dw, pg->dc_h + dh, g_attach_hwnd, NULL, hInstance, NULL);
-    } else {
-        const std::string& wndCaption = w2mb(pg->window_caption.c_str());
-
-        pg->hwnd = CreateWindowExA(g_windowexstyle, EGE_WNDCLSNAME, wndCaption.c_str(), g_windowstyle & ~WS_VISIBLE,
-            g_windowpos_x, g_windowpos_y, pg->dc_w + dw, pg->dc_h + dh, g_attach_hwnd, NULL, hInstance, NULL);
-    }
-
-    if (!pg->hwnd) {
-        return FALSE;
-    }
-
-    if (g_attach_hwnd) {
-        // SetParent(pg->hwnd, g_attach_hwnd);
-        wchar_t name[64];
-        swprintf(name, L"ege_%X", (DWORD)(DWORD_PTR)g_attach_hwnd);
-        if (CreateEventW(NULL, FALSE, TRUE, name)) {
-            if (GetLastError() == ERROR_ALREADY_EXISTS) {
-                PostMessage(pg->hwnd, WM_CLOSE, 0, 0);
-            }
-        }
-    }
-    // SetWindowTextA(pg->hwnd, (LPCSTR)Title);
-    SetWindowLongPtrW(pg->hwnd, GWLP_USERDATA, (LONG_PTR)pg);
-
-    /* {
-        LOGFONTW lf = {0};
-        lf.lfHeight         = 12;
-        lf.lfWidth          = 6;
-        lf.lfEscapement     = 0;
-        lf.lfOrientation    = 0;
-        lf.lfWeight         = FW_DONTCARE;
-        lf.lfItalic         = 0;
-        lf.lfUnderline      = 0;
-        lf.lfStrikeOut      = 0;
-        lf.lfCharSet        = DEFAULT_CHARSET;
-        lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
-        lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
-        lf.lfQuality        = DEFAULT_QUALITY;
-        lf.lfPitchAndFamily = DEFAULT_PITCH;
-        lstrcpyW(lf.lfFaceName, L"宋体");
-        HFONT hfont = CreateFontIndirectW(&lf);
-        ::SendMessage(pg->hwnd, WM_SETFONT, (WPARAM)hfont, NULL);
-        //DeleteObject(hfont);
-    } //*/
-
-    if (!(g_initoption & INIT_HIDE)) {
-        SetActiveWindow(pg->hwnd);
-    }
-
-    pg->exit_window = 0;
-    return TRUE;
-}
 
 /*private callback function*/
 #if !defined(UNICODE)
@@ -880,6 +435,8 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
     struct _graph_setting* pg   = &graph_setting;
     // int wmId, wmEvent;
 
+    WNDPROC DefWindowProcFunc = getDefaultWindowProcFunc();
+
     pg_w = (struct _graph_setting*)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
     if (pg_w == NULL || pg->img_page[0] == NULL) {
         return DefWindowProcFunc(hWnd, message, wParam, lParam);
@@ -1050,45 +607,6 @@ PVOID getProcfunc()
     return (PVOID)wndproc;
 }
 
-/*private function*/
-static ATOM register_classA(struct _graph_setting* pg, HINSTANCE hInstance)
-{
-    WNDCLASSEXA wcex = {0};
-
-    wcex.cbSize = sizeof(wcex);
-
-    wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc   = (WNDPROC)getProcfunc();
-    wcex.cbClsExtra    = 0;
-    wcex.cbWndExtra    = 0;
-    wcex.hInstance     = hInstance;
-    wcex.hIcon         = pg->window_hicon;
-    wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszClassName = EGE_WNDCLSNAME;
-
-    return RegisterClassExA(&wcex);
-}
-
-static ATOM register_classW(struct _graph_setting* pg, HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex = {0};
-
-    wcex.cbSize = sizeof(wcex);
-
-    wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc   = (WNDPROC)getProcfunc();
-    wcex.cbClsExtra    = 0;
-    wcex.cbWndExtra    = 0;
-    wcex.hInstance     = hInstance;
-    wcex.hIcon         = pg->window_hicon;
-    wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszClassName = EGE_WNDCLSNAME_W;
-
-    return RegisterClassExW(&wcex);
-}
-
 /* private function */
 int graph_init(_graph_setting* pg)
 {
@@ -1240,10 +758,10 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     // 注册窗口类，设置默认消息处理函数
     if (pg->is_unicode) {
         register_classW(pg, pg->instance);
-        DefWindowProcFunc = DefWindowProcW;
+        setDefaultWindowProcFunc(DefWindowProcW);
     } else {
         register_classA(pg, pg->instance);
-        DefWindowProcFunc = DefWindowProcA;
+        setDefaultWindowProcFunc(DefWindowProcA);
     }
 
     // SECURITY_ATTRIBUTES sa = {0};
@@ -1306,11 +824,6 @@ void closegraph()
     ShowWindow(pg->hwnd, SW_HIDE);
 }
 
-int attachHWND(HWND hWnd)
-{
-    g_attach_hwnd = hWnd;
-    return 0;
-}
 
 /*private function*/
 DWORD WINAPI messageloopthread(LPVOID lpParameter)
@@ -1367,6 +880,85 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
     return 0;
 }
 
+/*private function*/
+BOOL init_instance(HINSTANCE hInstance)
+{
+    struct _graph_setting* pg = &graph_setting;
+    int                    dw = 0, dh = 0;
+    // WCHAR Title[256] = {0};
+    // WCHAR Title2[256] = {0};
+
+    // WideCharToMultiByte(CP_UTF8, 0, pg->window_caption, lstrlenW(pg->window_caption), (LPSTR)Title, 256, 0, 0);
+    // MultiByteToWideChar(CP_UTF8, 0, (LPSTR)Title, -1, Title2, 256);
+    dw = GetSystemMetrics(SM_CXFRAME) * 2;
+    dh = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) * 2;
+
+    HWND parentWindow = getParentWindow();
+
+    if (parentWindow) {
+        LONG_PTR style  = GetWindowLongPtrW(parentWindow, GWL_STYLE);
+        style          |= WS_CHILDWINDOW | WS_CLIPCHILDREN;
+        SetWindowLongPtrW(parentWindow, GWL_STYLE, style);
+    }
+
+    POINT windowPos     = {g_windowpos_x, g_windowpos_y};
+    SIZE  windowSize    = {pg->dc_w + dw, pg->dc_h + dh};
+    DWORD windowStyle   = g_windowstyle & ~WS_VISIBLE;
+    DWORD windowExStyle = g_windowexstyle;
+
+    if (pg->is_unicode) {
+        pg->hwnd = createWindow(getParentWindow(), pg->window_caption.c_str(), windowStyle, windowExStyle, windowPos, windowSize);
+    } else {
+        const std::string& wndCaption = w2mb(pg->window_caption.c_str());
+        pg->hwnd = createWindow(getParentWindow(), wndCaption.c_str(), windowStyle, windowExStyle, windowPos, windowSize);
+    }
+
+    if (pg->hwnd == NULL) {
+        return FALSE;
+    }
+
+    if (parentWindow != NULL) {
+        // SetParent(pg->hwnd, g_attach_hwnd);
+        wchar_t name[64];
+        swprintf(name, L"ege_%X", (DWORD)(DWORD_PTR)parentWindow);
+        if (CreateEventW(NULL, FALSE, TRUE, name)) {
+            if (GetLastError() == ERROR_ALREADY_EXISTS) {
+                PostMessage(pg->hwnd, WM_CLOSE, 0, 0);
+            }
+        }
+    }
+    // SetWindowTextA(pg->hwnd, (LPCSTR)Title);
+    SetWindowLongPtrW(pg->hwnd, GWLP_USERDATA, (LONG_PTR)pg);
+
+    /* {
+        LOGFONTW lf = {0};
+        lf.lfHeight         = 12;
+        lf.lfWidth          = 6;
+        lf.lfEscapement     = 0;
+        lf.lfOrientation    = 0;
+        lf.lfWeight         = FW_DONTCARE;
+        lf.lfItalic         = 0;
+        lf.lfUnderline      = 0;
+        lf.lfStrikeOut      = 0;
+        lf.lfCharSet        = DEFAULT_CHARSET;
+        lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
+        lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
+        lf.lfQuality        = DEFAULT_QUALITY;
+        lf.lfPitchAndFamily = DEFAULT_PITCH;
+        lstrcpyW(lf.lfFaceName, L"宋体");
+        HFONT hfont = CreateFontIndirectW(&lf);
+        ::SendMessage(pg->hwnd, WM_SETFONT, (WPARAM)hfont, NULL);
+        //DeleteObject(hfont);
+    } //*/
+
+    if (!(g_initoption & INIT_HIDE)) {
+        SetActiveWindow(pg->hwnd);
+    }
+
+    pg->exit_window = 0;
+    return TRUE;
+}
+
 void setinitmode(int mode, int x, int y)
 {
     g_initoption              = mode;
@@ -1403,58 +995,6 @@ long getGraphicsVer()
     return EGE_VERSION_NUMBER;
 }
 
-HWND getParentHWnd()
-{
-    return g_attach_hwnd;
-}
 
-void getParentSize(int* width, int* height)
-{
-    RECT rect;
-    if (g_attach_hwnd) {
-        GetClientRect(g_attach_hwnd, &rect);
-    } else {
-        GetWindowRect(GetDesktopWindow(), &rect);
-    }
-
-    *width  = rect.right - rect.left;
-    *height = rect.bottom - rect.top;
-}
-
-void EGEAPI resizewindow(int width, int height)
-{
-    int parentW, parentH;
-    getParentSize(&parentW, &parentH);
-
-    if (width <= 0) {
-        width = parentW;
-    }
-    if (height <= 0) {
-        height = parentH;
-    }
-
-    int w = getwidth(), h = getheight();
-    if ((width == w && height == h)) {
-        return;
-    }
-
-    setmode(TRUECOLORSIZE, width | (height << 16));
-    struct _graph_setting* pg = &graph_setting;
-
-    for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
-        if (pg->img_page[i] != NULL) {
-            resize(pg->img_page[i], width, height);
-
-            // 视口调整
-            int vleft, vtop, vright, vbottom, vclip;
-            getviewport(&vleft, &vtop, &vright, &vbottom, &vclip, pg->img_page[i]);
-            if (vleft == 0 && vtop == 0 && vright == w && vbottom == h) {
-                setviewport(0, 0, width, height, vclip, pg->img_page[i]);
-            }
-        }
-    }
-    // 窗口视口调整
-    window_setviewport(pg->base_x, pg->base_y, width, height);
-}
 
 } // namespace ege

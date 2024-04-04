@@ -7,6 +7,9 @@
 
 #include "egecontrolbase.h"
 
+namespace ege
+{
+
 class label : public egeControlBase
 {
 public:
@@ -137,5 +140,7 @@ protected:
     bool    m_transparent;
     int     m_fontheight;
 };
+
+} // namespace ege
 
 #endif /* EGE_LABEL_H */

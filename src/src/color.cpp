@@ -11,34 +11,6 @@
 namespace ege
 {
 
-typedef struct COLORHSL
-{
-    float h;
-    float s;
-    float l;
-} COLORHSL;
-
-typedef struct COLORHSV
-{
-    float h;
-    float s;
-    float v;
-} COLORHSV;
-
-typedef struct COLORRGB
-{
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-} COLORRGB;
-
-#if __cplusplus < 201103
-static inline float round(float x)
-{
-    return floor(x + 0.5f);
-}
-#endif
-
 /* private function */
 static COLORHSL EGE_PRIVATE_RGBtoHSL(int _col)
 {
@@ -235,8 +207,8 @@ static void RGB_TO_HSV(const COLORRGB* input, COLORHSV* output)
     g = input->g / 255.0f;
     b = input->b / 255.0f;
 
-    minRGB    = min(r, min(g, b));
-    maxRGB    = max(r, max(g, b));
+    minRGB    = MIN(r, MIN(g, b));
+    maxRGB    = MAX(r, MAX(g, b));
     deltaRGB  = maxRGB - minRGB;
     output->v = maxRGB;
 

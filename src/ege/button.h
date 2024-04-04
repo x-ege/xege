@@ -21,6 +21,8 @@
 #define logout(msg)
 #endif
 
+namespace ege
+{
 /**
  * @brief 按钮控件
  */
@@ -479,5 +481,7 @@ protected:
     label* _logger;
 #endif
 };
+
+} // namespace ege
 
 #endif /* EGE_BUTTON_H */
