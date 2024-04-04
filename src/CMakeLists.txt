@@ -15,6 +15,8 @@ target_compile_definitions(xege
     PRIVATE _WIN32_WINNT=0x0510
     # Specifies that the minimum required platform is Windows XP.
     PRIVATE _WIN32_WINDOWS=0x0510
+    # Instruct windef.h not to define the min/max macros
+    PRIVATE NOMINMAX
 )
 
 if (MSVC)
