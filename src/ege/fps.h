@@ -50,7 +50,7 @@ public:
         setcolor(WHITE, pimg);
         setfillcolor(BLACK, pimg);
         setbkmode(OPAQUE, pimg);
-        setfont(12, 0, "simsun", pimg);
+        setfont(12, 0, "SimSun", pimg);
         outtextxy(0, 0, str, pimg);
     }
 };
