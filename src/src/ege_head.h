@@ -74,16 +74,24 @@
 
 #include <string>
 
+#ifdef EGE_GDIPLUS
+#   ifdef NOMINMAX
+#       define max(a, b) (((a) > (b)) ? (a) : (b))
+#       define min(a, b) (((a) < (b)) ? (a) : (b))
+#       include <gdiplus.h>
+#       undef max
+#       undef min
+#   else
+#       include <gdiplus.h>
+#   endif
+#endif
+
 #include "../ege/egecontrolbase.h"
 #include "thread_queue.h"
 #include "ege_common.h"
 
 #ifndef ERROR_SUCCESS
 #define ERROR_SUCCESS 0
-#endif
-
-#ifdef EGE_GDIPLUS
-#include <gdiplus.h>
 #endif
 
 #define QUEUE_LEN            1024

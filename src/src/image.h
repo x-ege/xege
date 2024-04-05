@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ege_head.h"
 #include <Windows.h>
-#include "ege_api.h"
-#include <gdiplus.h>
+
 
 namespace ege
 {
