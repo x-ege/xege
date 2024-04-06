@@ -727,10 +727,10 @@ void sector(int x, int y, int stangle, int endangle, int xradius, int yradius, P
             y - yradius,
             x + xradius,
             y + yradius,
-            (int)ege_round(x + xradius * cos(sr)),
-            (int)ege_round(y - yradius * sin(sr)),
-            (int)ege_round(x + xradius * cos(er)),
-            (int)ege_round(y - yradius * sin(er)));
+            (int)round(x + xradius * cos(sr)),
+            (int)round(y - yradius * sin(sr)),
+            (int)round(x + xradius * cos(er)),
+            (int)round(y - yradius * sin(er)));
     }
     CONVERT_IMAGE_END;
 }
@@ -745,10 +745,10 @@ void sectorf(float x, float y, float stangle, float endangle, float xradius, flo
             (int)(y - yradius),
             (int)(x + xradius),
             (int)(y + yradius),
-            (int)ege_round(x + xradius * cos(sr)),
-            (int)ege_round(y - yradius * sin(sr)),
-            (int)ege_round(x + xradius * cos(er)),
-            (int)ege_round(y - yradius * sin(er)));
+            (int)round(x + xradius * cos(sr)),
+            (int)round(y - yradius * sin(sr)),
+            (int)round(x + xradius * cos(er)),
+            (int)round(y - yradius * sin(er)));
     }
     CONVERT_IMAGE_END;
 }

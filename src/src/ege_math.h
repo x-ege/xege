@@ -1,18 +1,37 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 
 namespace ege
 {
 
-
-#if __cplusplus >= 201103L
-inline int ege_round(float x)
+// MSVC 在 C++11 中支持 round
+#if defined(_MSC_VER)
+#if __cplusplus < 201103L
+inline int round(double x)
 {
-    return round(x);
+    return (int)((x > 0.0) ? (x + 0.5) : (x - 0.5));
+}
+
+inline int round(float  x)
+{
+    return (int)((x > 0.0f) ? (x + 0.5f) : (x - 0.5f));
+}
+
+inline int positiveRound(double x)
+{
+    return (int)(x + 0.5);
+}
+
+inline int positiveRound(float  x)
+{
+    return (int)(x + 0.5f);
 }
 #else
-int ege_round(float x);
-#endif
+using std::round;
+#endif  // __cplusplus < 201103L
 
-}
+#else
+// 在低版本 GCC (如 2005-11-30 的 GCC 3.4.5)中 round() 函数也可用
+#endif
+}  // namespace ege
