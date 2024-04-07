@@ -27,6 +27,8 @@ project (XEGE)
 
 add_library(xege STATIC)
 
+target_include_directories(xege PUBLIC include)
+
 # 是否使用 libpng 和 zlib 处理 PNG 图片。
 # 目前只能为 ON，未来或允许选择使用 WIC。
 option(USE_LIBPNG_AND_ZLIB "Use libpng and zlib to process PNG images" ON)
@@ -123,7 +125,6 @@ endif ()
 macro(ege_add_executable name source)
     add_executable(${name} ${source})
     target_link_libraries(${name} xege)
-    target_include_directories(${name} PRIVATE ${CAMKE_SOURCE_DIR}/include)
     if (MSVC)
         target_compile_options(${name} PRIVATE
             /utf-8
@@ -143,8 +144,6 @@ macro(ege_add_executable name source)
 endmacro()
 
 # 编译测试
-include_directories(${CMAKE_SOURCE_DIR}/include)
-
 ege_add_executable(graphicstest test/src/maintest.cpp)
 
 add_subdirectory(src)
