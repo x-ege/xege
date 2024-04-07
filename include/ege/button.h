@@ -304,7 +304,10 @@ public:
     COLORREF textcolor() const { return _text_color; }
 
 protected:
-    void updatesidewidth() { _side_width = std::min(geth(), getw()) * 0.2; }
+    void updatesidewidth()
+    {
+        _side_width = ((geth() < getw()) ? geth() : getw()) * 0.2;
+    }
 
 #ifdef DEBUG
     void logout(const char* msg)
