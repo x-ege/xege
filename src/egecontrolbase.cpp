@@ -19,6 +19,7 @@ egeControlBase基类定义和相关操作
 
 #include "ege_head.h"
 #include "ege_common.h"
+#include "ege_extension.h"
 
 namespace ege
 {

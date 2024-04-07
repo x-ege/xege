@@ -18,7 +18,7 @@
 #define EGE_GRAPH_LIB_BUILD
 #define EGE_DEPRECATE(text)
 
-#include "../ege.h"
+#include "../include/ege.h"
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -75,7 +75,7 @@
 #include <string>
 
 #ifdef EGE_GDIPLUS
-#   ifdef NOMINMAX
+#   if defined(NOMINMAX) && defined(_MSC_VER)
 #       define max(a, b) (((a) > (b)) ? (a) : (b))
 #       define min(a, b) (((a) < (b)) ? (a) : (b))
 #       include <gdiplus.h>
@@ -86,8 +86,8 @@
 #   endif
 #endif
 
-#include "../ege/egecontrolbase.h"
 #include "thread_queue.h"
+#include "ege_api.h"
 #include "ege_common.h"
 
 #ifndef ERROR_SUCCESS
@@ -151,7 +151,7 @@ struct EGEMSG
 Gdiplus::DashStyle linestyle_to_dashstyle(int linestyle);
 #endif
 
-
+class egeControlBase;   // egeControlBase 前置声明
 
 // 定义ege全局状态对象
 struct _graph_setting

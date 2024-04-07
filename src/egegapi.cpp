@@ -17,14 +17,13 @@
 #define _CRT_NON_CONFORMING_SWPRINTFS
 #endif
 
-#include "ege_head.h"
-
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
 
-#include "../ege/sys_edit.h"
-#include "ege_common.h"
+#include "ege_head.h"
+#include "ege_extension.h"
+
 
 #include <stdio.h>
 

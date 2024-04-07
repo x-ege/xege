@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ege_common.h"
-#include "../ege/egecontrolbase.h"
 
 
 #ifndef _MSC_VER
@@ -20,11 +19,11 @@ namespace ege
 {
 
 extern struct _graph_setting graph_setting;
-
+class egeControlBase;   // 前置声明
 
 int dealmessage(_graph_setting* pg, bool force_update);
 
-void guiupdate(_graph_setting* pg, egeControlBase*& root);
+void guiupdate(_graph_setting* pg, egeControlBase* root);
 
 int waitdealmessage(_graph_setting* pg);
 

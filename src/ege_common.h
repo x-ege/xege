@@ -8,15 +8,15 @@
 #include "array.h"
 #include "set.h"
 
-#include "encodeconv.h"
+#include "ege_def.h"
 #include "ege_math.h"
 #include "ege_time.h"
 #include "ege_graph.h"
-#include "ege_def.h"
 
 #include "type.h"
 #include "utils.h"
 #include "color.h"
+#include "encodeconv.h"
 #include "message.h"
 #include "mouse.h"
 #include "keyboard.h"

@@ -39,6 +39,7 @@
 #include <stdlib.h>
 
 #include "ege_head.h"
+#include "ege_extension.h"
 
 #ifdef _ITERATOR_DEBUG_LEVEL
 #undef _ITERATOR_DEBUG_LEVEL
@@ -192,7 +193,7 @@ int dealmessage(_graph_setting* pg, bool force_update)
 }
 
 /*private function*/
-void guiupdate(_graph_setting* pg, egeControlBase*& root)
+void guiupdate(_graph_setting* pg, egeControlBase* root)
 {
     pg->msgkey_queue->process(ui_msg_process);
     pg->msgmouse_queue->process(ui_msg_process);
@@ -204,7 +205,7 @@ int waitdealmessage(_graph_setting* pg)
 {
     // MSG msg;
     if (pg->update_mark_count < UPDATE_MAX_CALL) {
-        egeControlBase*& root = pg->egectrl_root;
+        egeControlBase* root = pg->egectrl_root;
         root->draw(NULL);
 
         graphupdate(pg);

@@ -1,4 +1,5 @@
 #include "ege_head.h"
+#include "ege_extension.h"
 
 namespace ege
 {
@@ -61,7 +62,7 @@ void delay(long ms)
 void delay_ms(long ms)
 {
     struct _graph_setting* pg = &graph_setting;
-    egeControlBase*& root = pg->egectrl_root;
+    egeControlBase* root = pg->egectrl_root;
     pg->skip_timer_mark = true;
 
     if (ms == 0) {
@@ -130,7 +131,7 @@ void delay_fps(long fps) { delay_fps((double)fps); }
 void delay_fps(double fps)
 {
     struct _graph_setting* pg = &graph_setting;
-    egeControlBase*& root = pg->egectrl_root;
+    egeControlBase* root = pg->egectrl_root;
     pg->skip_timer_mark = true;
     double delay_time = 1000.0 / fps;
     double avg_max_time = delay_time * 10.0; // 误差时间在这个数值以内做平衡
@@ -177,7 +178,7 @@ void delay_jfps(long fps) { delay_jfps((double)fps); }
 void delay_jfps(double fps)
 {
     struct _graph_setting* pg = &graph_setting;
-    egeControlBase*& root = pg->egectrl_root;
+    egeControlBase* root = pg->egectrl_root;
     pg->skip_timer_mark = true;
     double delay_time = 1000.0 / fps;
     double avg_max_time = delay_time * 10.0;
