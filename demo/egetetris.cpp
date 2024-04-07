@@ -10,12 +10,12 @@
 const int g_width = 400;
 const int g_height = 520;
 
-/*记录7种形状及其4种变化的表*/
+/* 记录7种形状及其4种变化的表 */
 static int g_trs_map[8][4][4][4];
-/*变化数目表*/
+/* 变化数目表 */
 static int g_map_mod[] = {1, 4, 4, 4, 2, 2, 2, 1, 0};
 
-/*初始化全局数据及图形显示*/
+/* 初始化全局数据及图形显示 */
 void initgr() {
     initgraph(g_width, g_height);
     setfont(12, 6, "宋体");
@@ -66,12 +66,12 @@ void initgr() {
 
 class Game {
 public:
-    /*状态表*/
+    /* 状态表 */
     enum {
-        ST_START, /*游戏重新开始*/
-        ST_NEXT,  /*准备下一个方块*/
-        ST_NORMAL,/*玩家控制阶段*/
-        ST_OVER   /*游戏结束，F2重新开始*/
+        ST_START, /* 游戏重新开始 */
+        ST_NEXT,  /* 准备下一个方块 */
+        ST_NORMAL,/* 玩家控制阶段 */
+        ST_OVER   /* 游戏结束，F2重新开始 */
     };
     Game(int w, int h, int bw, int bh) {
         int colormap[10] = {0, 0xA00000, 0xA05000, 0xA0A000, 0xC000,
@@ -96,7 +96,7 @@ public:
         getimage(m_pcb, 0, 0, bw*10, bh);
         m_state = ST_START;
     }
-    /*状态转换处理*/
+    /* 状态转换处理 */
     int deal () {
         int nRet = 0;
         if ( m_state == ST_START ) { //初始化 
@@ -131,7 +131,7 @@ public:
                 m_state = ST_NORMAL;
             }
         } else if (m_state == ST_NORMAL) {
-            /*处理自由下落*/
+            /* 处理自由下落 */
             int i, j;
             if ( m_KeyState[3] == 0 || m_forbid_down) {
                 --m_curtime, m_cursubtime = 1;
@@ -142,7 +142,7 @@ public:
                 else
                     m_curxtime--;
             }
-            /*按键处理*/
+            /* 按键处理 */
             for (i = 1, j = 1; i<=2; ++i, j-=2) {
                 for ( ; m_KeyFlag[i] > 0; --m_KeyFlag[i]) {
                     m_ctl_x -= j;
@@ -191,7 +191,7 @@ public:
         memset(m_KeyFlag, 0, sizeof(m_KeyFlag));
         return nRet;
     }
-    /*碰撞检测*/
+    /* 碰撞检测 */
     bool isCrash() {
         for (int y=0; y<4; ++y) {
             for (int x=0; x<4; ++x)
@@ -205,14 +205,14 @@ public:
     }
     void merge() {
         int y, x, cy = m_gamepool_h;
-        /*合并处理*/
+        /* 合并处理 */
         for (y=0; y<4; ++y) {
             for (x=0; x<4; ++x)
                 if ( g_trs_map[m_ctl_s][m_ctl_t][y][x] )
                     m_gamepool[m_ctl_y + y][m_ctl_x + x]
                         = g_trs_map[m_ctl_s][m_ctl_t][y][x];
         }
-        /*消行计算*/
+        /* 消行计算 */
         for (y = m_gamepool_h; y >= 1; --y) {
             for (x = 1; x <= m_gamepool_w; ++x) {
                 if ( m_gamepool[y][x] == 0 )
@@ -231,7 +231,7 @@ public:
                 m_gamepool[y][x] = 0;
         }
     }
-    /*逻辑更新主函数*/
+    /* 逻辑更新主函数 */
     void update() {
         key_msg key;
         int k = kbmsg();
@@ -294,10 +294,10 @@ public:
             }
         }
     }
-    /*图形更新主函数*/
+    /* 图形更新主函数 */
     void render() {
         int x, y, c, bx, by;
-        /*画背景框*/
+        /* 画背景框 */
         cleardevice();
         drawframe(  m_base_x + 5 * m_base_w,
                     m_base_y,
@@ -305,7 +305,7 @@ public:
                     m_gamepool_h * m_base_h);
         drawframe(m_base_x, m_base_y,              4*m_base_w, 4*m_base_h);
         drawframe(m_base_x, m_base_y + 5*m_base_h, 4*m_base_w, 4*m_base_h);
-        /*画主游戏池*/
+        /* 画主游戏池 */
         bx = m_base_x + 4 * m_base_w;
         by = m_base_y - 1 * m_base_h;
         for (y = m_gamepool_h; y >= 1; --y) {
@@ -316,13 +316,13 @@ public:
                             c * m_base_w, 0);
             }
         }
-        /*画控制块*/
+        /* 画控制块 */
         if ( m_ctl_t >=0 ) {
             bx = m_base_x + (m_ctl_x + 4) * m_base_w;
             by = m_base_y + (m_ctl_y - 1) * m_base_h;
             draw44(bx, by, g_trs_map[m_ctl_s][m_ctl_t], m_ctl_dx, m_ctl_dy);
         }
-        /*画下一块和下二块*/
+        /* 画下一块和下二块 */
         bx = m_base_x;
         by = m_base_y;
         draw44(bx, by, g_trs_map[m_next1_s][0]);

@@ -1131,7 +1131,7 @@ void window_setviewport(int left, int top, int right, int bottom)
     if (same_xy == 0 || same_wh == 0) {
         graph_setting.update_mark_count -= 1;
     }
-    /*修正窗口大小*/
+    /* 修正窗口大小 */
     if (same_wh == 0) {
         RECT rect, crect;
         int dw, dh;
