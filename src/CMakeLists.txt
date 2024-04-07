@@ -60,7 +60,3 @@ target_link_libraries(xege
     INTERFACE uuid
     INTERFACE winmm
 )
-
-target_include_directories(xege
-    INTERFACE .
-)
