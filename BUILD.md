@@ -188,6 +188,14 @@ cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
 编译配置中的 `-DCMAKE_BUILD_TYPE=Release` 是构建类型（Build type），表示生成优化级别较高的
 发布版。
 
+如果编译的源文件中使用 UTF-8 字符串字面量, 那么在之后的编译阶段需要临时修改 locale 来让 VC6 能够
+处理 UTF-8 字符串。相关处理已经位于 `utils\patch-locale.bat` 脚本中, 使用此脚本执行编译命令即可。
+例如编译示例程序:
+
+```bat
+.\utils\patch-locale.bat cmake --build build --target demos
+```
+
 ### Visual Studio
 
 使用 `cmake -G` 命令查看支持的 Visual Studio 版本，选择自己安装的 VS 版本，
