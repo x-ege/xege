@@ -15,6 +15,8 @@ target_compile_definitions(xege
     PRIVATE _WIN32_WINNT=0x0510
     # Specifies that the minimum required platform is Windows XP.
     PRIVATE _WIN32_WINDOWS=0x0510
+    # Instruct windef.h not to define the min/max macros
+    PRIVATE NOMINMAX
 )
 
 if (MSVC)
@@ -22,6 +24,14 @@ if (MSVC)
     target_compile_options(xege
         PRIVATE "/Zl"
     )
+
+    # Visual Studio 2015 及之后的版本
+    if (MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(xege
+            # 源文件编码 UTF-8 (VS 2015 update 2 开始支持)
+            PRIVATE "/source-charset:utf-8"
+        )
+    endif ()
 
     if (MSVC_VERSION EQUAL 1200)
         # VC6 默认编译单线程版本（/ML(d)），无法找到 `_imp__xxx` 的定义

@@ -17,7 +17,8 @@
 
 #define EGE_GRAPH_LIB_BUILD
 #define EGE_DEPRECATE(text)
-#include "ege.h"
+
+#include "../include/ege.h"
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -66,45 +67,31 @@
 #endif
 
 #define EGE_TITLE   "EGE" EGE_VERSION " " COMPILER_VER
-#define EGE_TITLE_W L"EGE" EGE_VERSION " " COMPILER_VER
+#define EGE_TITLE_W L"EGE" EGE_L(EGE_VERSION) L" " COMPILER_VER_W
 
 #define EGE_WNDCLSNAME   "Easy Graphics Engine"
 #define EGE_WNDCLSNAME_W EGE_L(EGE_WNDCLSNAME)
 
-// MSVC 从 10.0（VS2010）开始有 stdint.h
-// GCC 从 4.5 开始有 stdint.h
-#if _MSC_VER >= 1600 || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
-#include <stdint.h>
-#elif !defined(_MSC_VER) || _MSC_VER > 1300
-#include "stdint.h"
-#endif
-
 #include <string>
 
-#include "ege/egecontrolbase.h"
+#ifdef EGE_GDIPLUS
+#   if defined(NOMINMAX) && defined(_MSC_VER)
+#       define max(a, b) (((a) > (b)) ? (a) : (b))
+#       define min(a, b) (((a) < (b)) ? (a) : (b))
+#       include <gdiplus.h>
+#       undef max
+#       undef min
+#   else
+#       include <gdiplus.h>
+#   endif
+#endif
+
 #include "thread_queue.h"
+#include "ege_api.h"
+#include "ege_common.h"
 
 #ifndef ERROR_SUCCESS
 #define ERROR_SUCCESS 0
-#endif
-
-#ifndef ASSERT_TRUE
-#ifdef _DEBUG
-#include <cassert>
-#define ASSERT_TRUE(e) assert((e) != MUSIC_ERROR)
-#else
-#define ASSERT_TRUE(e) (void(0))
-#endif
-#endif
-
-#ifdef _MSC_VER
-#define EGE_FORCEINLINE __forceinline
-#else
-#define EGE_FORCEINLINE __attribute__((always_inline)) inline
-#endif
-
-#ifdef EGE_GDIPLUS
-#include <gdiplus.h>
 #endif
 
 #define QUEUE_LEN            1024
@@ -116,33 +103,10 @@
 #define MAX_KEY_VCODE        256
 #define FLOAT_EPS            1e-3f
 
-#ifndef SWAP
-#define SWAP(_a, _b, _t) \
-    {                    \
-        _t = _a;         \
-        _a = _b;         \
-        _b = _t;         \
-    }
-#endif
 
-#ifndef max
-#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
 
 #define IFATODOB(A, B)  ((A) && (B, 0))
 #define IFNATODOB(A, B) ((A) || (B, 0))
-
-// 0xaarrggbb -> 0xaabbggrr
-#define RGBTOBGR(color) ((((color) & 0xFF) << 16) | (((color) & 0xFF0000) >> 16) | ((color) & 0xFF00FF00))
-
-// 将 color_t 与 Bitmap Buffer 所用的 0xaarrggbb 格式
-// 转换为 COLORREF 所用的 0x00bbggrr，忽略 Alpha 通道
-// 仅用于向 GDI32 API 传递颜色时
-#define ARGBTOZBGR(c) ((((c) & 0xFF) << 16) | (((c) & 0xFF0000) >> 16) | ((c) & 0xFF00))
 
 #define CONVERT_IMAGE(pimg)                                                                             \
     (((size_t)(pimg) < 0x20 ? ((pimg) ? (graph_setting.img_page[(size_t)(pimg) & 0xF]) :                \
@@ -162,51 +126,6 @@
 #define DEFAULT_CHARSET ANSI_CHARSET
 #endif
 
-#if !defined(EGE_W64)
-#if !defined(__midl) && (defined(_X86_) || defined(_M_IX86)) && _MSC_VER >= 1300
-#define EGE_W64 __w64
-#else
-#define EGE_W64
-#endif
-#endif
-
-#ifndef __int3264
-#if defined(_WIN64)
-typedef __int64          LONG_PTR, *PLONG_PTR;
-typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
-
-#define __int3264 __int64
-
-#else
-typedef EGE_W64 long          LONG_PTR, *PLONG_PTR;
-typedef EGE_W64 unsigned long ULONG_PTR, *PULONG_PTR;
-
-#define __int3264 __int32
-
-#endif
-#endif
-
-typedef ULONG_PTR DWORD_PTR, *PDWORD_PTR;
-
-typedef unsigned int uint32;
-
-#if !defined(_MSC_VER) || _MSC_VER > 1200
-typedef intptr_t POINTER_SIZE;
-#else
-typedef long POINTER_SIZE;
-#endif
-
-#ifndef _MSC_VER
-#define GRADIENT_FILL_RECT_H   0x00000000
-#define GRADIENT_FILL_RECT_V   0x00000001
-#define GRADIENT_FILL_TRIANGLE 0x00000002
-#define GRADIENT_FILL_OP_FLAG  0x000000ff
-
-extern "C"
-{
-WINGDIAPI BOOL WINAPI GradientFill(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
-}
-#endif
 
 namespace ege
 {
@@ -232,211 +151,7 @@ struct EGEMSG
 Gdiplus::DashStyle linestyle_to_dashstyle(int linestyle);
 #endif
 
-// 定义图像对象
-class IMAGE
-{
-    int m_initflag;
-
-public:
-    HDC     m_hDC;
-    HBITMAP m_hBmp;
-    int     m_width;
-    int     m_height;
-    PDWORD  m_pBuffer;
-    color_t m_color;
-    color_t m_fillcolor;
-
-private:
-#ifdef EGE_GDIPLUS
-    Gdiplus::Graphics* m_graphics;
-    Gdiplus::Pen*      m_pen;
-    Gdiplus::Brush*    m_brush;
-#endif
-    bool m_aa;
-    void initimage(HDC refDC, int width, int height);
-    void construct(int width, int height);
-    void setdefaultattribute();
-    int  deleteimage();
-    void reset();
-
-public:
-    viewporttype     m_vpt;
-    textsettingstype m_texttype;
-    linestyletype    m_linestyle;
-    float            m_linewidth;
-    color_t          m_bk_color;
-    void*            m_texture;
-
-private:
-    void inittest(const WCHAR* strCallFunction = NULL) const;
-
-public:
-    IMAGE();
-    IMAGE(int width, int height);
-    IMAGE(const IMAGE& img);            // 拷贝构造函数
-    IMAGE& operator=(const IMAGE& img); // 赋值运算符重载函数
-    ~IMAGE();
-    void gentexture(bool gen);
-
-public:
-    HDC      getdc() const { return m_hDC; }
-    int      getwidth() const { return m_width; }
-    int      getheight() const { return m_height; }
-    color_t* getbuffer() const { return (color_t*)m_pBuffer; }
-#ifdef EGE_GDIPLUS
-    // TODO: thread safe?
-    Gdiplus::Graphics* getGraphics();
-    Gdiplus::Pen*      getPen();
-    Gdiplus::Brush*    getBrush();
-    void               set_pattern(Gdiplus::Brush* brush);
-#endif
-    void enable_anti_alias(bool enable);
-
-    int  resize_f(int width, int height);
-    int  resize(int width, int height);
-    void copyimage(PCIMAGE pSrcImg);
-
-    int getimage(int srcX, int srcY, int srcWidth, int srcHeight);
-    int getimage(PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight);
-    int getimage(LPCSTR pImgFile, int zoomWidth = 0, int zoomHeight = 0);
-    int getimage(LPCWSTR pImgFile, int zoomWidth = 0, int zoomHeight = 0);
-    int getimage(LPCSTR pResType, LPCSTR pResName, int zoomWidth = 0, int zoomHeight = 0);
-    int getimage(LPCWSTR pResType, LPCWSTR pResName, int zoomWidth = 0, int zoomHeight = 0);
-    int getimage(void* pMem, long size);
-
-    void putimage(int dstX, int dstY, DWORD dwRop = SRCCOPY) const;
-    void putimage(int dstX, int dstY, int dstWidth, int dstHeight, int srcX, int srcY, DWORD dwRop = SRCCOPY) const;
-    void putimage(PIMAGE pDstImg, int dstX, int dstY, DWORD dwRop = SRCCOPY) const;
-    void putimage(PIMAGE pDstImg,
-        int              dstX,
-        int              dstY,
-        int              dstWidth,
-        int              dstHeight,
-        int              srcX,
-        int              srcY,
-        DWORD            dwRop = SRCCOPY) const;
-    void putimage(PIMAGE pDstImg,
-        int              dstX,
-        int              dstY,
-        int              dstWidth,
-        int              dstHeight,
-        int              srcX,
-        int              srcY,
-        int              srcWidth,
-        int              srcHeight,
-        DWORD            dwRop = SRCCOPY) const;
-
-    int saveimage(LPCSTR filename) const;
-    int saveimage(LPCWSTR filename) const;
-    int savepngimg(FILE* fp, int bAlpha) const;
-
-    int getpngimg(FILE* fp);
-
-    int putimage_transparent(PIMAGE imgdest,         // handle to dest
-        int                         nXOriginDest,    // x-coord of destination upper-left corner
-        int                         nYOriginDest,    // y-coord of destination upper-left corner
-        color_t                     crTransparent,   // color to make transparent
-        int                         nXOriginSrc = 0, // x-coord of source upper-left corner
-        int                         nYOriginSrc = 0, // y-coord of source upper-left corner
-        int                         nWidthSrc   = 0, // width of source rectangle
-        int                         nHeightSrc  = 0  // height of source rectangle
-    ) const;
-
-    int putimage_alphablend(PIMAGE imgdest,         // handle to dest
-        int                        nXOriginDest,    // x-coord of destination upper-left corner
-        int                        nYOriginDest,    // y-coord of destination upper-left corner
-        unsigned char              alpha,           // alpha
-        int                        nXOriginSrc = 0, // x-coord of source upper-left corner
-        int                        nYOriginSrc = 0, // y-coord of source upper-left corner
-        int                        nWidthSrc   = 0, // width of source rectangle
-        int                        nHeightSrc  = 0  // height of source rectangle
-    ) const;
-
-    int putimage_alphatransparent(PIMAGE imgdest,         // handle to dest
-        int                              nXOriginDest,    // x-coord of destination upper-left corner
-        int                              nYOriginDest,    // y-coord of destination upper-left corner
-        color_t                          crTransparent,   // color to make transparent
-        unsigned char                    alpha,           // alpha
-        int                              nXOriginSrc = 0, // x-coord of source upper-left corner
-        int                              nYOriginSrc = 0, // y-coord of source upper-left corner
-        int                              nWidthSrc   = 0, // width of source rectangle
-        int                              nHeightSrc  = 0  // height of source rectangle
-    ) const;
-
-    int putimage_withalpha(PIMAGE imgdest,         // handle to dest
-        int                       nXOriginDest,    // x-coord of destination upper-left corner
-        int                       nYOriginDest,    // y-coord of destination upper-left corner
-        int                       nXOriginSrc = 0, // x-coord of source upper-left corner
-        int                       nYOriginSrc = 0, // y-coord of source upper-left corner
-        int                       nWidthSrc   = 0, // width of source rectangle
-        int                       nHeightSrc  = 0  // height of source rectangle
-    ) const;
-
-    int putimage_withalpha(PIMAGE imgdest,      // handle to dest
-        int                       nXOriginDest, // x-coord of destination upper-left corner
-        int                       nYOriginDest, // y-coord of destination upper-left corner
-        int                       nWidthDest,   // width of destination rectangle
-        int                       nHeightDest,  // height of destination rectangle
-        int                       nXOriginSrc,  // x-coord of source upper-left corner
-        int                       nYOriginSrc,  // y-coord of source upper-left corner
-        int                       nWidthSrc,    // width of source rectangle
-        int                       nHeightSrc    // height of source rectangle
-    ) const;
-
-    int putimage_alphafilter(PIMAGE imgdest,         // handle to dest
-        int                         nXOriginDest,    // x-coord of destination upper-left corner
-        int                         nYOriginDest,    // y-coord of destination upper-left corner
-        PCIMAGE                     imgalpha,        // alpha
-        int                         nXOriginSrc = 0, // x-coord of source upper-left corner
-        int                         nYOriginSrc = 0, // y-coord of source upper-left corner
-        int                         nWidthSrc   = 0, // width of source rectangle
-        int                         nHeightSrc  = 0  // height of source rectangle
-    ) const;
-
-    int imagefilter_blurring_4(int intensity,
-        int                        alpha,
-        int                        nXOriginDest,
-        int                        nYOriginDest,
-        int                        nWidthDest,
-        int                        nHeightDest);
-
-    int imagefilter_blurring_8(int intensity,
-        int                        alpha,
-        int                        nXOriginDest,
-        int                        nYOriginDest,
-        int                        nWidthDest,
-        int                        nHeightDest);
-
-    int imagefilter_blurring(int intensity,
-        int                      alpha,
-        int                      nXOriginDest = 0,
-        int                      nYOriginDest = 0,
-        int                      nWidthDest   = 0,
-        int                      nHeightDest  = 0);
-
-    int putimage_rotate(PIMAGE imgtexture,
-        int                    nXOriginDest,
-        int                    nYOriginDest,
-        float                  centerx,
-        float                  centery,
-        float                  radian,
-        int                    btransparent = 0,  // transparent (1) or not (0)
-        int                    alpha        = -1, // in range[0, 256], alpha== -1 means no alpha
-        int                    smooth       = 0);
-
-    int putimage_rotatezoom(PIMAGE imgtexture,
-        int                        nXOriginDest,
-        int                        nYOriginDest,
-        float                      centerx,
-        float                      centery,
-        float                      radian,
-        float                      zoom,
-        int                        btransparent = 0,  // transparent (1) or not (0)
-        int                        alpha        = -1, // in range[0, 256], alpha== -1 means no alpha
-        int                        smooth       = 0);
-
-    friend void getimage_from_png_struct(PIMAGE, void*, void*);
-};
+class egeControlBase;   // egeControlBase 前置声明
 
 // 定义ege全局状态对象
 struct _graph_setting
@@ -524,8 +239,6 @@ struct _graph_setting
     _graph_setting() { window_caption = EGE_TITLE_W; }
 };
 
-extern struct _graph_setting graph_setting;
-
 template <typename T> struct count_ptr
 {
     explicit count_ptr(T* p)
@@ -593,36 +306,11 @@ private:
     // Mutex* m_mutex;
 };
 
-// convert wide char string to multibyte ANSI string
-std::string w2mb(const wchar_t wStr[]);
-
-// convert multibyte ANSI string to wide char string
-std::wstring mb2w(const char mbStr[]);
-
 void internal_panic(LPCWSTR errmsg);
 
 HBITMAP newbitmap(int width, int height, PDWORD* p_bmp_buf);
 
-// 以 bkg 为背景色，src 为前景色，alpha 为 0~255 的整数进行混合，
-// 混合结果保留 bkg 的 Alpha 通道
-EGE_FORCEINLINE color_t alphablend_inline(color_t bkg, color_t src, unsigned char alpha)
-{
-    DWORD rb = bkg & 0x00FF00FF;
-    DWORD g  = bkg & 0x0000FF00;
 
-    rb += ((src & 0x00FF00FF) - rb) * alpha >> 8;
-    g += ((src & 0x0000FF00) - g) * alpha >> 8;
-    return (rb & 0x00FF00FF) | (g & 0x0000FF00) | (bkg & 0xFF000000);
-}
-
-#if __cplusplus >= 201103L
-inline int ege_round(float x)
-{
-    return round(x);
-}
-#else
-int ege_round(float x);
-#endif
 
 // FIXME: This seems to be VC6 SDK problem
 #ifndef AC_SRC_ALPHA

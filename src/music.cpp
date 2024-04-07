@@ -7,6 +7,15 @@ MUSIC类的定义
 #include "ege_head.h"
 #include "mmsystem.h"
 
+#ifndef MUSIC_ASSERT_TRUE
+#ifdef _DEBUG
+#include <cassert>
+#define MUSIC_ASSERT_TRUE(e) assert((e) != MUSIC_ERROR)
+#else
+#define MUSIC_ASSERT_TRUE(e) (void(0))
+#endif
+#endif
+
 // #include <Digitalv.h>
 typedef struct
 {
@@ -136,7 +145,7 @@ DWORD MUSIC::OpenFile(LPCWSTR _szStr)
 // play the music stream.
 DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR       mciERR = ERROR_SUCCESS;
     MCI_PLAY_PARMS mci_p  = {0};
     DWORD          dwFlag = MCI_NOTIFY;
@@ -163,7 +172,7 @@ DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
 // pause the music stream.
 DWORD MUSIC::Pause()
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR          mciERR = ERROR_SUCCESS;
     MCI_GENERIC_PARMS mci_p  = {0};
 
@@ -177,7 +186,7 @@ DWORD MUSIC::Pause()
 // stop the music stream.
 DWORD MUSIC::Stop()
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR          mciERR = ERROR_SUCCESS;
     MCI_GENERIC_PARMS mci_p  = {0};
 
@@ -190,7 +199,7 @@ DWORD MUSIC::Stop()
 
 DWORD MUSIC::SetVolume(float value)
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR                mciERR = ERROR_SUCCESS;
     MCI_DGV_SETAUDIO_PARMSW mci_p  = {0};
     mci_p.dwItem                   = MCI_DGV_SETAUDIO_VOLUME;
@@ -204,7 +213,7 @@ DWORD MUSIC::SetVolume(float value)
 // seek the music stream playposition to `dwTo`
 DWORD MUSIC::Seek(DWORD dwTo)
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR       mciERR = ERROR_SUCCESS;
     MCI_SEEK_PARMS mci_p  = {0};
 
@@ -237,7 +246,7 @@ DWORD MUSIC::Close()
 // get the playing position. return by milliseconds
 DWORD MUSIC::GetPosition()
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCI_STATUS_PARMS mci_p = {0};
 
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
@@ -251,7 +260,7 @@ DWORD MUSIC::GetPosition()
 // get the length of the music stream. return by milliseconds
 DWORD MUSIC::GetLength()
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCI_STATUS_PARMS mci_p = {0};
 
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
@@ -264,7 +273,7 @@ DWORD MUSIC::GetLength()
 
 DWORD MUSIC::GetPlayStatus()
 {
-    ASSERT_TRUE(m_DID);
+    MUSIC_ASSERT_TRUE(m_DID);
     MCI_STATUS_PARMS mci_p = {0};
 
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;

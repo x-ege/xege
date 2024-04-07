@@ -1,9 +1,7 @@
 #ifndef EGECONTROLBASE_H
 #define EGECONTROLBASE_H
 
-#ifndef EGE_H
-#error include "egectlbase.h" must after include "ege.h" or "graphics.h"
-#endif
+#include "../ege.h"
 
 namespace ege
 {
@@ -77,12 +75,10 @@ public:
         inherit_level_e = 0,
     };
 
-    // 构造函数可以自定义，但要按需要选择使不使用宏，详见前面代码或者文档示例代码
     egeControlBase();
     egeControlBase(int inherit, egeControlBase* pParent);
     ~egeControlBase();
 
-    // 以下虚函数都不要直接相互调用
     virtual LRESULT onMessage(UINT message, WPARAM wParam, LPARAM lParam)
     {
         (void)message;
@@ -91,7 +87,6 @@ public:
         return 0;
     }
 
-    // 以下函数如果返回非0则不向子控件传递键盘鼠标消息
     virtual int onMouse(int x, int y, int flag)
     {
         (void)x;
@@ -121,33 +116,26 @@ public:
         return 0;
     }
 
-    // 屏幕更新后会被调用，用于更新逻辑
     virtual int onUpdate() { return 0; }
 
-    // 以下GetFocus在要获得焦点时调用，返回值一般返回0表示获取键盘输入焦点，返回非0放弃获得输入焦点
     virtual int onGetFocus() { return 0; }
 
-    // 失去输入焦点时调用
     virtual void onLostFocus() {}
 
-    // 设置尺寸前调用，自定义修正函数
     virtual void onSizing(int* w, int* h)
     {
         (void)w;
         (void)h;
     }
 
-    // 响应尺寸变化函数
     virtual void onSize(int w, int h)
     {
         (void)w;
         (void)h;
     }
 
-    // 重绘函数，尽量请画到pimg上，以便能控制绘画目标
     virtual void onDraw(PIMAGE pimg) const { (void)pimg; }
 
-    // 尺寸变化时调用，用于重画过滤缓冲区内容
     virtual void onResetFilter()
     {
         setbkcolor(BLACK, m_mainFilter);
@@ -158,10 +146,8 @@ public:
 
     virtual void onDelChild(egeControlBase* pChild) { (void)pChild; }
 
-    virtual void onIdle() {} // 保留接口，未用
+    virtual void onIdle() {}
 
-    // 这里以上的函数可以自行定义（注意声明要一致，不要漏掉OnDraw里的const）
-    // 这里以下的public函数可以调用，不可自定义，任何预定义变量都不要直接访问，请使用预定义函数来控制
 public:
     PIMAGE buf() { return m_mainbuf; }
 
@@ -177,7 +163,7 @@ public:
 
     void blendmode(int mode) { m_AlphablendMode = mode; }
 
-    void setrop(int rop) { m_rop = rop; } // 请用枚举类型ROP里所定义的
+    void setrop(int rop) { m_rop = rop; }
 
     void directdraw(bool bdraw) { m_bDirectDraw = (bdraw ? 1 : 0); }
     bool isdirectdraw() const { return (m_bDirectDraw != 0); }
@@ -275,45 +261,45 @@ public:
     void initok();
 
 private:
-    PIMAGE m_mainbuf;    // 主缓冲
-    PIMAGE m_mainFilter; // 过滤器
+    PIMAGE m_mainbuf;
+    PIMAGE m_mainFilter;
 
 protected:
-    int m_bVisible;    // 是否可见
-    int m_bEnable;     // 是否可获得输入（键盘和鼠标）
-    int m_bAutoDraw;   // 是否自动绘画到窗口上
-    int m_bCapture;    // 是否可获得键盘输入焦点
-    int m_bInputFocus; // 是否已经获得输入焦点
-    int m_bCapMouse;   // 是否捕捉鼠标（即使不在所在区域内）
-    int m_zOrderLayer; // Z次序层（值较大者在前，值较小者会被其它控件遮挡）
-    int m_zOrder;      // Z次序（值较大者在前，值较小者会被其它控件遮挡）
-    int m_allocId;     // 分配id
-    int m_allocZorder; // 分配Z次序
+    int m_bVisible;
+    int m_bEnable;
+    int m_bAutoDraw;
+    int m_bCapture;
+    int m_bInputFocus;
+    int m_bCapMouse;
+    int m_zOrderLayer;
+    int m_zOrder;
+    int m_allocId;
+    int m_allocZorder;
 
 private:
     egeControlBase* m_parent;
-    static int      s_maxchildid; // 下一次子控件分配ID值
+    static int      s_maxchildid;
 
 #ifdef EGE_GRAPH_LIB_BUILD
 public:
 #else
 private:
 #endif
-    void* m_childmap;    // 子控件
-    void* m_childzorder; // 子控件排序
+    void* m_childmap;
+    void* m_childzorder;
 
 protected:
-    int m_x, m_y; // 左上角坐标
-    int m_w, m_h; // 宽高
+    int m_x, m_y;
+    int m_w, m_h;
 
 protected:
-    DWORD m_rop;            // 混合方式
-    int   m_AlphablendMode; // 绘画混合过滤方式
-    int   m_bDirectDraw;    // 启用直接绘画
+    DWORD m_rop;
+    int   m_AlphablendMode;
+    int   m_bDirectDraw;
 #if _MSC_VER <= 1200
 public:
 #endif
-    int m_inheritlevel; // 继承层次
+    int m_inheritlevel;
 };
 
 } /* namespace ege */

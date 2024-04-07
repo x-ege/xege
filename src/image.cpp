@@ -681,7 +681,7 @@ struct MemCursor
 static void read_data_from_MemCursor(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead)
 {
     MemCursor& cursor = *(MemCursor*)png_get_io_ptr(png_ptr);
-    png_size_t count  = min(cursor.size - cursor.cur, byteCountToRead);
+    png_size_t count  = MIN(cursor.size - cursor.cur, byteCountToRead);
     memcpy(outBytes, cursor.data + cursor.cur, count);
     cursor.cur += count;
 }

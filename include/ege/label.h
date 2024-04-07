@@ -7,6 +7,9 @@
 
 #include "egecontrolbase.h"
 
+namespace ege
+{
+
 class label : public egeControlBase
 {
 public:
@@ -26,7 +29,7 @@ public:
         m_fontheight  = 12;
         m_alpha       = 0xff;
         m_transparent = false;
-        strcpy(m_face, "simsun");
+        strcpy(m_face, "SimSun");
         redraw();
     }
 
@@ -137,5 +140,7 @@ protected:
     bool    m_transparent;
     int     m_fontheight;
 };
+
+} // namespace ege
 
 #endif /* EGE_LABEL_H */
