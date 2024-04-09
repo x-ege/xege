@@ -1,23 +1,16 @@
 {
     "version": 4,
-    "env": {
-        "myDefaultIncludePath": [
-            "${workspaceFolder}/src",
-            "${workspaceFolder}/src/ege"
-        ]
-    },
     "configurations": [
         {
             "name": "default",
-            "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cStandard": "c89",
+            "cppStandard": "c++98",
             "defines": [
                 "_FORTIFY_SOURCE=0"
             ],
             "includePath": [
-                "${myDefaultIncludePath}"
-            ],
-            "configurationProvider": "ms-vscode.cmake-tools"
+                "${workspaceFolder}/include"
+            ]
         }
     ]
 }
