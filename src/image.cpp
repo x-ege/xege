@@ -527,7 +527,7 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
     if (color_type == PNG_COLOR_TYPE_RGB) {
         for (uint32 i = 0; i < height; ++i) {
             for (uint32 j = 0; j < width; ++j) {
-                m_pBuffer[i * width + j] = 0xFFFFFF & (DWORD&)row_pointers[i][j * 3];
+                m_pBuffer[i * width + j] = EGEACOLOR(0xFF, (DWORD&)row_pointers[i][j * 3]);
             }
         }
     } else if (color_type == PNG_COLOR_TYPE_RGBA) {
