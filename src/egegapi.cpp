@@ -1579,10 +1579,10 @@ void EGEAPI ege_drawtext(LPCSTR textstring, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
-        int bufferSize = MultiByteToWideChar(CP_ACP, 0, textstring, -1, NULL, 0);
+        int bufferSize = MultiByteToWideChar(getcodepage(), 0, textstring, -1, NULL, 0);
         if (bufferSize < 128) {
             WCHAR wStr[128];
-            MultiByteToWideChar(CP_ACP, 0, textstring, -1, wStr, 128);
+            MultiByteToWideChar(getcodepage(), 0, textstring, -1, wStr, 128);
             ege_drawtext_p(wStr, x, y, img);
         } else {
             const std::wstring& wStr = mb2w(textstring);
@@ -1796,7 +1796,7 @@ int inputbox_getline(LPCSTR title, LPCSTR text, LPSTR buf, int len)
     std::wstring buf_w(len, L'\0');
     int ret = inputbox_getline(title_w.c_str(), text_w.c_str(), &buf_w[0], len);
     if (ret) {
-        WideCharToMultiByte(CP_ACP, 0, buf_w.c_str(), -1, buf, len, 0, 0);
+        WideCharToMultiByte(getcodepage(), 0, buf_w.c_str(), -1, buf, len, 0, 0);
     }
     return ret;
 }

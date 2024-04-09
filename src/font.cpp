@@ -26,52 +26,6 @@ static unsigned int private_gettextmode(PIMAGE img)
 }
 
 /* private function */
-static void private_textout(PIMAGE img, LPCSTR textstring, int x, int y, int horiz, int vert)
-{
-    if (horiz >= 0 && vert >= 0) {
-        UINT fMode = TA_NOUPDATECP; // TA_UPDATECP;
-        img->m_texttype.horiz = horiz;
-        img->m_texttype.vert = vert;
-        if (img->m_texttype.horiz == RIGHT_TEXT) {
-            fMode |= TA_RIGHT;
-        } else if (img->m_texttype.horiz == CENTER_TEXT) {
-            fMode |= TA_CENTER;
-        } else {
-            fMode |= TA_LEFT;
-        }
-        if (img->m_texttype.vert == BOTTOM_TEXT) {
-            fMode |= TA_BOTTOM;
-        } else {
-            fMode |= TA_TOP;
-        }
-        SetTextAlign(img->m_hDC, fMode);
-    } else {
-        SetTextAlign(img->m_hDC, private_gettextmode(img));
-    }
-
-    if (textstring) {
-        int xOffset = 0, yOffset = 0;
-
-        if (img->m_texttype.vert == CENTER_TEXT) {
-            LOGFONT font;
-            getfont(&font, img);
-
-            int textHeight = textheight(textstring, img);
-            int escapement = font.lfEscapement % 3600;
-            if (escapement != 0) {
-                double radian = escapement / 10.0 * PI / 180.0;
-                xOffset = (int)round(-textHeight * sin(radian) / 2.0);
-                yOffset = (int)round(-textHeight * cos(radian) / 2.0);
-            } else {
-                yOffset = (int)round(-textHeight / 2.0);
-            }
-        }
-
-        TextOutA(img->m_hDC, x + xOffset, y + yOffset, textstring, (int)strlen(textstring));
-    }
-}
-
-/* private function */
 static void private_textout(PIMAGE img, LPCWSTR textstring, int x, int y, int horiz, int vert)
 {
     if (horiz >= 0 && vert >= 0) {
@@ -98,7 +52,7 @@ static void private_textout(PIMAGE img, LPCWSTR textstring, int x, int y, int ho
         int xOffset = 0, yOffset = 0;
 
         if (img->m_texttype.vert == CENTER_TEXT) {
-            LOGFONT font;
+            LOGFONTW font;
             getfont(&font, img);
 
             int textHeight = textheight(textstring, img);
@@ -118,14 +72,8 @@ static void private_textout(PIMAGE img, LPCWSTR textstring, int x, int y, int ho
 
 void outtext(LPCSTR textstring, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-
-    if (img) {
-        POINT pt;
-        GetCurrentPositionEx(img->m_hDC, &pt);
-        private_textout(img, textstring, pt.x, pt.y, -1, -1);
-    }
-    CONVERT_IMAGE_END;
+    const std::wstring& textstring_w = mb2w(textstring);
+    outtext(textstring_w.c_str(), pimg);
 }
 
 void outtext(LPCWSTR textstring, PIMAGE pimg)
@@ -154,12 +102,8 @@ void outtext(WCHAR c, PIMAGE pimg)
 
 void outtextxy(int x, int y, LPCSTR textstring, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-
-    if (img) {
-        private_textout(img, textstring, x, y, -1, -1);
-    }
-    CONVERT_IMAGE_END;
+    const std::wstring& textstring_w = mb2w(textstring);
+    outtextxy(x, y, textstring_w.c_str(), pimg);
 }
 
 void outtextxy(int x, int y, LPCWSTR textstring, PIMAGE pimg)
@@ -186,16 +130,8 @@ void outtextxy(int x, int y, WCHAR c, PIMAGE pimg)
 
 void outtextrect(int x, int y, int w, int h, LPCSTR textstring, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-
-    if (img) {
-        unsigned int fmode = private_gettextmode(img);
-        RECT rect = {x, y, x + w, y + h};
-        DrawTextA(
-            img->m_hDC, textstring, -1, &rect, fmode | DT_NOPREFIX | DT_WORDBREAK | DT_EDITCONTROL | DT_EXPANDTABS);
-    }
-
-    CONVERT_IMAGE_END;
+    const std::wstring& textstring_w = mb2w(textstring);
+    outtextrect(x, y, w, h, textstring_w.c_str(), pimg);
 }
 
 void outtextrect(int x, int y, int w, int h, LPCWSTR textstring, PIMAGE pimg)
@@ -211,6 +147,9 @@ void outtextrect(int x, int y, int w, int h, LPCWSTR textstring, PIMAGE pimg)
 
     CONVERT_IMAGE_END;
 }
+
+// NOTE: xyprintf 和 rectprintf 的 LPCSTR 版本理论上可能出问题, 某种编码下可能出现一个字节值为 0x25, 也就是 '%',
+// 导致 printf 内部处理出错. 但出这种错的机会应该极少, 故先不处理.
 
 void xyprintf(int x, int y, LPCSTR fmt, ...)
 {
@@ -266,15 +205,8 @@ void rectprintf(int x, int y, int w, int h, LPCWSTR fmt, ...)
 
 int textwidth(LPCSTR textstring, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (img) {
-        SIZE sz;
-        GetTextExtentPoint32A(img->m_hDC, textstring, (int)strlen(textstring), &sz);
-        CONVERT_IMAGE_END;
-        return sz.cx;
-    }
-    CONVERT_IMAGE_END;
-    return 0;
+    const std::wstring& textstring_w = mb2w(textstring);
+    return textwidth(textstring_w.c_str(), pimg);
 }
 
 int textwidth(LPCWSTR textstring, PIMAGE pimg)
@@ -304,15 +236,8 @@ int textwidth(WCHAR c, PIMAGE pimg)
 
 int textheight(LPCSTR textstring, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (img) {
-        SIZE sz;
-        GetTextExtentPoint32A(img->m_hDC, textstring, (int)strlen(textstring), &sz);
-        CONVERT_IMAGE_END;
-        return sz.cy;
-    }
-    CONVERT_IMAGE_END;
-    return 0;
+    const std::wstring& textstring_w = mb2w(textstring);
+    return textheight(textstring_w.c_str(), pimg);
 }
 
 int textheight(LPCWSTR textstring, PIMAGE pimg)
@@ -366,23 +291,25 @@ void setfont(int nHeight,
     BYTE fbPitchAndFamily,
     PIMAGE pimg)
 {
-    LOGFONTA lf = {0};
-    lf.lfHeight = nHeight;
-    lf.lfWidth = nWidth;
-    lf.lfEscapement = nEscapement;
-    lf.lfOrientation = nOrientation;
-    lf.lfWeight = nWeight;
-    lf.lfItalic = (bItalic != 0);
-    lf.lfUnderline = (bUnderline != 0);
-    lf.lfStrikeOut = (bStrikeOut != 0);
-    lf.lfCharSet = fbCharSet;
-    lf.lfOutPrecision = fbOutPrecision;
-    lf.lfClipPrecision = fbClipPrecision;
-    lf.lfQuality = fbQuality;
-    lf.lfPitchAndFamily = fbPitchAndFamily;
-    lstrcpyA(lf.lfFaceName, lpszFace);
+    const std::wstring& wFace = mb2w(lpszFace);
 
-    setfont(&lf, pimg);
+    setfont(
+        nHeight,
+        nWidth,
+        wFace.c_str(),
+        nEscapement,
+        nOrientation,
+        nWeight,
+        bItalic,
+        bUnderline,
+        bStrikeOut,
+        fbCharSet,
+        fbOutPrecision,
+        fbClipPrecision,
+        fbQuality,
+        fbPitchAndFamily,
+        pimg
+    );
 }
 
 void setfont(int nHeight,
@@ -513,6 +440,9 @@ void setfont(int nHeight, int nWidth, LPCWSTR lpszFace, PIMAGE pimg)
         DEFAULT_PITCH,
         pimg);
 }
+
+// NOTE: 按照 EGE 的 codepage 来转换 LOGFONTA::lfFaceName 似乎不太合规, 所以这里保留了原行为没有修改.
+// 是否完全删除两个 LOGFONTA 版本的函数?
 
 void setfont(const LOGFONTA* font, PIMAGE pimg)
 {

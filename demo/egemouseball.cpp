@@ -177,6 +177,7 @@ void dealMouse(BALL* ball)
 int main(void)
 {
     {
+        setcodepage(EGE_CODEPAGE_UTF8);
         setinitmode(INIT_ANIMATION);
         initgraph(LEN, WID);
         setcaption("碰撞小球");

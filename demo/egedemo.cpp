@@ -1093,11 +1093,16 @@ public:
     SceneIntroduce()
     {
         memset(m_str, 0, sizeof(m_str));
-        strcpy(m_str, "你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？\r\n本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。\r\n在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。\r\n（请按任意键继续）\r\n");
+        // 此处没有直接用宽字符串字面量初始化 m_str, 因为 VC6 会转出乱码
+        const char* str = "你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？\r\n本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。\r\n在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。\r\n（请按任意键继续）\r\n";
+        MultiByteToWideChar(getcodepage(), 0, str, -1, m_str, 1024);
+
+        // 理想状态:
+        // wcscpy(m_str, L"你是刚刚学习Ｃ语言的新手吗？...");
     }
     SceneBase* Update()
     {
-        char str[1024] = {0};
+        wchar_t str[1024] = {0};
         int len = 0;
         setfont(20, 0, "宋体");
         for (len = 0 ; len<=0x80; delay_fps(60))
@@ -1109,8 +1114,8 @@ public:
 
         for (len = 0 ; m_str[len]; delay_fps(30))
         {
-            strncpy(str, m_str, len);
-            len += 2;
+            wcsncpy(str, m_str, len);
+            len += 1;
             cleardevice();
             setcolor(0x0);
             outtextrect(102, 101, 440, 480, str);
@@ -1129,11 +1134,12 @@ public:
         return new SceneMenu;
     }
 private:
-    char m_str[1024];
+    wchar_t m_str[1024];
 };
 
 int main()
 {
+    setcodepage(EGE_CODEPAGE_UTF8);
     initgraph(640, 480);
     SceneBase* scene = new SceneIntroduce; //SceneIntroduce; SceneMenu
     setbkmode(TRANSPARENT);

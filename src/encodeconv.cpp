@@ -4,6 +4,7 @@
  */
 
 #include "encodeconv.h"
+#include <ege.h>
 
 #include <Windows.h>
 
@@ -18,9 +19,10 @@ namespace ege
  */
 std::string w2mb(const wchar_t wStr[])
 {
-    int bufsize = WideCharToMultiByte(CP_ACP, 0, wStr, -1, NULL, 0, 0, 0);
+    unsigned int codepage = ege::getcodepage();
+    int bufsize = WideCharToMultiByte(codepage, 0, wStr, -1, NULL, 0, 0, 0);
     std::string mbStr(bufsize, '\0');
-    WideCharToMultiByte(CP_ACP, 0, wStr, -1, &mbStr[0], bufsize, 0, 0);
+    WideCharToMultiByte(codepage, 0, wStr, -1, &mbStr[0], bufsize, 0, 0);
     return mbStr;
 }
 
@@ -32,9 +34,10 @@ std::string w2mb(const wchar_t wStr[])
  */
 std::wstring mb2w(const char mbStr[])
 {
-    int bufsize = MultiByteToWideChar(CP_ACP, 0, mbStr, -1, NULL, 0);
+    unsigned int codepage = ege::getcodepage();
+    int bufsize = MultiByteToWideChar(codepage, 0, mbStr, -1, NULL, 0);
     std::wstring wStr(bufsize, L'\0');
-    MultiByteToWideChar(CP_ACP, 0, mbStr, -1, &wStr[0], bufsize);
+    MultiByteToWideChar(codepage, 0, mbStr, -1, &wStr[0], bufsize);
     return wStr;
 }
 

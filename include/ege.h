@@ -149,6 +149,12 @@
 #define EGEGRAYA(gray, a)    EGERGBA(gray, gray, gray, a)
 #define EGEAGRAY(a, gray)    EGEGRAYA(gray, a)
 
+/* you can also use 932 as shift-jis, 950 as big5 ... */
+/* see https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers */
+#define EGE_CODEPAGE_GB2312    936
+#define EGE_CODEPAGE_UTF8      65001
+#define EGE_CODEPAGE_ANSI      0
+
 namespace ege
 {
 
@@ -466,6 +472,7 @@ enum initmode_flag
     INIT_TOPMOST         = 0x4,
     INIT_RENDERMANUAL    = 0x8,
     INIT_NOFORCEEXIT     = 0x10,
+    // equal to setunicodecharmessage(true)
     INIT_UNICODE         = 0x20,
     INIT_HIDE            = 0x40,
     INIT_WITHLOGO        = 0x100,
@@ -816,7 +823,12 @@ class IMAGE;
 typedef IMAGE *PIMAGE;
 typedef const IMAGE *PCIMAGE;
 
-
+// `codepage` sholde be `EGE_CODEPAGE_XXX`, default is `EGE_CODEPAGE_ANSI`.
+void EGEAPI setcodepage(unsigned int codepage);
+unsigned int EGEAPI getcodepage();
+// set whether char message of `getkey()` use UTF-16 
+void EGEAPI setunicodecharmessage(bool enable);
+bool EGEAPI getunicodecharmessage();
 void EGEAPI setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT);
 int  EGEAPI getinitmode();
 void EGEAPI initgraph(int Width, int Height, int Flag);
@@ -1097,8 +1109,10 @@ void EGEAPI setfont(int nHeight, int nWidth, LPCSTR lpszFace,  int nEscapement, 
 void EGEAPI setfont(int nHeight, int nWidth, LPCWSTR lpszFace, int nEscapement, int nOrientation,
                     int nWeight, int bItalic, int bUnderline, int bStrikeOut, BYTE fbCharSet,
                     BYTE fbOutPrecision, BYTE fbClipPrecision, BYTE fbQuality, BYTE fbPitchAndFamily, PIMAGE pimg = NULL);
+EGE_DEPRECATE(setfont)
 void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
 void EGEAPI setfont(const LOGFONTW *font, PIMAGE pimg = NULL);
+EGE_DEPRECATE(getfont)
 void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
 void EGEAPI getfont(LOGFONTW *font, PCIMAGE pimg = NULL);
 

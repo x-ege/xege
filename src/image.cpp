@@ -379,17 +379,8 @@ void IMAGE::putimage(int dstX, int dstY, DWORD dwRop) const
 
 int IMAGE::getimage(LPCSTR filename, int zoomWidth, int zoomHeight)
 {
-    inittest(L"IMAGE::getimage");
-    {
-        int ret = getimage_pngfile(this, filename);
-        // grIOerror means it's not a png file
-        if (ret != grIOerror) {
-            return ret;
-        }
-    }
-
-    const std::wstring& wszPath = mb2w(filename);
-    return getimage(wszPath.c_str(), zoomWidth, zoomHeight);
+    const std::wstring& filename_w = mb2w(filename);
+    return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
 }
 
 inline void getimage_from_IPicture(PIMAGE self, IPicture* pPicture)
@@ -501,15 +492,8 @@ ERROR_BREAK:
 
 int IMAGE::saveimage(LPCSTR filename) const
 {
-    FILE* fp = NULL;
-    int   ret;
-    fp = fopen(filename, "wb");
-    if (fp == NULL) {
-        return grIOerror;
-    }
-    ret = saveimagetofile(this, fp);
-    fclose(fp);
-    return ret;
+    const std::wstring& filename_w = mb2w(filename);
+    return saveimage(filename_w.c_str());
 }
 
 int IMAGE::saveimage(LPCWSTR filename) const
@@ -752,11 +736,9 @@ inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
 
 int IMAGE::getimage(LPCSTR pResType, LPCSTR pResName, int zoomWidth, int zoomHeight)
 {
-    (void)zoomWidth, (void)zoomHeight; // ignore
-    inittest(L"IMAGE::getimage");
-    struct _graph_setting* pg    = &graph_setting;
-    HRSRC                  hrsrc = FindResourceA(pg->instance, pResName, pResType);
-    return getimage_from_resource(this, hrsrc);
+    const std::wstring& pResType_w = mb2w(pResType);
+    const std::wstring& pResName_w = mb2w(pResName);
+    return getimage(pResType_w.c_str(), pResName_w.c_str(), zoomWidth, zoomHeight);
 }
 
 int IMAGE::getimage(LPCWSTR pResType, LPCWSTR pResName, int zoomWidth, int zoomHeight)
@@ -2858,30 +2840,6 @@ int imagefilter_blurring(
     return ret;
 }
 
-static BOOL nocaseends(LPCSTR suffix, LPCSTR text)
-{
-    int    len_suffix, len_text;
-    LPCSTR p_suffix;
-    LPCSTR p_text;
-    len_suffix = strlen(suffix);
-    len_text   = strlen(text);
-    if ((len_text < len_suffix) || (len_text == 0)) {
-        return FALSE;
-    }
-    p_suffix = suffix;
-    p_text   = (text + (len_text - len_suffix));
-
-    while (*p_text != 0) {
-        if (toupper(*p_text) != toupper(*p_suffix)) {
-            return FALSE;
-        }
-        p_text++;
-        p_suffix++;
-    }
-
-    return TRUE;
-}
-
 static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
 {
     int     len_suffix, len_text;
@@ -2910,21 +2868,8 @@ static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
 
 int saveimage(PCIMAGE pimg, LPCSTR filename)
 {
-    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    int     ret = 0;
-
-    if (img) {
-        if (nocaseends(".bmp", filename)) {
-            ret = img->saveimage(filename);
-        } else if (nocaseends(".png", filename)) {
-            ret = savepng(pimg, filename);
-        } else {
-            ret = savepng(pimg, filename);
-        }
-    }
-
-    CONVERT_IMAGE_END;
-    return ret;
+    const std::wstring& filename_w = mb2w(filename);
+    return saveimage(pimg, filename_w.c_str());
 }
 
 int saveimage(PCIMAGE pimg, LPCWSTR filename)
@@ -2948,17 +2893,8 @@ int saveimage(PCIMAGE pimg, LPCWSTR filename)
 
 int getimage_pngfile(PIMAGE pimg, LPCSTR filename)
 {
-    FILE* fp = NULL;
-    int   ret;
-    fp = fopen(filename, "rb");
-
-    if (fp == NULL) {
-        return grFileNotFound;
-    }
-
-    ret = pimg->getpngimg(fp);
-    fclose(fp);
-    return ret;
+    const std::wstring& filename_w = mb2w(filename);
+    return getimage_pngfile(pimg, filename_w.c_str());
 }
 
 int getimage_pngfile(PIMAGE pimg, LPCWSTR filename)
@@ -2978,18 +2914,8 @@ int getimage_pngfile(PIMAGE pimg, LPCWSTR filename)
 
 int savepng(PCIMAGE pimg, LPCSTR filename, int bAlpha)
 {
-    FILE* fp = NULL;
-    int   ret;
-    pimg = CONVERT_IMAGE_CONST(pimg);
-    fp   = fopen(filename, "wb");
-
-    if (fp == NULL) {
-        return grFileNotFound;
-    }
-
-    ret = pimg->savepngimg(fp, bAlpha);
-    fclose(fp);
-    return ret;
+    const std::wstring& filename_w = mb2w(filename);
+    return savepng(pimg, filename_w.c_str(), bAlpha);
 }
 
 int savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha)

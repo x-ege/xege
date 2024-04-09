@@ -5,6 +5,7 @@
 
 int main()
 {
+    setcodepage(EGE_CODEPAGE_UTF8);
     initgraph(400, 300);
     setfont(24, 12, "宋体");
     {

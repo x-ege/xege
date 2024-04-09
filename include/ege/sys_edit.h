@@ -7,6 +7,14 @@
 
 #include "egecontrolbase.h"
 
+#define EGE_CONVERT_TO_WSTR_WITH(mbStr, block)                                               \
+    {                                                                                        \
+        int    bufsize = ::MultiByteToWideChar(::ege::getcodepage(), 0, mbStr, -1, NULL, 0); \
+        WCHAR* wStr    = new WCHAR[bufsize];                                                 \
+        ::MultiByteToWideChar(::ege::getcodepage(), 0, mbStr, -1, &wStr[0], bufsize);        \
+        block delete wStr;                                                                   \
+    }
+
 namespace ege
 {
 
@@ -63,7 +71,7 @@ public:
         m_callback = ::GetWindowLongPtrW(m_hwnd, GWLP_WNDPROC);
         ::SetWindowLongPtrW(m_hwnd, GWLP_WNDPROC, (LONG_PTR)getProcfunc());
         {
-            char fontname[] = {'\xcb', '\xce', '\xcc', '\xe5', 0, 0};
+            WCHAR fontname[] = L"SimSun";
             setfont(12, 6, fontname);
         }
         visible(false);
@@ -104,55 +112,31 @@ public:
 
     void setfont(int h, int w, LPCSTR fontface)
     {
-        {
-            LOGFONTA lf         = {0};
-            lf.lfHeight         = h;
-            lf.lfWidth          = w;
-            lf.lfEscapement     = 0;
-            lf.lfOrientation    = 0;
-            lf.lfWeight         = FW_DONTCARE;
-            lf.lfItalic         = 0;
-            lf.lfUnderline      = 0;
-            lf.lfStrikeOut      = 0;
-            lf.lfCharSet        = DEFAULT_CHARSET;
-            lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
-            lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
-            lf.lfQuality        = DEFAULT_QUALITY;
-            lf.lfPitchAndFamily = DEFAULT_PITCH;
-            lstrcpyA(lf.lfFaceName, fontface);
-            HFONT hFont = CreateFontIndirectA(&lf);
-            if (hFont) {
-                ::SendMessageA(m_hwnd, WM_SETFONT, (WPARAM)hFont, 0);
-                ::DeleteObject(m_hFont);
-                m_hFont = hFont;
-            }
-        }
+        EGE_CONVERT_TO_WSTR_WITH(fontface, { setfont(h, w, wStr); });
     }
 
     void setfont(int h, int w, LPCWSTR fontface)
     {
-        {
-            LOGFONTW lf         = {0};
-            lf.lfHeight         = h;
-            lf.lfWidth          = w;
-            lf.lfEscapement     = 0;
-            lf.lfOrientation    = 0;
-            lf.lfWeight         = FW_DONTCARE;
-            lf.lfItalic         = 0;
-            lf.lfUnderline      = 0;
-            lf.lfStrikeOut      = 0;
-            lf.lfCharSet        = DEFAULT_CHARSET;
-            lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
-            lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
-            lf.lfQuality        = DEFAULT_QUALITY;
-            lf.lfPitchAndFamily = DEFAULT_PITCH;
-            lstrcpyW(lf.lfFaceName, fontface);
-            HFONT hFont = CreateFontIndirectW(&lf);
-            if (hFont) {
-                ::SendMessageW(m_hwnd, WM_SETFONT, (WPARAM)hFont, 0);
-                ::DeleteObject(m_hFont);
-                m_hFont = hFont;
-            }
+        LOGFONTW lf         = {0};
+        lf.lfHeight         = h;
+        lf.lfWidth          = w;
+        lf.lfEscapement     = 0;
+        lf.lfOrientation    = 0;
+        lf.lfWeight         = FW_DONTCARE;
+        lf.lfItalic         = 0;
+        lf.lfUnderline      = 0;
+        lf.lfStrikeOut      = 0;
+        lf.lfCharSet        = DEFAULT_CHARSET;
+        lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
+        lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
+        lf.lfQuality        = DEFAULT_QUALITY;
+        lf.lfPitchAndFamily = DEFAULT_PITCH;
+        lstrcpyW(lf.lfFaceName, fontface);
+        HFONT hFont = CreateFontIndirectW(&lf);
+        if (hFont) {
+            ::SendMessageW(m_hwnd, WM_SETFONT, (WPARAM)hFont, 0);
+            ::DeleteObject(m_hFont);
+            m_hFont = hFont;
         }
     }
 
@@ -168,7 +152,10 @@ public:
         ::MoveWindow(m_hwnd, m_x, m_y, m_w, m_h, TRUE);
     }
 
-    void settext(LPCSTR text) { ::SendMessageA(m_hwnd, WM_SETTEXT, 0, (LPARAM)text); }
+    void settext(LPCSTR text)
+    {
+        EGE_CONVERT_TO_WSTR_WITH(text, { settext(wStr); });
+    }
 
     void settext(LPCWSTR text) { ::SendMessageW(m_hwnd, WM_SETTEXT, 0, (LPARAM)text); }
 
@@ -214,6 +201,8 @@ protected:
     color_t  m_bgcolor;
     LONG_PTR m_callback;
 };
+
+#undef EGE_CONVERT_TO_WSTR_WITH
 
 } // namespace ege
 #endif /*EGE_SYS_EDIT_H*/
