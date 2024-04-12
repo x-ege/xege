@@ -513,33 +513,63 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
 {
     png_structp png_ptr  = (png_structp)vpng_ptr;
     png_infop   info_ptr = (png_infop)vinfo_ptr;
-    png_set_expand(png_ptr);
-    png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_BGR | PNG_TRANSFORM_EXPAND, NULL);
+
+    // 读取 PNG 文件信息, 存入 info_ptr 中
+    png_read_info(png_ptr, info_ptr);
+
+    const png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+    const png_byte bit_depth  = png_get_bit_depth(png_ptr, info_ptr);    // 每通道位深度
+
+    // 将颜色类型转为 RGB 或 RGBA
+    if (color_type == PNG_COLOR_TYPE_PALETTE) {
+        png_set_palette_to_rgb(png_ptr);
+    } else if ((color_type == PNG_COLOR_TYPE_GRAY) && (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)) {
+        png_set_gray_to_rgb(png_ptr);
+    }
+
+    // 将位深度设置为每通道 8 bit
+    // (PNG 格式规定，RGB(RGBA) 位深度为 8 或 16，不会低于 8)
+    if (bit_depth == 16) {
+        png_set_strip_16(png_ptr);  // bit depth 16 to 8
+    }
+
+    // 补齐 alpha 通道
+    if ((color_type != PNG_COLOR_TYPE_RGB_ALPHA) && (color_type != PNG_COLOR_TYPE_GRAY_ALPHA)) {
+        // 若在 tRNS 块中存在透明度信息则将其转为 alpha 通道
+        if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+            png_set_tRNS_to_alpha(png_ptr);
+        } else {
+            // 添加 alpha 通道(最高字节)并以 0xFF 填充
+            png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER);
+        }
+    }
+
+    // 调整通道存储顺序，字节从低到高依次为 B, G, R, A
+    png_set_bgr(png_ptr);
+
+    // 根据以上设置的目标格式更新 png_info 结构
+    png_read_update_info(png_ptr, info_ptr);
+
+    // 经过以上设置，像素格式为 ARGB (字节顺序从低至高依次为 B, G, R, A), 位深度为 8 (每通道)
 
     const png_uint_32 width  = png_get_image_width(png_ptr, info_ptr);
     const png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
-    self->resize_f((int)width, (int)height); // png_get_IHDR
 
-    const png_byte   color_type   = png_get_color_type(png_ptr, info_ptr);
-    const png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
-    PDWORD           m_pBuffer    = self->m_pBuffer;
+    // 将图像宽高调整至与 PNG 图片一致
+    self->resize_f((int)width, (int)height);
 
-    if (color_type == PNG_COLOR_TYPE_RGB) {
-        for (uint32 i = 0; i < height; ++i) {
-            for (uint32 j = 0; j < width; ++j) {
-                m_pBuffer[i * width + j] = EGEACOLOR(0xFF, (DWORD&)row_pointers[i][j * 3]);
-            }
-        }
-    } else if (color_type == PNG_COLOR_TYPE_RGBA) {
-        for (uint32 i = 0; i < height; ++i) {
-            for (uint32 j = 0; j < width; ++j) {
-                m_pBuffer[i * width + j] = ((DWORD*)(row_pointers[i]))[j];
-                if ((m_pBuffer[i * width + j] & 0xFF000000) == 0) {
-                    m_pBuffer[i * width + j] = 0;
-                }
-            }
-        }
+    // 创建 png_bytep 数组，指向图像缓冲区中每一行像素的首地址
+    const png_bytepp row_pointers = new png_bytep[height];
+    color_t* buffer = self->m_pBuffer;
+
+    for (png_uint_32 i = 0; i < height; i++) {
+        row_pointers[i] = (png_bytep)(&buffer[i * width]);
     }
+
+    // 读取图像数据，存入 row_pointers 所指向的内存区域
+    png_read_image(png_ptr, row_pointers);
+
+    delete[] row_pointers;
 }
 
 int IMAGE::getpngimg(FILE* fp)
