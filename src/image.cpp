@@ -383,25 +383,53 @@ int IMAGE::getimage(LPCSTR filename, int zoomWidth, int zoomHeight)
     return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
 }
 
-inline void getimage_from_IPicture(PIMAGE self, IPicture* pPicture)
+void getimage_from_IPicture(PIMAGE self, IPicture* pPicture)
 {
-    long lWidth, lHeight, lWidthPixels, lHeightPixels;
-    {
-        ::HDC ScreenDC = ::GetDC(NULL);
-        pPicture->get_Width(&lWidth);
-        pPicture->get_Height(&lHeight);
-        // convert Himetric units to pixels
-        lWidthPixels  = ::MulDiv(lWidth, ::GetDeviceCaps(ScreenDC, LOGPIXELSX), 2540);
-        lHeightPixels = ::MulDiv(lHeight, ::GetDeviceCaps(ScreenDC, LOGPIXELSY), 2540);
-        ::ReleaseDC(NULL, ScreenDC);
-    }
+    long lWidth, lHeight;
+
+    pPicture->get_Width(&lWidth);
+    pPicture->get_Height(&lHeight);
+
+    // convert Himetric units to pixels
+    ::HDC ScreenDC = ::GetDC(NULL);
+    long lWidthPixels  = ::MulDiv(lWidth, ::GetDeviceCaps(ScreenDC, LOGPIXELSX), 2540);
+    long lHeightPixels = ::MulDiv(lHeight, ::GetDeviceCaps(ScreenDC, LOGPIXELSY), 2540);
+    ::ReleaseDC(NULL, ScreenDC);
 
     self->resize_f(lWidthPixels, lHeightPixels);
-    {
-        HDC dc = self->m_hDC;
+    pPicture->Render(getHDC(self), 0, 0, lWidthPixels, lHeightPixels, 0, lHeight, lWidth, -lHeight, 0);
+}
 
-        pPicture->Render(dc, 0, 0, lWidthPixels, lHeightPixels, 0, lHeight, lWidth, -lHeight, 0);
-    }
+int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
+{
+    Gdiplus::PixelFormat srcPixelFormat = bitmap.GetPixelFormat();
+
+    // 将图像尺寸调整至和 bitmap 一致
+    int width  = bitmap.GetWidth();
+    int height = bitmap.GetHeight();
+    resize_f(pimg, width, height);
+
+    // 设置外部缓冲区属性，指向图像缓冲区首地址
+    Gdiplus::BitmapData bitmapData;
+    bitmapData.Width       = width;
+    bitmapData.Height      = height;
+    bitmapData.Stride      = width * sizeof(color_t);    // 至下一行像素的偏移量(字节)
+    bitmapData.PixelFormat = PixelFormat32bppARGB;       // 像素颜色格式: 32 位 ARGB
+    bitmapData.Scan0       = getbuffer(pimg);            // 图像首行像素的首地址
+
+    // 读取区域设置为整个图像
+    Gdiplus::Rect rect = {0, 0, width, height};
+
+    // 模式: 仅读取图像数据, 缓冲区由用户分配
+    int imageLockMode = Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeUserInputBuf;
+
+    //读取 Bitmap 图像内容，以 32 位 ARGB 的像素格式写入缓冲区
+    bitmap.LockBits(&rect, imageLockMode, PixelFormat32bppARGB, &bitmapData);
+
+    // 解除锁定(如果设置了 ImageLockModeWrite 模式，还会将缓冲区内容复制到 Bitmap)
+    bitmap.UnlockBits(&bitmapData);
+
+    return grOk;
 }
 
 int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
@@ -433,15 +461,17 @@ int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
 
     lstrcpyW(wszPath, szPath);
 
-    hr = OleLoadPicturePath(wszPath, 0, 0, 0, IID_IPicture, (void**)&pPicture);
+    Gdiplus::Bitmap bitmap(wszPath);
 
-    if (FAILED(hr)) {
+    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
         return grIOerror;
     }
 
-    getimage_from_IPicture(this, pPicture);
+    getimage_from_bitmap(this, bitmap);
 
-    pPicture->Release();
+    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
+        return grError;
+    }
 
     return grOk;
 }
@@ -745,17 +775,18 @@ inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
                 return grNullPointer;
             }
 
-            hr = OleLoadPicture(pStm, (LONG)dwSize, TRUE, IID_IPicture, (void**)&pPicture);
+            Gdiplus::Bitmap bitmap(pStm);
 
-            GlobalFree(hGlobal);
-
-            if (FAILED(hr)) {
-                return grIOerror;
+            int status = bitmap.GetLastStatus();
+            if (status != Gdiplus::Ok) {
+                return grError;
             }
 
-            getimage_from_IPicture(self, pPicture);
+            getimage_from_bitmap(self, bitmap);
 
-            pPicture->Release();
+            // GlobalFree 不能在 Bitmap 读取完成之前调用
+            // 否则 Bitmap::LockBits() 返回 Win32Error 错误码
+            GlobalFree(hGlobal);
         }
 
         return grOk;
@@ -801,17 +832,17 @@ int IMAGE::getimage(void* pMem, long size)
             return grNullPointer;
         }
 
-        hr = OleLoadPicture(pStm, (LONG)dwSize, TRUE, IID_IPicture, (void**)&pPicture);
+        Gdiplus::Bitmap bitmap(pStm);
 
-        GlobalFree(hGlobal);
-
-        if (FAILED(hr)) {
-            return grIOerror;
+        if (bitmap.GetLastStatus() != Gdiplus::Ok) {
+            return grError;
         }
 
-        getimage_from_IPicture(this, pPicture);
+        getimage_from_bitmap(this, bitmap);
 
-        pPicture->Release();
+        // GlobalFree 不能在 Bitmap 读取完成之前调用
+        // 否则 Bitmap::LockBits() 返回 Win32Error 错误码
+        GlobalFree(hGlobal);
 
         return grOk;
     }
