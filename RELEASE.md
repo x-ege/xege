@@ -2,7 +2,7 @@
 
 遵循[如何维护更新日志](https://keepachangelog.com/zh-CN/1.0.0/)编写。
 
-## 未发布（20.09）
+## 未发布（24.0a）
 
 ### 更新
 
@@ -12,6 +12,8 @@
 - 增加绘制圆角矩形的函数。
 - 增加主控台系列函数。
 - 现在 `ege::saveimage` 根据后缀名决定将文件保存为 png 还是 bmp 格式。
+- 增加 `ege::setcodepage` 控制 EGE 如何解析程序中的 `char*` 字符串。
+- 增加 `ege::setunicodecharmessage` 控制字符消息的编码。
 
 ### 修复
 
@@ -28,6 +30,7 @@
 - 改用支持 GPU 加速的 `AlphaBlend` 函数实现 `ege::putimage_alpha`。
 - 将 `ege::resize` 行为改回会填充背景色，并增加不填充背景色的 `ege::resize_f` 函数。
 - 按照 CSS 颜色表修改并增加了预定义颜色值定义。
+- `INIT_UNICODE` 初始化选项，改为设置 `setunicodecharmessage(true)`，现在 EGE 总是创建 Unicode 窗口。
 
 ## [20.08] - 2020-08-31
 

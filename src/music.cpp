@@ -17,15 +17,6 @@ MUSIC类的定义
 #endif
 
 // #include <Digitalv.h>
-typedef struct
-{
-    DWORD_PTR dwCallback;
-    DWORD     dwItem;
-    DWORD     dwValue;
-    DWORD     dwOver;
-    LPSTR     lpstrAlgorithm;
-    LPSTR     lpstrQuality;
-} MCI_DGV_SETAUDIO_PARMSA;
 
 typedef struct
 {
@@ -36,12 +27,6 @@ typedef struct
     LPWSTR    lpstrAlgorithm;
     LPWSTR    lpstrQuality;
 } MCI_DGV_SETAUDIO_PARMSW;
-
-#ifdef UNICODE
-typedef MCI_DGV_SETAUDIO_PARMSW MCI_DGV_SETAUDIO_PARMS;
-#else
-typedef MCI_DGV_SETAUDIO_PARMSA MCI_DGV_SETAUDIO_PARMS;
-#endif // UNICODE
 
 #ifndef MCI_DGV_SETAUDIO_VOLUME
 #define MCI_DGV_SETAUDIO_ITEM   0x00800000L
@@ -72,38 +57,8 @@ MUSIC::~MUSIC()
 // open a music file. szStr: Path of the file
 DWORD MUSIC::OpenFile(LPCSTR _szStr)
 {
-    MCIERROR        mciERR = ERROR_SUCCESS;
-    MCI_OPEN_PARMSA mci_p  = {0};
-
-    mci_p.lpstrElementName = _szStr;
-    mci_p.lpstrDeviceType  = NULL;
-    mci_p.dwCallback       = (DWORD_PTR)m_dwCallBack;
-
-    if (m_DID != MUSIC_ERROR) {
-        Close();
-    }
-
-    mciERR = mciSendCommandA(0, MCI_OPEN, MCI_OPEN_SHAREABLE | MCI_NOTIFY | MCI_OPEN_ELEMENT, (DWORD_PTR)&mci_p);
-
-    if (mciERR != ERROR_SUCCESS) {
-        mciERR = mciSendCommandA(0, MCI_OPEN, MCI_NOTIFY | MCI_OPEN_ELEMENT, (DWORD_PTR)&mci_p);
-    }
-
-    if (mciERR == ERROR_SUCCESS) {
-        m_DID = mci_p.wDeviceID;
-
-        //
-        // Set time format with milliseconds
-        //
-        {
-            MCI_SET_PARMS mci_p = {0};
-            mci_p.dwTimeFormat  = MCI_FORMAT_MILLISECONDS;
-            // DWORD dw =
-            mciSendCommandW(m_DID, MCI_SET, MCI_NOTIFY | MCI_SET_TIME_FORMAT, (DWORD_PTR)&mci_p);
-        }
-    }
-
-    return mciERR;
+    const std::wstring& wszStr = mb2w(_szStr);
+    return OpenFile(wszStr.c_str());
 }
 
 // open a music file. szStr: Path of the file

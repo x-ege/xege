@@ -157,7 +157,7 @@ class egeControlBase;   // egeControlBase 前置声明
 struct _graph_setting
 {
     bool has_init;
-    bool is_unicode;
+    bool unicode_char_message;
 
     struct _graph
     {
@@ -230,6 +230,8 @@ struct _graph_setting
     double delay_ms_dwLast;
     double delay_fps_dwLast;
     int    getch_last_key;
+    unsigned int codepage;
+    wchar_t wchar_message_low_surrogate_cache;
 
     HBRUSH savebrush_hbr;
 

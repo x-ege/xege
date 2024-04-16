@@ -10,10 +10,10 @@
 namespace ege
 {
 
-// convert wide char string to multibyte ANSI string
+// convert wide char string to multibyte string, using ege::getcodepage
 std::string w2mb(const wchar_t wStr[]);
 
-// convert multibyte ANSI string to wide char string
+// convert multibyte string to wide char string, using ege::getcodepage
 std::wstring mb2w(const char mbStr[]);
 
 }

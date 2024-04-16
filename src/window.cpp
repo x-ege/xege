@@ -7,7 +7,6 @@ namespace ege
 {
 
 // -----------------------------------------------------------------------------
-static WNDPROC DefWindowProcFunc = NULL;
 
 static HWND    g_attach_hwnd     = 0;
 // -----------------------------------------------------------------------------
@@ -117,15 +116,6 @@ int attachHWND(HWND hWnd)
     return 0;
 }
 
-HWND createWindow(HWND parentWindow, const char* caption, DWORD style, DWORD exstyle, POINT pos, SIZE size)
-{
-    HWND window = NULL;
-    window = CreateWindowExA(exstyle, EGE_WNDCLSNAME, caption, style & ~WS_VISIBLE,
-            pos.x, pos.y, size.cx,size.cy, parentWindow, NULL, getHInstance(), NULL);
-
-    return window;
-}
-
 HWND createWindow(HWND parentWindow, const wchar_t* caption, DWORD style, DWORD exstyle, POINT pos, SIZE size)
 {
     HWND window = NULL;
@@ -133,36 +123,6 @@ HWND createWindow(HWND parentWindow, const wchar_t* caption, DWORD style, DWORD 
             pos.x, pos.y, size.cx,size.cy, parentWindow, NULL, getHInstance(), NULL);
 
     return window;
-}
-
-
-void setDefaultWindowProcFunc(WNDPROC windowProcFunc)
-{
-    DefWindowProcFunc = windowProcFunc;
-}
-
-WNDPROC getDefaultWindowProcFunc()
-{
-    return DefWindowProcFunc;
-}
-
-ATOM register_classA(struct _graph_setting* pg, HINSTANCE hInstance)
-{
-    WNDCLASSEXA wcex = {0};
-
-    wcex.cbSize = sizeof(wcex);
-
-    wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc   = (WNDPROC)getProcfunc();
-    wcex.cbClsExtra    = 0;
-    wcex.cbWndExtra    = 0;
-    wcex.hInstance     = hInstance;
-    wcex.hIcon         = pg->window_hicon;
-    wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszClassName = EGE_WNDCLSNAME;
-
-    return RegisterClassExA(&wcex);
 }
 
 ATOM register_classW(struct _graph_setting* pg, HINSTANCE hInstance)

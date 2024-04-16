@@ -9,7 +9,9 @@
                 "_FORTIFY_SOURCE=0"
             ],
             "includePath": [
-                "${workspaceFolder}/include"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/3rdparty/libpng",
+                "${workspaceFolder}/build/**"
             ]
         }
     ]

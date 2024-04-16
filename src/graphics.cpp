@@ -15,6 +15,9 @@
 本文件定义平台密切相关的操作及接口
 */
 
+// 整个项目和其他源文件中不需要定义 UNICODE 宏, 这里是为了解决 VC6 下 initicon 中代码的编译问题加的
+#define UNICODE 1
+
 #ifndef _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
 #define _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
 #endif
@@ -63,18 +66,25 @@
 
 #endif
 
+// VC6 compatible
+#ifndef IS_LOW_SURROGATE
+#define IS_LOW_SURROGATE(wch) (((wch) >= 0xdc00) && ((wch) <= 0xdfff))
+#endif
+#ifndef IS_HIGH_SURROGATE
+#define IS_HIGH_SURROGATE(wch) (((wch) >= 0xd800) && ((wch) <= 0xdbff))
+#endif
+
 namespace ege
 {
 
 // 静态分配，零初始化
 struct _graph_setting graph_setting;
 
-static int     g_initoption      = INIT_DEFAULT;
-static DWORD   g_windowstyle     = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
-                                   WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
-static DWORD   g_windowexstyle   = WS_EX_LEFT | WS_EX_LTRREADING;
-static int     g_windowpos_x     = CW_USEDEFAULT;
-static int     g_windowpos_y     = CW_USEDEFAULT;
+static int   g_initoption    = INIT_DEFAULT;
+static DWORD g_windowstyle   = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
+static DWORD g_windowexstyle = WS_EX_LEFT | WS_EX_LTRREADING;
+static int   g_windowpos_x   = CW_USEDEFAULT;
+static int   g_windowpos_y   = CW_USEDEFAULT;
 
 #ifdef __cplusplus
 extern "C"
@@ -215,7 +225,6 @@ int waitdealmessage(_graph_setting* pg)
     return !pg->exit_window;
 }
 
-
 /*private function*/
 void setmode(int gdriver, int gmode)
 {
@@ -243,23 +252,9 @@ void setmode(int gdriver, int gmode)
     }
 }
 
-
-
 /*private callback function*/
-#if !defined(UNICODE)
-BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCSTR lpszType, LPSTR lpszName, LONG_PTR lParam)
-{
-    HICON hico = (HICON)LoadImage(hModule, lpszName, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
-    if (hico) {
-        *((HICON*)lParam) = hico;
-        return FALSE;
-    }
-    return TRUE;
-}
 
-#else
-
-BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszName, LONG_PTR lParam)
+static BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszName, LONG_PTR lParam)
 {
     HICON hico = (HICON)LoadImageW(hModule, lpszName, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
     if (hico) {
@@ -268,7 +263,6 @@ BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszName
     }
     return TRUE;
 }
-#endif
 
 void DefCloseHandler()
 {
@@ -436,11 +430,9 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
     struct _graph_setting* pg   = &graph_setting;
     // int wmId, wmEvent;
 
-    WNDPROC DefWindowProcFunc = getDefaultWindowProcFunc();
-
     pg_w = (struct _graph_setting*)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
     if (pg_w == NULL || pg->img_page[0] == NULL) {
-        return DefWindowProcFunc(hWnd, message, wParam, lParam);
+        return DefWindowProcW(hWnd, message, wParam, lParam);
     }
 
     switch (message) {
@@ -459,7 +451,7 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
             if (pg->callback_close) {
                 pg->callback_close();
             } else {
-                return DefWindowProcFunc(hWnd, message, wParam, lParam);
+                return DefWindowProcW(hWnd, message, wParam, lParam);
             }
         }
         break;
@@ -478,7 +470,36 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
     case WM_CHAR:
         // if (hWnd == pg->hwnd)
         {
-            on_key(pg, message, (unsigned long)wParam, lParam);
+            if (pg->unicode_char_message) {
+                on_key(pg, message, (unsigned long)wParam, lParam);
+            } else {
+                // 将 UTF-16 编码的消息转换为相应多字节编码的消息
+                // UTF-16 可能是代理对, 这里处理下
+                wchar_t wc                = (wchar_t)wParam;
+                wchar_t wBuf[3]           = {0};
+                bool    skip_this_message = false;
+                int     wCount            = 0;
+                if (IS_LOW_SURROGATE(wc)) {
+                    pg->wchar_message_low_surrogate_cache = wc;
+                    skip_this_message                     = true;
+                } else if (IS_HIGH_SURROGATE(wc)) {
+                    wBuf[0]                               = pg->wchar_message_low_surrogate_cache;
+                    wBuf[1]                               = wc;
+                    pg->wchar_message_low_surrogate_cache = L'\0';
+                    wCount                                = 2;
+                } else {
+                    wBuf[0]                               = wc;
+                    pg->wchar_message_low_surrogate_cache = L'\0';
+                    wCount                                = 1;
+                }
+                if (!skip_this_message) {
+                    char mbBuf[8];
+                    int  mbCount = WideCharToMultiByte(getcodepage(), 0, wBuf, wCount, mbBuf, 8, NULL, NULL);
+                    for (int i = 0; i < mbCount; ++i) {
+                        on_key(pg, message, (unsigned long)(unsigned char)mbBuf[i], lParam);
+                    }
+                }
+            }
         }
         break;
     case WM_LBUTTONDOWN:
@@ -595,7 +616,7 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         if (pg != pg_w) {
             return ((egeControlBase*)pg_w)->onMessage(message, wParam, lParam);
         }
-        return DefWindowProcFunc(hWnd, message, wParam, lParam);
+        return DefWindowProcW(hWnd, message, wParam, lParam);
     }
     if (pg != pg_w) {
         return ((egeControlBase*)pg_w)->onMessage(message, wParam, lParam);
@@ -729,6 +750,26 @@ void initicon(void)
     pg->window_hicon = LoadIcon(NULL, IDI_APPLICATION);
 }
 
+void setcodepage(unsigned int codepage)
+{
+    graph_setting.codepage = codepage;
+}
+
+unsigned int getcodepage()
+{
+    return graph_setting.codepage;
+}
+
+void setunicodecharmessage(bool enable)
+{
+    graph_setting.unicode_char_message = enable;
+}
+
+bool getunicodecharmessage()
+{
+    return graph_setting.unicode_char_message;
+}
+
 void initgraph(int* gdriver, int* gmode, const char* path)
 {
     struct _graph_setting* pg = &graph_setting;
@@ -756,14 +797,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 
     initicon();
 
-    // 注册窗口类，设置默认消息处理函数
-    if (pg->is_unicode) {
-        register_classW(pg, pg->instance);
-        setDefaultWindowProcFunc(DefWindowProcW);
-    } else {
-        register_classA(pg, pg->instance);
-        setDefaultWindowProcFunc(DefWindowProcA);
-    }
+    // 注册窗口类，设置默认消息处理函数, 此处创建 Unicode 窗口
+    register_classW(pg, pg->instance);
 
     // SECURITY_ATTRIBUTES sa = {0};
     DWORD pid;
@@ -825,7 +860,6 @@ void closegraph()
     ShowWindow(pg->hwnd, SW_HIDE);
 }
 
-
 /*private function*/
 DWORD WINAPI messageloopthread(LPVOID lpParameter)
 {
@@ -858,23 +892,12 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
     }
     pg->has_init = true;
 
-    if (pg->is_unicode) {
-        while (!pg->exit_window) {
-            if (GetMessageW(&msg, NULL, 0, 0)) {
-                TranslateMessage(&msg);
-                DispatchMessageW(&msg);
-            } else {
-                Sleep(1);
-            }
-        }
-    } else {
-        while (!pg->exit_window) {
-            if (GetMessageA(&msg, NULL, 0, 0)) {
-                TranslateMessage(&msg);
-                DispatchMessageA(&msg);
-            } else {
-                Sleep(1);
-            }
+    while (!pg->exit_window) {
+        if (GetMessageW(&msg, NULL, 0, 0)) {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        } else {
+            Sleep(1);
         }
     }
 
@@ -907,12 +930,8 @@ BOOL init_instance(HINSTANCE hInstance)
     DWORD windowStyle   = g_windowstyle & ~WS_VISIBLE;
     DWORD windowExStyle = g_windowexstyle;
 
-    if (pg->is_unicode) {
-        pg->hwnd = createWindow(getParentWindow(), pg->window_caption.c_str(), windowStyle, windowExStyle, windowPos, windowSize);
-    } else {
-        const std::string& wndCaption = w2mb(pg->window_caption.c_str());
-        pg->hwnd = createWindow(getParentWindow(), wndCaption.c_str(), windowStyle, windowExStyle, windowPos, windowSize);
-    }
+    pg->hwnd =
+        createWindow(getParentWindow(), pg->window_caption.c_str(), windowStyle, windowExStyle, windowPos, windowSize);
 
     if (pg->hwnd == NULL) {
         return FALSE;
@@ -979,7 +998,7 @@ void setinitmode(int mode, int x, int y)
         g_windowexstyle |= WS_EX_TOPMOST;
     }
     if (mode & INIT_UNICODE) {
-        pg->is_unicode = true;
+        setunicodecharmessage(true);
     }
     g_windowpos_x = x;
     g_windowpos_y = y;
@@ -995,7 +1014,5 @@ long getGraphicsVer()
 {
     return EGE_VERSION_NUMBER;
 }
-
-
 
 } // namespace ege
