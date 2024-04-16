@@ -383,25 +383,53 @@ int IMAGE::getimage(LPCSTR filename, int zoomWidth, int zoomHeight)
     return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
 }
 
-inline void getimage_from_IPicture(PIMAGE self, IPicture* pPicture)
+void getimage_from_IPicture(PIMAGE self, IPicture* pPicture)
 {
-    long lWidth, lHeight, lWidthPixels, lHeightPixels;
-    {
-        ::HDC ScreenDC = ::GetDC(NULL);
-        pPicture->get_Width(&lWidth);
-        pPicture->get_Height(&lHeight);
-        // convert Himetric units to pixels
-        lWidthPixels  = ::MulDiv(lWidth, ::GetDeviceCaps(ScreenDC, LOGPIXELSX), 2540);
-        lHeightPixels = ::MulDiv(lHeight, ::GetDeviceCaps(ScreenDC, LOGPIXELSY), 2540);
-        ::ReleaseDC(NULL, ScreenDC);
-    }
+    long lWidth, lHeight;
+
+    pPicture->get_Width(&lWidth);
+    pPicture->get_Height(&lHeight);
+
+    // convert Himetric units to pixels
+    ::HDC ScreenDC = ::GetDC(NULL);
+    long lWidthPixels  = ::MulDiv(lWidth, ::GetDeviceCaps(ScreenDC, LOGPIXELSX), 2540);
+    long lHeightPixels = ::MulDiv(lHeight, ::GetDeviceCaps(ScreenDC, LOGPIXELSY), 2540);
+    ::ReleaseDC(NULL, ScreenDC);
 
     self->resize_f(lWidthPixels, lHeightPixels);
-    {
-        HDC dc = self->m_hDC;
+    pPicture->Render(getHDC(self), 0, 0, lWidthPixels, lHeightPixels, 0, lHeight, lWidth, -lHeight, 0);
+}
 
-        pPicture->Render(dc, 0, 0, lWidthPixels, lHeightPixels, 0, lHeight, lWidth, -lHeight, 0);
-    }
+int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
+{
+    Gdiplus::PixelFormat srcPixelFormat = bitmap.GetPixelFormat();
+
+    // 将图像尺寸调整至和 bitmap 一致
+    int width  = bitmap.GetWidth();
+    int height = bitmap.GetHeight();
+    resize_f(pimg, width, height);
+
+    // 设置外部缓冲区属性，指向图像缓冲区首地址
+    Gdiplus::BitmapData bitmapData;
+    bitmapData.Width       = width;
+    bitmapData.Height      = height;
+    bitmapData.Stride      = width * sizeof(color_t);    // 至下一行像素的偏移量(字节)
+    bitmapData.PixelFormat = PixelFormat32bppARGB;       // 像素颜色格式: 32 位 ARGB
+    bitmapData.Scan0       = getbuffer(pimg);            // 图像首行像素的首地址
+
+    // 读取区域设置为整个图像
+    Gdiplus::Rect rect = {0, 0, width, height};
+
+    // 模式: 仅读取图像数据, 缓冲区由用户分配
+    int imageLockMode = Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeUserInputBuf;
+
+    //读取 Bitmap 图像内容，以 32 位 ARGB 的像素格式写入缓冲区
+    bitmap.LockBits(&rect, imageLockMode, PixelFormat32bppARGB, &bitmapData);
+
+    // 解除锁定(如果设置了 ImageLockModeWrite 模式，还会将缓冲区内容复制到 Bitmap)
+    bitmap.UnlockBits(&bitmapData);
+
+    return grOk;
 }
 
 int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
@@ -433,15 +461,17 @@ int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
 
     lstrcpyW(wszPath, szPath);
 
-    hr = OleLoadPicturePath(wszPath, 0, 0, 0, IID_IPicture, (void**)&pPicture);
+    Gdiplus::Bitmap bitmap(wszPath);
 
-    if (FAILED(hr)) {
+    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
         return grIOerror;
     }
 
-    getimage_from_IPicture(this, pPicture);
+    getimage_from_bitmap(this, bitmap);
 
-    pPicture->Release();
+    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
+        return grError;
+    }
 
     return grOk;
 }
@@ -513,33 +543,63 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
 {
     png_structp png_ptr  = (png_structp)vpng_ptr;
     png_infop   info_ptr = (png_infop)vinfo_ptr;
-    png_set_expand(png_ptr);
-    png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_BGR | PNG_TRANSFORM_EXPAND, NULL);
+
+    // 读取 PNG 文件信息, 存入 info_ptr 中
+    png_read_info(png_ptr, info_ptr);
+
+    const png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+    const png_byte bit_depth  = png_get_bit_depth(png_ptr, info_ptr);    // 每通道位深度
+
+    // 将颜色类型转为 RGB 或 RGBA
+    if (color_type == PNG_COLOR_TYPE_PALETTE) {
+        png_set_palette_to_rgb(png_ptr);
+    } else if ((color_type == PNG_COLOR_TYPE_GRAY) && (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)) {
+        png_set_gray_to_rgb(png_ptr);
+    }
+
+    // 将位深度设置为每通道 8 bit
+    // (PNG 格式规定，RGB(RGBA) 位深度为 8 或 16，不会低于 8)
+    if (bit_depth == 16) {
+        png_set_strip_16(png_ptr);  // bit depth 16 to 8
+    }
+
+    // 补齐 alpha 通道
+    if ((color_type != PNG_COLOR_TYPE_RGB_ALPHA) && (color_type != PNG_COLOR_TYPE_GRAY_ALPHA)) {
+        // 若在 tRNS 块中存在透明度信息则将其转为 alpha 通道
+        if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+            png_set_tRNS_to_alpha(png_ptr);
+        } else {
+            // 添加 alpha 通道(最高字节)并以 0xFF 填充
+            png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER);
+        }
+    }
+
+    // 调整通道存储顺序，字节从低到高依次为 B, G, R, A
+    png_set_bgr(png_ptr);
+
+    // 根据以上设置的目标格式更新 png_info 结构
+    png_read_update_info(png_ptr, info_ptr);
+
+    // 经过以上设置，像素格式为 ARGB (字节顺序从低至高依次为 B, G, R, A), 位深度为 8 (每通道)
 
     const png_uint_32 width  = png_get_image_width(png_ptr, info_ptr);
     const png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
-    self->resize_f((int)width, (int)height); // png_get_IHDR
 
-    const png_byte   color_type   = png_get_color_type(png_ptr, info_ptr);
-    const png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
-    PDWORD           m_pBuffer    = self->m_pBuffer;
+    // 将图像宽高调整至与 PNG 图片一致
+    self->resize_f((int)width, (int)height);
 
-    if (color_type == PNG_COLOR_TYPE_RGB) {
-        for (uint32 i = 0; i < height; ++i) {
-            for (uint32 j = 0; j < width; ++j) {
-                m_pBuffer[i * width + j] = 0xFFFFFF & (DWORD&)row_pointers[i][j * 3];
-            }
-        }
-    } else if (color_type == PNG_COLOR_TYPE_RGBA) {
-        for (uint32 i = 0; i < height; ++i) {
-            for (uint32 j = 0; j < width; ++j) {
-                m_pBuffer[i * width + j] = ((DWORD*)(row_pointers[i]))[j];
-                if ((m_pBuffer[i * width + j] & 0xFF000000) == 0) {
-                    m_pBuffer[i * width + j] = 0;
-                }
-            }
-        }
+    // 创建 png_bytep 数组，指向图像缓冲区中每一行像素的首地址
+    const png_bytepp row_pointers = new png_bytep[height];
+    color_t* buffer = self->m_pBuffer;
+
+    for (png_uint_32 i = 0; i < height; i++) {
+        row_pointers[i] = (png_bytep)(&buffer[i * width]);
     }
+
+    // 读取图像数据，存入 row_pointers 所指向的内存区域
+    png_read_image(png_ptr, row_pointers);
+
+    delete[] row_pointers;
 }
 
 int IMAGE::getpngimg(FILE* fp)
@@ -715,17 +775,18 @@ inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
                 return grNullPointer;
             }
 
-            hr = OleLoadPicture(pStm, (LONG)dwSize, TRUE, IID_IPicture, (void**)&pPicture);
+            Gdiplus::Bitmap bitmap(pStm);
 
-            GlobalFree(hGlobal);
-
-            if (FAILED(hr)) {
-                return grIOerror;
+            int status = bitmap.GetLastStatus();
+            if (status != Gdiplus::Ok) {
+                return grError;
             }
 
-            getimage_from_IPicture(self, pPicture);
+            getimage_from_bitmap(self, bitmap);
 
-            pPicture->Release();
+            // GlobalFree 不能在 Bitmap 读取完成之前调用
+            // 否则 Bitmap::LockBits() 返回 Win32Error 错误码
+            GlobalFree(hGlobal);
         }
 
         return grOk;
@@ -771,17 +832,17 @@ int IMAGE::getimage(void* pMem, long size)
             return grNullPointer;
         }
 
-        hr = OleLoadPicture(pStm, (LONG)dwSize, TRUE, IID_IPicture, (void**)&pPicture);
+        Gdiplus::Bitmap bitmap(pStm);
 
-        GlobalFree(hGlobal);
-
-        if (FAILED(hr)) {
-            return grIOerror;
+        if (bitmap.GetLastStatus() != Gdiplus::Ok) {
+            return grError;
         }
 
-        getimage_from_IPicture(this, pPicture);
+        getimage_from_bitmap(this, bitmap);
 
-        pPicture->Release();
+        // GlobalFree 不能在 Bitmap 读取完成之前调用
+        // 否则 Bitmap::LockBits() 返回 Win32Error 错误码
+        GlobalFree(hGlobal);
 
         return grOk;
     }

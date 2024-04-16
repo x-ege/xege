@@ -223,6 +223,7 @@ enum graphics_errors
     grInvalidFont        = -13,
     grInvalidFontNum     = -14,
     grInvalidVersion     = -18,
+
     grException          = 0x10, /* ege error */
     grParamError         = 0x11,
     grInvalidRegion      = 0x12,
