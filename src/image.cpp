@@ -400,22 +400,28 @@ void getimage_from_IPicture(PIMAGE self, IPicture* pPicture)
     pPicture->Render(getHDC(self), 0, 0, lWidthPixels, lHeightPixels, 0, lHeight, lWidth, -lHeight, 0);
 }
 
-int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
+int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap, bool regardRGB32asARGB)
 {
     Gdiplus::PixelFormat srcPixelFormat = bitmap.GetPixelFormat();
 
     // 将图像尺寸调整至和 bitmap 一致
-    int width  = bitmap.GetWidth();
-    int height = bitmap.GetHeight();
+    int width  = (int)bitmap.GetWidth();
+    int height = (int)bitmap.GetHeight();
     resize_f(pimg, width, height);
 
+    Gdiplus::PixelFormat destPixelFormat = PixelFormat32bppARGB;
+
+    // 将 RGB32 格式视为 ARGB，保留其预留通道作为透明通道使用 (若是将 RGB32 转换成 ARGB，alpha 会被填充成 0xFF)
+    if ((srcPixelFormat == PixelFormat32bppRGB) && regardRGB32asARGB)
+        destPixelFormat = PixelFormat32bppRGB;
+
     // 设置外部缓冲区属性，指向图像缓冲区首地址
-    Gdiplus::BitmapData bitmapData;
+    Gdiplus::BitmapData bitmapData = {0};
     bitmapData.Width       = width;
     bitmapData.Height      = height;
-    bitmapData.Stride      = width * sizeof(color_t);    // 至下一行像素的偏移量(字节)
-    bitmapData.PixelFormat = PixelFormat32bppARGB;       // 像素颜色格式: 32 位 ARGB
-    bitmapData.Scan0       = getbuffer(pimg);            // 图像首行像素的首地址
+    bitmapData.Stride      = width * (int)sizeof(color_t);  // 至下一行像素的偏移量(字节)
+    bitmapData.PixelFormat = destPixelFormat;               // 像素颜色格式: 32 位 ARGB
+    bitmapData.Scan0       = getbuffer(pimg);               // 图像首行像素的首地址
 
     // 读取区域设置为整个图像
     Gdiplus::Rect rect = {0, 0, width, height};
@@ -424,7 +430,7 @@ int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     int imageLockMode = Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeUserInputBuf;
 
     //读取 Bitmap 图像内容，以 32 位 ARGB 的像素格式写入缓冲区
-    bitmap.LockBits(&rect, imageLockMode, PixelFormat32bppARGB, &bitmapData);
+    bitmap.LockBits(&rect, imageLockMode, destPixelFormat, &bitmapData);
 
     // 解除锁定(如果设置了 ImageLockModeWrite 模式，还会将缓冲区内容复制到 Bitmap)
     bitmap.UnlockBits(&bitmapData);

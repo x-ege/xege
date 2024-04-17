@@ -213,6 +213,6 @@ public:
     friend void getimage_from_png_struct(PIMAGE, void*, void*);
 };
 
-int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
+int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap, bool regardRGB32asARGB = true);
 
 } // namespace ege

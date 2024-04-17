@@ -824,10 +824,10 @@ class IMAGE;
 typedef IMAGE *PIMAGE;
 typedef const IMAGE *PCIMAGE;
 
-// `codepage` sholde be `EGE_CODEPAGE_XXX`, default is `EGE_CODEPAGE_ANSI`.
+// `codepage` should be `EGE_CODEPAGE_XXX`, default is `EGE_CODEPAGE_ANSI`.
 void EGEAPI setcodepage(unsigned int codepage);
 unsigned int EGEAPI getcodepage();
-// set whether char message of `getkey()` use UTF-16 
+// set whether char message of `getkey()` use UTF-16
 void EGEAPI setunicodecharmessage(bool enable);
 bool EGEAPI getunicodecharmessage();
 void EGEAPI setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT);
