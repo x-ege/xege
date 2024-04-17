@@ -713,8 +713,7 @@ inline void init_img_page(struct _graph_setting* pg)
 {
     if (!pg->has_init) {
 #ifdef EGE_GDIPLUS
-        Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-        Gdiplus::GdiplusStartup(&pg->g_gdiplusToken, &gdiplusStartupInput, NULL);
+    gdipluinit();
 #endif
     }
 }
@@ -1013,6 +1012,14 @@ int getinitmode()
 long getGraphicsVer()
 {
     return EGE_VERSION_NUMBER;
+}
+
+void gdipluinit()
+{
+    if (graph_setting.g_gdiplusToken == 0) {
+        Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+        Gdiplus::GdiplusStartup(&graph_setting.g_gdiplusToken, &gdiplusStartupInput, NULL);
+    }
 }
 
 } // namespace ege
