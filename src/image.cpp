@@ -61,6 +61,7 @@ void IMAGE::construct(int width, int height)
         refDC = ::GetDC(graph_setting.hwnd);
     }
 
+    gdipluinit();
     reset();
     initimage(refDC, width, height);
     setdefaultattribute();
