@@ -1,4 +1,5 @@
 #include "ege_head.h"
+#include "ege_common.h"
 #include "ege_extension.h"
 
 namespace ege

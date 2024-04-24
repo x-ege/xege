@@ -1,6 +1,6 @@
-#include "message.h"
-
 #include "ege_head.h"
+
+#include "message.h"
 
 namespace ege
 {

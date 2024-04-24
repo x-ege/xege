@@ -1,6 +1,7 @@
 #include "debug.h"
 
 #include "ege_head.h"
+#include "ege_common.h"
 
 #include <Windows.h>
 

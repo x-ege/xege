@@ -14,6 +14,7 @@
 #endif
 
 #include "ege_head.h"
+#include "ege_common.h"
 
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL

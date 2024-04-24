@@ -22,7 +22,9 @@
 #include <cstdio>
 
 #include "ege_head.h"
+#include "ege_common.h"
 #include "ege_extension.h"
+
 
 
 #include <stdio.h>

@@ -6,6 +6,7 @@
 */
 
 #include "ege_head.h"
+
 #include <time.h>
 
 namespace ege
@@ -45,9 +46,9 @@ class mtrandom
 public:
     mtrandom() : left(1) { init(); }
 
-    explicit mtrandom(uint32 seed) : left(1) { init(seed); }
+    explicit mtrandom(uint32_t seed) : left(1) { init(seed); }
 
-    mtrandom(uint32* init_key, int key_length) : left(1)
+    mtrandom(uint32_t* init_key, int key_length) : left(1)
     {
         int i = 1, j = 0;
         int k = N > key_length ? N : key_length;
@@ -79,15 +80,15 @@ public:
         state[0] = 2147483648UL; // MSB is 1; assuring non-zero initial array
     }
 
-    void reset(uint32 rs)
+    void reset(uint32_t rs)
     {
         init(rs);
         next_state();
     }
 
-    uint32 rand()
+    uint32_t rand()
     {
-        uint32 y;
+        uint32_t y;
         if (0 == --left) {
             next_state();
         }
@@ -105,12 +106,12 @@ public:
     // generates a random number on [0,1) with 53-bit resolution
     double res53()
     {
-        uint32 a = rand() >> 5, b = rand() >> 6;
+        uint32_t a = rand() >> 5, b = rand() >> 6;
         return (a * 67108864.0 + b) / 9007199254740992.0;
     }
 
 private:
-    void init(uint32 seed = 19650218UL)
+    void init(uint32_t seed = 19650218UL)
     {
         state[0] = seed & 4294967295UL;
         for (int j = 1; j < N; ++j) {
@@ -125,7 +126,7 @@ private:
 
     void next_state()
     {
-        uint32* p = state;
+        uint32_t* p = state;
         int     i;
 
         for (i = N - M + 1; --i; ++p) {
@@ -140,13 +141,13 @@ private:
         next = state;
     }
 
-    uint32 mixbits(uint32 u, uint32 v) const { return (u & 2147483648UL) | (v & 2147483647UL); }
+    uint32_t mixbits(uint32_t u, uint32_t v) const { return (u & 2147483648UL) | (v & 2147483647UL); }
 
-    uint32 twist(uint32 u, uint32 v) const { return ((mixbits(u, v) >> 1) ^ (v & 1UL ? 2567483615UL : 0UL)); }
+    uint32_t twist(uint32_t u, uint32_t v) const { return ((mixbits(u, v) >> 1) ^ (v & 1UL ? 2567483615UL : 0UL)); }
 
-    uint32  state[N];
-    uint32  left;
-    uint32* next;
+    uint32_t  state[N];
+    uint32_t  left;
+    uint32_t* next;
 };
 
 #undef N
@@ -159,21 +160,21 @@ class mtrand_help
 public:
     mtrand_help() {}
 
-    void operator()(uint32 s) { r.reset(s); }
+    void operator()(uint32_t s) { r.reset(s); }
 
-    uint32 operator()() const { return r.rand(); }
+    uint32_t operator()() const { return r.rand(); }
 
     double operator()(double) { return r.real(); }
 };
 
 mtrandom mtrand_help::r;
 
-extern void mtsrand(uint32 s)
+extern void mtsrand(uint32_t s)
 {
     mtrand_help()(s);
 }
 
-extern uint32 mtirand()
+extern uint32_t mtirand()
 {
     return mtrand_help()();
 }
@@ -185,8 +186,8 @@ extern double mtdrand()
 
 void randomize()
 {
-    static uint32 add = 0;
-    mtsrand((uint32)time(NULL) + add++);
+    static uint32_t add = 0;
+    mtsrand((uint32_t)time(NULL) + add++);
 }
 
 unsigned int random(unsigned int n)

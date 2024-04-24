@@ -87,8 +87,6 @@
 #endif
 
 #include "thread_queue.h"
-#include "ege_api.h"
-#include "ege_common.h"
 
 #ifndef ERROR_SUCCESS
 #define ERROR_SUCCESS 0

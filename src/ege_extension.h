@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ege_head.h"
 #include "../include/ege/egecontrolbase.h"
 #include "../include/ege/button.h"
 #include "../include/ege/fps.h"

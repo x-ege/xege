@@ -42,6 +42,7 @@
 #include <stdlib.h>
 
 #include "ege_head.h"
+#include "ege_common.h"
 #include "ege_extension.h"
 
 #ifdef _ITERATOR_DEBUG_LEVEL

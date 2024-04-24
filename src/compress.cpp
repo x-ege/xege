@@ -1,4 +1,4 @@
-#include "ege_api.h"
+#include "ege_head.h"
 #include <zlib.h>
 
 namespace ege
