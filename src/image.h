@@ -215,4 +215,6 @@ public:
 
 int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
 
+int savebmp(PCIMAGE pimg, FILE* file, bool alpha = false);
+
 } // namespace ege

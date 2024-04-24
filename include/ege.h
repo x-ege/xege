@@ -1135,24 +1135,29 @@ const color_t* EGEAPI getbuffer(PCIMAGE pImg);
 
 int  EGEAPI resize_f(PIMAGE pDstImg, int width, int height);
 int  EGEAPI resize(PIMAGE pDstImg, int width, int height);
+
 int  EGEAPI getimage(PIMAGE pDstImg, int srcX, int srcY, int srcWidth, int srcHeight);
 int  EGEAPI getimage(PIMAGE pDstImg, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight);
 int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pImgFile, int zoomWidth = 0, int zoomHeight = 0);
 int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pImgFile, int zoomWidth = 0, int zoomHeight = 0);
 int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pResType, LPCSTR  pResName, int zoomWidth = 0, int zoomHeight = 0);
 int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pResType, LPCWSTR pResName, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCSTR  filename);
+int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCWSTR filename);
+
 void EGEAPI putimage(int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);
+
 int  EGEAPI saveimage(PCIMAGE pimg, LPCSTR  filename);
 int  EGEAPI saveimage(PCIMAGE pimg, LPCWSTR filename);
 int  EGEAPI savepng(PCIMAGE pimg, LPCSTR  filename, int bAlpha = 0);
 int  EGEAPI savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha = 0);
-int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCSTR  filename);
-int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCWSTR filename);
+int  EGEAPI savebmp(PCIMAGE pimg, LPCSTR  filename, bool alpha = false);
+int  EGEAPI savebmp(PCIMAGE pimg, LPCWSTR filename, bool alpha = false);
 
 int EGEAPI putimage_transparent(
     PIMAGE imgdest,         // handle to dest
