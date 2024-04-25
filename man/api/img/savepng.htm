@@ -9,19 +9,19 @@
 <font size="4">
 <font size="4" color="#0000FF"><strong>功能：</strong></font>
 
-将图像保存到文件中。
+将图像以 PNG 格式保存到文件中。(如果文件已存在，会覆盖原文件。)
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
 <pre><font color=#0000FF>int </font><font color=#008080>savepng</font>(
     <font color=#800080>PCIMAGE </font> pimg,
-    <font color=#800080>LPCSTR </font> filename,
-    <font color=#0000FF>int </font> bAlpha = 0
+    <font color=#800080>LPCSTR  </font> filename,
+    <font color=#0000FF>bool    </font> withAlphaChannel = false
 );
 
 <font color=#0000FF>int </font><font color=#008080>savepng</font>(
     <font color=#800080>PCIMAGE </font> pimg,
     <font color=#800080>LPCWSTR </font> filename,
-    <font color=#0000FF>int </font> bAlpha = 0
+    <font color=#0000FF>bool    </font> withAlphaChannel = false
 );
 </pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
@@ -31,8 +31,8 @@ pimg
 filename
 保存的图像文件名
 
-bAlpha
-设置是否保存图像透明度通道，true: 保存, false: 不保存。默认为不保存。
+withAlphaChannel
+是否保存图像透明度通道，true: 保存, false: 不保存。默认为不保存。
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>
 
