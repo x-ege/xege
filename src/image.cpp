@@ -13,6 +13,8 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
+#include "image.h"
+
 #include "ege_head.h"
 #include "ege_common.h"
 
@@ -478,67 +480,14 @@ int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
     return grOk;
 }
 
-// private function
-static int saveimagetofile(PCIMAGE img, FILE* fp)
+int IMAGE::saveimage(LPCSTR filename, bool withAlphaChannel) const
 {
-    BITMAPFILEHEADER bmpfHead = {0};
-    BITMAPINFOHEADER bmpinfo  = {0};
-    int pitch = img->m_width * 3, addbit, y, x, zero = 0;
-    addbit = 4 - (pitch & 3);
-    if (pitch & 3) {
-        pitch = ((pitch + 4) & ~3);
-    } else {
-        addbit = 0;
-    }
-
-    bmpfHead.bfType     = *(WORD*)"BM";
-    bmpfHead.bfOffBits  = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-    bmpfHead.bfSize     = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + pitch * img->m_height;
-    bmpinfo.biSize      = sizeof(BITMAPINFOHEADER);
-    bmpinfo.biBitCount  = 24;
-    bmpinfo.biHeight    = img->m_height;
-    bmpinfo.biWidth     = img->m_width;
-    bmpinfo.biPlanes    = 1;
-    bmpinfo.biSizeImage = pitch * img->m_height;
-    // bmpinfo.biXPelsPerMeter
-    fwrite(&bmpfHead, sizeof(bmpfHead), 1, fp);
-    fwrite(&bmpinfo, sizeof(bmpinfo), 1, fp);
-
-    for (y = img->m_height - 1; y >= 0; --y) {
-        for (x = 0; x < img->m_width; ++x) {
-            DWORD col = img->m_pBuffer[y * img->m_width + x];
-            // col = RGBTOBGR(col);
-            size_t ret = fwrite(&col, 3, 1, fp);
-            if (ret < 1) {
-                goto ERROR_BREAK;
-            }
-        }
-        if (addbit > 0) {
-            fwrite(&zero, addbit, 1, fp);
-        }
-    }
-    return 0;
-ERROR_BREAK:
-    return grIOerror;
+    return saveimage(mb2w(filename).c_str(), withAlphaChannel);
 }
 
-int IMAGE::saveimage(LPCSTR filename) const
+int IMAGE::saveimage(LPCWSTR filename, bool withAlphaChannel) const
 {
-    const std::wstring& filename_w = mb2w(filename);
-    return saveimage(filename_w.c_str());
-}
-
-int IMAGE::saveimage(LPCWSTR filename) const
-{
-    FILE* fp = NULL;
-    int   ret;
-    fp = _wfopen(filename, L"wb");
-    if (fp == NULL) {
-        return grIOerror;
-    }
-    ret = saveimagetofile(this, fp);
-    fclose(fp);
-    return ret;
+    return ege::saveimage(this, filename, withAlphaChannel);
 }
 
 void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
@@ -638,7 +587,7 @@ int IMAGE::getpngimg(FILE* fp)
     return grOk;
 }
 
-int IMAGE::savepngimg(FILE* fp, int bAlpha) const
+int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
 {
     unsigned long i, j;
     png_structp   png_ptr;
@@ -648,7 +597,7 @@ int IMAGE::savepngimg(FILE* fp, int bAlpha) const
     png_bytep*    row_pointers;
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-    uint32 pixelsize = bAlpha ? 4 : 3;
+    uint32 pixelsize = withAlphaChannel ? 4 : 3;
     uint32 width = m_width, height = m_height;
 
     if (png_ptr == NULL) {
@@ -668,7 +617,7 @@ int IMAGE::savepngimg(FILE* fp, int bAlpha) const
 
     png_init_io(png_ptr, fp);
 
-    png_set_IHDR(png_ptr, info_ptr, width, height, 8, bAlpha ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
+    png_set_IHDR(png_ptr, info_ptr, width, height, 8, withAlphaChannel ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
         PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
     palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));
@@ -2929,24 +2878,24 @@ static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
     return TRUE;
 }
 
-int saveimage(PCIMAGE pimg, LPCSTR filename)
+int saveimage(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
 {
     const std::wstring& filename_w = mb2w(filename);
-    return saveimage(pimg, filename_w.c_str());
+    return saveimage(pimg, filename_w.c_str(), withAlphaChannel);
 }
 
-int saveimage(PCIMAGE pimg, LPCWSTR filename)
+int saveimage(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     int     ret = 0;
 
     if (img) {
         if (nocaseends(L".bmp", filename)) {
-            ret = img->saveimage(filename);
+            ret = savebmp(pimg, filename, withAlphaChannel);
         } else if (nocaseends(L".png", filename)) {
-            ret = savepng(pimg, filename);
+            ret = savepng(pimg, filename, withAlphaChannel);
         } else {
-            ret = savepng(pimg, filename);
+            ret = savepng(pimg, filename, withAlphaChannel);
         }
     }
 
@@ -2975,13 +2924,13 @@ int getimage_pngfile(PIMAGE pimg, LPCWSTR filename)
     return ret;
 }
 
-int savepng(PCIMAGE pimg, LPCSTR filename, int bAlpha)
+int savepng(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
 {
     const std::wstring& filename_w = mb2w(filename);
-    return savepng(pimg, filename_w.c_str(), bAlpha);
+    return savepng(pimg, filename_w.c_str(), withAlphaChannel);
 }
 
-int savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha)
+int savepng(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
 {
     FILE* fp = NULL;
     int   ret;
@@ -2992,10 +2941,162 @@ int savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha)
         return grFileNotFound;
     }
 
-    ret = pimg->savepngimg(fp, bAlpha);
+    ret = pimg->savepngimg(fp, withAlphaChannel);
     fclose(fp);
     return ret;
 }
+
+/**
+ * @brief 将图像以 BMP 格式保存到文件中
+ *
+ * @param pimg              要保存的图像
+ * @param filename          文件名
+ * @param withAlphaChannel  是否保存 alpha 通道
+ * @return int  错误码(graphics_errors)
+ * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
+ */
+int savebmp(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
+{
+    return savebmp(pimg, mb2w(filename).c_str(), withAlphaChannel);
+}
+
+/**
+ * @brief 将图像以 BMP 格式保存到文件中
+ *
+ * @param pimg              要保存的图像
+ * @param filename          文件名
+ * @param withAlphaChannel  是否保存 alpha 通道
+ * @return int  错误码(graphics_errors)
+ * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
+ */
+int savebmp(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
+{
+    FILE* file = _wfopen(filename, L"wb");
+    if (file == NULL) {
+        return grIOerror;
+    }
+
+    int errorCode = savebmp(pimg, file, withAlphaChannel);
+    fclose(file);
+    return errorCode;
+}
+
+/**
+ * @brief 将图像以 BMP 格式写入 file 所指的文件中
+ *
+ * @param pimg             要保存的图像
+ * @param file             文件指针
+ * @param withAlphaChannel 是否保存 alpha 通道
+ * @return int  错误码(graphics_errors)
+ * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
+ */
+int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
+{
+    if (file == NULL)
+        return grIOerror;
+
+    int infoHeaderSize = 0;  // InfoHeader 大小 (BITMAPINFOHEADER: 40), (BITMAPV4HEADER: 108)
+    int bytesPerPixel  = 4;  // 每像素所占字节数
+    int paddingBytes   = 0;  // 每行填充字节数( BMP 格式规定:除非使用 RLE 压缩，否则每行像素必须是4字节对齐)
+    DWORD Compression  = 0;  // 图像压缩方式
+
+    if (withAlphaChannel) {
+        // 以 ARGB 格式保存, 使用 BITMAPV4HEADER
+        infoHeaderSize = sizeof(BITMAPV4HEADER);    // 108
+        bytesPerPixel = 4;                          // 32 位
+        Compression = BI_BITFIELDS;                 // ARGB (各颜色分量由 Mask 确定)
+    } else {
+        // 以 RGB24 格式保存, 使用 BITMAPINFOHEADER
+        infoHeaderSize = sizeof(BITMAPINFOHEADER);  // 40
+        bytesPerPixel = 3;                          // 24 位
+        Compression = BI_RGB;                       // RGB
+
+        // 计算每行填充字节(每行4字节对齐)
+        int originalBytesPerRow  = getwidth(pimg) * bytesPerPixel;
+        int remBytes = originalBytesPerRow % 4;
+        if (remBytes != 0) {
+            paddingBytes = 4 - remBytes;
+        }
+    }
+
+    int bytesPerRow = bytesPerPixel * getwidth(pimg) + paddingBytes;    // 每行所占字节数(包括填充字节)
+
+    BITMAPV4HEADER bitmapInfoHeader = {0};
+    // -------- BITMAPINFOHEADER, BITMAPV4HEADER 共有参数 --------
+    bitmapInfoHeader.bV4Size          = infoHeaderSize;                 // Header 大小(可用于识别 Header 版本)
+    bitmapInfoHeader.bV4Width         = getwidth(pimg);                 // 位图宽度(单位为像素)
+    bitmapInfoHeader.bV4Height        = getheight(pimg);                // 位图高度(单位为像素, 正数表示从下到上存储, 负数为从上到下)
+    bitmapInfoHeader.bV4Planes        = 1;                              // 固定值，必须为 1
+    bitmapInfoHeader.bV4BitCount      = (WORD)bytesPerPixel * 8;        // 每像素的位数(即 位深度)
+    bitmapInfoHeader.bV4V4Compression = Compression;                    // 压缩方式
+    bitmapInfoHeader.bV4SizeImage     = bytesPerRow * getheight(pimg);  // 图像像素部分所占大小(单位为字节，包括填充字节)
+    bitmapInfoHeader.bV4XPelsPerMeter = 3780;                           // 96 DPI x 39.3701(inch/m)
+    bitmapInfoHeader.bV4YPelsPerMeter = 3780;                           // 96 DPI x 39.3701(inch/m)
+    bitmapInfoHeader.bV4ClrUsed       = 0;                              // 不使用颜色表
+    bitmapInfoHeader.bV4ClrImportant  = 0;                              // 颜色表中所有颜色都重要
+
+    // --------------- BITMAPV4HEADER 特有参数 ------------------
+    bitmapInfoHeader.bV4RedMask       = 0x00FF0000;
+    bitmapInfoHeader.bV4GreenMask     = 0x0000FF00;
+    bitmapInfoHeader.bV4BlueMask      = 0x000000FF;
+    bitmapInfoHeader.bV4AlphaMask     = 0xFF000000;
+    bitmapInfoHeader.bV4CSType        = LCS_sRGB;                       // 使用标准 RGB 颜色空间
+    // 当 bV4CSType 为 'sRGB' 或 'Win ' 时忽略以下参数
+    //bitmapInfoHeader.bV4Endpoints
+    //bitmapInfoHeader.bV4GammaRed
+    //bitmapInfoHeader.bV4GammaGreen
+    //bitmapInfoHeader.bV4GammaBlue
+
+    BITMAPFILEHEADER bitmapFileHeader = {0};
+    bitmapFileHeader.bfType    = (WORD&)"BM";                               // Windows Bitmap 格式
+    bitmapFileHeader.bfSize    = sizeof(BITMAPFILEHEADER) + infoHeaderSize + bytesPerRow * getheight(pimg) ; // BMP 文件总字节数
+    bitmapFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + infoHeaderSize; // 从文件起始至像素数据的偏移字节数
+
+    // 1. 写入 File Header
+    if (fwrite(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, file) != 1) {
+        return grIOerror;
+    };
+
+    // 2. 写入 Info Header
+    if (fwrite(&bitmapInfoHeader, infoHeaderSize, 1, file) != 1) {
+        return grIOerror;
+    };
+
+    const color_t* buffer = getbuffer(pimg);
+    const int rowCnt = getheight(pimg);
+    const int colCnt = getwidth(pimg);
+
+    // 3. 写入图像数据(从下到上进行存储)
+    if (bytesPerPixel == 4) {
+        for (int row = rowCnt-1; row >= 0; row--) {
+            if (fwrite(&buffer[row * colCnt], bytesPerRow, 1, file) != 1) {
+                return grIOerror;
+            }
+        }
+    } else if (bytesPerPixel == 3) {
+        const unsigned char zeroPadding[4] = {0};
+
+        for (int row = rowCnt-1; row >= 0; row--) {
+            const color_t* pixels = &buffer[row * colCnt];   // 每行像素首地址
+
+            for(int col = 0; col < colCnt; col++) {
+                if (fwrite(&pixels[col], bytesPerPixel, 1, file) != 1) {
+                    return grIOerror;
+                }
+            }
+
+            // 每行末尾填充对齐 4 字节
+            if (paddingBytes != 0) {
+                if (fwrite(zeroPadding, paddingBytes,1, file) != 1) {
+                    return grIOerror;
+                }
+            }
+        }
+    }
+
+    return grOk;
+}
+
 
 void ege_enable_aa(bool enable, PIMAGE pimg)
 {
