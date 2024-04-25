@@ -524,14 +524,14 @@ ERROR_BREAK:
     return grIOerror;
 }
 
-int IMAGE::saveimage(LPCSTR filename) const
+int IMAGE::saveimage(LPCSTR filename, bool withAlphaChannel) const
 {
-    return saveimage(mb2w(filename).c_str());
+    return saveimage(mb2w(filename).c_str(), withAlphaChannel);
 }
 
-int IMAGE::saveimage(LPCWSTR filename) const
+int IMAGE::saveimage(LPCWSTR filename, bool withAlphaChannel) const
 {
-    return savebmp(this, filename);
+    return ege::saveimage(this, filename, withAlphaChannel);
 }
 
 void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
@@ -631,7 +631,7 @@ int IMAGE::getpngimg(FILE* fp)
     return grOk;
 }
 
-int IMAGE::savepngimg(FILE* fp, int bAlpha) const
+int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
 {
     unsigned long i, j;
     png_structp   png_ptr;
@@ -641,7 +641,7 @@ int IMAGE::savepngimg(FILE* fp, int bAlpha) const
     png_bytep*    row_pointers;
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-    uint32 pixelsize = bAlpha ? 4 : 3;
+    uint32 pixelsize = withAlphaChannel ? 4 : 3;
     uint32 width = m_width, height = m_height;
 
     if (png_ptr == NULL) {
@@ -661,7 +661,7 @@ int IMAGE::savepngimg(FILE* fp, int bAlpha) const
 
     png_init_io(png_ptr, fp);
 
-    png_set_IHDR(png_ptr, info_ptr, width, height, 8, bAlpha ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
+    png_set_IHDR(png_ptr, info_ptr, width, height, 8, withAlphaChannel ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
         PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
     palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));
@@ -2922,24 +2922,24 @@ static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
     return TRUE;
 }
 
-int saveimage(PCIMAGE pimg, LPCSTR filename)
+int saveimage(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
 {
     const std::wstring& filename_w = mb2w(filename);
-    return saveimage(pimg, filename_w.c_str());
+    return saveimage(pimg, filename_w.c_str(), withAlphaChannel);
 }
 
-int saveimage(PCIMAGE pimg, LPCWSTR filename)
+int saveimage(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     int     ret = 0;
 
     if (img) {
         if (nocaseends(L".bmp", filename)) {
-            ret = savebmp(pimg, filename);
+            ret = savebmp(pimg, filename, withAlphaChannel);
         } else if (nocaseends(L".png", filename)) {
-            ret = savepng(pimg, filename);
+            ret = savepng(pimg, filename, withAlphaChannel);
         } else {
-            ret = savepng(pimg, filename);
+            ret = savepng(pimg, filename, withAlphaChannel);
         }
     }
 
@@ -2968,13 +2968,13 @@ int getimage_pngfile(PIMAGE pimg, LPCWSTR filename)
     return ret;
 }
 
-int savepng(PCIMAGE pimg, LPCSTR filename, int bAlpha)
+int savepng(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
 {
     const std::wstring& filename_w = mb2w(filename);
-    return savepng(pimg, filename_w.c_str(), bAlpha);
+    return savepng(pimg, filename_w.c_str(), withAlphaChannel);
 }
 
-int savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha)
+int savepng(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
 {
     FILE* fp = NULL;
     int   ret;
@@ -2985,7 +2985,7 @@ int savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha)
         return grFileNotFound;
     }
 
-    ret = pimg->savepngimg(fp, bAlpha);
+    ret = pimg->savepngimg(fp, withAlphaChannel);
     fclose(fp);
     return ret;
 }
@@ -2993,36 +2993,34 @@ int savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha)
 /**
  * @brief 将图像以 BMP 格式保存到文件中
  *
- * @param pimg      要保存的图像
- * @param filename  文件名
- * @param alpha     是否保存 alpha 通道
- * @return int      错误码
- * @see graphics_errors
+ * @param pimg              要保存的图像
+ * @param filename          文件名
+ * @param withAlphaChannel  是否保存 alpha 通道
+ * @return int  错误码(graphics_errors)
  * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
  */
-int savebmp(PCIMAGE pimg, LPCSTR filename, bool alpha)
+int savebmp(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
 {
-    return savebmp(pimg, mb2w(filename).c_str(), alpha);
+    return savebmp(pimg, mb2w(filename).c_str(), withAlphaChannel);
 }
 
 /**
  * @brief 将图像以 BMP 格式保存到文件中
  *
- * @param pimg      要保存的图像
- * @param filename  文件名
- * @param alpha     是否保存 alpha 通道
- * @return int      错误码(graphics_errors)
- * @see graphics_errors
+ * @param pimg              要保存的图像
+ * @param filename          文件名
+ * @param withAlphaChannel  是否保存 alpha 通道
+ * @return int  错误码(graphics_errors)
  * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
  */
-int savebmp(PCIMAGE pimg, LPCWSTR filename, bool alpha)
+int savebmp(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
 {
     FILE* file = _wfopen(filename, L"wb");
     if (file == NULL) {
         return grIOerror;
     }
 
-    int errorCode = savebmp(pimg, file, alpha);
+    int errorCode = savebmp(pimg, file, withAlphaChannel);
     fclose(file);
     return errorCode;
 }
@@ -3030,13 +3028,13 @@ int savebmp(PCIMAGE pimg, LPCWSTR filename, bool alpha)
 /**
  * @brief 将图像以 BMP 格式写入 file 所指的文件中
  *
- * @param pimg      要保存的图像
- * @param file      文件指针
- * @param alpha     是否保存 alpha 通道
- * @return int      错误码(graphics_errors)
+ * @param pimg             要保存的图像
+ * @param file             文件指针
+ * @param withAlphaChannel 是否保存 alpha 通道
+ * @return int  错误码(graphics_errors)
  * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
  */
-int savebmp(PCIMAGE pimg, FILE* file, bool alpha)
+int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
 {
     if (file == NULL)
         return grIOerror;
@@ -3046,7 +3044,7 @@ int savebmp(PCIMAGE pimg, FILE* file, bool alpha)
     int paddingBytes   = 0;  // 每行填充字节数( BMP 格式规定:除非使用 RLE 压缩，否则每行像素必须是4字节对齐)
     DWORD Compression  = 0;  // 图像压缩方式
 
-    if (alpha) {
+    if (withAlphaChannel) {
         // 以 ARGB 格式保存, 使用 BITMAPV4HEADER
         infoHeaderSize = sizeof(BITMAPV4HEADER);    // 108
         bytesPerPixel = 4;                          // 32 位

@@ -1152,12 +1152,12 @@ void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, PCIMAGE pSrcImg, DWORD 
 void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);
 
-int  EGEAPI saveimage(PCIMAGE pimg, LPCSTR  filename);
-int  EGEAPI saveimage(PCIMAGE pimg, LPCWSTR filename);
-int  EGEAPI savepng(PCIMAGE pimg, LPCSTR  filename, int bAlpha = 0);
-int  EGEAPI savepng(PCIMAGE pimg, LPCWSTR filename, int bAlpha = 0);
-int  EGEAPI savebmp(PCIMAGE pimg, LPCSTR  filename, bool alpha = false);
-int  EGEAPI savebmp(PCIMAGE pimg, LPCWSTR filename, bool alpha = false);
+int  EGEAPI saveimage(PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
+int  EGEAPI saveimage(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
+int  EGEAPI savepng(PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
+int  EGEAPI savepng(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
+int  EGEAPI savebmp(PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
+int  EGEAPI savebmp(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
 
 int EGEAPI putimage_transparent(
     PIMAGE imgdest,         // handle to dest

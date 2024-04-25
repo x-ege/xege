@@ -101,9 +101,9 @@ public:
         int              srcHeight,
         DWORD            dwRop = SRCCOPY) const;
 
-    int saveimage(LPCSTR filename) const;
-    int saveimage(LPCWSTR filename) const;
-    int savepngimg(FILE* fp, int bAlpha) const;
+    int saveimage(LPCSTR  filename, bool withAlphaChannel = false) const;
+    int saveimage(LPCWSTR filename, bool withAlphaChannel = false) const;
+    int savepngimg(FILE* fp, bool withAlphaChannel = false) const;
 
     int getpngimg(FILE* fp);
 
