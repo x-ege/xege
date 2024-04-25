@@ -1,15 +1,16 @@
 /*********************************************************
-* EGE (Easy Graphics Engine)  20.08
-* FileName      ege.h
-* HomePage1     http://misakamm.github.com/xege
-* HomePage2     http://misakamm.bitbucket.org/index.htm
-* teiba1        http://tieba.baidu.com/f?kw=ege
-* teiba2        http://tieba.baidu.com/f?kw=ege%C4%EF
-* Blog:         http://misakamm.com
-* E-Mail:       mailto:misakamm[at gmail com]
-*
-* FileName: ege.h
-*********************************************************/
+ * EGE (Easy Graphics Engine)  20.08
+ * FileName:    ege.h
+ * Website:     https://xege.org
+ * Community:   https://club.xege.org
+ * GitHub:      https://github.com/wysaid/xege
+ * GitHub:      https://github.com/Easy-Graphics-Engine
+ * Gitee:       https://gitee.com/xege/xege
+ * Blog:        https://wysaid.org
+ * E-Mail:      this@wysaid.org
+ * E-Mail:      misakamm@gmail.com
+ *
+ *********************************************************/
 
 #ifndef EGE_H
 #define EGE_H
@@ -827,7 +828,7 @@ typedef const IMAGE *PCIMAGE;
 // `codepage` sholde be `EGE_CODEPAGE_XXX`, default is `EGE_CODEPAGE_ANSI`.
 void EGEAPI setcodepage(unsigned int codepage);
 unsigned int EGEAPI getcodepage();
-// set whether char message of `getkey()` use UTF-16 
+// set whether char message of `getkey()` use UTF-16
 void EGEAPI setunicodecharmessage(bool enable);
 bool EGEAPI getunicodecharmessage();
 void EGEAPI setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT);

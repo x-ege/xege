@@ -1,14 +1,15 @@
 /*********************************************************
  * EGE (Easy Graphics Engine)  20.08
- * FileName      graphics.h
- * HomePage1     http://misakamm.github.com/xege
- * HomePage2     http://misakamm.bitbucket.org/index.htm
- * teiba1        http://tieba.baidu.com/f?kw=ege
- * teiba2        http://tieba.baidu.com/f?kw=ege%C4%EF
- * Blog:         http://misakamm.com
- * E-Mail:       mailto:misakamm[at gmail com]
+ * FileName:    graphics.h
+ * Website:     https://xege.org
+ * Community:   https://club.xege.org
+ * GitHub:      https://github.com/wysaid/xege
+ * GitHub:      https://github.com/Easy-Graphics-Engine
+ * Gitee:       https://gitee.com/xege/xege
+ * Blog:        https://wysaid.org
+ * E-Mail:      this@wysaid.org
+ * E-Mail:      misakamm@gmail.com
  *
- * FileName: graphics.h
  *********************************************************/
 
 #ifndef EGE_GRAPHICS_H
