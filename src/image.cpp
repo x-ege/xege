@@ -480,50 +480,6 @@ int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
     return grOk;
 }
 
-// private function
-static int saveimagetofile(PCIMAGE img, FILE* fp)
-{
-    BITMAPFILEHEADER bmpfHead = {0};
-    BITMAPINFOHEADER bmpinfo  = {0};
-    int pitch = img->m_width * 3, addbit, y, x, zero = 0;
-    addbit = 4 - (pitch & 3);
-    if (pitch & 3) {
-        pitch = ((pitch + 4) & ~3);
-    } else {
-        addbit = 0;
-    }
-
-    bmpfHead.bfType     = *(WORD*)"BM";
-    bmpfHead.bfOffBits  = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-    bmpfHead.bfSize     = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + pitch * img->m_height;
-    bmpinfo.biSize      = sizeof(BITMAPINFOHEADER);
-    bmpinfo.biBitCount  = 24;
-    bmpinfo.biHeight    = img->m_height;
-    bmpinfo.biWidth     = img->m_width;
-    bmpinfo.biPlanes    = 1;
-    bmpinfo.biSizeImage = pitch * img->m_height;
-    // bmpinfo.biXPelsPerMeter
-    fwrite(&bmpfHead, sizeof(bmpfHead), 1, fp);
-    fwrite(&bmpinfo, sizeof(bmpinfo), 1, fp);
-
-    for (y = img->m_height - 1; y >= 0; --y) {
-        for (x = 0; x < img->m_width; ++x) {
-            DWORD col = img->m_pBuffer[y * img->m_width + x];
-            // col = RGBTOBGR(col);
-            size_t ret = fwrite(&col, 3, 1, fp);
-            if (ret < 1) {
-                goto ERROR_BREAK;
-            }
-        }
-        if (addbit > 0) {
-            fwrite(&zero, addbit, 1, fp);
-        }
-    }
-    return 0;
-ERROR_BREAK:
-    return grIOerror;
-}
-
 int IMAGE::saveimage(LPCSTR filename, bool withAlphaChannel) const
 {
     return saveimage(mb2w(filename).c_str(), withAlphaChannel);
