@@ -50,44 +50,43 @@ void draw()
 		sprintf(str, "%d", num);
 		ege::outtextxy((int)p.x, (int)p.y, str);
 	}
+
 	time_t t_now;
 	time(&t_now);
 	tm* t = localtime(&t_now);
 	ege::setcolor(EGEARGB(0xff, 0x0, 0x0, 0xff));
 	ege::setlinewidth(10.0f);
-{
-	float h = float(t->tm_hour + t->tm_min / 60.0);
-	char str[8];
-	ege::ege_point p = getpos(center, float(h * pi2 / 12), r * 0.5f);
-	ege::ege_line(p.x, p.y, center.x, center.y);
-}
-	ege::setcolor(EGEARGB(0xff, 0xff, 0x0, 0xff));
-	ege::setlinewidth(5.0f);
-{
-	float m = float(t->tm_min + t->tm_sec / 60.0);
-	char str[8];
-	ege::ege_point p = getpos(center, float(m * pi2 / 60), r * 0.9f);
-	ege::ege_line(p.x, p.y, center.x, center.y);
-}
-	ege::setcolor(EGEARGB(0xff, 0xff, 0xff, 0));
-	ege::setfillcolor(EGEARGB(0xff, 0xff, 0xff, 0));
-	ege::setlinewidth(1.0f);
-{
-	float s = float(t->tm_sec);
-	char str[8];
-	ege::ege_point p = getpos(center, float(s * pi2 / 60), r * 1.0f);
-	ege::ege_line(p.x, p.y, center.x, center.y);
-	ege::ege_fillellipse(center.x - r * 0.05f, center.y - r * 0.05f,
-		r * 0.1f, r * 0.1f);
-}
-{
-	char str[32];
-	sprintf(str, "%d/%02d/%02d %2d:%02d:%02d",
-		t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-		t->tm_hour, t->tm_min, t->tm_sec);
-	ege::setcolor(EGERGB(0xff, 0xff, 0));
-	ege::outtextxy((int)center.x, (int)(center.y + r * 1.4f), str);
-}
+
+    char str[32];
+    ege::ege_point p;
+
+    float h = float(t->tm_hour + t->tm_min / 60.0);
+    p = getpos(center, float(h * pi2 / 12), r * 0.5f);
+    ege::ege_line(p.x, p.y, center.x, center.y);
+
+    ege::setcolor(EGEARGB(0xff, 0xff, 0x0, 0xff));
+    ege::setlinewidth(5.0f);
+
+    float m = float(t->tm_min + t->tm_sec / 60.0);
+    p = getpos(center, float(m * pi2 / 60), r * 0.9f);
+    ege::ege_line(p.x, p.y, center.x, center.y);
+
+    ege::setcolor(EGEARGB(0xff, 0xff, 0xff, 0));
+    ege::setfillcolor(EGEARGB(0xff, 0xff, 0xff, 0));
+    ege::setlinewidth(1.0f);
+
+    float s = float(t->tm_sec);
+    p = getpos(center, float(s * pi2 / 60), r * 1.0f);
+    ege::ege_line(p.x, p.y, center.x, center.y);
+    ege::ege_fillellipse(center.x - r * 0.05f, center.y - r * 0.05f,
+        r * 0.1f, r * 0.1f);
+
+    sprintf(str, "%d/%02d/%02d %2d:%02d:%02d",
+        t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+        t->tm_hour, t->tm_min, t->tm_sec);
+    ege::setcolor(EGERGB(0xff, 0xff, 0));
+    ege::outtextxy((int)center.x, (int)(center.y + r * 1.4f), str);
+
 }
 
 /**
