@@ -12,33 +12,13 @@ MUSIC类的定义
 #include <Digitalv.h>
 
 #ifndef MUSIC_ASSERT_TRUE
-#ifdef _DEBUG
-#include <cassert>
-#define MUSIC_ASSERT_TRUE(e) assert((e) != MUSIC_ERROR)
-#else
-#define MUSIC_ASSERT_TRUE(e) (void(0))
+#   ifdef _DEBUG
+#       include <cassert>
+#       define MUSIC_ASSERT_TRUE(e) assert((e) != MUSIC_ERROR)
+#   else
+#       define MUSIC_ASSERT_TRUE(e) (void(0))
+#   endif
 #endif
-#endif
-
-// #include <Digitalv.h>
-
-typedef struct
-{
-    DWORD_PTR dwCallback;
-    DWORD     dwItem;
-    DWORD     dwValue;
-    DWORD     dwOver;
-    LPWSTR    lpstrAlgorithm;
-    LPWSTR    lpstrQuality;
-} MCI_DGV_SETAUDIO_PARMSW;
-
-#ifndef MCI_DGV_SETAUDIO_VOLUME
-#define MCI_DGV_SETAUDIO_ITEM   0x00800000L
-#define MCI_DGV_SETAUDIO_VALUE  0x01000000L
-#define MCI_DGV_SETAUDIO_VOLUME 0x00004002L
-#define MCI_SETAUDIO            0x0873
-#endif
-// end of Digitalv.h
 
 namespace ege
 {
