@@ -122,8 +122,6 @@ DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
 
     mciERR = mciSendCommandW(m_DID, MCI_PLAY, dwFlag, (DWORD_PTR)&mci_p);
 
-    Sleep(1);
-
     return mciERR;
 }
 
