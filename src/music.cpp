@@ -8,7 +8,8 @@ MUSIC类的定义
 
 #include "ege_head.h"
 #include "ege_common.h"
-#include "mmsystem.h"
+#include <mmsystem.h>
+#include <Digitalv.h>
 
 #ifndef MUSIC_ASSERT_TRUE
 #ifdef _DEBUG
@@ -107,6 +108,30 @@ DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
     MCIERROR       mciERR = ERROR_SUCCESS;
     MCI_PLAY_PARMS mci_p  = {0};
     DWORD          dwFlag = MCI_NOTIFY;
+
+    mci_p.dwFrom     = dwFrom;
+    mci_p.dwTo       = dwTo;
+    mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
+
+    if (dwFrom != MUSIC_ERROR) {
+        dwFlag |= MCI_FROM;
+    }
+
+    if (dwTo != MUSIC_ERROR) {
+        dwFlag |= MCI_TO;
+    }
+
+    mciERR = mciSendCommandW(m_DID, MCI_PLAY, dwFlag, (DWORD_PTR)&mci_p);
+
+    return mciERR;
+}
+
+DWORD MUSIC::RepeatPlay(DWORD dwFrom, DWORD dwTo)
+{
+    MUSIC_ASSERT_TRUE(m_DID);
+    MCIERROR       mciERR = ERROR_SUCCESS;
+    MCI_PLAY_PARMS mci_p  = {0};
+    DWORD          dwFlag = MCI_NOTIFY | MCI_DGV_PLAY_REPEAT;
 
     mci_p.dwFrom     = dwFrom;
     mci_p.dwTo       = dwTo;

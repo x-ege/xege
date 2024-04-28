@@ -1369,6 +1369,7 @@ public:
     DWORD OpenFile(LPCSTR filepath);
     DWORD OpenFile(LPCWSTR filepath);
     DWORD Play(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
+    DWORD RepeatPlay(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
     DWORD Pause();
     DWORD Seek(DWORD dwTo);
     DWORD SetVolume(float value);
