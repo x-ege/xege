@@ -854,6 +854,8 @@ void EGEAPI setcaption(LPCWSTR caption);
 void EGEAPI seticon(int icon_id);
 int  EGEAPI attachHWND(HWND hWnd);
 
+void EGEAPI showwindow();
+void EGEAPI hidewindow();
 void EGEAPI movewindow(int x, int y, bool redraw = true);
 void EGEAPI resizewindow(int width, int height);
 void EGEAPI flushwindow();
