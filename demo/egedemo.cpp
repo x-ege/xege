@@ -21,6 +21,7 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         setcolor(RED);
@@ -29,6 +30,7 @@ public:
         line(50, 100, 150, 200);
         line(250, 100, 150, 200);
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n\n    setcolor(RED);\n    //画弧线，以(100,100)为圆心，0度到180度，半径50\n    arc(100, 100, 0, 180, 50);\n    //同画弧线，只是位置不同\n    arc(200, 100, 0, 180, 50);\n    //从(50,100)到(150,200)画线\n    line(50, 100, 150, 200);\n    //从(250,100)到(150,200)画线\n    line(250, 100, 150, 200);\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
@@ -36,17 +38,18 @@ public:
         cleardevice();
 
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return m_parent;
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -58,12 +61,14 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         setcolor(YELLOW);
-//        setfillstyle(SOLID_FILL, MAGENTA);
+        //setfillstyle(SOLID_FILL, MAGENTA);
         fillellipse(150, 200, 50, 100);
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为黄色\n    setcolor(YELLOW);\n    //设置填充颜色为紫红色\n    setfillstyle(SOLID_FILL, MAGENTA);\n    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆\n    fillellipse(150, 200, 50, 100);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
@@ -71,17 +76,18 @@ public:
         cleardevice();
 
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return new SceneHelloWorld6(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -93,11 +99,13 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         setfillstyle(SOLID_FILL, GREEN);
         bar(100, 100, 200, 400);
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置填充颜色为绿色，注意是用来填充颜色\n    setfillstyle(SOLID_FILL, GREEN);\n    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色\n    bar(100, 100, 200, 400);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
@@ -105,17 +113,18 @@ public:
         cleardevice();
 
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return new SceneHelloWorld5(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -127,11 +136,13 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         setcolor(GREEN);
         circle(200, 100, 80);
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为绿色\n    setcolor(GREEN);\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
@@ -139,17 +150,18 @@ public:
         cleardevice();
 
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return new SceneHelloWorld4(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -184,6 +196,7 @@ public:
         getch();
         return new SceneHelloWorld3(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -214,6 +227,7 @@ public:
         getch();
         return new SceneHelloWorld2(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -226,10 +240,12 @@ public:
         m_parent = parent;
         img = newimage();
     }
+
     ~SceneForLoop9()
     {
         delimage(img);
     }
+
     void smain()
     {
         int y, x;
@@ -244,6 +260,7 @@ public:
         }
         info();
     }
+
     void info()
     {
         if (getwidth(img) <= 1)
@@ -273,6 +290,7 @@ public:
         }
         putimage(320, 0, img);
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(BLACK);
@@ -286,6 +304,7 @@ public:
         getch();
         return m_parent;
     }
+
 private:
     SceneBase* m_parent;
     PIMAGE img;
@@ -299,10 +318,12 @@ public:
         m_parent = parent;
         img = newimage();
     }
+
     ~SceneForLoop8()
     {
         delimage(img);
     }
+
     void smain()
     {
         int y, x;
@@ -317,6 +338,7 @@ public:
         }
         info();
     }
+
     void info()
     {
         if (getwidth(img) <= 1)
@@ -346,6 +368,7 @@ public:
         }
         putimage(320, 0, img);
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(BLACK);
@@ -359,6 +382,7 @@ public:
         getch();
         return m_parent;
     }
+
 private:
     SceneBase* m_parent;
     PIMAGE img;
@@ -372,10 +396,12 @@ public:
         m_parent = parent;
         img = newimage();
     }
+
     ~SceneForLoop7()
     {
         delimage(img);
     }
+
     void smain()
     {
         int y;
@@ -386,6 +412,7 @@ public:
         }
         info();
     }
+
     void info()
     {
         if (getwidth(img) <= 1)
@@ -411,6 +438,7 @@ public:
         }
         putimage(320, 0, img);
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(BLACK);
@@ -424,6 +452,7 @@ public:
         getch();
         return new SceneForLoop8(m_parent);
     }
+
 private:
     SceneBase* m_parent;
     PIMAGE img;
@@ -437,10 +466,12 @@ public:
         m_parent = parent;
         img = newimage();
     }
+
     ~SceneForLoop6()
     {
         delimage(img);
     }
+
     void smain()
     {
         int x = 0, dx = 1, color = 0;
@@ -466,6 +497,7 @@ public:
             info();
         }
     }
+
     void info()
     {
         if (getwidth(img) <= 1)
@@ -509,6 +541,7 @@ public:
         }
         putimage(320, 0, img);
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(BLACK);
@@ -522,6 +555,7 @@ public:
         getch();
         return new SceneForLoop7(m_parent);
     }
+
 private:
     SceneBase* m_parent;
     PIMAGE img;
@@ -535,10 +569,12 @@ public:
         m_parent = parent;
         img = newimage();
     }
+
     ~SceneForLoop5()
     {
         delimage(img);
     }
+
     void smain()
     {
         int x = 0, dx = 1;
@@ -559,6 +595,7 @@ public:
             info();
         }
     }
+
     void info()
     {
         if (getwidth(img) <= 1)
@@ -598,6 +635,7 @@ public:
         }
         putimage(320, 0, img);
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(BLACK);
@@ -611,6 +649,7 @@ public:
         getch();
         return new SceneForLoop6(m_parent);
     }
+
 private:
     SceneBase* m_parent;
     PIMAGE img;
@@ -623,6 +662,7 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         for (int n = 0; n < 320; n++)
@@ -635,6 +675,7 @@ public:
         line(0, 240, 320, 240);
         line(160, 0, 160, 480);
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int n; //声明变量x\n    //变量x从0到320，取出每个横坐标\
@@ -656,18 +697,19 @@ public:
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
+
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return new SceneForLoop5(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -679,6 +721,7 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         for (int n = 0; n < 320; n++)
@@ -691,6 +734,7 @@ public:
         line(0, 240, 320, 240);
         line(160, 0, 160, 480);
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int n; //声明变量x\n    //变量x从0到320，取出每个横坐标\
@@ -713,17 +757,18 @@ public:
         cleardevice();
         setcolor(LIGHTGRAY);
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return new SceneForLoop4(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -735,6 +780,7 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         for (int x = 100; x < 300; x += 3)
@@ -742,6 +788,7 @@ public:
             putpixel(x, 100, GREEN);
         }
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300，步长为3，这样画出虚线\n    for (x = 100; x < 300; x += 3)\n    {\n        //在y=100的地方画绿点，多个连续点构成线\n        putpixel(x, 100, GREEN);\n    }\n    getch();\n    return 0;\n}";
@@ -749,17 +796,18 @@ public:
         cleardevice();
         setcolor(LIGHTGRAY);
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return new SceneForLoop3(m_parent);
     }
+
 private:
     SceneBase* m_parent;
 };
@@ -771,6 +819,7 @@ public:
     {
         m_parent = parent;
     }
+
     void smain()
     {
         for (int x = 100; x < 300; x++)
@@ -778,21 +827,22 @@ public:
             putpixel(x, 100, RED);
         }
     }
+
     SceneBase* Update()
     {
         char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300\n    for (x = 100; x < 300; x++)\n    {\n        //在y=100的地方画红点，多个连续点构成线\n        putpixel(x, 100, RED);\n    }\n    getch();\n    return 0;\n}";
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
+
         smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-        }
+        setfont(12, 0, "宋体");
+        setcolor(0x808080);
+        line(320, 0, 320, 480);
+        setcolor(0xFFFFFF);
+        outtextrect(320, 100, 320, 380, str);
+        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+
         getch();
         return new SceneForLoop2(m_parent);
     }
@@ -810,10 +860,12 @@ public:
         m_resettext = 1;
         img = newimage();
     }
+
     ~SceneArray2()
     {
         delimage(img);
     }
+
     void mydelay(int ms)
     {
         int nms = 0;
@@ -838,6 +890,7 @@ public:
             info();
         }
     }
+
     void display(int arr[], int n, int i)
     {
         int a;
@@ -856,6 +909,7 @@ public:
         }
         mydelay(500);
     }
+
     void smain()
     {
         int arr[20];
@@ -886,6 +940,7 @@ public:
         }
         outtextxy(0, 0, "排序完成");
     }
+
     void info()
     {
         if (m_resettext)
@@ -953,6 +1008,7 @@ public:
         }
         putimage(320, 0, img);
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(BLACK);
@@ -966,6 +1022,7 @@ public:
         getch();
         return m_parent;
     }
+
 private:
     SceneBase* m_parent;
     PIMAGE img;
@@ -981,10 +1038,12 @@ public:
         m_parent = parent;
         img = newimage();
     }
+
     ~SceneArray()
     {
         delimage(img);
     }
+
     void smain()
     {
         int t = clock();
@@ -998,6 +1057,7 @@ public:
             info();
         }
     }
+
     void info()
     {
         if (getwidth(img) <= 1)
@@ -1029,6 +1089,7 @@ public:
         }
         putimage(320, 0, img);
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(BLACK);
@@ -1042,6 +1103,7 @@ public:
         getch();
         return new SceneArray2(m_parent);
     }
+
 private:
     SceneBase* m_parent;
     PIMAGE img;
@@ -1055,6 +1117,7 @@ public:
         memset(m_strlist, 0, sizeof(m_strlist));
         strcpy(m_strlist[0], "1.如果我刚学会Hello World");
     }
+
     SceneBase* Update()
     {
         setbkcolor_f(0x808080);
@@ -1081,6 +1144,7 @@ public:
             }
         }
     }
+
 private:
     int m_x, m_y;
     int m_highlight;
@@ -1100,6 +1164,7 @@ public:
         // 理想状态:
         // wcscpy(m_str, L"你是刚刚学习Ｃ语言的新手吗？...");
     }
+
     SceneBase* Update()
     {
         wchar_t str[1024] = {0};
@@ -1133,6 +1198,7 @@ public:
         }
         return new SceneMenu;
     }
+
 private:
     wchar_t m_str[1024];
 };
@@ -1143,6 +1209,7 @@ int main()
     initgraph(640, 480);
     SceneBase* scene = new SceneIntroduce; //SceneIntroduce; SceneMenu
     setbkmode(TRANSPARENT);
+
     for (SceneBase* newscene = scene; newscene != NULL; delay_fps(60))
     {
         newscene = scene->Update();
@@ -1152,6 +1219,7 @@ int main()
             scene = newscene;
         }
     }
+
     closegraph();
     return 0;
 }

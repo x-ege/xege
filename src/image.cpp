@@ -17,6 +17,7 @@
 
 #include "ege_head.h"
 #include "ege_common.h"
+#include "ege_dllimport.h"
 
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL
@@ -24,8 +25,6 @@
 
 #include <png.h>
 
-#include "ocidl.h"
-#include "olectl.h"
 
 #include <math.h>
 
@@ -64,6 +63,7 @@ void IMAGE::construct(int width, int height)
         refDC = ::GetDC(graph_setting.hwnd);
     }
 
+    dll::loadDllsIfNot();
     gdipluinit();
     reset();
     initimage(refDC, width, height);
@@ -387,23 +387,6 @@ int IMAGE::getimage(LPCSTR filename, int zoomWidth, int zoomHeight)
     return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
 }
 
-void getimage_from_IPicture(PIMAGE self, IPicture* pPicture)
-{
-    long lWidth, lHeight;
-
-    pPicture->get_Width(&lWidth);
-    pPicture->get_Height(&lHeight);
-
-    // convert Himetric units to pixels
-    ::HDC ScreenDC = ::GetDC(NULL);
-    long lWidthPixels  = ::MulDiv(lWidth, ::GetDeviceCaps(ScreenDC, LOGPIXELSX), 2540);
-    long lHeightPixels = ::MulDiv(lHeight, ::GetDeviceCaps(ScreenDC, LOGPIXELSY), 2540);
-    ::ReleaseDC(NULL, ScreenDC);
-
-    self->resize_f(lWidthPixels, lHeightPixels);
-    pPicture->Render(getHDC(self), 0, 0, lWidthPixels, lHeightPixels, 0, lHeight, lWidth, -lHeight, 0);
-}
-
 int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
 {
     Gdiplus::PixelFormat srcPixelFormat = bitmap.GetPixelFormat();
@@ -494,6 +477,11 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
 {
     png_structp png_ptr  = (png_structp)vpng_ptr;
     png_infop   info_ptr = (png_infop)vinfo_ptr;
+
+    #if defined(PNG_SKIP_sRGB_CHECK_PROFILE) && defined(PNG_SET_OPTION_SUPPORTED)
+    png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE,
+           PNG_OPTION_ON);
+    #endif
 
     // 读取 PNG 文件信息, 存入 info_ptr 中
     png_read_info(png_ptr, info_ptr);
@@ -722,7 +710,7 @@ inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
             }
             memcpy(pvData, pvRes, dwSize);
             GlobalUnlock(hGlobal);
-            if (S_OK != CreateStreamOnHGlobal(hGlobal, TRUE, &pStm)) {
+            if (S_OK != dll::CreateStreamOnHGlobal(hGlobal, TRUE, &pStm)) {
                 return grNullPointer;
             }
 
@@ -779,7 +767,7 @@ int IMAGE::getimage(void* pMem, long size)
         }
         memcpy(pvData, pMem, dwSize);
         GlobalUnlock(hGlobal);
-        if (S_OK != CreateStreamOnHGlobal(hGlobal, TRUE, &pStm)) {
+        if (S_OK != dll::CreateStreamOnHGlobal(hGlobal, TRUE, &pStm)) {
             return grNullPointer;
         }
 
@@ -1075,7 +1063,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgdest,      // handle to dest
         bf.SourceConstantAlpha = 0xff;
         bf.AlphaFormat         = AC_SRC_ALPHA;
         // draw
-        AlphaBlend(img->m_hDC, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest, alphaSrc->m_hDC, 0, 0, nWidthSrc,
+        dll::AlphaBlend(img->m_hDC, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest, alphaSrc->m_hDC, 0, 0, nWidthSrc,
             nHeightSrc, bf);
         delimage(alphaSrc);
     }

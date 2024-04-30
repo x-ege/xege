@@ -139,6 +139,7 @@ static void ui_msg_process(EGEMSG& qmsg)
 }
 
 /*private function*/
+/*
 static int redraw_window(_graph_setting* pg, HDC dc)
 {
     int page = pg->visual_page;
@@ -151,6 +152,27 @@ static int redraw_window(_graph_setting* pg, HDC dc)
     pg->update_mark_count = UPDATE_MAX_CALL;
     return 0;
 }
+*/
+
+int swapbuffers()
+{
+    if (!isinitialized())
+        return grNoInitGraph;
+
+    struct _graph_setting* pg = &graph_setting;
+
+    PIMAGE backFrameBuffer = pg->img_page[pg->visual_page];
+    HDC backFrameBufferDC = backFrameBuffer->getdc();
+
+    int left = backFrameBuffer->m_vpt.left;
+    int top  = backFrameBuffer->m_vpt.top;
+
+    HDC frontFrameBufferDC = GetDC(getHWnd());
+    BitBlt(frontFrameBufferDC, 0, 0, pg->base_w, pg->base_h, backFrameBufferDC, pg->base_x - left, pg->base_y - top, SRCCOPY);
+    ReleaseDC(getHWnd(), frontFrameBufferDC);
+
+    return grOk;
+}
 
 /*private function*/
 static int graphupdate(_graph_setting* pg)
@@ -158,41 +180,41 @@ static int graphupdate(_graph_setting* pg)
     if (pg->exit_window) {
         return grNoInitGraph;
     }
-    {
-        if (IsWindowVisible(pg->hwnd)) {
-            HDC hdc = ::GetDC(pg->hwnd);
-            redraw_window(pg, hdc);
-            ::ReleaseDC(pg->hwnd, hdc);
-        } else {
-            pg->update_mark_count = UPDATE_MAX_CALL;
-        }
-        EGE_PRIVATE_GetFPS(0x100);
-        {
-            RECT rect, crect;
-            HWND hwnd;
-            int  _dw, _dh;
-            GetClientRect(pg->hwnd, &crect);
-            GetWindowRect(pg->hwnd, &rect);
-            int w = pg->dc_w, h = pg->dc_h;
-            _dw = w - (crect.right - crect.left);
-            _dh = h - (crect.bottom - crect.top);
-            if (_dw != 0 || _dh != 0) {
-                hwnd = ::GetParent(pg->hwnd);
-                if (hwnd) {
-                    POINT pt = {0, 0};
-                    ClientToScreen(hwnd, &pt);
-                    rect.left   -= pt.x;
-                    rect.top    -= pt.y;
-                    rect.right  -= pt.x;
-                    rect.bottom -= pt.y;
-                }
-                SetWindowPos(pg->hwnd, NULL, 0, 0, rect.right + _dw - rect.left, rect.bottom + _dh - rect.top,
-                    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-            }
-        }
 
-        return grOk;
+    if (IsWindowVisible(pg->hwnd)) {
+        swapbuffers();
     }
+
+    pg->update_mark_count = UPDATE_MAX_CALL;
+
+    EGE_PRIVATE_GetFPS(0x100);
+
+    RECT rect, crect;
+    HWND hwnd;
+    int  _dw, _dh;
+
+    GetClientRect(pg->hwnd, &crect);
+    GetWindowRect(pg->hwnd, &rect);
+    int w = pg->dc_w, h = pg->dc_h;
+    _dw = w - (crect.right - crect.left);
+    _dh = h - (crect.bottom - crect.top);
+
+    if (_dw != 0 || _dh != 0) {
+        hwnd = ::GetParent(pg->hwnd);
+        if (hwnd) {
+            POINT pt = {0, 0};
+            ClientToScreen(hwnd, &pt);
+            rect.left   -= pt.x;
+            rect.top    -= pt.y;
+            rect.right  -= pt.x;
+            rect.bottom -= pt.y;
+        }
+        SetWindowPos(pg->hwnd, NULL, 0, 0, rect.right + _dw - rect.left, rect.bottom + _dh - rect.top,
+            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+    }
+
+    return grOk;
+
 }
 
 int dealmessage(_graph_setting* pg, bool force_update)
@@ -323,6 +345,7 @@ static void on_paint(struct _graph_setting* pg, HWND hwnd)
 static void on_destroy(struct _graph_setting* pg)
 {
     pg->exit_window = 1;
+    dll::freeDlls();
     PostQuitMessage(0);
     if (pg->close_manually && pg->use_force_exit) {
         exit(0);
@@ -352,11 +375,11 @@ static void on_setcursor(struct _graph_setting* pg, HWND hwnd)
 static void on_ime_control(struct _graph_setting* pg, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
     if (wparam == IMC_SETSTATUSWINDOWPOS) {
-        HIMC            hImc = ImmGetContext(hwnd);
+        HIMC            hImc = dll::ImmGetContext(hwnd);
         COMPOSITIONFORM cpf  = {0};
         cpf.dwStyle          = CFS_POINT;
         cpf.ptCurrentPos     = *(LPPOINT)lparam;
-        ImmSetCompositionWindow(hImc, &cpf);
+        dll::ImmSetCompositionWindow(hImc, &cpf);
     }
 }
 
@@ -777,6 +800,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->exit_flag   = 0;
     pg->exit_window = 0;
 
+    dll::loadDllsIfNot();
+
     // 已创建则转为改变窗口大小
     if (pg->has_init) {
         int width  = (short)(*gmode & 0xFFFF);
@@ -838,6 +863,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         setrendermode(RENDER_MANUAL);
     }
 
+    pg->first_show = true;
     pg->mouse_show = true;
 }
 

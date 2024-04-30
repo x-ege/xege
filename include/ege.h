@@ -29,7 +29,7 @@
 #define EGE_VERSION_NUMBER    EGE_MAKE_VERSION_NUMBER(EGE_VERSION_MAJOR, EGE_VERSION_MINOR, EGE_VERSION_PATCH)
 
 #ifndef __cplusplus
-#error You must use C++ compiler, or you need filename with '.cpp' suffix
+#error You must use a C++ compiler and ensure that your source files is named with the '.cpp' suffix.
 #endif
 
 #if defined(_INC_CONIO) || defined(_CONIO_H_)
@@ -854,8 +854,11 @@ void EGEAPI setcaption(LPCWSTR caption);
 void EGEAPI seticon(int icon_id);
 int  EGEAPI attachHWND(HWND hWnd);
 
+void EGEAPI showwindow();
+void EGEAPI hidewindow();
 void EGEAPI movewindow(int x, int y, bool redraw = true);
 void EGEAPI resizewindow(int width, int height);
+void EGEAPI flushwindow();
 
 void EGEAPI setrendermode(rendermode_e mode);
 

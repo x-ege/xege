@@ -160,9 +160,7 @@ int main() {
 	fps f;
 	ege_enable_aa( true );
 
-	for (
-
-		; is_run(); delay_fps( 120 ) ) {
+	for (; is_run(); delay_fps(120)) {
 		aniobj.updateobj(); // Update object positions
 		cleardevice();
 		aniobj.drawobj(); // Draw objects

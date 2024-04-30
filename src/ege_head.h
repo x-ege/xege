@@ -193,6 +193,7 @@ struct _graph_setting
     bool         lock_window;
     bool         timer_stop_mark;
     bool         skip_timer_mark;
+    bool         first_show;
 
     thread_queue<EGEMSG>*msgkey_queue, *msgmouse_queue;
 

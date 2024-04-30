@@ -26,7 +26,6 @@
 #include "ege_extension.h"
 
 
-
 #include <stdio.h>
 
 namespace ege
@@ -39,6 +38,11 @@ bool is_run()
         return false;
     }
     return true;
+}
+
+bool isinitialized()
+{
+    return graph_setting.has_init;
 }
 
 int showmouse(int bShow)
@@ -918,7 +922,7 @@ void fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pim
                     tri[j].Vertex2 = j + 1;
                     tri[j].Vertex3 = j + 2;
                 }
-                ::GradientFill(img->getdc(), vert, numpoints, tri, numpoints - 2, GRADIENT_FILL_TRIANGLE);
+                dll::GradientFill(img->getdc(), vert, numpoints, tri, numpoints - 2, GRADIENT_FILL_TRIANGLE);
                 free(tri);
             }
             free(vert);

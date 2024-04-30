@@ -8,11 +8,6 @@
 #define GRADIENT_FILL_RECT_V   0x00000001
 #define GRADIENT_FILL_TRIANGLE 0x00000002
 #define GRADIENT_FILL_OP_FLAG  0x000000ff
-
-extern "C"
-{
-WINGDIAPI BOOL WINAPI GradientFill(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
-}
 #endif
 
 namespace ege
@@ -20,6 +15,10 @@ namespace ege
 
 extern struct _graph_setting graph_setting;
 class egeControlBase;   // 前置声明
+
+int getinitmode();
+
+void logoscene();
 
 int dealmessage(_graph_setting* pg, bool force_update);
 
@@ -33,4 +32,9 @@ void setmode(int gdriver, int gmode);
 
 // GDI+ 初始化
 void gdipluinit();
+
+int  swapbuffers();
+
+bool isinitialized();
+
 }
