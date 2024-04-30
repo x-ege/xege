@@ -33,4 +33,9 @@ void setmode(int gdriver, int gmode);
 
 // GDI+ 初始化
 void gdipluinit();
+
+int  swapbuffers();
+
+bool isinitialized();
+
 }

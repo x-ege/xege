@@ -856,6 +856,7 @@ int  EGEAPI attachHWND(HWND hWnd);
 
 void EGEAPI movewindow(int x, int y, bool redraw = true);
 void EGEAPI resizewindow(int width, int height);
+void EGEAPI flushwindow();
 
 void EGEAPI setrendermode(rendermode_e mode);
 
