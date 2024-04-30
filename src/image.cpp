@@ -495,6 +495,11 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
     png_structp png_ptr  = (png_structp)vpng_ptr;
     png_infop   info_ptr = (png_infop)vinfo_ptr;
 
+    #if defined(PNG_SKIP_sRGB_CHECK_PROFILE) && defined(PNG_SET_OPTION_SUPPORTED)
+    png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE,
+           PNG_OPTION_ON);
+    #endif
+
     // 读取 PNG 文件信息, 存入 info_ptr 中
     png_read_info(png_ptr, info_ptr);
 
