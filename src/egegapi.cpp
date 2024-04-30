@@ -922,7 +922,7 @@ void fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pim
                     tri[j].Vertex2 = j + 1;
                     tri[j].Vertex3 = j + 2;
                 }
-                ::GradientFill(img->getdc(), vert, numpoints, tri, numpoints - 2, GRADIENT_FILL_TRIANGLE);
+                dll::GradientFill(img->getdc(), vert, numpoints, tri, numpoints - 2, GRADIENT_FILL_TRIANGLE);
                 free(tri);
             }
             free(vert);

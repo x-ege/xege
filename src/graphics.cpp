@@ -345,6 +345,7 @@ static void on_paint(struct _graph_setting* pg, HWND hwnd)
 static void on_destroy(struct _graph_setting* pg)
 {
     pg->exit_window = 1;
+    dll::freeDlls();
     PostQuitMessage(0);
     if (pg->close_manually && pg->use_force_exit) {
         exit(0);
@@ -374,11 +375,11 @@ static void on_setcursor(struct _graph_setting* pg, HWND hwnd)
 static void on_ime_control(struct _graph_setting* pg, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
     if (wparam == IMC_SETSTATUSWINDOWPOS) {
-        HIMC            hImc = ImmGetContext(hwnd);
+        HIMC            hImc = dll::ImmGetContext(hwnd);
         COMPOSITIONFORM cpf  = {0};
         cpf.dwStyle          = CFS_POINT;
         cpf.ptCurrentPos     = *(LPPOINT)lparam;
-        ImmSetCompositionWindow(hImc, &cpf);
+        dll::ImmSetCompositionWindow(hImc, &cpf);
     }
 }
 
@@ -798,6 +799,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 
     pg->exit_flag   = 0;
     pg->exit_window = 0;
+
+    dll::loadDllsIfNot();
 
     // 已创建则转为改变窗口大小
     if (pg->has_init) {

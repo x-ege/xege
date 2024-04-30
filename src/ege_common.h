@@ -12,6 +12,7 @@
 #include "ege_math.h"
 #include "ege_time.h"
 #include "ege_graph.h"
+#include "ege_dllimport.h"
 
 #include "type.h"
 #include "utils.h"

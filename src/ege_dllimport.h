@@ -1,0 +1,31 @@
+#pragma once
+
+#include <Windows.h>
+#include <windef.h>
+
+namespace dll
+{
+    // 如果没加载 dll 则进行加载
+    void loadDllsIfNot();
+
+    // 释放所有加载的 dll
+    void freeDlls();
+
+    // 临时从 dll 中加载 CreateStreamOnHGlobal 函数并调用
+    HRESULT CreateStreamOnHGlobal(HGLOBAL hGlobal, BOOL fDeleteOnRelease, LPSTREAM *ppstm);
+
+    // --------------------- imm32.dll -----------------------
+    HIMC ImmGetContext(HWND hwnd);
+    BOOL ImmSetCompositionWindow(HIMC,LPCOMPOSITIONFORM);
+
+    // --------------------- msimg32.dll ---------------------
+    BOOL AlphaBlend(HDC hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,HDC hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,BLENDFUNCTION ftn);
+    BOOL GradientFill(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
+
+    // --------------------- winmm.dll -----------------------
+    MMRESULT WINAPI timeBeginPeriod(UINT uPeriod);
+    MMRESULT WINAPI timeEndPeriod(UINT uPeriod);
+    MMRESULT WINAPI timeSetEvent(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent);
+    MMRESULT WINAPI timeKillEvent(UINT uTimerID);
+    MCIERROR WINAPI mciSendCommandW(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
+}

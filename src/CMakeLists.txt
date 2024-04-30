@@ -53,10 +53,4 @@ endif ()
 target_link_libraries(xege
     INTERFACE gdiplus
     INTERFACE gdi32
-    INTERFACE imm32
-    INTERFACE msimg32
-    INTERFACE ole32
-    INTERFACE oleaut32
-    INTERFACE uuid
-    INTERFACE winmm
 )
