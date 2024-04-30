@@ -16,7 +16,7 @@
 #define EGE_GRAPHICS_H
 
 #ifndef __cplusplus
-#error You must use C++ compiler, or you need filename with '.cpp' suffix
+#error You must use a C++ compiler and ensure that your source files is named with the '.cpp' suffix.
 #endif
 
 #include "ege.h"
