@@ -26,7 +26,6 @@
 #include "ege_extension.h"
 
 
-
 #include <stdio.h>
 
 namespace ege
@@ -39,6 +38,11 @@ bool is_run()
         return false;
     }
     return true;
+}
+
+bool isinitialized()
+{
+    return graph_setting.has_init;
 }
 
 int showmouse(int bShow)

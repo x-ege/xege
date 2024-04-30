@@ -58,6 +58,16 @@ void movewindow(int x, int y, bool redraw)
     ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);
 }
 
+void flushwindow()
+{
+    if (!isinitialized())
+        return;
+    struct _graph_setting* pg = &graph_setting;
+    pg->skip_timer_mark = true;
+    swapbuffers();
+    pg->skip_timer_mark = false;
+}
+
 HWND getParentWindow()
 {
     return g_attach_hwnd;
