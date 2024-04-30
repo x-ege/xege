@@ -8,9 +8,9 @@ namespace ege
 void api_sleep(long dwMilliseconds)
 {
     if (dwMilliseconds >= 0) {
-        ::timeBeginPeriod(1);
+        dll::timeBeginPeriod(1);
         ::Sleep(dwMilliseconds);
-        ::timeEndPeriod(1);
+        dll::timeEndPeriod(1);
     }
 }
 
@@ -27,9 +27,9 @@ void ege_sleep(long ms)
         static MMRESULT resTimer = 0;
         ::ResetEvent(hTimer);
         if (resTimer) {
-            ::timeKillEvent(resTimer);
+            dll::timeKillEvent(resTimer);
         }
-        resTimer = ::timeSetEvent(ms, 1, (LPTIMECALLBACK)hTimer, 0, TIME_ONESHOT | TIME_CALLBACK_EVENT_SET);
+        resTimer = dll::timeSetEvent(ms, 1, (LPTIMECALLBACK)hTimer, 0, TIME_ONESHOT | TIME_CALLBACK_EVENT_SET);
         if (resTimer) {
             ::WaitForSingleObject(hTimer, INFINITE);
         } else {
@@ -40,7 +40,7 @@ void ege_sleep(long ms)
         static HANDLE hTimer = ::CreateWaitableTimer(NULL, TRUE, NULL);
         LARGE_INTEGER liDueTime;
 
-        ::timeBeginPeriod(1);
+        dll::timeBeginPeriod(1);
         liDueTime.QuadPart = ms * (LONGLONG)-10000;
 
         if (hTimer) {
@@ -51,7 +51,7 @@ void ege_sleep(long ms)
         } else {
             ::Sleep(ms);
         }
-        ::timeEndPeriod(1);
+        dll::timeEndPeriod(1);
     }
 }
 
@@ -233,9 +233,9 @@ double get_highfeq_time_ls(struct _graph_setting* pg)
             QueryPerformanceCounter(&pg->get_highfeq_time_start);
             QueryPerformanceFrequency(&llFeq);
         } else if (0) {
-            ::timeBeginPeriod(1);
+            dll::timeBeginPeriod(1);
             pg->get_highfeq_time_start.QuadPart = ::timeGetTime();
-            ::timeEndPeriod(1);
+            dll::timeEndPeriod(1);
             llFeq.QuadPart = 1000;
         } else if (1) {
             pg->get_highfeq_time_start.QuadPart = ::GetTickCount();
@@ -249,9 +249,9 @@ double get_highfeq_time_ls(struct _graph_setting* pg)
         if (1) {
             QueryPerformanceCounter(&llNow);
         } else if (0) {
-            ::timeBeginPeriod(1);
+            dll::timeBeginPeriod(1);
             llNow.QuadPart = ::timeGetTime();
-            ::timeEndPeriod(1);
+            dll::timeEndPeriod(1);
         } else if (1) {
             llNow.QuadPart = ::GetTickCount();
         } else if (0) {

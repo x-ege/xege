@@ -8,7 +8,6 @@ MUSIC类的定义
 
 #include "ege_head.h"
 #include "ege_common.h"
-#include "mmsystem.h"
 
 #ifndef MUSIC_ASSERT_TRUE
 #ifdef _DEBUG
@@ -78,10 +77,10 @@ DWORD MUSIC::OpenFile(LPCWSTR _szStr)
         Close();
     }
 
-    mciERR = mciSendCommandW(0, MCI_OPEN, MCI_OPEN_SHAREABLE | MCI_NOTIFY | MCI_OPEN_ELEMENT, (DWORD_PTR)&mci_p);
+    mciERR = dll::mciSendCommandW(0, MCI_OPEN, MCI_OPEN_SHAREABLE | MCI_NOTIFY | MCI_OPEN_ELEMENT, (DWORD_PTR)&mci_p);
 
     if (mciERR != ERROR_SUCCESS) {
-        mciERR = mciSendCommandW(0, MCI_OPEN, MCI_NOTIFY | MCI_OPEN_ELEMENT, (DWORD_PTR)&mci_p);
+        mciERR = dll::mciSendCommandW(0, MCI_OPEN, MCI_NOTIFY | MCI_OPEN_ELEMENT, (DWORD_PTR)&mci_p);
     }
 
     if (mciERR == ERROR_SUCCESS) {
@@ -92,7 +91,7 @@ DWORD MUSIC::OpenFile(LPCWSTR _szStr)
             MCI_SET_PARMS mci_p = {0};
             mci_p.dwTimeFormat  = MCI_FORMAT_MILLISECONDS;
             // DWORD dw =
-            mciSendCommandW(m_DID, MCI_SET, MCI_NOTIFY | MCI_SET_TIME_FORMAT, (DWORD_PTR)&mci_p);
+            dll::mciSendCommandW(m_DID, MCI_SET, MCI_NOTIFY | MCI_SET_TIME_FORMAT, (DWORD_PTR)&mci_p);
         }
     }
 
@@ -120,7 +119,7 @@ DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
         dwFlag |= MCI_TO;
     }
 
-    mciERR = mciSendCommandW(m_DID, MCI_PLAY, dwFlag, (DWORD_PTR)&mci_p);
+    mciERR = dll::mciSendCommandW(m_DID, MCI_PLAY, dwFlag, (DWORD_PTR)&mci_p);
 
     Sleep(1);
 
@@ -136,7 +135,7 @@ DWORD MUSIC::Pause()
 
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
 
-    mciERR = mciSendCommandW(m_DID, MCI_PAUSE, MCI_NOTIFY, (DWORD_PTR)&mci_p);
+    mciERR = dll::mciSendCommandW(m_DID, MCI_PAUSE, MCI_NOTIFY, (DWORD_PTR)&mci_p);
 
     return mciERR;
 }
@@ -150,7 +149,7 @@ DWORD MUSIC::Stop()
 
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
 
-    mciERR = mciSendCommandW(m_DID, MCI_STOP, MCI_NOTIFY, (DWORD_PTR)&mci_p);
+    mciERR = dll::mciSendCommandW(m_DID, MCI_STOP, MCI_NOTIFY, (DWORD_PTR)&mci_p);
 
     return mciERR;
 }
@@ -163,7 +162,7 @@ DWORD MUSIC::SetVolume(float value)
     mci_p.dwItem                   = MCI_DGV_SETAUDIO_VOLUME;
     mci_p.dwValue                  = (DWORD)(value * 1000); // 此处就是音量大小 (0--1000)
 
-    mciERR = mciSendCommandW(m_DID, MCI_SETAUDIO, MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR)&mci_p);
+    mciERR = dll::mciSendCommandW(m_DID, MCI_SETAUDIO, MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR)&mci_p);
 
     return mciERR;
 }
@@ -178,7 +177,7 @@ DWORD MUSIC::Seek(DWORD dwTo)
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
     mci_p.dwTo       = dwTo;
 
-    mciERR = mciSendCommandW(m_DID, MCI_SEEK, MCI_NOTIFY, (DWORD_PTR)&mci_p);
+    mciERR = dll::mciSendCommandW(m_DID, MCI_SEEK, MCI_NOTIFY, (DWORD_PTR)&mci_p);
 
     return mciERR;
 }
@@ -192,7 +191,7 @@ DWORD MUSIC::Close()
 
         mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
 
-        mciERR = mciSendCommandW(m_DID, MCI_CLOSE, MCI_NOTIFY, (DWORD_PTR)&mci_p);
+        mciERR = dll::mciSendCommandW(m_DID, MCI_CLOSE, MCI_NOTIFY, (DWORD_PTR)&mci_p);
 
         m_DID = MUSIC_ERROR;
         return mciERR;
@@ -210,7 +209,7 @@ DWORD MUSIC::GetPosition()
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
     mci_p.dwItem     = MCI_STATUS_POSITION;
 
-    mciSendCommandW(m_DID, MCI_STATUS, MCI_NOTIFY | MCI_STATUS_ITEM, (DWORD_PTR)&mci_p);
+    dll::mciSendCommandW(m_DID, MCI_STATUS, MCI_NOTIFY | MCI_STATUS_ITEM, (DWORD_PTR)&mci_p);
 
     return (DWORD)mci_p.dwReturn;
 }
@@ -224,7 +223,7 @@ DWORD MUSIC::GetLength()
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
     mci_p.dwItem     = MCI_STATUS_LENGTH;
 
-    mciSendCommandW(m_DID, MCI_STATUS, MCI_NOTIFY | MCI_STATUS_ITEM, (DWORD_PTR)&mci_p);
+    dll::mciSendCommandW(m_DID, MCI_STATUS, MCI_NOTIFY | MCI_STATUS_ITEM, (DWORD_PTR)&mci_p);
 
     return (DWORD)mci_p.dwReturn;
 }
@@ -237,7 +236,7 @@ DWORD MUSIC::GetPlayStatus()
     mci_p.dwCallback = (DWORD_PTR)m_dwCallBack;
     mci_p.dwItem     = MCI_STATUS_MODE;
 
-    mciSendCommandW(m_DID, MCI_STATUS, MCI_NOTIFY | MCI_STATUS_ITEM, (DWORD_PTR)&mci_p);
+    dll::mciSendCommandW(m_DID, MCI_STATUS, MCI_NOTIFY | MCI_STATUS_ITEM, (DWORD_PTR)&mci_p);
 
     return (DWORD)mci_p.dwReturn;
 }

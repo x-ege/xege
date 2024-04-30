@@ -8,11 +8,6 @@
 #define GRADIENT_FILL_RECT_V   0x00000001
 #define GRADIENT_FILL_TRIANGLE 0x00000002
 #define GRADIENT_FILL_OP_FLAG  0x000000ff
-
-extern "C"
-{
-WINGDIAPI BOOL WINAPI GradientFill(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
-}
 #endif
 
 namespace ege
