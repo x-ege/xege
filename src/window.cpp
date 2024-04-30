@@ -53,6 +53,60 @@ void seticon(int icon_id)
     }
 }
 
+void showwindow()
+{
+    struct _graph_setting* pg = &graph_setting;
+
+    bool showLogo = false;
+
+    PIMAGE background = NULL;
+    color_t bkColor = getbkcolor();
+
+    if (pg->first_show) {
+        pg->first_show = false;
+
+        int initmode = getinitmode();
+        if ((initmode & INIT_WITHLOGO) && (initmode & INIT_HIDE)) {
+            showLogo = true;
+        }
+    }
+
+    if (showLogo) {
+        background = newimage();
+        getimage(background, 0, 0, getwidth(), getheight());
+        setbkcolor_f(EGERGB(0, 0, 0));
+        cleardevice();
+    }
+
+    ShowWindow(pg->hwnd, SW_SHOWNORMAL);
+    BringWindowToTop(pg->hwnd);
+    SetForegroundWindow(pg->hwnd);
+
+    if (showLogo) {
+        bool isRenderManual = pg->lock_window;
+
+        logoscene();
+
+        setbkcolor_f(bkColor);
+
+        if (background != NULL) {
+            putimage(0, 0, background);
+            flushwindow();
+            delimage(background);
+        }
+
+        if (!isRenderManual) {
+            setrendermode(RENDER_AUTO);
+        }
+    }
+}
+
+void hidewindow()
+{
+    struct _graph_setting* pg = &graph_setting;
+    ShowWindow(pg->hwnd, SW_HIDE);
+}
+
 void movewindow(int x, int y, bool redraw)
 {
     ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);

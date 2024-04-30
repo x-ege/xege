@@ -860,6 +860,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         setrendermode(RENDER_MANUAL);
     }
 
+    pg->first_show = true;
     pg->mouse_show = true;
 }
 

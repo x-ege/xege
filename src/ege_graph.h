@@ -21,6 +21,10 @@ namespace ege
 extern struct _graph_setting graph_setting;
 class egeControlBase;   // 前置声明
 
+int getinitmode();
+
+void logoscene();
+
 int dealmessage(_graph_setting* pg, bool force_update);
 
 void guiupdate(_graph_setting* pg, egeControlBase* root);
