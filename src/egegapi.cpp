@@ -1559,6 +1559,7 @@ void ege_puttexture(PCIMAGE srcimg, ege_rect dest, ege_rect src, PIMAGE pimg)
 // TODO: 错误处理
 static void ege_drawtext_p(LPCWSTR textstring, float x, float y, PIMAGE img)
 {
+    using namespace Gdiplus;
     Gdiplus::Graphics* graphics = img->getGraphics();
 
     HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
@@ -1574,7 +1575,29 @@ static void ege_drawtext_p(LPCWSTR textstring, float x, float y, PIMAGE img)
     // }
     Gdiplus::PointF origin(x, y);
     Gdiplus::SolidBrush brush(img->m_color);
-    graphics->DrawString(textstring, -1, &font, origin, &brush);
+
+    Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic()->Clone();
+
+    switch(img->m_texttype.horiz) {
+        case LEFT_TEXT:   format->SetAlignment(Gdiplus::StringAlignmentNear);   break;
+        case CENTER_TEXT: format->SetAlignment(Gdiplus::StringAlignmentCenter); break;
+        case RIGHT_TEXT:  format->SetAlignment(Gdiplus::StringAlignmentFar);    break;
+    }
+
+    if (lf.lfEscapement % 3600 != 0) {
+        float angle = (float)(-lf.lfEscapement / 10.0);
+
+        Gdiplus::Matrix matrix;
+        graphics->GetTransform(&matrix);
+        graphics->TranslateTransform(origin.X, origin.Y);
+        graphics->RotateTransform(angle);
+        graphics->DrawString(textstring, -1, &font, Gdiplus::PointF(0, 0), format,  &brush);
+        graphics->SetTransform(&matrix);
+    } else {
+        graphics->DrawString(textstring, -1, &font, origin, format, &brush);
+    }
+
+    delete format;
     // int err;
     // if (err = graphics.DrawString(textstring, -1, &font, origin, &brush)) {
     // 	fprintf(stderr, "DrawString Err: %d\n", err);
