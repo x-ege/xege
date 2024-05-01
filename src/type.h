@@ -8,7 +8,7 @@
 #include "stdint.h"
 #endif
 
-#include <Windows.h>
+#include <windows.h>
 
 #if !defined(EGE_W64)
 #if !defined(__midl) && (defined(_X86_) || defined(_M_IX86)) && _MSC_VER >= 1300

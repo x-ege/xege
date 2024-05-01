@@ -6,6 +6,7 @@
 */
 
 #include "ege_head.h"
+#include "ege_common.h"
 
 #include <time.h>
 

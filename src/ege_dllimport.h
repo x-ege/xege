@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Windows.h>
+#include <windows.h>
 #include <windef.h>
 
 namespace dll
@@ -23,9 +23,9 @@ namespace dll
     BOOL GradientFill(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
 
     // --------------------- winmm.dll -----------------------
-    MMRESULT WINAPI timeBeginPeriod(UINT uPeriod);
-    MMRESULT WINAPI timeEndPeriod(UINT uPeriod);
-    MMRESULT WINAPI timeSetEvent(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent);
-    MMRESULT WINAPI timeKillEvent(UINT uTimerID);
-    MCIERROR WINAPI mciSendCommandW(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
+    MMRESULT timeBeginPeriod(UINT uPeriod);
+    MMRESULT timeEndPeriod(UINT uPeriod);
+    MMRESULT timeSetEvent(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent);
+    MMRESULT timeKillEvent(UINT uTimerID);
+    MCIERROR mciSendCommandW(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
 }

@@ -405,7 +405,7 @@ int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     bitmapData.Scan0       = getbuffer(pimg);            // 图像首行像素的首地址
 
     // 读取区域设置为整个图像
-    Gdiplus::Rect rect = {0, 0, width, height};
+    Gdiplus::Rect rect(0, 0, width, height);
 
     // 模式: 仅读取图像数据, 缓冲区由用户分配
     int imageLockMode = Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeUserInputBuf;
@@ -431,10 +431,8 @@ int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
         }
     }
 
-    struct IPicture* pPicture;
     OLECHAR          wszPath[MAX_PATH * 2 + 1];
     WCHAR            szPath[MAX_PATH * 2 + 1] = L"";
-    HRESULT          hr;
 
     if (wcsstr(filename, L"http://")) {
         lstrcpyW(szPath, filename);
@@ -701,9 +699,7 @@ inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
         } else {
             HGLOBAL          hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
             LPVOID           pvData;
-            struct IPicture* pPicture;
             IStream*         pStm;
-            HRESULT          hr;
 
             if (hGlobal == NULL || (pvData = GlobalLock(hGlobal)) == NULL) {
                 return grAllocError;
@@ -758,9 +754,7 @@ int IMAGE::getimage(void* pMem, long size)
         DWORD            dwSize  = size;
         HGLOBAL          hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
         LPVOID           pvData;
-        struct IPicture* pPicture;
         IStream*         pStm;
-        HRESULT          hr;
 
         if (hGlobal == NULL || (pvData = GlobalLock(hGlobal)) == NULL) {
             return grAllocError;
@@ -1006,7 +1000,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgdest,      // handle to dest
         for (y = 0; y < nHeightSrc; ++y) {
             for (x = 0; x < nWidthSrc; ++x, ++psp, ++pdp) {
                 DWORD d = *pdp, s = *psp;
-                DWORD alpha = EGEGET_A(s);
+                unsigned char alpha = EGEGET_A(s);
                 *pdp        = alphablend_inline(d, s, alpha);
             }
             pdp += ddx;
@@ -1100,7 +1094,7 @@ int IMAGE::putimage_alphafilter(PIMAGE imgdest,      // handle to dest
         for (y = 0; y < nHeightSrc; ++y) {
             for (x = 0; x < nWidthSrc; ++x, ++psp, ++pdp, ++pap) {
                 DWORD d = *pdp, s = *psp;
-                DWORD alpha = *pap & 0xFF;
+                unsigned char alpha = *pap & 0xFF;
                 if (*pap) {
                     *pdp = alphablend_inline(d, s, alpha);
                 }
@@ -2845,8 +2839,8 @@ static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
     int     len_suffix, len_text;
     LPCWSTR p_suffix;
     LPCWSTR p_text;
-    len_suffix = wcslen(suffix);
-    len_text   = wcslen(text);
+    len_suffix = (int)wcslen(suffix);
+    len_text   = (int)wcslen(text);
 
     if ((len_text < len_suffix) || (len_text == 0)) {
         return FALSE;
