@@ -23,8 +23,8 @@ namespace dll
 {
     // ----------------------------- imm32.dll ------------------------------------
     static HMODULE imm32Dll;
-    static HIMC (*func_ImmGetContext)(HWND);
-    static BOOL (*func_ImmSetCompositionWindow)(HIMC , LPCOMPOSITIONFORM);
+    static HIMC (WINAPI *func_ImmGetContext)(HWND);
+    static BOOL (WINAPI *func_ImmSetCompositionWindow)(HIMC , LPCOMPOSITIONFORM);
 
     static void initImm32Dll()
     {
@@ -45,14 +45,14 @@ namespace dll
 
         // ImmGetContext
         if (func_ImmGetContext == NULL) {
-            typedef HIMC (*ImmGetContext_FuncType)(HWND);
+            typedef HIMC (WINAPI *ImmGetContext_FuncType)(HWND);
             func_ImmGetContext = (ImmGetContext_FuncType)GetProcAddress(imm32Dll, "ImmGetContext");
             LOG_IF(func_ImmGetContext == NULL,"ege error: The 'ImmGetContext' function cannot be found from the imm32.dll.");
         }
 
         // ImmSetCompositionWindow
         if (func_ImmSetCompositionWindow == NULL) {
-            typedef BOOL (*ImmSetCompositionWindow_FuncType)(HIMC, LPCOMPOSITIONFORM);
+            typedef BOOL (WINAPI *ImmSetCompositionWindow_FuncType)(HIMC, LPCOMPOSITIONFORM);
             func_ImmSetCompositionWindow = (ImmSetCompositionWindow_FuncType)GetProcAddress(imm32Dll, "ImmSetCompositionWindow");
             LOG_IF(func_ImmSetCompositionWindow == NULL, "ege error: The 'ImmSetCompositionWindow' function cannot be found from the imm32.dll.");
         }
@@ -79,8 +79,8 @@ namespace dll
 
     // ----------------------------- msimg32.dll ----------------------------------
     static HMODULE msimg32Dll;
-    static BOOL (*func_AlphaBlend)(HDC hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,HDC hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,BLENDFUNCTION ftn);
-    static BOOL (*func_GradientFill)(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
+    static BOOL (WINAPI *func_AlphaBlend)(HDC hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,HDC hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,BLENDFUNCTION ftn);
+    static BOOL (WINAPI *func_GradientFill)(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
 
     static void initMsimg32Dll()
     {
@@ -102,14 +102,14 @@ namespace dll
 
         // AlphaBlend
         if (func_AlphaBlend == NULL) {
-            typedef BOOL (*AlphaBlend_FuncType)(HDC hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,HDC hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,BLENDFUNCTION ftn);
+            typedef BOOL (WINAPI *AlphaBlend_FuncType)(HDC hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,HDC hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,BLENDFUNCTION ftn);
             func_AlphaBlend = (AlphaBlend_FuncType)GetProcAddress(msimg32Dll, "AlphaBlend");
             LOG_IF(func_AlphaBlend == NULL,"ege error: The 'AlphaBlend' function cannot be found from the msimg32.dll.");
         }
 
         // GradientFill
         if (func_GradientFill == NULL) {
-            typedef BOOL (*GradientFill_FuncType)(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
+            typedef BOOL (WINAPI *GradientFill_FuncType)(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
             func_GradientFill = (GradientFill_FuncType)GetProcAddress(msimg32Dll, "GradientFill");
             LOG_IF(func_GradientFill == NULL, "ege error: The 'GradientFill' function cannot be found from the msimg32.dll.");
         }
@@ -135,11 +135,11 @@ namespace dll
 
     // --------------------------------- winmm.dll -------------------------------------------
     static HMODULE winmmDll;
-    static MMRESULT (*func_timeBeginPeriod)(UINT uPeriod);
-    static MMRESULT (*func_timeEndPeriod)(UINT uPeriod);
-    static MMRESULT (*func_timeSetEvent)(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent);
-    static MMRESULT (*func_timeKillEvent)(UINT uTimerID);
-    static MCIERROR (*func_mciSendCommandW)(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
+    static MMRESULT (WINAPI *func_timeBeginPeriod)(UINT uPeriod);
+    static MMRESULT (WINAPI *func_timeEndPeriod)(UINT uPeriod);
+    static MMRESULT (WINAPI *func_timeSetEvent)(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent);
+    static MMRESULT (WINAPI *func_timeKillEvent)(UINT uTimerID);
+    static MCIERROR (WINAPI *func_mciSendCommandW)(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
 
     static void initWinmmDll()
     {
@@ -164,14 +164,14 @@ namespace dll
 
         // timeBeginPeriod
         if (func_timeBeginPeriod == NULL) {
-            typedef MMRESULT (*timeBeginPeriod_FuncType)(UINT uPeriod);
+            typedef MMRESULT (WINAPI *timeBeginPeriod_FuncType)(UINT uPeriod);
             func_timeBeginPeriod = (timeBeginPeriod_FuncType)GetProcAddress(winmmDll, "timeBeginPeriod");
             LOG_IF(func_timeBeginPeriod == NULL, "ege error: The 'timeBeginPeriod' function cannot be found from the winmm.dll.");
         }
 
         // timeEndPeriod
         if (func_timeEndPeriod == NULL) {
-            typedef MMRESULT (*timeEndPeriod_FuncType)(UINT uPeriod);
+            typedef MMRESULT (WINAPI *timeEndPeriod_FuncType)(UINT uPeriod);
             func_timeEndPeriod = (timeEndPeriod_FuncType)GetProcAddress(winmmDll, "timeEndPeriod");
             LOG_IF(func_timeEndPeriod == NULL, "ege error: The 'timeEndPeriod' function cannot be found from the winmm.dll.");
         }
@@ -179,14 +179,14 @@ namespace dll
 
         // timeSetEvent
         if (func_timeSetEvent == NULL) {
-            typedef MMRESULT (*timeSetEvent_FuncType)(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent);
+            typedef MMRESULT (WINAPI *timeSetEvent_FuncType)(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent);
             func_timeSetEvent = (timeSetEvent_FuncType)GetProcAddress(winmmDll, "timeSetEvent");
             LOG_IF(func_timeSetEvent == NULL, "ege error: The 'timeSetEvent' function cannot be found from the winmm.dll.");
         }
 
         // timeKillEvent
         if (func_timeKillEvent == NULL) {
-            typedef MMRESULT (*timeKillEvent_FuncType)(UINT uTimerID);
+            typedef MMRESULT (WINAPI *timeKillEvent_FuncType)(UINT uTimerID);
             func_timeKillEvent = (timeKillEvent_FuncType)GetProcAddress(winmmDll, "timeKillEvent");
             LOG_IF(func_timeKillEvent == NULL, "ege error: The 'timeKillEvent' function cannot be found from the winmm.dll.");
         }
@@ -194,7 +194,7 @@ namespace dll
 
         // mciSendCommandW
         if (func_mciSendCommandW == NULL) {
-            typedef MCIERROR (*mciSendCommandW_FuncType)(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
+            typedef MCIERROR (WINAPI *mciSendCommandW_FuncType)(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
             func_mciSendCommandW = (mciSendCommandW_FuncType)GetProcAddress(winmmDll, "mciSendCommandW");
             LOG_IF(func_mciSendCommandW == NULL, "ege error: The 'mciSendCommandW' function cannot be found from the winmm.dll.");
         }
@@ -295,7 +295,7 @@ namespace dll
             return S_FALSE;
         }
 
-        typedef HRESULT (*CreateStreamOnHGlobalFuncType) (HGLOBAL hGlobal, BOOL fDeleteOnRelease, LPSTREAM *ppstm);
+        typedef HRESULT (WINAPI *CreateStreamOnHGlobalFuncType) (HGLOBAL hGlobal, BOOL fDeleteOnRelease, LPSTREAM *ppstm);
         CreateStreamOnHGlobalFuncType CreateStreamOnHGlobalFunc = (CreateStreamOnHGlobalFuncType)GetProcAddress(Ole32Dll, "CreateStreamOnHGlobal");
 
         HRESULT result;
