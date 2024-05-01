@@ -67,6 +67,10 @@ cmake --build build\vs2019 --config Release -j
 cmake -G "Visual Studio 16 2019" -A x64 -S . -B build\vs2019_64 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2019\x64"
 cmake --build build\vs2019_64 --config Release -j
 
+:: Visual Studio 2022 32bit
+cmake -G "Visual Studio 17 2022" -A Win32 -S . -B build\vs2022 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2022\x86"
+cmake --build build\vs2022 --config Release -j
+
 :: Visual Studio 2022 64bit
 cmake -G "Visual Studio 17 2022" -A x64 -S . -B build\vs2022_64 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2022\x64"
 cmake --build build\vs2022_64 --config Release -j
