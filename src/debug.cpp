@@ -3,7 +3,7 @@
 #include "ege_head.h"
 #include "ege_common.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 namespace ege
 {
