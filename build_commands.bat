@@ -1,4 +1,4 @@
-:: ÒÔÏÂÃüÁîÓÃÓÚ½«¸÷°æ±¾¿âÎÄ¼ş·½±ãµØÊä³öµ½ build\lib ÖĞ
+:: ä»¥ä¸‹å‘½ä»¤ç”¨äºå°†å„ç‰ˆæœ¬åº“æ–‡ä»¶æ–¹ä¾¿åœ°è¾“å‡ºåˆ° build\lib ä¸­
 
 
 :: MinGW
@@ -67,8 +67,16 @@ cmake --build build\vs2019 --config Release -j
 cmake -G "Visual Studio 16 2019" -A x64 -S . -B build\vs2019_64 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2019\x64"
 cmake --build build\vs2019_64 --config Release -j
 
+:: Visual Studio 2022 32bit
+cmake -G "Visual Studio 17 2022" -A Win32 -S . -B build\vs2022 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2022\x86"
+cmake --build build\vs2022 --config Release -j
+
+:: Visual Studio 2022 64bit
+cmake -G "Visual Studio 17 2022" -A x64 -S . -B build\vs2022_64 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2022\x64"
+cmake --build build\vs2022_64 --config Release -j
+
 :: Visual C++ 6.0
-:: ÇëÊ¹ÓÃ CMD Ö´ĞĞ
-:: Ö´ĞĞÃüÁîÇ°ÇëÈ·±£°´ BUILD.md ÖĞ `±àÒëÅäÖÃ -- Visual C++ 6.0` Ò»½Ú×öºÃÉèÖÃ
+:: è¯·ä½¿ç”¨ CMD æ‰§è¡Œ
+:: æ‰§è¡Œå‘½ä»¤å‰è¯·ç¡®ä¿æŒ‰ BUILD.md ä¸­ `ç¼–è¯‘é…ç½® -- Visual C++ 6.0` ä¸€èŠ‚åšå¥½è®¾ç½®
 cmake -G "NMake Makefiles" -S . -B build\vc6 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="%CD%\build\lib\vc6" -DCMAKE_BUILD_TYPE=Release
 cmake --build build\vc6
