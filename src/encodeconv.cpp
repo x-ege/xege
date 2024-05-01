@@ -6,7 +6,7 @@
 #include "encodeconv.h"
 #include "ege_head.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 namespace ege
 {
