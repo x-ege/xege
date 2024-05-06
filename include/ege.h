@@ -251,8 +251,8 @@ enum message_mouse
     MSG_MOUSE_MID   	 = 0x04,
 };
 
-#ifndef EGE_COLOR_TYPEDEF
-#define EGE_COLOR_TYPEDEF
+#ifndef EGE_COLOR_T_TYPEDEF
+#define EGE_COLOR_T_TYPEDEF
 typedef DWORD color_t;
 #endif
 
