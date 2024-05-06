@@ -1,10 +1,6 @@
 #ifndef EGE_LABEL_H
 #define EGE_LABEL_H
 
-#ifndef EGE_H
-#error include "label.h" must after include "ege.h" or "graphics.h"
-#endif
-
 #include "egecontrolbase.h"
 
 namespace ege
