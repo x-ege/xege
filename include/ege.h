@@ -33,7 +33,7 @@
 #endif
 
 #if defined(_INC_CONIO) || defined(_CONIO_H_)
-#error can not include "conio.h" before "graphics.h"
+#error You cannot include "conio.h" before "graphics.h".
 #endif
 
 #if defined(_MSC_VER)
