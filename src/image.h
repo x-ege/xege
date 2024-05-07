@@ -147,15 +147,16 @@ public:
         int                       heightSrc  = 0  // height of source rectangle
     ) const;
 
-    int putimage_withalpha(PIMAGE imgDest,      // handle to dest
-        int                       xDest, // x-coord of destination upper-left corner
-        int                       yDest, // y-coord of destination upper-left corner
+    int putimage_withalpha(PIMAGE imgDest,     // handle to dest
+        int                       xDest,       // x-coord of destination upper-left corner
+        int                       yDest,       // y-coord of destination upper-left corner
         int                       widthDest,   // width of destination rectangle
         int                       heightDest,  // height of destination rectangle
-        int                       xSrc,  // x-coord of source upper-left corner
-        int                       ySrc,  // y-coord of source upper-left corner
+        int                       xSrc,        // x-coord of source upper-left corner
+        int                       ySrc,        // y-coord of source upper-left corner
         int                       widthSrc,    // width of source rectangle
-        int                       heightSrc    // height of source rectangle
+        int                       heightSrc,   // height of source rectangle
+        bool                      smooth = false
     ) const;
 
     int putimage_alphafilter(PIMAGE imgDest,         // handle to dest

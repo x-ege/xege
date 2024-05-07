@@ -1191,7 +1191,8 @@ int EGEAPI putimage_withalpha(
     int xSrc,                   // x-coord of source upper-left corner
     int ySrc,                   // y-coord of source upper-left corner
     int widthSrc,               // width of source rectangle
-    int heightSrc               // height of source rectangle
+    int heightSrc,              // height of source rectangle
+    bool smooth = false
 );
 int EGEAPI putimage_alphafilter(
     PIMAGE  imgDest,            // handle to dest
