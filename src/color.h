@@ -14,8 +14,8 @@
 namespace ege
 {
 
-#ifndef EGE_COLOR_TYPEDEF
-#define EGE_COLOR_TYPEDEF
+#ifndef EGE_COLOR_T_TYPEDEF
+#define EGE_COLOR_T_TYPEDEF
 typedef unsigned int color_t;
 #endif
 

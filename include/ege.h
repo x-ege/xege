@@ -33,7 +33,7 @@
 #endif
 
 #if defined(_INC_CONIO) || defined(_CONIO_H_)
-#error can not include "conio.h" before "graphics.h"
+#error You cannot include "conio.h" before "graphics.h".
 #endif
 
 #if defined(_MSC_VER)
@@ -250,8 +250,9 @@ enum message_mouse
     MSG_MOUSE_MID   	 = 0x04,
 };
 
-#ifndef EGE_COLOR_TYPEDEF
-#define EGE_COLOR_TYPEDEF
+
+#ifndef EGE_COLOR_T_TYPEDEF
+#define EGE_COLOR_T_TYPEDEF
 typedef unsigned int color_t;
 #endif
 
@@ -1346,6 +1347,7 @@ public:
     DWORD OpenFile(const char* filepath);
     DWORD OpenFile(const wchar_t* filepath);
     DWORD Play(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
+    DWORD RepeatPlay(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
     DWORD Pause();
     DWORD Seek(DWORD dwTo);
     DWORD SetVolume(float value);
