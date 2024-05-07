@@ -381,7 +381,7 @@ void IMAGE::putimage(int xDest, int yDest, DWORD dwRop) const
     CONVERT_IMAGE_END;
 }
 
-int IMAGE::getimage(LPCSTR filename, int zoomWidth, int zoomHeight)
+int IMAGE::getimage(const char* filename, int zoomWidth, int zoomHeight)
 {
     const std::wstring& filename_w = mb2w(filename);
     return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
@@ -419,7 +419,7 @@ int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     return grOk;
 }
 
-int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
+int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
 {
     (void)zoomWidth, (void)zoomHeight; // ignore
     inittest(L"IMAGE::getimage");
@@ -461,12 +461,12 @@ int IMAGE::getimage(LPCWSTR filename, int zoomWidth, int zoomHeight)
     return grOk;
 }
 
-int IMAGE::saveimage(LPCSTR filename, bool withAlphaChannel) const
+int IMAGE::saveimage(const char* filename, bool withAlphaChannel) const
 {
     return saveimage(mb2w(filename).c_str(), withAlphaChannel);
 }
 
-int IMAGE::saveimage(LPCWSTR filename, bool withAlphaChannel) const
+int IMAGE::saveimage(const wchar_t* filename, bool withAlphaChannel) const
 {
     return ege::saveimage(this, filename, withAlphaChannel);
 }
@@ -730,14 +730,14 @@ inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
     return grIOerror;
 }
 
-int IMAGE::getimage(LPCSTR resType, LPCSTR resName, int zoomWidth, int zoomHeight)
+int IMAGE::getimage(const char* resType, const char* resName, int zoomWidth, int zoomHeight)
 {
     const std::wstring& pResType_w = mb2w(resType);
     const std::wstring& pResName_w = mb2w(resName);
     return getimage(pResType_w.c_str(), pResName_w.c_str(), zoomWidth, zoomHeight);
 }
 
-int IMAGE::getimage(LPCWSTR resType, LPCWSTR resName, int zoomWidth, int zoomHeight)
+int IMAGE::getimage(const wchar_t* resType, const wchar_t* resName, int zoomWidth, int zoomHeight)
 {
     (void)zoomWidth, (void)zoomHeight; // ignore
     inittest(L"IMAGE::getimage");
@@ -2685,25 +2685,25 @@ void putimage(
     pSrcImg->putimage(imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, dwRop);
 }
 
-int getimage(PIMAGE imgDest, LPCSTR imageFile, int zoomWidth, int zoomHeight)
+int getimage(PIMAGE imgDest, const char* imageFile, int zoomWidth, int zoomHeight)
 {
     EGE_GETIMAGE_CHK_NULL(imgDest);
     return imgDest->getimage(imageFile, zoomWidth, zoomHeight);
 }
 
-int getimage(PIMAGE imgDest, LPCWSTR imageFile, int zoomWidth, int zoomHeight)
+int getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth, int zoomHeight)
 {
     EGE_GETIMAGE_CHK_NULL(imgDest);
     return imgDest->getimage(imageFile, zoomWidth, zoomHeight);
 }
 
-int getimage(PIMAGE imgDest, LPCSTR resType, LPCSTR resName, int zoomWidth, int zoomHeight)
+int getimage(PIMAGE imgDest, const char* resType, const char* resName, int zoomWidth, int zoomHeight)
 {
     EGE_GETIMAGE_CHK_NULL(imgDest);
     return imgDest->getimage(resType, resName, zoomWidth, zoomHeight);
 }
 
-int getimage(PIMAGE imgDest, LPCWSTR resType, LPCWSTR resName, int zoomWidth, int zoomHeight)
+int getimage(PIMAGE imgDest, const wchar_t* resType, const wchar_t* resName, int zoomWidth, int zoomHeight)
 {
     EGE_GETIMAGE_CHK_NULL(imgDest);
     return imgDest->getimage(resType, resName, zoomWidth, zoomHeight);
@@ -2860,13 +2860,13 @@ static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
     return TRUE;
 }
 
-int saveimage(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
+int saveimage(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 {
     const std::wstring& filename_w = mb2w(filename);
     return saveimage(pimg, filename_w.c_str(), withAlphaChannel);
 }
 
-int saveimage(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
+int saveimage(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     int     ret = 0;
@@ -2885,13 +2885,13 @@ int saveimage(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
     return ret;
 }
 
-int getimage_pngfile(PIMAGE pimg, LPCSTR filename)
+int getimage_pngfile(PIMAGE pimg, const char* filename)
 {
     const std::wstring& filename_w = mb2w(filename);
     return getimage_pngfile(pimg, filename_w.c_str());
 }
 
-int getimage_pngfile(PIMAGE pimg, LPCWSTR filename)
+int getimage_pngfile(PIMAGE pimg, const wchar_t* filename)
 {
     FILE* fp = NULL;
     int   ret;
@@ -2906,13 +2906,13 @@ int getimage_pngfile(PIMAGE pimg, LPCWSTR filename)
     return ret;
 }
 
-int savepng(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
+int savepng(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 {
     const std::wstring& filename_w = mb2w(filename);
     return savepng(pimg, filename_w.c_str(), withAlphaChannel);
 }
 
-int savepng(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
+int savepng(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
     FILE* fp = NULL;
     int   ret;
@@ -2937,7 +2937,7 @@ int savepng(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
  * @return int  错误码(graphics_errors)
  * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
  */
-int savebmp(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
+int savebmp(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 {
     return savebmp(pimg, mb2w(filename).c_str(), withAlphaChannel);
 }
@@ -2951,7 +2951,7 @@ int savebmp(PCIMAGE pimg, LPCSTR filename, bool withAlphaChannel)
  * @return int  错误码(graphics_errors)
  * @note  保存 alpha 通道则使用 BITMAPV4HEADER, 不保存则使用 BITMAPINFOHEADER
  */
-int savebmp(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel)
+int savebmp(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
     FILE* file = _wfopen(filename, L"wb");
     if (file == NULL) {

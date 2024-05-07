@@ -684,13 +684,13 @@ typedef struct mouse_msg
     mouse_msg_e     msg;
     unsigned int    flags;
     int             wheel;
-    bool is_left()  {return (flags & mouse_flag_left)  != 0;}
-    bool is_right() {return (flags & mouse_flag_right) != 0;}
-    bool is_mid()   {return (flags & mouse_flag_mid)   != 0;}
-    bool is_down()  {return msg == mouse_msg_down;}
-    bool is_up()    {return msg == mouse_msg_up;}
-    bool is_move()  {return msg == mouse_msg_move;}
-    bool is_wheel() {return msg == mouse_msg_wheel;}
+    bool is_left()  const {return (flags & mouse_flag_left)  != 0;}
+    bool is_right() const {return (flags & mouse_flag_right) != 0;}
+    bool is_mid()   const {return (flags & mouse_flag_mid)   != 0;}
+    bool is_down()  const {return msg == mouse_msg_down;}
+    bool is_up()    const {return msg == mouse_msg_up;}
+    bool is_move()  const {return msg == mouse_msg_move;}
+    bool is_wheel() const {return msg == mouse_msg_wheel;}
 } mouse_msg;
 
 typedef struct ege_point
@@ -731,7 +731,7 @@ struct msg_createwindow
 {
     HANDLE  hEvent;
     HWND    hwnd;
-    LPCWSTR classname;
+    const wchar_t* classname;
     DWORD   style;
     DWORD   exstyle;
     size_t  id;
@@ -818,8 +818,8 @@ void EGEAPI initgraph(int width, int height);
 void EGEAPI initgraph(int* gdriver, int* gmode, const char* path);
 void EGEAPI closegraph();
 bool EGEAPI is_run();
-void EGEAPI setcaption(LPCSTR caption);
-void EGEAPI setcaption(LPCWSTR caption);
+void EGEAPI setcaption(const char* caption);
+void EGEAPI setcaption(const wchar_t* caption);
 void EGEAPI seticon(int icon_id);
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -978,8 +978,8 @@ void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor
     float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
 void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
 
-void EGEAPI ege_drawtext(LPCSTR  text, float x, float y, PIMAGE pimg = NULL);
-void EGEAPI ege_drawtext(LPCWSTR text, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const char*  text, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg = NULL);
 
 void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 void EGEAPI ege_gentexture(bool generate, PIMAGE pimg = NULL);
@@ -1045,46 +1045,46 @@ void EGEAPI delay_jfps(double fps);
 double EGEAPI fclock();
 
 
-void EGEAPI outtext(LPCSTR  text, PIMAGE pimg = NULL);
-void EGEAPI outtext(LPCWSTR text, PIMAGE pimg = NULL);
-void EGEAPI outtext(CHAR  c, PIMAGE pimg = NULL);
-void EGEAPI outtext(WCHAR c, PIMAGE pimg = NULL);
+void EGEAPI outtext(const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtext(const wchar_t* text, PIMAGE pimg = NULL);
+void EGEAPI outtext(char  c, PIMAGE pimg = NULL);
+void EGEAPI outtext(wchar_t c, PIMAGE pimg = NULL);
 
-void EGEAPI outtextxy(int x, int y, LPCSTR  text, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, LPCWSTR text, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, CHAR c, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, WCHAR c, PIMAGE pimg = NULL);
-void EGEAPI xyprintf (int x, int y, LPCSTR  format, ...);
-void EGEAPI xyprintf (int x, int y, LPCWSTR format, ...);
+void EGEAPI outtextxy(int x, int y, const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, char c, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, wchar_t c, PIMAGE pimg = NULL);
+void EGEAPI xyprintf (int x, int y, const char*  format, ...);
+void EGEAPI xyprintf (int x, int y, const wchar_t* format, ...);
 
-void EGEAPI outtextrect(int x, int y, int w, int h, LPCSTR  text, PIMAGE pimg = NULL);
-void EGEAPI outtextrect(int x, int y, int w, int h, LPCWSTR text, PIMAGE pimg = NULL);
-void EGEAPI rectprintf (int x, int y, int w, int h, LPCSTR  format, ...);
-void EGEAPI rectprintf (int x, int y, int w, int h, LPCWSTR format, ...);
+void EGEAPI outtextrect(int x, int y, int w, int h, const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg = NULL);
+void EGEAPI rectprintf (int x, int y, int w, int h, const char*  format, ...);
+void EGEAPI rectprintf (int x, int y, int w, int h, const wchar_t* format, ...);
 
-int  EGEAPI textwidth(LPCSTR  text, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(LPCWSTR text, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(CHAR  c, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(WCHAR c, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(const char*  text, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(const wchar_t* text, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(char  c, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(wchar_t c, PIMAGE pimg = NULL);
 
-int  EGEAPI textheight(LPCSTR  text, PIMAGE pimg = NULL);
-int  EGEAPI textheight(LPCWSTR text, PIMAGE pimg = NULL);
-int  EGEAPI textheight(CHAR  c, PIMAGE pimg = NULL);
-int  EGEAPI textheight(WCHAR c, PIMAGE pimg = NULL);
+int  EGEAPI textheight(const char*  text, PIMAGE pimg = NULL);
+int  EGEAPI textheight(const wchar_t* text, PIMAGE pimg = NULL);
+int  EGEAPI textheight(char  c, PIMAGE pimg = NULL);
+int  EGEAPI textheight(wchar_t c, PIMAGE pimg = NULL);
 
 void EGEAPI settextjustify(int horiz, int vert, PIMAGE pimg = NULL);
 
 
-void EGEAPI setfont(int height, int width, LPCSTR typeface,  PIMAGE pimg = NULL);
-void EGEAPI setfont(int height, int width, LPCWSTR typeface, PIMAGE pimg = NULL);
-void EGEAPI setfont(int height, int width, LPCSTR typeface,  int escapement, int orientation,
+void EGEAPI setfont(int height, int width, const char* typeface,  PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const char* typeface,  int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
-void EGEAPI setfont(int height, int width, LPCWSTR typeface, int escapement, int orientation,
+void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
-void EGEAPI setfont(int height, int width, LPCSTR typeface,  int escapement, int orientation,
+void EGEAPI setfont(int height, int width, const char* typeface,  int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
                     BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
-void EGEAPI setfont(int height, int width, LPCWSTR typeface, int escapement, int orientation,
+void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
                     BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
 EGE_DEPRECATE(setfont)
@@ -1114,12 +1114,12 @@ int  EGEAPI resize  (PIMAGE pimg, int width, int height);
 
 int  EGEAPI getimage(PIMAGE imgDest, int xSrc, int ySrc, int widthSrc, int heightSrc);
 int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc);
-int  EGEAPI getimage(PIMAGE imgDest, LPCSTR  imageFile, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage(PIMAGE imgDest, LPCWSTR imageFile, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage(PIMAGE imgDest, LPCSTR  resType, LPCSTR  resName, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage(PIMAGE imgDest, LPCWSTR resType, LPCWSTR resName, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCSTR  filename);
-int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCWSTR filename);
+int  EGEAPI getimage(PIMAGE imgDest, const char*  imageFile, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage(PIMAGE imgDest, const char*  resType, const char*  resName, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* resType, const wchar_t* resName, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage_pngfile(PIMAGE pimg, const char*  filename);
+int  EGEAPI getimage_pngfile(PIMAGE pimg, const wchar_t* filename);
 
 void EGEAPI putimage(int x, int y, PCIMAGE pimg, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, DWORD dwRop = SRCCOPY);
@@ -1129,12 +1129,12 @@ void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, PCIMAGE imgSrc, DWORD
 void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, DWORD dwRop = SRCCOPY);
 void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc, DWORD dwRop = SRCCOPY);
 
-int  EGEAPI saveimage(PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
-int  EGEAPI saveimage(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
-int  EGEAPI savepng  (PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
-int  EGEAPI savepng  (PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
-int  EGEAPI savebmp  (PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
-int  EGEAPI savebmp  (PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
+int  EGEAPI saveimage(PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
+int  EGEAPI saveimage(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
+int  EGEAPI savepng  (PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
+int  EGEAPI savepng  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
+int  EGEAPI savebmp  (PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
+int  EGEAPI savebmp  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
 
 int EGEAPI putimage_transparent(
     PIMAGE  imgDest,            // handle to dest
@@ -1280,8 +1280,8 @@ unsigned int    EGEAPI random(unsigned int n);
 double          EGEAPI randomf();
 
 
-int EGEAPI inputbox_getline(LPCSTR  title, LPCSTR  text, LPSTR  buf, int len);
-int EGEAPI inputbox_getline(LPCWSTR title, LPCWSTR text, LPWSTR buf, int len);
+int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, int len);
+int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len);
 
 
 
@@ -1343,8 +1343,8 @@ public:
 public:
     int IsOpen() { return (m_DID != MUSIC_ERROR) ? 1 : 0; }
 
-    DWORD OpenFile(LPCSTR filepath);
-    DWORD OpenFile(LPCWSTR filepath);
+    DWORD OpenFile(const char* filepath);
+    DWORD OpenFile(const wchar_t* filepath);
     DWORD Play(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
     DWORD Pause();
     DWORD Seek(DWORD dwTo);

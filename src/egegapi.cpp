@@ -1567,7 +1567,7 @@ void ege_puttexture(PCIMAGE srcimg, ege_rect dest, ege_rect src, PIMAGE pimg)
 }
 
 // TODO: 错误处理
-static void ege_drawtext_p(LPCWSTR textstring, float x, float y, PIMAGE img)
+static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE img)
 {
     using namespace Gdiplus;
     Gdiplus::Graphics* graphics = img->getGraphics();
@@ -1614,7 +1614,7 @@ static void ege_drawtext_p(LPCWSTR textstring, float x, float y, PIMAGE img)
     // }
 }
 
-void EGEAPI ege_drawtext(LPCSTR textstring, float x, float y, PIMAGE pimg)
+void EGEAPI ege_drawtext(const char* textstring, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
@@ -1631,7 +1631,7 @@ void EGEAPI ege_drawtext(LPCSTR textstring, float x, float y, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void EGEAPI ege_drawtext(LPCWSTR textstring, float x, float y, PIMAGE pimg)
+void EGEAPI ege_drawtext(const wchar_t* textstring, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
@@ -1828,7 +1828,7 @@ static void draw_frame(PIMAGE img, int l, int t, int r, int b, color_t lc, color
     lineto(l, b, img);
 }
 
-int inputbox_getline(LPCSTR title, LPCSTR text, LPSTR buf, int len)
+int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
 {
     const std::wstring& title_w = mb2w(title);
     const std::wstring& text_w = mb2w(text);
@@ -1840,7 +1840,7 @@ int inputbox_getline(LPCSTR title, LPCSTR text, LPSTR buf, int len)
     return ret;
 }
 
-int inputbox_getline(LPCWSTR title, LPCWSTR text, LPWSTR buf, int len)
+int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len)
 {
     struct _graph_setting* pg = &graph_setting;
     IMAGE bg;

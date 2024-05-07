@@ -27,7 +27,7 @@ static unsigned int private_gettextmode(PIMAGE img)
 }
 
 /* private function */
-static void private_textout(PIMAGE img, LPCWSTR text, int x, int y, int horiz, int vert)
+static void private_textout(PIMAGE img, const wchar_t* text, int x, int y, int horiz, int vert)
 {
     if (horiz >= 0 && vert >= 0) {
         UINT fMode = TA_NOUPDATECP; // TA_UPDATECP;
@@ -71,13 +71,13 @@ static void private_textout(PIMAGE img, LPCWSTR text, int x, int y, int horiz, i
     }
 }
 
-void outtext(LPCSTR text, PIMAGE pimg)
+void outtext(const char* text, PIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     outtext(textstring_w.c_str(), pimg);
 }
 
-void outtext(LPCWSTR text, PIMAGE pimg)
+void outtext(const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
@@ -89,25 +89,25 @@ void outtext(LPCWSTR text, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void outtext(CHAR c, PIMAGE pimg)
+void outtext(char c, PIMAGE pimg)
 {
-    CHAR str[10] = {c};
+    char str[10] = {c};
     outtext(str, pimg);
 }
 
-void outtext(WCHAR c, PIMAGE pimg)
+void outtext(wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[10] = {c};
+    wchar_t str[10] = {c};
     outtext(str, pimg);
 }
 
-void outtextxy(int x, int y, LPCSTR text, PIMAGE pimg)
+void outtextxy(int x, int y, const char* text, PIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     outtextxy(x, y, textstring_w.c_str(), pimg);
 }
 
-void outtextxy(int x, int y, LPCWSTR text, PIMAGE pimg)
+void outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
@@ -117,25 +117,25 @@ void outtextxy(int x, int y, LPCWSTR text, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void outtextxy(int x, int y, CHAR c, PIMAGE pimg)
+void outtextxy(int x, int y, char c, PIMAGE pimg)
 {
-    CHAR str[10] = {c};
+    char str[10] = {c};
     outtextxy(x, y, str, pimg);
 }
 
-void outtextxy(int x, int y, WCHAR c, PIMAGE pimg)
+void outtextxy(int x, int y, wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[10] = {c};
+    wchar_t str[10] = {c};
     outtextxy(x, y, str, pimg);
 }
 
-void outtextrect(int x, int y, int w, int h, LPCSTR text, PIMAGE pimg)
+void outtextrect(int x, int y, int w, int h, const char* text, PIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     outtextrect(x, y, w, h, textstring_w.c_str(), pimg);
 }
 
-void outtextrect(int x, int y, int w, int h, LPCWSTR text, PIMAGE pimg)
+void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
@@ -149,10 +149,10 @@ void outtextrect(int x, int y, int w, int h, LPCWSTR text, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-// NOTE: xyprintf 和 rectprintf 的 LPCSTR 版本理论上可能出问题, 某种编码下可能出现一个字节值为 0x25, 也就是 '%',
+// NOTE: xyprintf 和 rectprintf 的 const char* 版本理论上可能出问题, 某种编码下可能出现一个字节值为 0x25, 也就是 '%',
 // 导致 printf 内部处理出错. 但出这种错的机会应该极少, 故先不处理.
 
-void xyprintf(int x, int y, LPCSTR format, ...)
+void xyprintf(int x, int y, const char* format, ...)
 {
     va_list v;
     va_start(v, format);
@@ -165,7 +165,7 @@ void xyprintf(int x, int y, LPCSTR format, ...)
     va_end(v);
 }
 
-void xyprintf(int x, int y, LPCWSTR format, ...)
+void xyprintf(int x, int y, const wchar_t* format, ...)
 {
     va_list v;
     va_start(v, format);
@@ -178,7 +178,7 @@ void xyprintf(int x, int y, LPCWSTR format, ...)
     va_end(v);
 }
 
-void rectprintf(int x, int y, int w, int h, LPCSTR format, ...)
+void rectprintf(int x, int y, int w, int h, const char* format, ...)
 {
     va_list v;
     va_start(v, format);
@@ -191,7 +191,7 @@ void rectprintf(int x, int y, int w, int h, LPCSTR format, ...)
     va_end(v);
 }
 
-void rectprintf(int x, int y, int w, int h, LPCWSTR format, ...)
+void rectprintf(int x, int y, int w, int h, const wchar_t* format, ...)
 {
     va_list v;
     va_start(v, format);
@@ -204,13 +204,13 @@ void rectprintf(int x, int y, int w, int h, LPCWSTR format, ...)
     va_end(v);
 }
 
-int textwidth(LPCSTR text, PIMAGE pimg)
+int textwidth(const char* text, PIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     return textwidth(textstring_w.c_str(), pimg);
 }
 
-int textwidth(LPCWSTR text, PIMAGE pimg)
+int textwidth(const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
@@ -223,25 +223,25 @@ int textwidth(LPCWSTR text, PIMAGE pimg)
     return 0;
 }
 
-int textwidth(CHAR c, PIMAGE pimg)
+int textwidth(char c, PIMAGE pimg)
 {
-    CHAR str[2] = {c};
+    char str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textwidth(WCHAR c, PIMAGE pimg)
+int textwidth(wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[2] = {c};
+    wchar_t str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textheight(LPCSTR text, PIMAGE pimg)
+int textheight(const char* text, PIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     return textheight(textstring_w.c_str(), pimg);
 }
 
-int textheight(LPCWSTR text, PIMAGE pimg)
+int textheight(const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
@@ -260,9 +260,9 @@ int textheight(CHAR c, PIMAGE pimg)
     return textheight(str, pimg);
 }
 
-int textheight(WCHAR c, PIMAGE pimg)
+int textheight(wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[2] = {c};
+    wchar_t str[2] = {c};
     return textheight(str, pimg);
 }
 
@@ -278,7 +278,7 @@ void settextjustify(int horiz, int vert, PIMAGE pimg)
 
 void setfont(int height,
     int width,
-    LPCSTR typeface,
+    const char* typeface,
     int  escapement,
     int  orientation,
     int  weight,
@@ -315,7 +315,7 @@ void setfont(int height,
 
 void setfont(int height,
     int width,
-    LPCWSTR typeface,
+    const wchar_t* typeface,
     int escapement,
     int orientation,
     int weight,
@@ -350,7 +350,7 @@ void setfont(int height,
 
 void setfont(int height,
     int width,
-    LPCSTR typeface,
+    const char* typeface,
     int escapement,
     int orientation,
     int weight,
@@ -378,7 +378,7 @@ void setfont(int height,
 
 void setfont(int height,
     int width,
-    LPCWSTR typeface,
+    const wchar_t* typeface,
     int escapement,
     int orientation,
     int weight,
@@ -404,7 +404,7 @@ void setfont(int height,
         pimg);
 }
 
-void setfont(int height, int width, LPCSTR typeface, PIMAGE pimg)
+void setfont(int height, int width, const char* typeface, PIMAGE pimg)
 {
     setfont(height,
         width,
@@ -423,7 +423,7 @@ void setfont(int height, int width, LPCSTR typeface, PIMAGE pimg)
         pimg);
 }
 
-void setfont(int height, int width, LPCWSTR typeface, PIMAGE pimg)
+void setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg)
 {
     setfont(height,
         width,

@@ -8,7 +8,7 @@
 namespace ege
 {
 
-void internal_panic(LPCWSTR errmsg)
+void internal_panic(const wchar_t* errmsg)
 {
     MessageBoxW(graph_setting.hwnd, errmsg, L"EGE INTERNAL ERROR", MB_ICONSTOP);
     ExitProcess((UINT)grError);

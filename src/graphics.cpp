@@ -982,7 +982,7 @@ BOOL init_instance(HINSTANCE hInstance)
             }
         }
     }
-    // SetWindowTextA(pg->hwnd, (LPCSTR)Title);
+    // SetWindowTextA(pg->hwnd, (const char*)Title);
     SetWindowLongPtrW(pg->hwnd, GWLP_USERDATA, (LONG_PTR)pg);
 
     /* {

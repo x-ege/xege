@@ -73,10 +73,10 @@ public:
 
     int getimage(int xSrc, int ySrc, int srcWidth, int srcHeight);
     int getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHeight);
-    int getimage(LPCSTR imageFile, int zoomWidth = 0, int zoomHeight = 0);
-    int getimage(LPCWSTR imageFile, int zoomWidth = 0, int zoomHeight = 0);
-    int getimage(LPCSTR resType, LPCSTR resName, int zoomWidth = 0, int zoomHeight = 0);
-    int getimage(LPCWSTR resType, LPCWSTR resName, int zoomWidth = 0, int zoomHeight = 0);
+    int getimage(const char* imageFile, int zoomWidth = 0, int zoomHeight = 0);
+    int getimage(const wchar_t* imageFile, int zoomWidth = 0, int zoomHeight = 0);
+    int getimage(const char* resType, const char* resName, int zoomWidth = 0, int zoomHeight = 0);
+    int getimage(const wchar_t* resType, const wchar_t* resName, int zoomWidth = 0, int zoomHeight = 0);
     int getimage(void* pMem, long size);
 
     void putimage(int xDest, int yDest, DWORD dwRop = SRCCOPY) const;
@@ -101,8 +101,8 @@ public:
         int              srcHeight,
         DWORD            dwRop = SRCCOPY) const;
 
-    int saveimage(LPCSTR  filename, bool withAlphaChannel = false) const;
-    int saveimage(LPCWSTR filename, bool withAlphaChannel = false) const;
+    int saveimage(const char*  filename, bool withAlphaChannel = false) const;
+    int saveimage(const wchar_t* filename, bool withAlphaChannel = false) const;
     int savepngimg(FILE* fp, bool withAlphaChannel = false) const;
 
     int getpngimg(FILE* fp);
