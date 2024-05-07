@@ -1011,21 +1011,23 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,      // handle to dest
     return grOk;
 }
 
-int IMAGE::putimage_withalpha(PIMAGE imgDest,      // handle to dest
-    int                              xDest, // x-coord of destination upper-left corner
-    int                              yDest, // y-coord of destination upper-left corner
-    int                              widthDest,   // width of destination rectangle
-    int                              heightDest,  // height of destination rectangle
-    int                              xSrc,  // x-coord of source upper-left corner
-    int                              ySrc,  // y-coord of source upper-left corner
-    int                              widthSrc,    // width of source rectangle
-    int                              heightSrc    // height of source rectangle
+int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
+    int                              xDest,     // x-coord of destination upper-left corner
+    int                              yDest,     // y-coord of destination upper-left corner
+    int                              widthDest, // width of destination rectangle
+    int                              heightDest,// height of destination rectangle
+    int                              xSrc,      // x-coord of source upper-left corner
+    int                              ySrc,      // y-coord of source upper-left corner
+    int                              widthSrc,  // width of source rectangle
+    int                              heightSrc,  // height of source rectangle
+    bool                             smooth
 ) const
 {
     inittest(L"IMAGE::putimage_withalpha");
-    const PIMAGE img = CONVERT_IMAGE(imgDest);
-    if (img) {
+    imgDest = CONVERT_IMAGE(imgDest);
+    if (imgDest) {
         PCIMAGE imgSrc = this;
+        #if 0
         int     x, y;
         DWORD   ddx, dsx;
         DWORD * pdp, *psp;
@@ -1060,6 +1062,41 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,      // handle to dest
         dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, alphaSrc->m_hDC, 0, 0, widthSrc,
             heightSrc, bf);
         delimage(alphaSrc);
+        #endif
+
+        if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
+        if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
+        if (widthDest  <= 0) widthDest  = widthSrc;
+        if (heightDest <= 0) heightDest = heightSrc;
+
+        const viewporttype& vptDest = imgDest->m_vpt;
+        const viewporttype& vptSrc  = imgSrc->m_vpt;
+        Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
+        Rect drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
+        Rect clipDest(0, 0, imgDest->m_width, imgDest->m_height);
+
+        if (vptDest.clipflag) {
+            clipDest = Rect(vptDest.left, vptDest.top, vptDest.right - vptDest.left, vptDest.bottom - vptDest.top);
+        }
+        Gdiplus::GraphicsPath path;
+        path.AddRectangle(Gdiplus::Rect(clipDest.x, clipDest.y, clipDest.width, clipDest.height));
+        Gdiplus::Region region(&path);
+
+        Gdiplus::Graphics* graphics = imgDest->getGraphics();
+        graphics->SetClip(&region);
+
+        if (smooth) {
+            graphics->SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+        } else {
+            graphics->SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+        }
+
+        Gdiplus::RectF rectDest((float)drawDest.x, (float)drawDest.y, (float)drawDest.width, (float)drawDest.height);
+        Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
+
+        Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, sizeof(color_t) * imgSrc->m_width,
+        PixelFormat32bppARGB, (BYTE*)imgSrc->m_pBuffer);
+        graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
     }
     CONVERT_IMAGE_END;
     return grOk;
@@ -2787,21 +2824,22 @@ int putimage_withalpha(PIMAGE imgDest,      // handle to dest
         imgDest, xDest, yDest, xSrc, ySrc, widthSrc, heightSrc);
 }
 
-int EGEAPI putimage_withalpha(PIMAGE imgDest,      // handle to dest
-    PCIMAGE                          imgSrc,       // handle to source
-    int                              xDest, // x-coord of destination upper-left corner
-    int                              yDest, // y-coord of destination upper-left corner
-    int                              widthDest,   // width of destination rectangle
-    int                              heightDest,  // height of destination rectangle
-    int                              xSrc,  // x-coord of source upper-left corner
-    int                              ySrc,  // y-coord of source upper-left corner
-    int                              widthSrc,    // width of source rectangle
-    int                              heightSrc    // height of source rectangle
+int EGEAPI putimage_withalpha(PIMAGE imgDest,    // handle to dest
+    PCIMAGE                          imgSrc,     // handle to source
+    int                              xDest,      // x-coord of destination upper-left corner
+    int                              yDest,      // y-coord of destination upper-left corner
+    int                              widthDest,  // width of destination rectangle
+    int                              heightDest, // height of destination rectangle
+    int                              xSrc,       // x-coord of source upper-left corner
+    int                              ySrc,       // y-coord of source upper-left corner
+    int                              widthSrc,   // width of source rectangle
+    int                              heightSrc,  // height of source rectangle
+    bool                             smooth
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
     return imgSrc->putimage_withalpha(
-        imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, widthSrc, heightSrc);
+        imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, widthSrc, heightSrc, smooth);
 }
 
 int putimage_alphafilter(PIMAGE imgDest,      // handle to dest
