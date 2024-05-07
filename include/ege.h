@@ -136,7 +136,6 @@
 
 #define EGE_GDIPLUS
 
-#define SHOWCONSOLE          1
 #define EGERGBA(r, g, b, a)  ((::ege::color_t)(((r) << 16) | ((g) << 8) | (b) | ((a) << 24)))
 #define EGERGB(r, g, b)      EGERGBA(r, g, b, 0xFF)
 #define EGEARGB(a, r, g, b)  EGERGBA(r, g, b, a)
