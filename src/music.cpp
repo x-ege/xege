@@ -39,14 +39,14 @@ MUSIC::~MUSIC()
 }
 
 // open a music file. szStr: Path of the file
-DWORD MUSIC::OpenFile(LPCSTR _szStr)
+DWORD MUSIC::OpenFile(const char* _szStr)
 {
     const std::wstring& wszStr = mb2w(_szStr);
     return OpenFile(wszStr.c_str());
 }
 
 // open a music file. szStr: Path of the file
-DWORD MUSIC::OpenFile(LPCWSTR _szStr)
+DWORD MUSIC::OpenFile(const wchar_t* _szStr)
 {
     MCIERROR        mciERR = ERROR_SUCCESS;
     MCI_OPEN_PARMSW mci_p  = {0};

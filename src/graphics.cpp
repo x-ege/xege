@@ -867,11 +867,20 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->mouse_show = true;
 }
 
-void initgraph(int Width, int Height, int Flag)
+void initgraph(int width, int height, int mode)
 {
-    int g = TRUECOLORSIZE, m = (Width) | (Height << 16);
-    setinitmode(Flag, g_windowpos_x, g_windowpos_y);
+    int g = TRUECOLORSIZE, m = (width) | (height << 16);
+    setinitmode(mode, g_windowpos_x, g_windowpos_y);
     initgraph(&g, &m, "");
+}
+
+void EGEAPI initgraph(int width, int height)
+{
+    #if !defined(NDEBUG) || defined(DEBUG) || defined(_DEBUG)
+    initgraph(width, height, getinitmode());
+    #else
+    initgraph(width, height, getinitmode() | INIT_WITHLOGO);
+    #endif
 }
 
 void detectgraph(int* gdriver, int* gmode)
@@ -973,7 +982,7 @@ BOOL init_instance(HINSTANCE hInstance)
             }
         }
     }
-    // SetWindowTextA(pg->hwnd, (LPCSTR)Title);
+    // SetWindowTextA(pg->hwnd, (const char*)Title);
     SetWindowLongPtrW(pg->hwnd, GWLP_USERDATA, (LONG_PTR)pg);
 
     /* {

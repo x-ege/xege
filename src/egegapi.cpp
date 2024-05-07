@@ -99,15 +99,15 @@ void putpixel(int x, int y, color_t color, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void putpixels(int nPoint, int* pPoints, PIMAGE pimg)
+void putpixels(int numOfPoints, int* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     int x, y, c;
     PDWORD pb = &img->m_pBuffer[img->m_vpt.top * img->m_width + img->m_vpt.left];
     int w = img->m_vpt.right - img->m_vpt.left, h = img->m_vpt.bottom - img->m_vpt.top;
     int tw = img->m_width;
-    for (int n = 0; n < nPoint; ++n, pPoints += 3) {
-        x = pPoints[0], y = pPoints[1], c = pPoints[2];
+    for (int n = 0; n < numOfPoints; ++n, points += 3) {
+        x = points[0], y = points[1], c = points[2];
         if (in_rect(x, y, w, h)) {
             pb[y * tw + x] = c;
         }
@@ -115,14 +115,14 @@ void putpixels(int nPoint, int* pPoints, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void putpixels_f(int nPoint, int* pPoints, PCIMAGE pimg)
+void putpixels_f(int numOfPoints, int* points, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE(pimg);
     int x, y, c;
     int tw = img->m_width;
     int th = img->m_height;
-    for (int n = 0; n < nPoint; ++n, pPoints += 3) {
-        x = pPoints[0], y = pPoints[1], c = pPoints[2];
+    for (int n = 0; n < numOfPoints; ++n, points += 3) {
+        x = points[0], y = points[1], c = points[2];
         if (in_rect(x, y, tw, th)) {
             img->m_pBuffer[y * tw + x] = c;
         }
@@ -153,7 +153,7 @@ void putpixel_withalpha(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->m_pBuffer[y * img->m_width + x];
+        color_t& dst_color = (color_t&)img->m_pBuffer[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
@@ -163,7 +163,7 @@ void putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->m_pBuffer[y * img->m_width + x];
+        color_t& dst_color = (color_t&)img->m_pBuffer[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
@@ -175,7 +175,7 @@ void putpixel_savealpha(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->m_pBuffer[y * img->m_width + x];
+        color_t& dst_color = (color_t&)img->m_pBuffer[y * img->m_width + x];
         dst_color = EGECOLORA(color, EGEGET_A(dst_color));
     }
     CONVERT_IMAGE_END;
@@ -185,7 +185,7 @@ void putpixel_savealpha_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->m_pBuffer[y * img->m_width + x];
+        color_t dst_color = (color_t)img->m_pBuffer[y * img->m_width + x];
         dst_color = EGECOLORA(color, EGEGET_A(dst_color));
     }
     CONVERT_IMAGE_END;
@@ -457,12 +457,12 @@ color_t getcolor(PCIMAGE pimg)
 // 将描述线形的位模式转换为 style 数组
 // 用于 ExtCreatePen 中。
 // 返回值为用到的数组元素数。
-static int upattern2array(unsigned short upattern, DWORD style[])
+static int upattern2array(unsigned short pattern, DWORD style[])
 {
     int n, segments = 0, segmentLength = 1;
-    int state = !!(upattern & 1);
+    int state = !!(pattern & 1);
     for (n = 1; n < 16; n++) {
-        int currentBit = !!(upattern & (1 << n));
+        int currentBit = !!(pattern & (1 << n));
         if (state == currentBit) {
             segmentLength += 1;
         } else {
@@ -475,8 +475,8 @@ static int upattern2array(unsigned short upattern, DWORD style[])
     style[segments] = segmentLength;
     segments += 1;
 
-    // 若 upattern 以 0 开头且为偶数段
-    if (!(upattern & 1) && segments % 2 == 0) {
+    // 若 pattern 以 0 开头且为偶数段
+    if (!(pattern & 1) && segments % 2 == 0) {
         DWORD p0 = style[0];
         for (int i = 0; i < segments - 1; ++i) {
             style[i] = style[i + 1];
@@ -495,7 +495,7 @@ static void update_pen(PIMAGE img)
     lbr.lbHatch = 0;
 
     const int linestyle = img->m_linestyle.linestyle;
-    const unsigned short upattern = img->m_linestyle.upattern;
+    const unsigned short pattern = img->m_linestyle.upattern;
     const int thickness = img->m_linestyle.thickness;
 
     // 添加这些属性以获得正确的显示效果
@@ -504,7 +504,7 @@ static void update_pen(PIMAGE img)
     HPEN hpen;
     if (linestyle == USERBIT_LINE) {
         DWORD style[20] = {0};
-        int bn = upattern2array(upattern, style);
+        int bn = upattern2array(pattern, style);
         hpen = ExtCreatePen(ls, thickness, &lbr, bn, style);
     } else {
         hpen = ExtCreatePen(ls, thickness, &lbr, 0, NULL);
@@ -615,11 +615,11 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void setbkmode(int iBkMode, PIMAGE pimg)
+void setbkmode(int bkMode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
-        SetBkMode(img->m_hDC, iBkMode);
+        SetBkMode(img->m_hDC, bkMode);
     }
     CONVERT_IMAGE_END;
 }
@@ -658,122 +658,132 @@ void cleardevice(PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void arc(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg)
+void arc(int x, int y, int startAngle, int endAngle, int radius, PIMAGE pimg)
 {
-    ellipse(x, y, stangle, endangle, radius, radius, pimg);
+    ellipse(x, y, startAngle, endAngle, radius, radius, pimg);
 }
 
-void arcf(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg)
+void arcf(float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg)
 {
-    ellipsef(x, y, stangle, endangle, radius, radius, pimg);
+    ellipsef(x, y, startAngle, endAngle, radius, radius, pimg);
 }
 
 void circle(int x, int y, int radius, PIMAGE pimg) { ellipse(x, y, 0, 360, radius, radius, pimg); }
 
 void circlef(float x, float y, float radius, PIMAGE pimg) { ellipsef(x, y, 0.0f, 360.0f, radius, radius, pimg); }
 
-void ellipse(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg)
+void ellipse(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    double sr = stangle / 180.0 * PI, er = endangle / 180.0 * PI;
+    double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
 
     if (img) {
         Arc(img->m_hDC,
-            x - xradius,
-            y - yradius,
-            x + xradius,
-            y + yradius,
-            (int)(x + xradius * cos(sr)),
-            (int)(y - yradius * sin(sr)),
-            (int)(x + xradius * cos(er)),
-            (int)(y - yradius * sin(er)));
+            x - xRadius,
+            y - yRadius,
+            x + xRadius,
+            y + yRadius,
+            (int)(x + xRadius * cos(sr)),
+            (int)(y - yRadius * sin(sr)),
+            (int)(x + xRadius * cos(er)),
+            (int)(y - yRadius * sin(er)));
     }
     CONVERT_IMAGE_END;
 }
 
-void ellipsef(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg)
+void ellipsef(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    double sr = stangle / 180.0 * PI, er = endangle / 180.0 * PI;
+    double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
 
     if (img) {
         Arc(img->m_hDC,
-            (int)(x - xradius),
-            (int)(y - yradius),
-            (int)(x + xradius),
-            (int)(y + yradius),
-            (int)(x + xradius * cos(sr)),
-            (int)(y - yradius * sin(sr)),
-            (int)(x + xradius * cos(er)),
-            (int)(y - yradius * sin(er)));
+            (int)(x - xRadius),
+            (int)(y - yRadius),
+            (int)(x + xRadius),
+            (int)(y + yRadius),
+            (int)(x + xRadius * cos(sr)),
+            (int)(y - yRadius * sin(sr)),
+            (int)(x + xRadius * cos(er)),
+            (int)(y - yRadius * sin(er)));
     }
     CONVERT_IMAGE_END;
 }
 
-void pieslice(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg)
+void pieslice(int x, int y, int startAngle, int endAngle, int radius, PIMAGE pimg)
 {
-    sector(x, y, stangle, endangle, radius, radius, pimg);
+    sector(x, y, startAngle, endAngle, radius, radius, pimg);
 }
 
-void pieslicef(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg)
+void pieslicef(float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg)
 {
-    sectorf(x, y, stangle, endangle, radius, radius, pimg);
+    sectorf(x, y, startAngle, endAngle, radius, radius, pimg);
 }
 
-void sector(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg)
+void sector(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    double sr = stangle / 180.0 * PI, er = endangle / 180.0 * PI;
+    double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
     if (img) {
         Pie(img->m_hDC,
-            x - xradius,
-            y - yradius,
-            x + xradius,
-            y + yradius,
-            (int)round(x + xradius * cos(sr)),
-            (int)round(y - yradius * sin(sr)),
-            (int)round(x + xradius * cos(er)),
-            (int)round(y - yradius * sin(er)));
+            x - xRadius,
+            y - yRadius,
+            x + xRadius,
+            y + yRadius,
+            (int)round(x + xRadius * cos(sr)),
+            (int)round(y - yRadius * sin(sr)),
+            (int)round(x + xRadius * cos(er)),
+            (int)round(y - yRadius * sin(er)));
     }
     CONVERT_IMAGE_END;
 }
 
-void sectorf(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg)
+void sectorf(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    double sr = stangle / 180.0 * PI, er = endangle / 180.0 * PI;
+    double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
     if (img) {
         Pie(img->m_hDC,
-            (int)(x - xradius),
-            (int)(y - yradius),
-            (int)(x + xradius),
-            (int)(y + yradius),
-            (int)round(x + xradius * cos(sr)),
-            (int)round(y - yradius * sin(sr)),
-            (int)round(x + xradius * cos(er)),
-            (int)round(y - yradius * sin(er)));
+            (int)(x - xRadius),
+            (int)(y - yRadius),
+            (int)(x + xRadius),
+            (int)(y + yRadius),
+            (int)round(x + xRadius * cos(sr)),
+            (int)round(y - yRadius * sin(sr)),
+            (int)round(x + xRadius * cos(er)),
+            (int)round(y - yRadius * sin(er)));
     }
     CONVERT_IMAGE_END;
 }
 
-void fillellipse(int x, int y, int xradius, int yradius, PIMAGE pimg)
+void fillellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        Ellipse(img->m_hDC, x - xradius, y - yradius, x + xradius, y + yradius);
+        Ellipse(img->m_hDC, x - xRadius, y - yRadius, x + xRadius, y + yRadius);
     }
     CONVERT_IMAGE_END;
 }
 
-void fillellipsef(float x, float y, float xradius, float yradius, PIMAGE pimg)
+void fillellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        Ellipse(img->m_hDC, (int)(x - xradius), (int)(y - yradius), (int)(x + xradius), (int)(y + yradius));
+        Ellipse(img->m_hDC, (int)(x - xRadius), (int)(y - yRadius), (int)(x + xRadius), (int)(y + yRadius));
     }
     CONVERT_IMAGE_END;
+}
+
+void fillcircle(int x, int y, int radius, PIMAGE pimg)
+{
+    fillellipse(x, y, radius, radius, pimg);
+}
+
+void fillcirclef(float x, float y, float radius, PIMAGE pimg)
+{
+    fillellipsef(x,y,radius,radius,pimg);
 }
 
 void bar(int left, int top, int right, int bottom, PIMAGE pimg)
@@ -788,16 +798,16 @@ void bar(int left, int top, int right, int bottom, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void fillroundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg)
+void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        RoundRect(img->m_hDC, left, top, right, bottom, xradius * 2, yradius * 2);
+        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2, yRadius * 2);
     }
     CONVERT_IMAGE_END;
 }
 
-void roundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg)
+void roundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -809,7 +819,7 @@ void roundrect(int left, int top, int right, int bottom, int xradius, int yradiu
         lbr.lbColor = WHITE;   // ignored
         hbr = CreateBrushIndirect(&lbr);
         hOld = SelectObject(img->m_hDC, hbr);
-        RoundRect(img->m_hDC, left, top, right, bottom, xradius * 2, yradius * 2);
+        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2, yRadius * 2);
         SelectObject(img->m_hDC, hOld);
         DeleteObject(hbr);
     }
@@ -825,7 +835,7 @@ void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void bar3d(int x1, int y1, int x2, int y2, int depth, int topflag, PIMAGE pimg)
+void bar3d(int x1, int y1, int x2, int y2, int depth, int topFlag, PIMAGE pimg)
 {
     --x2;
     --y2;
@@ -843,7 +853,7 @@ void bar3d(int x1, int y1, int x2, int y2, int depth, int topflag, PIMAGE pimg)
         };
 
         bar(x1, y1, x2, y2, pimg);
-        if (topflag) {
+        if (topFlag) {
             drawpoly(9, pt, pimg);
             line(x2, y1, x2 + depth, y1 - depth, pimg);
         } else {
@@ -931,11 +941,11 @@ void fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pim
     CONVERT_IMAGE_END;
 }
 
-void floodfill(int x, int y, int border, PIMAGE pimg)
+void floodfill(int x, int y, int borderColor, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        FloodFill(img->m_hDC, x, y, ARGBTOZBGR(border));
+        FloodFill(img->m_hDC, x, y, ARGBTOZBGR(borderColor));
     }
     CONVERT_IMAGE_END;
 }
@@ -949,22 +959,22 @@ void floodfillsurface(int x, int y, color_t areacolor, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void getlinestyle(int* plinestyle, unsigned short* pupattern, int* pthickness, PCIMAGE pimg)
+void getlinestyle(int* linestyle, unsigned short* pattern, int* thickness, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (plinestyle) {
-        *plinestyle = img->m_linestyle.linestyle;
+    if (linestyle) {
+        *linestyle = img->m_linestyle.linestyle;
     }
-    if (pupattern) {
-        *pupattern = img->m_linestyle.upattern;
+    if (pattern) {
+        *pattern = img->m_linestyle.upattern;
     }
-    if (pthickness) {
-        *pthickness = img->m_linestyle.thickness;
+    if (thickness) {
+        *thickness = img->m_linestyle.thickness;
     }
     CONVERT_IMAGE_END;
 }
 
-void setlinestyle(int linestyle, unsigned short upattern, int thickness, PIMAGE pimg)
+void setlinestyle(int linestyle, unsigned short pattern, int thickness, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
@@ -976,7 +986,7 @@ void setlinestyle(int linestyle, unsigned short upattern, int thickness, PIMAGE 
     img->m_linestyle.thickness = thickness;
     img->m_linewidth = (float)thickness;
     img->m_linestyle.linestyle = linestyle;
-    img->m_linestyle.upattern = upattern;
+    img->m_linestyle.upattern = pattern;
 
     update_pen(img);
 
@@ -1161,23 +1171,23 @@ void window_setviewport(int left, int top, int right, int bottom)
     }
 }
 
-void getviewport(int* pleft, int* ptop, int* pright, int* pbottom, int* pclip, PCIMAGE pimg)
+void getviewport(int* left, int* top, int* right, int* bottom, int* clip, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (pleft) {
-        *pleft = img->m_vpt.left;
+    if (left) {
+        *left = img->m_vpt.left;
     }
-    if (ptop) {
-        *ptop = img->m_vpt.top;
+    if (top) {
+        *top = img->m_vpt.top;
     }
-    if (pright) {
-        *pright = img->m_vpt.right;
+    if (right) {
+        *right = img->m_vpt.right;
     }
-    if (pbottom) {
-        *pbottom = img->m_vpt.bottom;
+    if (bottom) {
+        *bottom = img->m_vpt.bottom;
     }
-    if (pclip) {
-        *pclip = img->m_vpt.clipflag;
+    if (clip) {
+        *clip = img->m_vpt.clipflag;
     }
     CONVERT_IMAGE_END;
 }
@@ -1323,7 +1333,7 @@ void ege_ellipse(float x, float y, float w, float h, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void ege_pie(float x, float y, float w, float h, float stangle, float sweepAngle, PIMAGE pimg)
+void ege_pie(float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1332,12 +1342,12 @@ void ege_pie(float x, float y, float w, float h, float stangle, float sweepAngle
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Pen* pen = img->getPen();
-        graphics->DrawPie(pen, x, y, w, h, stangle, sweepAngle);
+        graphics->DrawPie(pen, x, y, w, h, startAngle, sweepAngle);
     }
     CONVERT_IMAGE_END;
 }
 
-void ege_arc(float x, float y, float w, float h, float stangle, float sweepAngle, PIMAGE pimg)
+void ege_arc(float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1346,7 +1356,7 @@ void ege_arc(float x, float y, float w, float h, float stangle, float sweepAngle
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Pen* pen = img->getPen();
-        graphics->DrawArc(pen, x, y, w, h, stangle, sweepAngle);
+        graphics->DrawArc(pen, x, y, w, h, startAngle, sweepAngle);
     }
     CONVERT_IMAGE_END;
 }
@@ -1384,27 +1394,27 @@ void ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, flo
 }
 
 void ege_setpattern_pathgradient(ege_point center,
-    color_t centercolor,
+    color_t centerColor,
     int count,
     ege_point* points,
-    int colcount,
-    color_t* pointscolor,
+    int colorCount,
+    color_t* pointsColor,
     PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         Gdiplus::PathGradientBrush* pbrush =
             new Gdiplus::PathGradientBrush((Gdiplus::PointF*)points, count, Gdiplus::WrapModeTile);
-        pbrush->SetCenterColor(Gdiplus::Color(centercolor));
+        pbrush->SetCenterColor(Gdiplus::Color(centerColor));
         pbrush->SetCenterPoint(Gdiplus::PointF(center.x, center.y));
-        pbrush->SetSurroundColors((Gdiplus::Color*)pointscolor, &colcount);
+        pbrush->SetSurroundColors((Gdiplus::Color*)pointsColor, &colorCount);
         img->set_pattern(pbrush);
     }
     CONVERT_IMAGE_END;
 }
 
 void ege_setpattern_ellipsegradient(ege_point center,
-    color_t centercolor,
+    color_t centerColor,
     float x,
     float y,
     float w,
@@ -1418,7 +1428,7 @@ void ege_setpattern_ellipsegradient(ege_point center,
         path.AddEllipse(x, y, w, h);
         Gdiplus::PathGradientBrush* pbrush = new Gdiplus::PathGradientBrush(&path);
         int count = 1;
-        pbrush->SetCenterColor(Gdiplus::Color(centercolor));
+        pbrush->SetCenterColor(Gdiplus::Color(centerColor));
         pbrush->SetCenterPoint(Gdiplus::PointF(center.x, center.y));
         pbrush->SetSurroundColors((Gdiplus::Color*)&color, &count);
         img->set_pattern(pbrush);
@@ -1472,13 +1482,13 @@ void ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void ege_fillpie(float x, float y, float w, float h, float stangle, float sweepAngle, PIMAGE pimg)
+void ege_fillpie(float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Brush* brush = img->getBrush();
-        graphics->FillPie(brush, x, y, w, h, stangle, sweepAngle);
+        graphics->FillPie(brush, x, y, w, h, startAngle, sweepAngle);
     }
     CONVERT_IMAGE_END;
 }
@@ -1497,11 +1507,11 @@ void ege_setalpha(int alpha, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void ege_gentexture(bool gen, PIMAGE pimg)
+void ege_gentexture(bool generate, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        img->gentexture(gen);
+        img->gentexture(generate);
     }
     CONVERT_IMAGE_END;
 }
@@ -1557,7 +1567,7 @@ void ege_puttexture(PCIMAGE srcimg, ege_rect dest, ege_rect src, PIMAGE pimg)
 }
 
 // TODO: 错误处理
-static void ege_drawtext_p(LPCWSTR textstring, float x, float y, PIMAGE img)
+static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE img)
 {
     using namespace Gdiplus;
     Gdiplus::Graphics* graphics = img->getGraphics();
@@ -1604,7 +1614,7 @@ static void ege_drawtext_p(LPCWSTR textstring, float x, float y, PIMAGE img)
     // }
 }
 
-void EGEAPI ege_drawtext(LPCSTR textstring, float x, float y, PIMAGE pimg)
+void EGEAPI ege_drawtext(const char* textstring, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
@@ -1621,7 +1631,7 @@ void EGEAPI ege_drawtext(LPCSTR textstring, float x, float y, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void EGEAPI ege_drawtext(LPCWSTR textstring, float x, float y, PIMAGE pimg)
+void EGEAPI ege_drawtext(const wchar_t* textstring, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
@@ -1630,7 +1640,7 @@ void EGEAPI ege_drawtext(LPCWSTR textstring, float x, float y, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void EGEAPI ege_drawimage(PCIMAGE srcimg, int dstX, int dstY, PIMAGE pimg)
+void EGEAPI ege_drawimage(PCIMAGE srcimg, int xDest, int yDest, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && srcimg) {
@@ -1640,19 +1650,19 @@ void EGEAPI ege_drawimage(PCIMAGE srcimg, int dstX, int dstY, PIMAGE pimg)
             4 * srcimg->getwidth(),
             PixelFormat32bppARGB,
             (BYTE*)(srcimg->m_pBuffer));
-        Gdiplus::Point p(dstX, dstY);
+        Gdiplus::Point p(xDest, yDest);
         graphics->DrawImage(&bitmap, p);
     }
     CONVERT_IMAGE_END;
 }
 
 void EGEAPI ege_drawimage(PCIMAGE srcimg,
-    int dstX,
-    int dstY,
-    int dstWidth,
-    int dstHeight,
-    int srcX,
-    int srcY,
+    int xDest,
+    int yDest,
+    int widthDest,
+    int heightDest,
+    int xSrc,
+    int ySrc,
     int srcWidth,
     int srcHeight,
     PIMAGE pimg)
@@ -1666,9 +1676,9 @@ void EGEAPI ege_drawimage(PCIMAGE srcimg,
             PixelFormat32bppARGB,
             (BYTE*)(srcimg->m_pBuffer));
         Gdiplus::Point destPoints[3] = {
-            Gdiplus::Point(dstX, dstY), Gdiplus::Point(dstX + dstWidth, dstY), Gdiplus::Point(dstX, dstY + dstHeight)};
+            Gdiplus::Point(xDest, yDest), Gdiplus::Point(xDest + widthDest, yDest), Gdiplus::Point(xDest, yDest + heightDest)};
         graphics->DrawImage(
-            &bitmap, destPoints, 3, srcX, srcY, srcWidth, srcHeight, Gdiplus::UnitPixel, NULL, NULL, NULL);
+            &bitmap, destPoints, 3, xSrc, ySrc, srcWidth, srcHeight, Gdiplus::UnitPixel, NULL, NULL, NULL);
     }
     CONVERT_IMAGE_END;
 }
@@ -1712,7 +1722,7 @@ void EGEAPI ege_transform_reset(PIMAGE pimg)
     }
     CONVERT_IMAGE_END;
 }
-void EGEAPI ege_get_transform(ege_transform_matrix* pmatrix, PIMAGE pimg)
+void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1721,22 +1731,22 @@ void EGEAPI ege_get_transform(ege_transform_matrix* pmatrix, PIMAGE pimg)
         Gdiplus::REAL elements[6];
         graphics->GetTransform(&m);
         m.GetElements(elements);
-        pmatrix->m11 = elements[0];
-        pmatrix->m12 = elements[1];
-        pmatrix->m21 = elements[2];
-        pmatrix->m22 = elements[3];
-        pmatrix->m31 = elements[4];
-        pmatrix->m32 = elements[5];
+        matrix->m11 = elements[0];
+        matrix->m12 = elements[1];
+        matrix->m21 = elements[2];
+        matrix->m22 = elements[3];
+        matrix->m31 = elements[4];
+        matrix->m32 = elements[5];
     }
     CONVERT_IMAGE_END;
 }
 
-void EGEAPI ege_set_transform(ege_transform_matrix* const pmatrix, PIMAGE pimg)
+void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         Gdiplus::Graphics* graphics = img->getGraphics();
-        Gdiplus::Matrix m(pmatrix->m11, pmatrix->m12, pmatrix->m21, pmatrix->m22, pmatrix->m31, pmatrix->m32);
+        Gdiplus::Matrix m(matrix->m11, matrix->m12, matrix->m21, matrix->m22, matrix->m31, matrix->m32);
         graphics->SetTransform(&m);
     }
     CONVERT_IMAGE_END;
@@ -1818,7 +1828,7 @@ static void draw_frame(PIMAGE img, int l, int t, int r, int b, color_t lc, color
     lineto(l, b, img);
 }
 
-int inputbox_getline(LPCSTR title, LPCSTR text, LPSTR buf, int len)
+int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
 {
     const std::wstring& title_w = mb2w(title);
     const std::wstring& text_w = mb2w(text);
@@ -1830,7 +1840,7 @@ int inputbox_getline(LPCSTR title, LPCSTR text, LPSTR buf, int len)
     return ret;
 }
 
-int inputbox_getline(LPCWSTR title, LPCWSTR text, LPWSTR buf, int len)
+int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len)
 {
     struct _graph_setting* pg = &graph_setting;
     IMAGE bg;

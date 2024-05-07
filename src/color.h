@@ -16,7 +16,7 @@ namespace ege
 
 #ifndef EGE_COLOR_T_TYPEDEF
 #define EGE_COLOR_T_TYPEDEF
-typedef DWORD color_t;
+typedef unsigned int color_t;
 #endif
 
 typedef struct COLORHSL
@@ -48,7 +48,7 @@ EGE_FORCEINLINE color_t alphablend_inline(color_t bkg, color_t src, unsigned cha
     DWORD g  = bkg & 0x0000FF00;
 
     rb += ((src & 0x00FF00FF) - rb) * alpha >> 8;
-    g += ((src & 0x0000FF00) - g) * alpha >> 8;
+    g  += ((src & 0x0000FF00) - g)  * alpha >> 8;
     return (rb & 0x00FF00FF) | (g & 0x0000FF00) | (bkg & 0xFF000000);
 }
 

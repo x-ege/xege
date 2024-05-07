@@ -27,7 +27,7 @@ static unsigned int private_gettextmode(PIMAGE img)
 }
 
 /* private function */
-static void private_textout(PIMAGE img, LPCWSTR textstring, int x, int y, int horiz, int vert)
+static void private_textout(PIMAGE img, const wchar_t* text, int x, int y, int horiz, int vert)
 {
     if (horiz >= 0 && vert >= 0) {
         UINT fMode = TA_NOUPDATECP; // TA_UPDATECP;
@@ -49,14 +49,14 @@ static void private_textout(PIMAGE img, LPCWSTR textstring, int x, int y, int ho
     } else {
         SetTextAlign(img->m_hDC, private_gettextmode(img));
     }
-    if (textstring) {
+    if (text) {
         int xOffset = 0, yOffset = 0;
 
         if (img->m_texttype.vert == CENTER_TEXT) {
             LOGFONTW font;
             getfont(&font, img);
 
-            int textHeight = textheight(textstring, img);
+            int textHeight = textheight(text, img);
             int escapement = font.lfEscapement % 3600;
             if (escapement != 0) {
                 double radian = escapement / 10.0 * PI / 180.0;
@@ -67,75 +67,75 @@ static void private_textout(PIMAGE img, LPCWSTR textstring, int x, int y, int ho
             }
         }
 
-        TextOutW(img->m_hDC, x + xOffset, y + yOffset, textstring, (int)lstrlenW(textstring));
+        TextOutW(img->m_hDC, x + xOffset, y + yOffset, text, (int)lstrlenW(text));
     }
 }
 
-void outtext(LPCSTR textstring, PIMAGE pimg)
+void outtext(const char* text, PIMAGE pimg)
 {
-    const std::wstring& textstring_w = mb2w(textstring);
+    const std::wstring& textstring_w = mb2w(text);
     outtext(textstring_w.c_str(), pimg);
 }
 
-void outtext(LPCWSTR textstring, PIMAGE pimg)
+void outtext(const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
         POINT pt;
         GetCurrentPositionEx(img->m_hDC, &pt);
-        private_textout(img, textstring, pt.x, pt.y, -1, -1);
+        private_textout(img, text, pt.x, pt.y, -1, -1);
     }
     CONVERT_IMAGE_END;
 }
 
-void outtext(CHAR c, PIMAGE pimg)
+void outtext(char c, PIMAGE pimg)
 {
-    CHAR str[10] = {c};
+    char str[10] = {c};
     outtext(str, pimg);
 }
 
-void outtext(WCHAR c, PIMAGE pimg)
+void outtext(wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[10] = {c};
+    wchar_t str[10] = {c};
     outtext(str, pimg);
 }
 
-void outtextxy(int x, int y, LPCSTR textstring, PIMAGE pimg)
+void outtextxy(int x, int y, const char* text, PIMAGE pimg)
 {
-    const std::wstring& textstring_w = mb2w(textstring);
+    const std::wstring& textstring_w = mb2w(text);
     outtextxy(x, y, textstring_w.c_str(), pimg);
 }
 
-void outtextxy(int x, int y, LPCWSTR textstring, PIMAGE pimg)
+void outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
-        private_textout(img, textstring, x, y, -1, -1);
+        private_textout(img, text, x, y, -1, -1);
     }
     CONVERT_IMAGE_END;
 }
 
-void outtextxy(int x, int y, CHAR c, PIMAGE pimg)
+void outtextxy(int x, int y, char c, PIMAGE pimg)
 {
-    CHAR str[10] = {c};
+    char str[10] = {c};
     outtextxy(x, y, str, pimg);
 }
 
-void outtextxy(int x, int y, WCHAR c, PIMAGE pimg)
+void outtextxy(int x, int y, wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[10] = {c};
+    wchar_t str[10] = {c};
     outtextxy(x, y, str, pimg);
 }
 
-void outtextrect(int x, int y, int w, int h, LPCSTR textstring, PIMAGE pimg)
+void outtextrect(int x, int y, int w, int h, const char* text, PIMAGE pimg)
 {
-    const std::wstring& textstring_w = mb2w(textstring);
+    const std::wstring& textstring_w = mb2w(text);
     outtextrect(x, y, w, h, textstring_w.c_str(), pimg);
 }
 
-void outtextrect(int x, int y, int w, int h, LPCWSTR textstring, PIMAGE pimg)
+void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
@@ -143,79 +143,79 @@ void outtextrect(int x, int y, int w, int h, LPCWSTR textstring, PIMAGE pimg)
         unsigned int fmode = private_gettextmode(img);
         RECT rect = {x, y, x + w, y + h};
         DrawTextW(
-            img->m_hDC, textstring, -1, &rect, fmode | DT_NOPREFIX | DT_WORDBREAK | DT_EDITCONTROL | DT_EXPANDTABS);
+            img->m_hDC, text, -1, &rect, fmode | DT_NOPREFIX | DT_WORDBREAK | DT_EDITCONTROL | DT_EXPANDTABS);
     }
 
     CONVERT_IMAGE_END;
 }
 
-// NOTE: xyprintf 和 rectprintf 的 LPCSTR 版本理论上可能出问题, 某种编码下可能出现一个字节值为 0x25, 也就是 '%',
+// NOTE: xyprintf 和 rectprintf 的 const char* 版本理论上可能出问题, 某种编码下可能出现一个字节值为 0x25, 也就是 '%',
 // 导致 printf 内部处理出错. 但出这种错的机会应该极少, 故先不处理.
 
-void xyprintf(int x, int y, LPCSTR fmt, ...)
+void xyprintf(int x, int y, const char* format, ...)
 {
     va_list v;
-    va_start(v, fmt);
+    va_start(v, format);
     {
         struct _graph_setting* pg = &graph_setting;
         char* buff = (char*)pg->g_t_buff;
-        vsprintf(buff, fmt, v);
+        vsprintf(buff, format, v);
         outtextxy(x, y, buff);
     }
     va_end(v);
 }
 
-void xyprintf(int x, int y, LPCWSTR fmt, ...)
+void xyprintf(int x, int y, const wchar_t* format, ...)
 {
     va_list v;
-    va_start(v, fmt);
+    va_start(v, format);
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
-        vswprintf(buff, fmt, v);
+        vswprintf(buff, format, v);
         outtextxy(x, y, buff);
     }
     va_end(v);
 }
 
-void rectprintf(int x, int y, int w, int h, LPCSTR fmt, ...)
+void rectprintf(int x, int y, int w, int h, const char* format, ...)
 {
     va_list v;
-    va_start(v, fmt);
+    va_start(v, format);
     {
         struct _graph_setting* pg = &graph_setting;
         char* buff = (char*)pg->g_t_buff;
-        vsprintf(buff, fmt, v);
+        vsprintf(buff, format, v);
         outtextrect(x, y, w, h, buff);
     }
     va_end(v);
 }
 
-void rectprintf(int x, int y, int w, int h, LPCWSTR fmt, ...)
+void rectprintf(int x, int y, int w, int h, const wchar_t* format, ...)
 {
     va_list v;
-    va_start(v, fmt);
+    va_start(v, format);
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
-        vswprintf(buff, fmt, v);
+        vswprintf(buff, format, v);
         outtextrect(x, y, w, h, buff);
     }
     va_end(v);
 }
 
-int textwidth(LPCSTR textstring, PIMAGE pimg)
+int textwidth(const char* text, PIMAGE pimg)
 {
-    const std::wstring& textstring_w = mb2w(textstring);
+    const std::wstring& textstring_w = mb2w(text);
     return textwidth(textstring_w.c_str(), pimg);
 }
 
-int textwidth(LPCWSTR textstring, PIMAGE pimg)
+int textwidth(const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
         SIZE sz;
-        GetTextExtentPoint32W(img->m_hDC, textstring, (int)lstrlenW(textstring), &sz);
+        GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
         CONVERT_IMAGE_END;
         return sz.cx;
     }
@@ -223,30 +223,30 @@ int textwidth(LPCWSTR textstring, PIMAGE pimg)
     return 0;
 }
 
-int textwidth(CHAR c, PIMAGE pimg)
+int textwidth(char c, PIMAGE pimg)
 {
-    CHAR str[2] = {c};
+    char str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textwidth(WCHAR c, PIMAGE pimg)
+int textwidth(wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[2] = {c};
+    wchar_t str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textheight(LPCSTR textstring, PIMAGE pimg)
+int textheight(const char* text, PIMAGE pimg)
 {
-    const std::wstring& textstring_w = mb2w(textstring);
+    const std::wstring& textstring_w = mb2w(text);
     return textheight(textstring_w.c_str(), pimg);
 }
 
-int textheight(LPCWSTR textstring, PIMAGE pimg)
+int textheight(const wchar_t* text, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
         SIZE sz;
-        GetTextExtentPoint32W(img->m_hDC, textstring, (int)lstrlenW(textstring), &sz);
+        GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
         CONVERT_IMAGE_END;
         return sz.cy;
     }
@@ -260,9 +260,9 @@ int textheight(CHAR c, PIMAGE pimg)
     return textheight(str, pimg);
 }
 
-int textheight(WCHAR c, PIMAGE pimg)
+int textheight(wchar_t c, PIMAGE pimg)
 {
-    WCHAR str[2] = {c};
+    wchar_t str[2] = {c};
     return textheight(str, pimg);
 }
 
@@ -276,98 +276,98 @@ void settextjustify(int horiz, int vert, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void setfont(int nHeight,
-    int nWidth,
-    LPCSTR lpszFace,
-    int nEscapement,
-    int nOrientation,
-    int nWeight,
-    int bItalic,
-    int bUnderline,
-    int bStrikeOut,
-    BYTE fbCharSet,
-    BYTE fbOutPrecision,
-    BYTE fbClipPrecision,
-    BYTE fbQuality,
-    BYTE fbPitchAndFamily,
+void setfont(int height,
+    int width,
+    const char* typeface,
+    int  escapement,
+    int  orientation,
+    int  weight,
+    bool italic,
+    bool underline,
+    bool strikeOut,
+    BYTE charSet,
+    BYTE outPrecision,
+    BYTE clipPrecision,
+    BYTE quality,
+    BYTE pitchAndFamily,
     PIMAGE pimg)
 {
-    const std::wstring& wFace = mb2w(lpszFace);
+    const std::wstring& wFace = mb2w(typeface);
 
     setfont(
-        nHeight,
-        nWidth,
+        height,
+        width,
         wFace.c_str(),
-        nEscapement,
-        nOrientation,
-        nWeight,
-        bItalic,
-        bUnderline,
-        bStrikeOut,
-        fbCharSet,
-        fbOutPrecision,
-        fbClipPrecision,
-        fbQuality,
-        fbPitchAndFamily,
+        escapement,
+        orientation,
+        weight,
+        italic,
+        underline,
+        strikeOut,
+        charSet,
+        outPrecision,
+        clipPrecision,
+        quality,
+        pitchAndFamily,
         pimg
     );
 }
 
-void setfont(int nHeight,
-    int nWidth,
-    LPCWSTR lpszFace,
-    int nEscapement,
-    int nOrientation,
-    int nWeight,
-    int bItalic,
-    int bUnderline,
-    int bStrikeOut,
-    BYTE fbCharSet,
-    BYTE fbOutPrecision,
-    BYTE fbClipPrecision,
-    BYTE fbQuality,
-    BYTE fbPitchAndFamily,
+void setfont(int height,
+    int width,
+    const wchar_t* typeface,
+    int escapement,
+    int orientation,
+    int weight,
+    bool italic,
+    bool underline,
+    bool strikeOut,
+    BYTE charSet,
+    BYTE outPrecision,
+    BYTE clipPrecision,
+    BYTE quality,
+    BYTE pitchAndFamily,
     PIMAGE pimg)
 {
     LOGFONTW lf = {0};
-    lf.lfHeight = nHeight;
-    lf.lfWidth = nWidth;
-    lf.lfEscapement = nEscapement;
-    lf.lfOrientation = nOrientation;
-    lf.lfWeight = nWeight;
-    lf.lfItalic = (bItalic != 0);
-    lf.lfUnderline = (bUnderline != 0);
-    lf.lfStrikeOut = (bStrikeOut != 0);
-    lf.lfCharSet = fbCharSet;
-    lf.lfOutPrecision = fbOutPrecision;
-    lf.lfClipPrecision = fbClipPrecision;
-    lf.lfQuality = fbQuality;
-    lf.lfPitchAndFamily = fbPitchAndFamily;
-    lstrcpyW(lf.lfFaceName, lpszFace);
+    lf.lfHeight = height;
+    lf.lfWidth = width;
+    lf.lfEscapement = escapement;
+    lf.lfOrientation = orientation;
+    lf.lfWeight = weight;
+    lf.lfItalic = italic;
+    lf.lfUnderline = underline;
+    lf.lfStrikeOut = strikeOut;
+    lf.lfCharSet = charSet;
+    lf.lfOutPrecision = outPrecision;
+    lf.lfClipPrecision = clipPrecision;
+    lf.lfQuality = quality;
+    lf.lfPitchAndFamily = pitchAndFamily;
+    lstrcpyW(lf.lfFaceName, typeface);
 
     setfont(&lf, pimg);
 }
 
-void setfont(int nHeight,
-    int nWidth,
-    LPCSTR lpszFace,
-    int nEscapement,
-    int nOrientation,
-    int nWeight,
-    int bItalic,
-    int bUnderline,
-    int bStrikeOut,
+void setfont(int height,
+    int width,
+    const char* typeface,
+    int escapement,
+    int orientation,
+    int weight,
+    bool italic,
+    bool underline,
+    bool strikeOut,
     PIMAGE pimg)
 {
-    setfont(nHeight,
-        nWidth,
-        lpszFace,
-        nEscapement,
-        nOrientation,
-        nWeight,
-        bItalic,
-        bUnderline,
-        bStrikeOut,
+    setfont(height,
+        width,
+        typeface,
+        escapement,
+        orientation,
+        weight,
+        italic,
+        underline,
+        strikeOut,
         DEFAULT_CHARSET,
         OUT_DEFAULT_PRECIS,
         CLIP_DEFAULT_PRECIS,
@@ -376,26 +376,26 @@ void setfont(int nHeight,
         pimg);
 }
 
-void setfont(int nHeight,
-    int nWidth,
-    LPCWSTR lpszFace,
-    int nEscapement,
-    int nOrientation,
-    int nWeight,
-    int bItalic,
-    int bUnderline,
-    int bStrikeOut,
+void setfont(int height,
+    int width,
+    const wchar_t* typeface,
+    int escapement,
+    int orientation,
+    int weight,
+    bool italic,
+    bool underline,
+    bool strikeOut,
     PIMAGE pimg)
 {
-    setfont(nHeight,
-        nWidth,
-        lpszFace,
-        nEscapement,
-        nOrientation,
-        nWeight,
-        bItalic,
-        bUnderline,
-        bStrikeOut,
+    setfont(height,
+        width,
+        typeface,
+        escapement,
+        orientation,
+        weight,
+        italic,
+        underline,
+        strikeOut,
         DEFAULT_CHARSET,
         OUT_DEFAULT_PRECIS,
         CLIP_DEFAULT_PRECIS,
@@ -404,11 +404,11 @@ void setfont(int nHeight,
         pimg);
 }
 
-void setfont(int nHeight, int nWidth, LPCSTR lpszFace, PIMAGE pimg)
+void setfont(int height, int width, const char* typeface, PIMAGE pimg)
 {
-    setfont(nHeight,
-        nWidth,
-        lpszFace,
+    setfont(height,
+        width,
+        typeface,
         0,
         0,
         FW_DONTCARE,
@@ -423,11 +423,11 @@ void setfont(int nHeight, int nWidth, LPCSTR lpszFace, PIMAGE pimg)
         pimg);
 }
 
-void setfont(int nHeight, int nWidth, LPCWSTR lpszFace, PIMAGE pimg)
+void setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg)
 {
-    setfont(nHeight,
-        nWidth,
-        lpszFace,
+    setfont(height,
+        width,
+        typeface,
         0,
         0,
         FW_DONTCARE,

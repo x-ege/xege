@@ -136,7 +136,6 @@
 
 #define EGE_GDIPLUS
 
-#define SHOWCONSOLE          1
 #define EGERGBA(r, g, b, a)  ((::ege::color_t)(((r) << 16) | ((g) << 8) | (b) | ((a) << 24)))
 #define EGERGB(r, g, b)      EGERGBA(r, g, b, 0xFF)
 #define EGEARGB(a, r, g, b)  EGERGBA(r, g, b, a)
@@ -251,9 +250,10 @@ enum message_mouse
     MSG_MOUSE_MID   	 = 0x04,
 };
 
+
 #ifndef EGE_COLOR_T_TYPEDEF
 #define EGE_COLOR_T_TYPEDEF
-typedef DWORD color_t;
+typedef unsigned int color_t;
 #endif
 
 enum COLORS
@@ -474,8 +474,7 @@ enum initmode_flag
     INIT_TOPMOST         = 0x4,
     INIT_RENDERMANUAL    = 0x8,
     INIT_NOFORCEEXIT     = 0x10,
-    // equal to setunicodecharmessage(true)
-    INIT_UNICODE         = 0x20,
+    INIT_UNICODE         = 0x20,    // equal to setunicodecharmessage(true)
     INIT_HIDE            = 0x40,
     INIT_WITHLOGO        = 0x100,
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT,
@@ -686,13 +685,13 @@ typedef struct mouse_msg
     mouse_msg_e     msg;
     unsigned int    flags;
     int             wheel;
-    bool is_left()  {return (flags & mouse_flag_left)  != 0;}
-    bool is_right() {return (flags & mouse_flag_right) != 0;}
-    bool is_mid()   {return (flags & mouse_flag_mid)   != 0;}
-    bool is_down()  {return msg == mouse_msg_down;}
-    bool is_up()    {return msg == mouse_msg_up;}
-    bool is_move()  {return msg == mouse_msg_move;}
-    bool is_wheel() {return msg == mouse_msg_wheel;}
+    bool is_left()  const {return (flags & mouse_flag_left)  != 0;}
+    bool is_right() const {return (flags & mouse_flag_right) != 0;}
+    bool is_mid()   const {return (flags & mouse_flag_mid)   != 0;}
+    bool is_down()  const {return msg == mouse_msg_down;}
+    bool is_up()    const {return msg == mouse_msg_up;}
+    bool is_move()  const {return msg == mouse_msg_move;}
+    bool is_wheel() const {return msg == mouse_msg_wheel;}
 } mouse_msg;
 
 typedef struct ege_point
@@ -718,22 +717,22 @@ typedef struct ege_colpoint
 
 struct MOUSEMSG
 {
-    UINT  uMsg;      //
-    bool  mkCtrl;    //
-    bool  mkShift;   //
-    bool  mkLButton; //
-    bool  mkMButton; //
-    bool  mkRButton; //
-    short x;         //
-    short y;         //
-    short wheel;     //
+    UINT  uMsg;
+    bool  mkCtrl;
+    bool  mkShift;
+    bool  mkLButton;
+    bool  mkMButton;
+    bool  mkRButton;
+    short x;
+    short y;
+    short wheel;
 };
 
 struct msg_createwindow
 {
     HANDLE  hEvent;
     HWND    hwnd;
-    LPCWSTR classname;
+    const wchar_t* classname;
     DWORD   style;
     DWORD   exstyle;
     size_t  id;
@@ -752,52 +751,34 @@ typedef MSG_MOUSE_PROC      * LPMSG_MOUSE_PROC;
 
 struct VECTOR3D;
 
-void EGEAPI rotate_point3d_x(VECTOR3D* pt, float r);
-void EGEAPI rotate_point3d_y(VECTOR3D* pt, float r);
-void EGEAPI rotate_point3d_z(VECTOR3D* pt, float r);
+void EGEAPI rotate_point3d_x(VECTOR3D* point, float rad);
+void EGEAPI rotate_point3d_y(VECTOR3D* point, float rad);
+void EGEAPI rotate_point3d_z(VECTOR3D* point, float rad);
 
 struct VECTOR3D
 {
     float x, y, z;
 
-    VECTOR3D()
-    {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
+    VECTOR3D() : x(0.0f), y(0.0f), z(0.0f) {}
+    VECTOR3D(float x, float y, float z = 0.0f) : x(x), y(y), z(z) {}
 
-    VECTOR3D(float _x, float _y)
+    VECTOR3D& operator=(const VECTOR3D& vector)
     {
-        x = _x;
-        y = _y;
-        z = 0;
-    }
-
-    VECTOR3D(float _x, float _y, float _z)
-    {
-        x = _x;
-        y = _y;
-        z = _z;
-    }
-
-    VECTOR3D& operator=(const VECTOR3D& _fp)
-    {
-        x = _fp.x;
-        y = _fp.y;
-        z = _fp.z;
+        x = vector.x;
+        y = vector.y;
+        z = vector.z;
         return *this;
     }
 
-    VECTOR3D& operator+=(const VECTOR3D& _fp);
-    VECTOR3D& operator-=(const VECTOR3D& _fp);
-    VECTOR3D  operator+ (const VECTOR3D& _fp) const;
-    VECTOR3D  operator- (const VECTOR3D& _fp) const;
-    VECTOR3D& operator*=(float f);
-    VECTOR3D  operator* (float f) const;
-    float     operator* (const VECTOR3D& _fp) const;
-    VECTOR3D  operator& (const VECTOR3D& _fp) const;
-    VECTOR3D& operator&=(const VECTOR3D& _fp);
+    VECTOR3D& operator+=(const VECTOR3D& vector);
+    VECTOR3D& operator-=(const VECTOR3D& vector);
+    VECTOR3D  operator+ (const VECTOR3D& vector) const;
+    VECTOR3D  operator- (const VECTOR3D& vector) const;
+    VECTOR3D& operator*=(float scale);
+    VECTOR3D  operator* (float scale) const;
+    float     operator* (const VECTOR3D& vector) const;
+    VECTOR3D  operator& (const VECTOR3D& vector) const;
+    VECTOR3D& operator&=(const VECTOR3D& vector);
     float     GetModule() const;
 
     float GetSqrModule() const { return float(x * x + y * y + z * z); }
@@ -809,7 +790,7 @@ struct VECTOR3D
         return *this;
     }
 
-    VECTOR3D& Rotate(float rad, const VECTOR3D& v);
+    VECTOR3D& Rotate(float rad, const VECTOR3D& vector);
 
     VECTOR3D& Rotate(float rad, float x, float y, float z)
     {
@@ -818,7 +799,7 @@ struct VECTOR3D
     }
 
     VECTOR3D&    Rotate  (const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
-    static float GetAngel(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
+    static float GetAngle(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
 };
 
 class IMAGE;
@@ -833,24 +814,13 @@ void EGEAPI setunicodecharmessage(bool enable);
 bool EGEAPI getunicodecharmessage();
 void EGEAPI setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT);
 int  EGEAPI getinitmode();
-void EGEAPI initgraph(int Width, int Height, int Flag);
-
-#if !defined(NDEBUG) || defined(DEBUG) || defined(_DEBUG)
-inline void EGEAPI initgraph(int Width, int Height)
-{
-    initgraph(Width, Height, getinitmode());
-}
-#else
-inline void EGEAPI initgraph(int Width, int Height)
-{
-    initgraph(Width, Height, getinitmode() | INIT_WITHLOGO);
-}
-#endif
+void EGEAPI initgraph(int width, int height, int mode);
+void EGEAPI initgraph(int width, int height);
 void EGEAPI initgraph(int* gdriver, int* gmode, const char* path);
 void EGEAPI closegraph();
 bool EGEAPI is_run();
-void EGEAPI setcaption(LPCSTR caption);
-void EGEAPI setcaption(LPCWSTR caption);
+void EGEAPI setcaption(const char* caption);
+void EGEAPI setcaption(const wchar_t* caption);
 void EGEAPI seticon(int icon_id);
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -867,8 +837,8 @@ int         settarget(PIMAGE pbuf);
 
 void EGEAPI cleardevice(PIMAGE pimg = NULL);
 
-void EGEAPI getviewport(int *pleft, int *ptop, int *pright, int *pbottom, int *pclip = 0, PCIMAGE pimg = NULL);
-void EGEAPI setviewport(int left, int top, int right, int bottom, int clip = 1, PIMAGE pimg = NULL);
+void EGEAPI getviewport(int* left, int* top, int* right, int* bottom, int* clip = 0, PCIMAGE pimg = NULL);
+void EGEAPI setviewport(int  left, int  top, int  right, int  bottom, int  clip = 1, PIMAGE  pimg = NULL);
 void EGEAPI clearviewport(PIMAGE pimg = NULL);
 
 EGE_DEPRECATE(setactivepage)
@@ -877,14 +847,14 @@ EGE_DEPRECATE(setvisualpage)
 void EGEAPI setvisualpage(int page);
 EGE_DEPRECATE(swappage)
 void EGEAPI swappage();
-void EGEAPI window_getviewport(struct viewporttype * viewport);
+void EGEAPI window_getviewport(viewporttype * viewport);
 void EGEAPI window_getviewport(int* left, int* top, int* right, int* bottom);
 void EGEAPI window_setviewport(int  left, int  top, int  right, int  bottom);
 
 
 EGE_DEPRECATE(getlinestyle)
-void EGEAPI getlinestyle(int *plinestyle, unsigned short *pupattern = NULL, int *pthickness = NULL, PCIMAGE pimg = NULL);
-void EGEAPI setlinestyle(int linestyle, unsigned short upattern = 0, int thickness = 1, PIMAGE pimg = NULL);
+void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* thickness = NULL, PCIMAGE pimg = NULL);
+void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE pimg = NULL);
 void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);
 //EGE_DEPRECATE(getfillstyle)
 //void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // ###
@@ -895,15 +865,17 @@ void EGEAPI setwritemode(int mode, PIMAGE pimg = NULL);
 
 //void EGEAPI graphdefaults(PIMAGE pimg = NULL);                  // ###
 
-color_t EGEAPI getcolor(PCIMAGE pimg = NULL);
-color_t EGEAPI getfillcolor(PCIMAGE pimg = NULL);
-color_t EGEAPI getbkcolor(PCIMAGE pimg = NULL);
-void    EGEAPI setcolor(color_t color, PIMAGE pimg = NULL);
-void    EGEAPI setfillcolor(color_t color, PIMAGE pimg = NULL);
-void    EGEAPI setbkcolor(color_t color, PIMAGE pimg = NULL);
-void    EGEAPI setbkcolor_f(color_t color, PIMAGE pimg = NULL);
+color_t EGEAPI getcolor      (PCIMAGE pimg = NULL);
+color_t EGEAPI getfillcolor  (PCIMAGE pimg = NULL);
+color_t EGEAPI getbkcolor    (PCIMAGE pimg = NULL);
+
+void    EGEAPI setcolor      (color_t color, PIMAGE pimg = NULL);
+void    EGEAPI setfillcolor  (color_t color, PIMAGE pimg = NULL);
+void    EGEAPI setbkcolor    (color_t color, PIMAGE pimg = NULL);
+void    EGEAPI setbkcolor_f  (color_t color, PIMAGE pimg = NULL);
 void    EGEAPI setfontbkcolor(color_t color, PIMAGE pimg = NULL);
-void    EGEAPI setbkmode(int iBkMode, PIMAGE pimg = NULL);
+
+void    EGEAPI setbkmode(int bkMode, PIMAGE pimg = NULL);
 
 #define RGBtoGRAY   rgb2gray
 #define RGBtoHSL    rgb2hsl
@@ -912,8 +884,8 @@ void    EGEAPI setbkmode(int iBkMode, PIMAGE pimg = NULL);
 #define HSVtoRGB    hsv2rgb
 
 color_t     EGEAPI rgb2gray(color_t rgb);
-void        EGEAPI rgb2hsl(color_t rgb, float *H, float *S, float *L);
-void        EGEAPI rgb2hsv(color_t rgb, float *H, float *S, float *V);
+void        EGEAPI rgb2hsl(color_t rgb, float* H, float* S, float* L);
+void        EGEAPI rgb2hsv(color_t rgb, float* H, float* S, float* V);
 color_t     EGEAPI hsl2rgb(float H, float S, float L);
 color_t     EGEAPI hsv2rgb(float H, float S, float V);
 
@@ -921,109 +893,104 @@ color_t     EGEAPI alphablend(color_t dst, color_t src);
 color_t     EGEAPI alphablend(color_t dst, color_t src, unsigned char alpha);
 
 
-color_t EGEAPI getpixel  (int x, int y, PCIMAGE pimg = NULL);
-void    EGEAPI putpixel  (int x, int y, color_t color, PIMAGE pimg = NULL);
-color_t EGEAPI getpixel_f(int x, int y, PCIMAGE pimg = NULL);
-void    EGEAPI putpixel_f(int x, int y, color_t color, PIMAGE pimg = NULL);
-void    EGEAPI putpixels  (int nPoint, int* pPoints, PIMAGE pimg = NULL);
-void    EGEAPI putpixels_f(int nPoint, int* pPoints, PIMAGE pimg = NULL);
+color_t EGEAPI getpixel   (int x, int y, PCIMAGE pimg = NULL);
+void    EGEAPI putpixel   (int x, int y, color_t color, PIMAGE pimg = NULL);
+color_t EGEAPI getpixel_f (int x, int y, PCIMAGE pimg = NULL);
+void    EGEAPI putpixel_f (int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixels  (int numOfPoints, int* points, PIMAGE pimg = NULL);
+void    EGEAPI putpixels_f(int numOfPoints, int* points, PIMAGE pimg = NULL);
 
 void    EGEAPI putpixel_withalpha  (int x, int y, color_t color, PIMAGE pimg = NULL);
 void    EGEAPI putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg = NULL);
 void    EGEAPI putpixel_savealpha  (int x, int y, color_t color, PIMAGE pimg = NULL);
 void    EGEAPI putpixel_savealpha_f(int x, int y, color_t color, PIMAGE pimg = NULL);
 
-void    EGEAPI moveto(int x, int y, PIMAGE pimg = NULL);
+void    EGEAPI moveto (int x,  int y,  PIMAGE pimg = NULL);
 void    EGEAPI moverel(int dx, int dy, PIMAGE pimg = NULL);
 
-void    EGEAPI line(int x1, int y1, int x2, int y2, PIMAGE pimg = NULL);
-void    EGEAPI linerel(int dx, int dy, PIMAGE pimg = NULL);
-void    EGEAPI lineto(int x, int y, PIMAGE pimg = NULL);
-void    EGEAPI line_f(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
+void    EGEAPI line     (int   x1, int   y1, int   x2, int   y2, PIMAGE pimg = NULL);
+void    EGEAPI line_f   (float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
+void    EGEAPI lineto   (int   x,  int   y,  PIMAGE pimg = NULL);
+void    EGEAPI lineto_f (float x,  float y,  PIMAGE pimg = NULL);
+void    EGEAPI linerel  (int   dx, int   dy, PIMAGE pimg = NULL);
 void    EGEAPI linerel_f(float dx, float dy, PIMAGE pimg = NULL);
-void    EGEAPI lineto_f(float x, float y, PIMAGE pimg = NULL);
-
-
-void EGEAPI rectangle(int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 
 //void EGEAPI getarccoords(int *px, int *py, int *pxstart, int *pystart, int *pxend, int *pyend, PIMAGE pimg = NULL);    // ###
-void EGEAPI arc(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg = NULL);
-void EGEAPI circle(int x, int y, int radius, PIMAGE pimg = NULL);
-void EGEAPI pieslice(int x, int y, int stangle, int endangle, int radius, PIMAGE pimg = NULL);
-void EGEAPI ellipse(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg = NULL);
-void EGEAPI fillellipse(int x, int y, int xradius, int yradius, PIMAGE pimg = NULL);
-void EGEAPI sector(int x, int y, int stangle, int endangle, int xradius, int yradius, PIMAGE pimg = NULL);
-void EGEAPI roundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg = NULL);
-void EGEAPI arcf(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg = NULL);
-void EGEAPI circlef(float x, float y, float radius, PIMAGE pimg = NULL);
-void EGEAPI pieslicef(float x, float y, float stangle, float endangle, float radius, PIMAGE pimg = NULL);
-void EGEAPI ellipsef(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg = NULL);
-void EGEAPI fillellipsef(float x, float y, float xradius, float yradius, PIMAGE pimg = NULL);
-void EGEAPI sectorf(float x, float y, float stangle, float endangle, float xradius, float yradius, PIMAGE pimg = NULL);
 
-inline void EGEAPI fillcircle(int x, int y, int radius, PIMAGE pimg = NULL)
-{
-    fillellipse(x,y,radius,radius,pimg);
-}
+void EGEAPI ellipse      (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
+void EGEAPI ellipsef     (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
+void EGEAPI sector       (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
+void EGEAPI sectorf      (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
-inline void EGEAPI fillcirclef(float x, float y, float radius, PIMAGE pimg = NULL)
-{
-    fillellipsef(x,y,radius,radius,pimg);
-}
+void EGEAPI arc          (int   x, int   y, int   startAngle, int   endAngle, int   radius, PIMAGE pimg = NULL);
+void EGEAPI arcf         (float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg = NULL);
+void EGEAPI pieslice     (int   x, int   y, int   startAngle, int   endAngle, int   radius, PIMAGE pimg = NULL);
+void EGEAPI pieslicef    (float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg = NULL);
 
-void EGEAPI bar(int left, int top, int right, int bottom, PIMAGE pimg = NULL);
-void EGEAPI bar3d(int left, int top, int right, int bottom, int depth, int topflag, PIMAGE pimg = NULL);
+void EGEAPI fillellipse  (int   x, int   y, int   xRadius,    int   yRadius,  PIMAGE pimg = NULL);
+void EGEAPI fillellipsef (float x, float y, float xRadius,    float yRadius,  PIMAGE pimg = NULL);
 
-void EGEAPI fillrect(int left, int top, int right, int bottom, PIMAGE pimg = NULL);
-void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xradius, int yradius, PIMAGE pimg = NULL);
+void EGEAPI circle       (int   x, int   y, int   radius, PIMAGE pimg = NULL);
+void EGEAPI circlef      (float x, float y, float radius, PIMAGE pimg = NULL);
+void EGEAPI fillcircle   (int   x, int   y, int   radius, PIMAGE pimg = NULL);
+void EGEAPI fillcirclef  (float x, float y, float radius, PIMAGE pimg = NULL);
 
-void EGEAPI drawpoly(int numpoints, const int *polypoints, PIMAGE pimg = NULL);
-void EGEAPI drawlines(int numlines, const int *polypoints, PIMAGE pimg = NULL);
-void EGEAPI drawbezier(int numpoints, const int *polypoints, PIMAGE pimg = NULL);
-void EGEAPI fillpoly(int numpoints, const int *polypoints, PIMAGE pimg = NULL);
-void EGEAPI fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pimg = NULL);
-void EGEAPI floodfill(int x, int y, int border, PIMAGE pimg = NULL);
-void EGEAPI floodfillsurface(int x, int y, color_t areacolor, PIMAGE pimg = NULL);
+void EGEAPI bar          (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
+void EGEAPI rectangle    (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
+void EGEAPI fillrect     (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
+void EGEAPI bar3d        (int left, int top, int right, int bottom, int depth,   int topFlag, PIMAGE pimg = NULL);
+void EGEAPI roundrect    (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
+void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
+
+void EGEAPI drawpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI drawlines    (int numOfLines,  const int *points, PIMAGE pimg = NULL);
+void EGEAPI drawbezier   (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI fillpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg = NULL);
+
+void EGEAPI floodfill    (int x, int y, int borderColor, PIMAGE pimg = NULL);
+void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
 #ifdef EGE_GDIPLUS
 // ege new_api
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
-void EGEAPI ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
-void EGEAPI ege_drawpoly(int numpoints, ege_point* polypoints, PIMAGE pimg = NULL);
-void EGEAPI ege_drawcurve(int numpoints, ege_point* polypoints, PIMAGE pimg = NULL);
+void EGEAPI ege_line     (float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
+
+void EGEAPI ege_drawpoly (int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_drawcurve(int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_bezier   (int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpoly (int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
+
 void EGEAPI ege_rectangle(float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_ellipse(float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_pie(float x, float y, float w, float h, float stangle, float sweepAngle, PIMAGE pimg = NULL);
+void EGEAPI ege_ellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_pie      (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
 
-void EGEAPI ege_arc(float x, float y, float w, float h, float stangle, float sweepAngle, PIMAGE pimg = NULL);
-void EGEAPI ege_bezier(int numpoints, ege_point* polypoints, PIMAGE pimg = NULL);
-
-void EGEAPI ege_fillpoly(int numpoints, ege_point* polypoints, PIMAGE pimg = NULL);
-void EGEAPI ege_fillrect(float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_fillrect   (float x, float y, float w, float h, PIMAGE pimg = NULL);
 void EGEAPI ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_fillpie(float x, float y, float w, float h, float stangle, float sweepAngle, PIMAGE pimg = NULL);
+void EGEAPI ege_arc        (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpie    (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
 
 void EGEAPI ege_setpattern_none(PIMAGE pimg = NULL);
 void EGEAPI ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, float y2, color_t c2, PIMAGE pimg = NULL);
-void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centercolor,
-    int count, ege_point* points, int colcount, color_t* pointscolor, PIMAGE pimg = NULL);
-void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centercolor,
+void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centerColor,
+    int count, ege_point* points, int colorCount, color_t* pointsColor, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor,
     float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
-void EGEAPI ege_setpattern_texture(PIMAGE srcimg, float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
 
-void EGEAPI ege_drawtext(LPCSTR  textstring, float x, float y, PIMAGE pimg = NULL);
-void EGEAPI ege_drawtext(LPCWSTR textstring, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const char*  text, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg = NULL);
 
 void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
-void EGEAPI ege_gentexture(bool gen, PIMAGE pimg = NULL);
-void EGEAPI ege_puttexture(PCIMAGE srcimg, float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_puttexture(PCIMAGE srcimg, ege_rect dest, PIMAGE pimg = NULL);
-void EGEAPI ege_puttexture(PCIMAGE srcimg, ege_rect dest, ege_rect src, PIMAGE pimg = NULL);
+void EGEAPI ege_gentexture(bool generate, PIMAGE pimg = NULL);
+void EGEAPI ege_puttexture(PCIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, PIMAGE pimg = NULL);
+void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, ege_rect src, PIMAGE pimg = NULL);
 
 //draw image
-void EGEAPI ege_drawimage(PCIMAGE srcimg,int dstX, int dstY,PIMAGE pimg = NULL);
-void EGEAPI ege_drawimage(PCIMAGE srcimg,int dstX, int dstY, int dstWidth, int dstHeight, int srcX, int srcY, int srcWidth, int srcHeight,PIMAGE pimg = NULL);
+void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest,PIMAGE pimg = NULL);
+void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
 
 // matrix for transformation
 typedef struct ege_transform_matrix
@@ -1036,84 +1003,91 @@ typedef struct ege_transform_matrix
     float m32;
 } ege_transform_matrix;
 
-//transforms
-void EGEAPI ege_transform_rotate(float angle,PIMAGE pimg = NULL);
-void EGEAPI ege_transform_translate(float x,float y,PIMAGE pimg = NULL);
-void EGEAPI ege_transform_scale(float scale_x, float scale_y,PIMAGE pimg = NULL);
+// transforms
+void EGEAPI ege_transform_rotate(float angle, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_translate(float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_scale(float xScale, float yScale, PIMAGE pimg = NULL);
 void EGEAPI ege_transform_reset(PIMAGE pimg = NULL);
-void EGEAPI ege_get_transform(ege_transform_matrix* pmatrix, PIMAGE pimg = NULL);
-void EGEAPI ege_set_transform(ege_transform_matrix* const pmatrix, PIMAGE pimg = NULL);
-ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL); // Calculate transformed coordination of p;
-ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL); // Calculate transformed coordination of point(x,y);
+void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg = NULL);
+void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg = NULL);
+ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL);       // Calculate transformed coordination of p;
+ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);  // Calculate transformed coordination of point(x,y);
 
 //
 #endif
 
-//We don't support VC 6
+// We don't support VC 6
 #ifndef EGE_COMPILERINFO_VC6
-//Console
-BOOL init_console();    // Initialize the console
-void clear_console();   // Clear the console
-BOOL show_console();    // Show the Console
-BOOL hide_console();    // Hide the console
-BOOL close_console();   // Close the console and restore the old STD I/O
+// Console
+bool init_console();    // Initialize the console
+bool clear_console();   // Clear the console
+bool show_console();    // Show the Console
+bool hide_console();    // Hide the console
+bool close_console();   // Close the console and restore the old STD I/O
 #endif
 
 //int  EGEAPI Begin2d();
 //void EGEAPI EndRender();
 
 
-void EGEAPI ege_sleep(long ms);
-void EGEAPI delay(long ms);
-void EGEAPI delay_ms(long ms);
-void EGEAPI delay_fps(int fps);
-void EGEAPI delay_fps(long fps);
-void EGEAPI delay_fps(double fps);
-void EGEAPI delay_jfps(int fps);
-void EGEAPI delay_jfps(long fps);
+void EGEAPI ege_sleep (long ms);
+void EGEAPI delay     (long ms);
+void EGEAPI delay_ms  (long ms);
+void EGEAPI api_sleep (long ms);
+
+void EGEAPI delay_fps (int    fps);
+void EGEAPI delay_fps (long   fps);
+void EGEAPI delay_fps (double fps);
+void EGEAPI delay_jfps(int    fps);
+void EGEAPI delay_jfps(long   fps);
 void EGEAPI delay_jfps(double fps);
 
-void EGEAPI api_sleep(long dwMilliseconds);
+
 double EGEAPI fclock();
 
 
-void EGEAPI outtext(LPCSTR  textstring, PIMAGE pimg = NULL);
-void EGEAPI outtext(LPCWSTR textstring, PIMAGE pimg = NULL);
-void EGEAPI outtext(CHAR  c, PIMAGE pimg = NULL);
-void EGEAPI outtext(WCHAR c, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, LPCSTR  textstring, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, LPCWSTR textstring, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, CHAR c, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, WCHAR c, PIMAGE pimg = NULL);
-void EGEAPI outtextrect(int x, int y, int w, int h, LPCSTR  textstring, PIMAGE pimg = NULL);
-void EGEAPI outtextrect(int x, int y, int w, int h, LPCWSTR textstring, PIMAGE pimg = NULL);
-void EGEAPI xyprintf(int x, int y, LPCSTR  fmt, ...);
-void EGEAPI xyprintf(int x, int y, LPCWSTR fmt, ...);
-void EGEAPI rectprintf(int x, int y, int w, int h, LPCSTR  fmt, ...);
-void EGEAPI rectprintf(int x, int y, int w, int h, LPCWSTR fmt, ...);
-int  EGEAPI textwidth(LPCSTR  textstring, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(LPCWSTR textstring, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(CHAR  c, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(WCHAR c, PIMAGE pimg = NULL);
-int  EGEAPI textheight(LPCSTR  textstring, PIMAGE pimg = NULL);
-int  EGEAPI textheight(LPCWSTR textstring, PIMAGE pimg = NULL);
-int  EGEAPI textheight(CHAR  c, PIMAGE pimg = NULL);
-int  EGEAPI textheight(WCHAR c, PIMAGE pimg = NULL);
+void EGEAPI outtext(const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtext(const wchar_t* text, PIMAGE pimg = NULL);
+void EGEAPI outtext(char  c, PIMAGE pimg = NULL);
+void EGEAPI outtext(wchar_t c, PIMAGE pimg = NULL);
+
+void EGEAPI outtextxy(int x, int y, const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, char c, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, wchar_t c, PIMAGE pimg = NULL);
+void EGEAPI xyprintf (int x, int y, const char*  format, ...);
+void EGEAPI xyprintf (int x, int y, const wchar_t* format, ...);
+
+void EGEAPI outtextrect(int x, int y, int w, int h, const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg = NULL);
+void EGEAPI rectprintf (int x, int y, int w, int h, const char*  format, ...);
+void EGEAPI rectprintf (int x, int y, int w, int h, const wchar_t* format, ...);
+
+int  EGEAPI textwidth(const char*  text, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(const wchar_t* text, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(char  c, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(wchar_t c, PIMAGE pimg = NULL);
+
+int  EGEAPI textheight(const char*  text, PIMAGE pimg = NULL);
+int  EGEAPI textheight(const wchar_t* text, PIMAGE pimg = NULL);
+int  EGEAPI textheight(char  c, PIMAGE pimg = NULL);
+int  EGEAPI textheight(wchar_t c, PIMAGE pimg = NULL);
+
 void EGEAPI settextjustify(int horiz, int vert, PIMAGE pimg = NULL);
 
 
-void EGEAPI setfont(int nHeight, int nWidth, LPCSTR lpszFace,  PIMAGE pimg = NULL);
-void EGEAPI setfont(int nHeight, int nWidth, LPCWSTR lpszFace, PIMAGE pimg = NULL);
-void EGEAPI setfont(int nHeight, int nWidth, LPCSTR lpszFace,  int nEscapement, int nOrientation,
-                    int nWeight, int bItalic, int bUnderline, int bStrikeOut, PIMAGE pimg = NULL);
-void EGEAPI setfont(int nHeight, int nWidth, LPCWSTR lpszFace, int nEscapement, int nOrientation,
-                    int nWeight, int bItalic, int bUnderline, int bStrikeOut, PIMAGE pimg = NULL);
-void EGEAPI setfont(int nHeight, int nWidth, LPCSTR lpszFace,  int nEscapement, int nOrientation,
-                    int nWeight, int bItalic, int bUnderline, int bStrikeOut, BYTE fbCharSet,
-                    BYTE fbOutPrecision, BYTE fbClipPrecision, BYTE fbQuality, BYTE fbPitchAndFamily, PIMAGE pimg = NULL);
-void EGEAPI setfont(int nHeight, int nWidth, LPCWSTR lpszFace, int nEscapement, int nOrientation,
-                    int nWeight, int bItalic, int bUnderline, int bStrikeOut, BYTE fbCharSet,
-                    BYTE fbOutPrecision, BYTE fbClipPrecision, BYTE fbQuality, BYTE fbPitchAndFamily, PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const char* typeface,  PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const char* typeface,  int escapement, int orientation,
+                    int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapement, int orientation,
+                    int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const char* typeface,  int escapement, int orientation,
+                    int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
+                    BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
+void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapement, int orientation,
+                    int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
+                    BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
 EGE_DEPRECATE(setfont)
 void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
 void EGEAPI setfont(const LOGFONTW *font, PIMAGE pimg = NULL);
@@ -1132,170 +1106,171 @@ int EGEAPI gety(PCIMAGE pimg = NULL);
 
 PIMAGE         EGEAPI newimage();
 PIMAGE         EGEAPI newimage(int width, int height);
-void           EGEAPI delimage(PCIMAGE pImg);
-color_t*       EGEAPI getbuffer(PIMAGE pImg);
-const color_t* EGEAPI getbuffer(PCIMAGE pImg);
+void           EGEAPI delimage(PCIMAGE pimg);
+color_t*       EGEAPI getbuffer(PIMAGE pimg);
+const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 
-int  EGEAPI resize_f(PIMAGE pDstImg, int width, int height);
-int  EGEAPI resize(PIMAGE pDstImg, int width, int height);
+int  EGEAPI resize_f(PIMAGE pimg, int width, int height);
+int  EGEAPI resize  (PIMAGE pimg, int width, int height);
 
-int  EGEAPI getimage(PIMAGE pDstImg, int srcX, int srcY, int srcWidth, int srcHeight);
-int  EGEAPI getimage(PIMAGE pDstImg, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight);
-int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pImgFile, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pImgFile, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage(PIMAGE pDstImg, LPCSTR  pResType, LPCSTR  pResName, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage(PIMAGE pDstImg, LPCWSTR pResType, LPCWSTR pResName, int zoomWidth = 0, int zoomHeight = 0);
-int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCSTR  filename);
-int  EGEAPI getimage_pngfile(PIMAGE pimg, LPCWSTR filename);
+int  EGEAPI getimage(PIMAGE imgDest, int xSrc, int ySrc, int widthSrc, int heightSrc);
+int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc);
+int  EGEAPI getimage(PIMAGE imgDest, const char*  imageFile, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage(PIMAGE imgDest, const char*  resType, const char*  resName, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* resType, const wchar_t* resName, int zoomWidth = 0, int zoomHeight = 0);
+int  EGEAPI getimage_pngfile(PIMAGE pimg, const char*  filename);
+int  EGEAPI getimage_pngfile(PIMAGE pimg, const wchar_t* filename);
 
-void EGEAPI putimage(int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);
-void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);
-void EGEAPI putimage(int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);
-void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, PCIMAGE pSrcImg, DWORD dwRop = SRCCOPY);
-void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, DWORD dwRop = SRCCOPY);
-void EGEAPI putimage(PIMAGE pDstImg, int dstX, int dstY, int dstWidth, int dstHeight, PCIMAGE pSrcImg, int srcX, int srcY, int srcWidth, int srcHeight, DWORD dwRop = SRCCOPY);
+void EGEAPI putimage(int x, int y, PCIMAGE pimg, DWORD dwRop = SRCCOPY);
+void EGEAPI putimage(int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, DWORD dwRop = SRCCOPY);
+void EGEAPI putimage(int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc, DWORD dwRop = SRCCOPY);
 
-int  EGEAPI saveimage(PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
-int  EGEAPI saveimage(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
-int  EGEAPI savepng(PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
-int  EGEAPI savepng(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
-int  EGEAPI savebmp(PCIMAGE pimg, LPCSTR  filename, bool withAlphaChannel = false);
-int  EGEAPI savebmp(PCIMAGE pimg, LPCWSTR filename, bool withAlphaChannel = false);
+void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, PCIMAGE imgSrc, DWORD dwRop = SRCCOPY);
+void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, DWORD dwRop = SRCCOPY);
+void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc, DWORD dwRop = SRCCOPY);
+
+int  EGEAPI saveimage(PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
+int  EGEAPI saveimage(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
+int  EGEAPI savepng  (PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
+int  EGEAPI savepng  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
+int  EGEAPI savebmp  (PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
+int  EGEAPI savebmp  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
 
 int EGEAPI putimage_transparent(
-    PIMAGE imgdest,         // handle to dest
-    PCIMAGE imgsrc,         // handle to source
-    int nXOriginDest,       // x-coord of destination upper-left corner
-    int nYOriginDest,       // y-coord of destination upper-left corner
-    color_t crTransparent,  // color to make transparent
-    int nXOriginSrc = 0,    // x-coord of source upper-left corner
-    int nYOriginSrc = 0,    // y-coord of source upper-left corner
-    int nWidthSrc = 0,      // width of source rectangle
-    int nHeightSrc = 0      // height of source rectangle
+    PIMAGE  imgDest,            // handle to dest
+    PCIMAGE imgSrc,             // handle to source
+    int xDest,                  // x-coord of destination upper-left corner
+    int yDest,                  // y-coord of destination upper-left corner
+    color_t transparentColor,   // color to make transparent
+    int xSrc = 0,               // x-coord of source upper-left corner
+    int ySrc = 0,               // y-coord of source upper-left corner
+    int widthSrc = 0,           // width of source rectangle
+    int heightSrc = 0           // height of source rectangle
 );
 int EGEAPI putimage_alphablend(
-    PIMAGE imgdest,         // handle to dest
-    PCIMAGE imgsrc,         // handle to source
-    int nXOriginDest,       // x-coord of destination upper-left corner
-    int nYOriginDest,       // y-coord of destination upper-left corner
-    unsigned char alpha,    // alpha
-    int nXOriginSrc = 0,    // x-coord of source upper-left corner
-    int nYOriginSrc = 0,    // y-coord of source upper-left corner
-    int nWidthSrc = 0,      // width of source rectangle
-    int nHeightSrc = 0      // height of source rectangle
+    PIMAGE  imgDest,            // handle to dest
+    PCIMAGE imgSrc,             // handle to source
+    int xDest,                  // x-coord of destination upper-left corner
+    int yDest,                  // y-coord of destination upper-left corner
+    unsigned char alpha,        // alpha
+    int xSrc = 0,               // x-coord of source upper-left corner
+    int ySrc = 0,               // y-coord of source upper-left corner
+    int widthSrc = 0,           // width of source rectangle
+    int heightSrc = 0           // height of source rectangle
 );
 int EGEAPI putimage_alphatransparent(
-    PIMAGE imgdest,         // handle to dest
-    PCIMAGE imgsrc,         // handle to source
-    int nXOriginDest,       // x-coord of destination upper-left corner
-    int nYOriginDest,       // y-coord of destination upper-left corner
-    color_t crTransparent,  // color to make transparent
-    unsigned char alpha,    // alpha
-    int nXOriginSrc = 0,    // x-coord of source upper-left corner
-    int nYOriginSrc = 0,    // y-coord of source upper-left corner
-    int nWidthSrc = 0,      // width of source rectangle
-    int nHeightSrc = 0      // height of source rectangle
+    PIMAGE  imgDest,            // handle to dest
+    PCIMAGE imgSrc,             // handle to source
+    int xDest,                  // x-coord of destination upper-left corner
+    int yDest,                  // y-coord of destination upper-left corner
+    color_t transparentColor,   // color to make transparent
+    unsigned char alpha,        // alpha
+    int xSrc = 0,               // x-coord of source upper-left corner
+    int ySrc = 0,               // y-coord of source upper-left corner
+    int widthSrc = 0,           // width of source rectangle
+    int heightSrc = 0           // height of source rectangle
 );
 int EGEAPI putimage_withalpha(
-    PIMAGE imgdest,         // handle to dest
-    PCIMAGE imgsrc,         // handle to source
-    int nXOriginDest,       // x-coord of destination upper-left corner
-    int nYOriginDest,       // y-coord of destination upper-left corner
-    int nXOriginSrc = 0,    // x-coord of source upper-left corner
-    int nYOriginSrc = 0,    // y-coord of source upper-left corner
-    int nWidthSrc = 0,      // width of source rectangle
-    int nHeightSrc = 0      // height of source rectangle
+    PIMAGE  imgDest,            // handle to dest
+    PCIMAGE imgSrc,             // handle to source
+    int xDest,                  // x-coord of destination upper-left corner
+    int yDest,                  // y-coord of destination upper-left corner
+    int xSrc = 0,               // x-coord of source upper-left corner
+    int ySrc = 0,               // y-coord of source upper-left corner
+    int widthSrc = 0,           // width of source rectangle
+    int heightSrc = 0           // height of source rectangle
 );
 int EGEAPI putimage_withalpha(
-    PIMAGE imgdest,         // handle to dest
-    PCIMAGE imgsrc,         // handle to source
-    int nXOriginDest,       // x-coord of destination upper-left corner
-    int nYOriginDest,       // y-coord of destination upper-left corner
-    int nWidthDest,         // width of destination rectangle
-    int nHeightDest,        // height of destination rectangle
-    int nXOriginSrc,        // x-coord of source upper-left corner
-    int nYOriginSrc,        // y-coord of source upper-left corner
-    int nWidthSrc,          // width of source rectangle
-    int nHeightSrc          // height of source rectangle
+    PIMAGE  imgDest,            // handle to dest
+    PCIMAGE imgSrc,             // handle to source
+    int xDest,                  // x-coord of destination upper-left corner
+    int yDest,                  // y-coord of destination upper-left corner
+    int widthDest,              // width of destination rectangle
+    int heightDest,             // height of destination rectangle
+    int xSrc,                   // x-coord of source upper-left corner
+    int ySrc,                   // y-coord of source upper-left corner
+    int widthSrc,               // width of source rectangle
+    int heightSrc               // height of source rectangle
 );
 int EGEAPI putimage_alphafilter(
-    PIMAGE imgdest,         // handle to dest
-    PCIMAGE imgsrc,         // handle to source
-    int nXOriginDest,       // x-coord of destination upper-left corner
-    int nYOriginDest,       // y-coord of destination upper-left corner
-    PCIMAGE imgalpha,       // alpha
-    int nXOriginSrc,        // x-coord of source upper-left corner
-    int nYOriginSrc,        // y-coord of source upper-left corner
-    int nWidthSrc,          // width of source rectangle
-    int nHeightSrc          // height of source rectangle
+    PIMAGE  imgDest,            // handle to dest
+    PCIMAGE imgSrc,             // handle to source
+    int xDest,                  // x-coord of destination upper-left corner
+    int yDest,                  // y-coord of destination upper-left corner
+    PCIMAGE imgAlpha,           // handle to alpha
+    int xSrc,                   // x-coord of source upper-left corner
+    int ySrc,                   // y-coord of source upper-left corner
+    int widthSrc,               // width of source rectangle
+    int heightSrc               // height of source rectangle
 );
 int EGEAPI imagefilter_blurring (
-    PIMAGE imgdest,         // handle to dest
+    PIMAGE imgDest,             // handle to dest
     int intensity,
     int alpha,
-    int nXOriginDest = 0,
-    int nYOriginDest = 0,
-    int nWidthDest = 0,
-    int nHeightDest = 0
+    int xDest = 0,
+    int yDest = 0,
+    int widthDest = 0,
+    int heightDest = 0
 );
 int EGEAPI putimage_rotate(
-    PIMAGE imgdest,
-    PCIMAGE imgtexture,
-    int nXOriginDest,
-    int nYOriginDest,
-    float centerx,
-    float centery,
+    PIMAGE  imgDest,
+    PCIMAGE imgTexture,
+    int   xDest,
+    int   yDest,
+    float xCenter,
+    float yCenter,
     float radian,
-    int btransparent = 0,            // transparent (1) or not (0)
-    int alpha = -1,                  // in range[0, 256], alpha== -1 means no alpha
-    int smooth = 0
+    bool  transparent = false,   // use the transparent channel of the image
+    int   alpha = -1,            // in range[0, 256], alpha== -1 means no alpha
+    bool  smooth = false
 );
 
 int EGEAPI putimage_rotatezoom(
-    PIMAGE imgdest,
-    PCIMAGE imgtexture,
-    int nXOriginDest,
-    int nYOriginDest,
-    float centerx,
-    float centery,
+    PIMAGE imgDest,
+    PCIMAGE imgTexture,
+    int xDest,
+    int yDest,
+    float xCenter,
+    float yCenter,
     float radian,
     float zoom,
-    int btransparent = 0,            // transparent (1) or not (0)
-    int alpha = -1,                  // in range[0, 256], alpha== -1 means no alpha
-    int smooth = 0
+    bool transparent = false,   // use the transparent channel of the image
+    int alpha = -1,             // in range[0, 256], alpha== -1 means no alpha
+    bool smooth = false
 );
 
 int EGEAPI putimage_rotatetransparent(
-    PIMAGE imgdest,/* handle to dest, NULL means the SCREEN  */
-    PCIMAGE imgsrc,/* handle to source */
-    int xCenterDest,/* x-coord of rotation center in dest */
-    int yCenterDest,/* y-coord of rotation center in dest */
-    int xCenterSrc, /* x-coord of rotation center in source */
-    int yCenterSrc,/* y-coord of rotation center in source */
-    color_t crTransparent, /* color to make transparent */
-    float radian, /* rotation angle (clockwise, in radian) */
-    float zoom=1.0 /* zoom factor */
+    PIMAGE imgDest,             /* handle to dest, NULL means the SCREEN  */
+    PCIMAGE imgSrc,             /* handle to source */
+    int xCenterDest,            /* x-coord of rotation center in dest */
+    int yCenterDest,            /* y-coord of rotation center in dest */
+    int xCenterSrc,             /* x-coord of rotation center in source */
+    int yCenterSrc,             /* y-coord of rotation center in source */
+    color_t transparentColor,   /* color to make transparent */
+    float radian,               /* rotation angle (clockwise, in radian) */
+    float zoom=1.0              /* zoom factor */
 );
 
 int EGEAPI putimage_rotatetransparent(
-    PIMAGE imgdest,/* handle to dest, NULL means the SCREEN */
-    PCIMAGE imgsrc,/* handle to source */
-    int xCenterDest,/* x-coord of rotation center in dest */
-    int yCenterDest,/* y-coord of rotation center in dest */
-    int xOriginSrc, /* x-coord of source upper-left corner */
-    int yOriginSrc, /* y-coord of source upper-left corner */
-    int widthSrc, /* width of source rectangle */
-    int heightSrc, /* height of source rectangle */
-    int xCenterSrc, /* x-coord of rotation center in source */
-    int yCenterSrc,/* y-coord of rotation center in source */
-    color_t crTransparent, /* color to make transparent */
-    float radian, /* rotation angle (clockwise, in radian) */
-    float zoom=1.0 /* zoom factor */
+    PIMAGE imgDest,             /* handle to dest, NULL means the SCREEN */
+    PCIMAGE imgSrc,             /* handle to source */
+    int xCenterDest,            /* x-coord of rotation center in dest */
+    int yCenterDest,            /* y-coord of rotation center in dest */
+    int xOriginSrc,             /* x-coord of source upper-left corner */
+    int yOriginSrc,             /* y-coord of source upper-left corner */
+    int widthSrc,               /* width of source rectangle */
+    int heightSrc,              /* height of source rectangle */
+    int xCenterSrc,             /* x-coord of rotation center in source */
+    int yCenterSrc,             /* y-coord of rotation center in source */
+    color_t transparentColor,   /* color to make transparent */
+    float radian,               /* rotation angle (clockwise, in radian) */
+    float zoom = 1.0            /* zoom factor */
 );
 
 HWND        EGEAPI getHWnd();
 HINSTANCE   EGEAPI getHInstance();
-HDC         EGEAPI getHDC(PCIMAGE pImg = NULL);
+HDC         EGEAPI getHDC(PCIMAGE pimg = NULL);
 
 PVOID       EGEAPI getProcfunc();
 long        EGEAPI getGraphicsVer();
@@ -1306,8 +1281,8 @@ unsigned int    EGEAPI random(unsigned int n);
 double          EGEAPI randomf();
 
 
-int EGEAPI inputbox_getline(LPCSTR  title, LPCSTR  text, LPSTR  buf, int len);
-int EGEAPI inputbox_getline(LPCWSTR title, LPCWSTR text, LPWSTR buf, int len);
+int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, int len);
+int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len);
 
 
 
@@ -1369,8 +1344,8 @@ public:
 public:
     int IsOpen() { return (m_DID != MUSIC_ERROR) ? 1 : 0; }
 
-    DWORD OpenFile(LPCSTR filepath);
-    DWORD OpenFile(LPCWSTR filepath);
+    DWORD OpenFile(const char* filepath);
+    DWORD OpenFile(const wchar_t* filepath);
     DWORD Play(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
     DWORD RepeatPlay(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
     DWORD Pause();

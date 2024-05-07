@@ -13,13 +13,13 @@ namespace ege
 static HWND    g_attach_hwnd     = 0;
 // -----------------------------------------------------------------------------
 
-void setcaption(LPCSTR caption)
+void setcaption(const char* caption)
 {
     const std::wstring& new_caption = mb2w(caption);
     setcaption(new_caption.c_str());
 }
 
-void setcaption(LPCWSTR caption)
+void setcaption(const wchar_t* caption)
 {
     struct _graph_setting* pg = &graph_setting;
     if (pg->has_init) {

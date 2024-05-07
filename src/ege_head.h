@@ -307,7 +307,7 @@ private:
     // Mutex* m_mutex;
 };
 
-void internal_panic(LPCWSTR errmsg);
+void internal_panic(const wchar_t* errmsg);
 
 HBITMAP newbitmap(int width, int height, PDWORD* p_bmp_buf);
 
