@@ -253,7 +253,7 @@ enum message_mouse
 
 #ifndef EGE_COLOR_TYPEDEF
 #define EGE_COLOR_TYPEDEF
-typedef DWORD color_t;
+typedef unsigned int color_t;
 #endif
 
 enum COLORS
@@ -718,15 +718,15 @@ typedef struct ege_colpoint
 
 struct MOUSEMSG
 {
-    UINT  uMsg;      //
-    bool  mkCtrl;    //
-    bool  mkShift;   //
-    bool  mkLButton; //
-    bool  mkMButton; //
-    bool  mkRButton; //
-    short x;         //
-    short y;         //
-    short wheel;     //
+    UINT  uMsg;
+    bool  mkCtrl;
+    bool  mkShift;
+    bool  mkLButton;
+    bool  mkMButton;
+    bool  mkRButton;
+    short x;
+    short y;
+    short wheel;
 };
 
 struct msg_createwindow

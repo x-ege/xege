@@ -527,7 +527,7 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
 
     // 创建 png_bytep 数组，指向图像缓冲区中每一行像素的首地址
     const png_bytepp row_pointers = new png_bytep[height];
-    color_t* buffer = self->m_pBuffer;
+    color_t* buffer = (color_t*)self->m_pBuffer;
 
     for (png_uint_32 i = 0; i < height; i++) {
         row_pointers[i] = (png_bytep)(&buffer[i * width]);
