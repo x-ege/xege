@@ -100,7 +100,7 @@ endif ()
 # 设置库文件名
 math(EXPR TARGET_BITS "8 * ${CMAKE_SIZEOF_VOID_P}")
 if (TARGET_BITS EQUAL 64)
-    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics64)
+    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 elseif (TARGET_BITS EQUAL 32)
     set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 else ()
