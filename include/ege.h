@@ -50,7 +50,7 @@
 #   ifdef _MSC_VER
 #       pragma comment(lib,"gdiplus.lib")
 #       ifdef _WIN64 // 64 bit libs
-#           pragma comment(lib,"graphics64.lib")
+#           pragma comment(lib,"graphics.lib")
 #       else   // 32 bit libs
 #           pragma comment(lib,"graphics.lib")
 #       endif
