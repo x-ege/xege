@@ -7,10 +7,6 @@
 #ifndef EGE_BUTTON_H
 #define EGE_BUTTON_H
 
-#ifndef EGE_H
-#error include "button.h" must after include "ege.h" or "graphics.h"
-#endif
-
 #include "egecontrolbase.h"
 
 #include <algorithm>

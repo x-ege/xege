@@ -1,10 +1,6 @@
 #ifndef EGE_SYS_EDIT_H
 #define EGE_SYS_EDIT_H
 
-#ifndef EGE_H
-#error include "sys_edit.h" must after include "ege.h" or "graphics.h"
-#endif
-
 #include "egecontrolbase.h"
 
 #define EGE_CONVERT_TO_WSTR_WITH(mbStr, block)                                               \
