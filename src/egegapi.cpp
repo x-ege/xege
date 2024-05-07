@@ -941,11 +941,11 @@ void fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pim
     CONVERT_IMAGE_END;
 }
 
-void floodfill(int x, int y, int border, PIMAGE pimg)
+void floodfill(int x, int y, int borderColor, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        FloodFill(img->m_hDC, x, y, ARGBTOZBGR(border));
+        FloodFill(img->m_hDC, x, y, ARGBTOZBGR(borderColor));
     }
     CONVERT_IMAGE_END;
 }

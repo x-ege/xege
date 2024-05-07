@@ -279,12 +279,12 @@ void settextjustify(int horiz, int vert, PIMAGE pimg)
 void setfont(int height,
     int width,
     LPCSTR typeface,
-    int escapement,
-    int orientation,
-    int weight,
-    int italic,
-    int underline,
-    int strikeOut,
+    int  escapement,
+    int  orientation,
+    int  weight,
+    bool italic,
+    bool underline,
+    bool strikeOut,
     BYTE charSet,
     BYTE outPrecision,
     BYTE clipPrecision,
@@ -319,9 +319,9 @@ void setfont(int height,
     int escapement,
     int orientation,
     int weight,
-    int italic,
-    int underline,
-    int strikeOut,
+    bool italic,
+    bool underline,
+    bool strikeOut,
     BYTE charSet,
     BYTE outPrecision,
     BYTE clipPrecision,
@@ -335,9 +335,9 @@ void setfont(int height,
     lf.lfEscapement = escapement;
     lf.lfOrientation = orientation;
     lf.lfWeight = weight;
-    lf.lfItalic = (italic != 0);
-    lf.lfUnderline = (underline != 0);
-    lf.lfStrikeOut = (strikeOut != 0);
+    lf.lfItalic = italic;
+    lf.lfUnderline = underline;
+    lf.lfStrikeOut = strikeOut;
     lf.lfCharSet = charSet;
     lf.lfOutPrecision = outPrecision;
     lf.lfClipPrecision = clipPrecision;
@@ -354,9 +354,9 @@ void setfont(int height,
     int escapement,
     int orientation,
     int weight,
-    int italic,
-    int underline,
-    int strikeOut,
+    bool italic,
+    bool underline,
+    bool strikeOut,
     PIMAGE pimg)
 {
     setfont(height,
@@ -382,9 +382,9 @@ void setfont(int height,
     int escapement,
     int orientation,
     int weight,
-    int italic,
-    int underline,
-    int strikeOut,
+    bool italic,
+    bool underline,
+    bool strikeOut,
     PIMAGE pimg)
 {
     setfont(height,

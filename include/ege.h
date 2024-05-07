@@ -947,7 +947,7 @@ void EGEAPI drawbezier   (int numOfPoints, const int *points, PIMAGE pimg = NULL
 void EGEAPI fillpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 void EGEAPI fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg = NULL);
 
-void EGEAPI floodfill    (int x, int y, int border, PIMAGE pimg = NULL);
+void EGEAPI floodfill    (int x, int y, int borderColor, PIMAGE pimg = NULL);
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
 #ifdef EGE_GDIPLUS
@@ -1015,14 +1015,14 @@ ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);  // C
 //
 #endif
 
-//We don't support VC 6
+// We don't support VC 6
 #ifndef EGE_COMPILERINFO_VC6
-//Console
-BOOL init_console();    // Initialize the console
-void clear_console();   // Clear the console
-BOOL show_console();    // Show the Console
-BOOL hide_console();    // Hide the console
-BOOL close_console();   // Close the console and restore the old STD I/O
+// Console
+bool init_console();    // Initialize the console
+bool clear_console();   // Clear the console
+bool show_console();    // Show the Console
+bool hide_console();    // Hide the console
+bool close_console();   // Close the console and restore the old STD I/O
 #endif
 
 //int  EGEAPI Begin2d();
@@ -1078,14 +1078,14 @@ void EGEAPI settextjustify(int horiz, int vert, PIMAGE pimg = NULL);
 void EGEAPI setfont(int height, int width, LPCSTR typeface,  PIMAGE pimg = NULL);
 void EGEAPI setfont(int height, int width, LPCWSTR typeface, PIMAGE pimg = NULL);
 void EGEAPI setfont(int height, int width, LPCSTR typeface,  int escapement, int orientation,
-                    int weight, int italic, int underline, int strikeOut, PIMAGE pimg = NULL);
+                    int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
 void EGEAPI setfont(int height, int width, LPCWSTR typeface, int escapement, int orientation,
-                    int weight, int italic, int underline, int strikeOut, PIMAGE pimg = NULL);
+                    int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
 void EGEAPI setfont(int height, int width, LPCSTR typeface,  int escapement, int orientation,
-                    int weight, int italic, int underline, int strikeOut, BYTE charSet,
+                    int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
                     BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
 void EGEAPI setfont(int height, int width, LPCWSTR typeface, int escapement, int orientation,
-                    int weight, int italic, int underline, int strikeOut, BYTE charSet,
+                    int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
                     BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
 EGE_DEPRECATE(setfont)
 void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
@@ -1197,7 +1197,7 @@ int EGEAPI putimage_alphafilter(
     PCIMAGE imgSrc,             // handle to source
     int xDest,                  // x-coord of destination upper-left corner
     int yDest,                  // y-coord of destination upper-left corner
-    PCIMAGE imgAlpha,           // alpha
+    PCIMAGE imgAlpha,           // handle to alpha
     int xSrc,                   // x-coord of source upper-left corner
     int ySrc,                   // y-coord of source upper-left corner
     int widthSrc,               // width of source rectangle
@@ -1220,9 +1220,9 @@ int EGEAPI putimage_rotate(
     float xCenter,
     float yCenter,
     float radian,
-    int   btransparent = 0,     // transparent (1) or not (0)
-    int   alpha = -1,           // in range[0, 256], alpha== -1 means no alpha
-    int   smooth = 0
+    bool  transparent = false,   // use the transparent channel of the image
+    int   alpha = -1,            // in range[0, 256], alpha== -1 means no alpha
+    bool  smooth = false
 );
 
 int EGEAPI putimage_rotatezoom(
@@ -1234,9 +1234,9 @@ int EGEAPI putimage_rotatezoom(
     float yCenter,
     float radian,
     float zoom,
-    int btransparent = 0,       // transparent (1) or not (0)
+    bool transparent = false,   // use the transparent channel of the image
     int alpha = -1,             // in range[0, 256], alpha== -1 means no alpha
-    int smooth = 0
+    bool smooth = false
 );
 
 int EGEAPI putimage_rotatetransparent(
@@ -1262,7 +1262,7 @@ int EGEAPI putimage_rotatetransparent(
     int heightSrc,              /* height of source rectangle */
     int xCenterSrc,             /* x-coord of rotation center in source */
     int yCenterSrc,             /* y-coord of rotation center in source */
-    color_t transparentColor,  /* color to make transparent */
+    color_t transparentColor,   /* color to make transparent */
     float radian,               /* rotation angle (clockwise, in radian) */
     float zoom = 1.0            /* zoom factor */
 );

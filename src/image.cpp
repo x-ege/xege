@@ -2129,7 +2129,7 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
 
 /* private funcion */
 static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt, PCIMAGE dc_src,
-    const struct trangle2d* tt, int x1, int y1, int x2, int y2, int transparent, int alpha)
+    const struct trangle2d* tt, int x1, int y1, int x2, int y2, bool transparent, int alpha)
 {
     struct trangle2d t2d = *dt;
     struct trangle2d t3d = *tt;
@@ -2371,7 +2371,7 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
 int putimage_trangle(PIMAGE imgDest, PCIMAGE imgtexture,
     const struct trangle2d* dt, // dest trangle, original
     const struct trangle2d* tt, // textture trangle uv 0.0 - 1.0
-    int btransparent, int alpha, int smooth)
+    bool transparent, int alpha, bool smooth)
 {
     PIMAGE  dc_dest = imgDest;
     PCIMAGE dc_src  = imgtexture;
@@ -2395,10 +2395,10 @@ int putimage_trangle(PIMAGE imgDest, PCIMAGE imgtexture,
 
         if (smooth) {
             if (dc_src->getwidth() > 1 && dc_src->getheight() > 1) {
-                draw_flat_trangle_alpha_s(dc_dest, &_dt, dc_src, &_tt, x1, y1, x2, y2, btransparent, alpha);
+                draw_flat_trangle_alpha_s(dc_dest, &_dt, dc_src, &_tt, x1, y1, x2, y2, transparent, alpha);
             }
         } else {
-            draw_flat_trangle_alpha(dc_dest, &_dt, dc_src, &_tt, x1, y1, x2, y2, btransparent, alpha);
+            draw_flat_trangle_alpha(dc_dest, &_dt, dc_src, &_tt, x1, y1, x2, y2, transparent, alpha);
         }
     }
     return grOk;
@@ -2406,9 +2406,9 @@ int putimage_trangle(PIMAGE imgDest, PCIMAGE imgtexture,
 
 int putimage_rotate(PIMAGE imgDest, PCIMAGE imgtexture, int xDest, int yDest, float centerx,
     float centery, float radian,
-    int btransparent, // transparent (1) or not (0)
+    bool transparent,
     int alpha,        // in range[0, 256], alpha==256 means no alpha
-    int smooth)
+    bool smooth)
 {
     PIMAGE  dc_dest = CONVERT_IMAGE(imgDest);
     PCIMAGE dc_src  = imgtexture;
@@ -2441,8 +2441,8 @@ int putimage_rotate(PIMAGE imgDest, PCIMAGE imgtexture, int xDest, int yDest, fl
             }
         }
 
-        putimage_trangle(dc_dest, imgtexture, &_dt[0], &_tt[0], btransparent, alpha, smooth);
-        putimage_trangle(dc_dest, imgtexture, &_dt[1], &_tt[1], btransparent, alpha, smooth);
+        putimage_trangle(dc_dest, imgtexture, &_dt[0], &_tt[0], transparent, alpha, smooth);
+        putimage_trangle(dc_dest, imgtexture, &_dt[1], &_tt[1], transparent, alpha, smooth);
     }
     CONVERT_IMAGE_END;
     return grOk;
@@ -2450,9 +2450,9 @@ int putimage_rotate(PIMAGE imgDest, PCIMAGE imgtexture, int xDest, int yDest, fl
 
 int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgtexture, int xDest, int yDest, float centerx,
     float centery, float radian, float zoom,
-    int btransparent, // transparent (1) or not (0)
+    bool transparent, // transparent (1) or not (0)
     int alpha,        // in range[0, 256], alpha==256 means no alpha
-    int smooth)
+    bool smooth)
 {
     PIMAGE  dc_dest = CONVERT_IMAGE(imgDest);
     PCIMAGE dc_src  = imgtexture;
@@ -2484,8 +2484,8 @@ int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgtexture, int xDest, int yDest
             }
         }
 
-        putimage_trangle(dc_dest, imgtexture, &_dt[0], &_tt[0], btransparent, alpha, smooth);
-        putimage_trangle(dc_dest, imgtexture, &_dt[1], &_tt[1], btransparent, alpha, smooth);
+        putimage_trangle(dc_dest, imgtexture, &_dt[0], &_tt[0], transparent, alpha, smooth);
+        putimage_trangle(dc_dest, imgtexture, &_dt[1], &_tt[1], transparent, alpha, smooth);
     }
     CONVERT_IMAGE_END;
     return grOk;
