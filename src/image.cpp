@@ -1091,12 +1091,12 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
             graphics->SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
         }
 
-        Gdiplus::RectF rectangleDest((float)drawDest.x, (float)drawDest.y, (float)drawDest.width, (float)drawDest.height);
-        Gdiplus::RectF rectangleSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
+        Gdiplus::RectF rectDest((float)drawDest.x, (float)drawDest.y, (float)drawDest.width, (float)drawDest.height);
+        Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
 
         Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, sizeof(color_t) * imgSrc->m_width,
         PixelFormat32bppARGB, (BYTE*)imgSrc->m_pBuffer);
-        graphics->DrawImage(&bitmap, rectangleDest, rectangleSrc, Gdiplus::UnitPixel, NULL);
+        graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
     }
     CONVERT_IMAGE_END;
     return grOk;
