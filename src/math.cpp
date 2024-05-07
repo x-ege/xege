@@ -159,7 +159,7 @@ VECTOR3D& VECTOR3D::Rotate(const VECTOR3D& _e, const VECTOR3D& _s)
     return *this += b;
 }
 
-float VECTOR3D::GetAngel(const VECTOR3D& _e, const VECTOR3D& _s)
+float VECTOR3D::GetAngle(const VECTOR3D& _e, const VECTOR3D& _s)
 {
     VECTOR3D s = _s, e = _e;
     s.SetModule(1.0f);

@@ -818,7 +818,7 @@ struct VECTOR3D
     }
 
     VECTOR3D&    Rotate  (const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
-    static float GetAngel(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
+    static float GetAngle(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
 };
 
 class IMAGE;
@@ -1246,8 +1246,8 @@ int EGEAPI putimage_rotate(
     float centerx,
     float centery,
     float radian,
-    int btransparent = 0,            // transparent (1) or not (0)
-    int alpha = -1,                  // in range[0, 256], alpha== -1 means no alpha
+    int btransparent = 0,   // transparent (1) or not (0)
+    int alpha = -1,         // in range[0, 256], alpha== -1 means no alpha
     int smooth = 0
 );
 
@@ -1260,37 +1260,37 @@ int EGEAPI putimage_rotatezoom(
     float centery,
     float radian,
     float zoom,
-    int btransparent = 0,            // transparent (1) or not (0)
-    int alpha = -1,                  // in range[0, 256], alpha== -1 means no alpha
+    int btransparent = 0,   // transparent (1) or not (0)
+    int alpha = -1,         // in range[0, 256], alpha== -1 means no alpha
     int smooth = 0
 );
 
 int EGEAPI putimage_rotatetransparent(
-    PIMAGE imgdest,/* handle to dest, NULL means the SCREEN  */
-    PCIMAGE imgsrc,/* handle to source */
-    int xCenterDest,/* x-coord of rotation center in dest */
-    int yCenterDest,/* y-coord of rotation center in dest */
-    int xCenterSrc, /* x-coord of rotation center in source */
-    int yCenterSrc,/* y-coord of rotation center in source */
-    color_t crTransparent, /* color to make transparent */
-    float radian, /* rotation angle (clockwise, in radian) */
-    float zoom=1.0 /* zoom factor */
+    PIMAGE imgdest,         /* handle to dest, NULL means the SCREEN  */
+    PCIMAGE imgsrc,         /* handle to source */
+    int xCenterDest,        /* x-coord of rotation center in dest */
+    int yCenterDest,        /* y-coord of rotation center in dest */
+    int xCenterSrc,         /* x-coord of rotation center in source */
+    int yCenterSrc,         /* y-coord of rotation center in source */
+    color_t crTransparent,  /* color to make transparent */
+    float radian,           /* rotation angle (clockwise, in radian) */
+    float zoom=1.0          /* zoom factor */
 );
 
 int EGEAPI putimage_rotatetransparent(
-    PIMAGE imgdest,/* handle to dest, NULL means the SCREEN */
-    PCIMAGE imgsrc,/* handle to source */
-    int xCenterDest,/* x-coord of rotation center in dest */
-    int yCenterDest,/* y-coord of rotation center in dest */
-    int xOriginSrc, /* x-coord of source upper-left corner */
-    int yOriginSrc, /* y-coord of source upper-left corner */
-    int widthSrc, /* width of source rectangle */
-    int heightSrc, /* height of source rectangle */
-    int xCenterSrc, /* x-coord of rotation center in source */
-    int yCenterSrc,/* y-coord of rotation center in source */
-    color_t crTransparent, /* color to make transparent */
-    float radian, /* rotation angle (clockwise, in radian) */
-    float zoom=1.0 /* zoom factor */
+    PIMAGE imgdest,         /* handle to dest, NULL means the SCREEN */
+    PCIMAGE imgsrc,         /* handle to source */
+    int xCenterDest,        /* x-coord of rotation center in dest */
+    int yCenterDest,        /* y-coord of rotation center in dest */
+    int xOriginSrc,         /* x-coord of source upper-left corner */
+    int yOriginSrc,         /* y-coord of source upper-left corner */
+    int widthSrc,           /* width of source rectangle */
+    int heightSrc,          /* height of source rectangle */
+    int xCenterSrc,         /* x-coord of rotation center in source */
+    int yCenterSrc,         /* y-coord of rotation center in source */
+    color_t crTransparent,  /* color to make transparent */
+    float radian,           /* rotation angle (clockwise, in radian) */
+    float zoom = 1.0        /* zoom factor */
 );
 
 HWND        EGEAPI getHWnd();
