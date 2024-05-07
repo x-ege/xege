@@ -5,11 +5,11 @@
 namespace ege
 {
 
-void api_sleep(long dwMilliseconds)
+void api_sleep(long ms)
 {
-    if (dwMilliseconds >= 0) {
+    if (ms >= 0) {
         dll::timeBeginPeriod(1);
-        ::Sleep(dwMilliseconds);
+        ::Sleep(ms);
         dll::timeEndPeriod(1);
     }
 }

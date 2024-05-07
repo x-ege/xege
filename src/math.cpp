@@ -11,109 +11,109 @@
 namespace ege
 {
 
-void rotate_point3d_x(VECTOR3D* pt, float r)
+void rotate_point3d_x(VECTOR3D* point, float rad)
 {
-    double   sr = sin(r), cr = cos(r);
-    VECTOR3D t_pt = *pt;
+    double   sr = sin(rad), cr = cos(rad);
+    VECTOR3D t_pt = *point;
 
-    t_pt.y = (float)(cr * pt->y - sr * pt->z);
-    t_pt.z = (float)(cr * pt->z + sr * pt->y);
-    *pt    = t_pt;
+    t_pt.y = (float)(cr * point->y - sr * point->z);
+    t_pt.z = (float)(cr * point->z + sr * point->y);
+    *point    = t_pt;
 }
 
-void rotate_point3d_y(VECTOR3D* pt, float r)
+void rotate_point3d_y(VECTOR3D* point, float rad)
 {
-    double   sr = sin(r), cr = cos(r);
-    VECTOR3D t_pt = *pt;
+    double   sr = sin(rad), cr = cos(rad);
+    VECTOR3D t_pt = *point;
 
-    t_pt.z = (float)(cr * pt->z - sr * pt->x);
-    t_pt.x = (float)(cr * pt->x + sr * pt->z);
-    *pt    = t_pt;
+    t_pt.z = (float)(cr * point->z - sr * point->x);
+    t_pt.x = (float)(cr * point->x + sr * point->z);
+    *point    = t_pt;
 }
 
-void rotate_point3d_z(VECTOR3D* pt, float r)
+void rotate_point3d_z(VECTOR3D* point, float rad)
 {
-    double   sr = sin(r), cr = cos(r);
-    VECTOR3D t_pt = *pt;
+    double   sr = sin(rad), cr = cos(rad);
+    VECTOR3D t_pt = *point;
 
-    t_pt.x = (float)(cr * pt->x - sr * pt->y);
-    t_pt.y = (float)(cr * pt->y + sr * pt->x);
-    *pt    = t_pt;
+    t_pt.x = (float)(cr * point->x - sr * point->y);
+    t_pt.y = (float)(cr * point->y + sr * point->x);
+    *point    = t_pt;
 }
 
-VECTOR3D& VECTOR3D::operator+=(const VECTOR3D& _fp)
+VECTOR3D& VECTOR3D::operator+=(const VECTOR3D& vector)
 {
-    x += _fp.x;
-    y += _fp.y;
-    z += _fp.z;
+    x += vector.x;
+    y += vector.y;
+    z += vector.z;
     return *this;
 }
 
-VECTOR3D& VECTOR3D::operator-=(const VECTOR3D& _fp)
+VECTOR3D& VECTOR3D::operator-=(const VECTOR3D& vector)
 {
-    x -= _fp.x;
-    y -= _fp.y;
-    z -= _fp.z;
+    x -= vector.x;
+    y -= vector.y;
+    z -= vector.z;
     return *this;
 }
 
-VECTOR3D VECTOR3D::operator+(const VECTOR3D& _fp) const
+VECTOR3D VECTOR3D::operator+(const VECTOR3D& vector) const
 {
     VECTOR3D v = *this;
 
-    v.x += _fp.x;
-    v.y += _fp.y;
-    v.z += _fp.z;
+    v.x += vector.x;
+    v.y += vector.y;
+    v.z += vector.z;
     return v;
 }
 
-VECTOR3D VECTOR3D::operator-(const VECTOR3D& _fp) const
+VECTOR3D VECTOR3D::operator-(const VECTOR3D& vector) const
 {
     VECTOR3D v = *this;
 
-    v.x -= _fp.x;
-    v.y -= _fp.y;
-    v.z -= _fp.z;
+    v.x -= vector.x;
+    v.y -= vector.y;
+    v.z -= vector.z;
     return v;
 }
 
-VECTOR3D VECTOR3D::operator*(float f) const
+VECTOR3D VECTOR3D::operator*(float scale) const
 {
     VECTOR3D v = *this;
 
-    v.x *= f;
-    v.y *= f;
-    v.z *= f;
+    v.x *= scale;
+    v.y *= scale;
+    v.z *= scale;
     return v;
 }
 
-VECTOR3D& VECTOR3D::operator*=(float f)
+VECTOR3D& VECTOR3D::operator*=(float scale)
 {
-    x *= f;
-    y *= f;
-    z *= f;
+    x *= scale;
+    y *= scale;
+    z *= scale;
     return *this;
 }
 
-float VECTOR3D::operator*(const VECTOR3D& _fp) const
+float VECTOR3D::operator*(const VECTOR3D& vector) const
 {
-    return x * _fp.x + y * _fp.y + z * _fp.z;
+    return x * vector.x + y * vector.y + z * vector.z;
 }
 
-VECTOR3D VECTOR3D::operator&(const VECTOR3D& _fp) const
+VECTOR3D VECTOR3D::operator&(const VECTOR3D& vector) const
 {
-    float tx = y * _fp.z - _fp.y * z;
-    float ty = z * _fp.x - _fp.z * x;
-    float tz = x * _fp.y - _fp.x * y;
+    float tx = y * vector.z - vector.y * z;
+    float ty = z * vector.x - vector.z * x;
+    float tz = x * vector.y - vector.x * y;
 
     return VECTOR3D(tx, ty, tz);
 }
 
-VECTOR3D& VECTOR3D::operator&=(const VECTOR3D& _fp)
+VECTOR3D& VECTOR3D::operator&=(const VECTOR3D& vector)
 {
-    float tx = y * _fp.z - _fp.y * z;
-    float ty = z * _fp.x - _fp.z * x;
-    float tz = x * _fp.y - _fp.x * y;
+    float tx = y * vector.z - vector.y * z;
+    float ty = z * vector.x - vector.z * x;
+    float tz = x * vector.y - vector.x * y;
 
     return *this = VECTOR3D(tx, ty, tz);
 }
