@@ -9,7 +9,7 @@ MUSIC类的定义
 #include "ege_head.h"
 #include "ege_common.h"
 #include <mmsystem.h>
-#include <Digitalv.h>
+#include <digitalv.h>
 
 #ifndef MUSIC_ASSERT_TRUE
 #   ifdef _DEBUG
