@@ -1025,7 +1025,7 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
         lbr.lbStyle = BS_SOLID;
     } else if (pattern < USER_FILL) { // dose not finish
         int hatchmap[] = {
-            HS_VERTICAL,
+            HS_HORIZONTAL,
             HS_BDIAGONAL,
             HS_BDIAGONAL,
             HS_FDIAGONAL,
