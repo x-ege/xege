@@ -541,7 +541,7 @@ void setfillcolor(color_t color, PIMAGE pimg)
     LOGBRUSH lbr = {0};
     img->m_fillcolor = color;
     lbr.lbColor = ARGBTOZBGR(color);
-    lbr.lbHatch = BS_SOLID;
+    lbr.lbStyle = BS_SOLID;
     HBRUSH hbr = CreateBrushIndirect(&lbr);
     if (hbr) {
         DeleteObject(SelectObject(img->m_hDC, hbr));
