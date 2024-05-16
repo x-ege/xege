@@ -538,11 +538,8 @@ void setcolor(color_t color, PIMAGE pimg)
 void setfillcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    LOGBRUSH lbr = {0};
     img->m_fillcolor = color;
-    lbr.lbColor = ARGBTOZBGR(color);
-    lbr.lbHatch = BS_SOLID;
-    HBRUSH hbr = CreateBrushIndirect(&lbr);
+    HBRUSH hbr = CreateSolidBrush(ARGBTOZBGR(color));
     if (hbr) {
         DeleteObject(SelectObject(img->m_hDC, hbr));
     }
