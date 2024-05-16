@@ -36,34 +36,34 @@
 #define SYSBITS_W EGE_L(SYSBITS)
 
 #ifdef _MSC_VER
-#if (_MSC_VER >= 1930)
-#define MSVC_VER "MSVC"
-#elif (_MSC_VER >= 1920)
-#define MSVC_VER "VC2019"
-#elif (_MSC_VER >= 1910)
-#define MSVC_VER "VC2017"
-#elif (_MSC_VER >= 1900)
-#define MSVC_VER "VC2015"
-#elif (_MSC_VER >= 1800)
-#define MSVC_VER "VC2013"
-#elif (_MSC_VER >= 1700)
-#define MSVC_VER "VC2012"
-#elif (_MSC_VER >= 1600)
-#define MSVC_VER "VC2010"
-#elif (_MSC_VER >= 1500)
-#define MSVC_VER "VC2008"
-#elif (_MSC_VER > 1200)
-#define MSVC_VER "VC2005"
+#   if (_MSC_VER >= 1930)
+#       define MSVC_VER "VC2022"
+#   elif (_MSC_VER >= 1920)
+#       define MSVC_VER "VC2019"
+#   elif (_MSC_VER >= 1910)
+#       define MSVC_VER "VC2017"
+#   elif (_MSC_VER >= 1900)
+#       define MSVC_VER "VC2015"
+#   elif (_MSC_VER >= 1800)
+#       define MSVC_VER "VC2013"
+#   elif (_MSC_VER >= 1700)
+#       define MSVC_VER "VC2012"
+#   elif (_MSC_VER >= 1600)
+#       define MSVC_VER "VC2010"
+#   elif (_MSC_VER >= 1500)
+#       define MSVC_VER "VC2008"
+#   elif (_MSC_VER > 1200)
+#       define MSVC_VER "VC2005"
+#   else
+#       define MSVC_VER "VC6"
+#   endif
+#   define COMPILER_VER   MSVC_VER SYSBITS
+#   define COMPILER_VER_W EGE_L(MSVC_VER) SYSBITS_W
 #else
-#define MSVC_VER "VC6"
-#endif
-#define COMPILER_VER   MSVC_VER SYSBITS
-#define COMPILER_VER_W EGE_L(MSVC_VER) SYSBITS_W
-#else
-#define GCC_VER        EGE_TOSTR(__GNUC__) "." EGE_TOSTR(__GNUC_MINOR__)
-#define GCC_VER_W      EGE_L(EGE_TOSTR(__GNUC__)) L"." EGE_L(EGE_TOSTR(__GNUC_MINOR__))
-#define COMPILER_VER   "GCC" GCC_VER SYSBITS
-#define COMPILER_VER_W L"GCC" GCC_VER_W SYSBITS_W
+#   define GCC_VER        EGE_TOSTR(__GNUC__) "." EGE_TOSTR(__GNUC_MINOR__)
+#   define GCC_VER_W      EGE_L(EGE_TOSTR(__GNUC__)) L"." EGE_L(EGE_TOSTR(__GNUC_MINOR__))
+#   define COMPILER_VER   "GCC" GCC_VER SYSBITS
+#   define COMPILER_VER_W L"GCC" GCC_VER_W SYSBITS_W
 #endif
 
 #define EGE_TITLE   "EGE" EGE_VERSION " " COMPILER_VER
