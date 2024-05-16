@@ -815,7 +815,16 @@ bool EGEAPI getunicodecharmessage();
 void EGEAPI setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT);
 int  EGEAPI getinitmode();
 void EGEAPI initgraph(int width, int height, int mode);
-void EGEAPI initgraph(int width, int height);
+
+inline void EGEAPI initgraph(int width, int height)
+{
+#if !defined(NDEBUG) || defined(DEBUG) || defined(_DEBUG)
+    initgraph(width, height, getinitmode());
+#else
+    initgraph(width, height, getinitmode() | INIT_WITHLOGO);
+#endif
+}
+
 void EGEAPI initgraph(int* gdriver, int* gmode, const char* path);
 void EGEAPI closegraph();
 bool EGEAPI is_run();

@@ -874,15 +874,6 @@ void initgraph(int width, int height, int mode)
     initgraph(&g, &m, "");
 }
 
-void EGEAPI initgraph(int width, int height)
-{
-    #if !defined(NDEBUG) || defined(DEBUG) || defined(_DEBUG)
-    initgraph(width, height, getinitmode());
-    #else
-    initgraph(width, height, getinitmode() | INIT_WITHLOGO);
-    #endif
-}
-
 void detectgraph(int* gdriver, int* gmode)
 {
     *gdriver = VGA;
