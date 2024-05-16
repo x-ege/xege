@@ -1297,7 +1297,7 @@ void ege_drawpoly(int numpoints, ege_point* polypoints, PIMAGE pimg)
         Gdiplus::Pen* pen = img->getPen();
 
         /* 当首尾顶点为同一坐标时转成多边形，否则绘制折线 */
-        if (numpoints >= 4 && polypoints[0].x == polypoints[numpoints-1].x
+        if (numpoints > 3 && polypoints[0].x == polypoints[numpoints-1].x
             && polypoints[0].y == polypoints[numpoints-1].y) {
             graphics->DrawPolygon(pen, (Gdiplus::PointF*)polypoints, numpoints - 1);
         } else {
