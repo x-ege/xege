@@ -863,7 +863,16 @@ void drawpoly(int numpoints, const int* polypoints, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        Polyline(img->m_hDC, (POINT*)polypoints, numpoints);
+        const POINT* points = (const POINT*)polypoints;
+        /* 闭合曲线, 转为绘制带边框无填充多边形 */
+        if ((numpoints > 3) && (points[0].x == points[numpoints-1].x)
+                && (points[0].y == points[numpoints-1].y)) {
+            HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
+            Polygon(img->m_hDC, points, numpoints - 1);
+            SelectObject(img->m_hDC, oldBrush);
+        } else {
+            Polyline(img->m_hDC, (POINT*)polypoints, numpoints);
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1283,7 +1292,14 @@ void ege_drawpoly(int numpoints, ege_point* polypoints, PIMAGE pimg)
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Pen* pen = img->getPen();
-        graphics->DrawLines(pen, (Gdiplus::PointF*)polypoints, numpoints);
+
+        /* 当首尾顶点为同一坐标时转成多边形，否则绘制折线 */
+        if (numpoints > 3 && polypoints[0].x == polypoints[numpoints-1].x
+            && polypoints[0].y == polypoints[numpoints-1].y) {
+            graphics->DrawPolygon(pen, (Gdiplus::PointF*)polypoints, numpoints - 1);
+        } else {
+            graphics->DrawLines(pen, (Gdiplus::PointF*)polypoints, numpoints);
+        }
     }
     CONVERT_IMAGE_END;
 }
