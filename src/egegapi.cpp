@@ -1019,10 +1019,10 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
     img->m_fillcolor = color;
     lbr.lbColor = ARGBTOZBGR(color);
     // SetBkColor(img->m_hDC, color);
-    if (pattern < SOLID_FILL) {
-        lbr.lbHatch = BS_NULL;
+    if (pattern == EMPTY_FILL) {
+        lbr.lbStyle = BS_NULL;
     } else if (pattern == SOLID_FILL) {
-        lbr.lbHatch = BS_SOLID;
+        lbr.lbStyle = BS_SOLID;
     } else if (pattern < USER_FILL) { // dose not finish
         int hatchmap[] = {
             HS_VERTICAL,
@@ -1040,7 +1040,7 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
         lbr.lbStyle = BS_HATCHED;
         lbr.lbHatch = hatchmap[pattern - 2];
     } else {
-        lbr.lbHatch = BS_SOLID;
+        lbr.lbStyle = BS_SOLID;
     }
     HBRUSH hbr = CreateBrushIndirect(&lbr);
     if (hbr) {
