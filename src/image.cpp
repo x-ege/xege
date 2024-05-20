@@ -307,6 +307,13 @@ int IMAGE::resize_f(int width, int height)
     m_height  = height;
     m_pBuffer = bmp_buf;
 
+    // BITMAP 更换后需重新创建 Graphics 对象(否则会在已销毁的 old_bitmap 上绘制，引发异常)
+    if (m_graphics != NULL) {
+        Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
+        delete m_graphics;
+        m_graphics = newGraphics;
+    }
+
     setviewport(0, 0, m_width, m_height, 1, this);
 
     return 0;

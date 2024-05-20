@@ -33,6 +33,8 @@ void setmode(int gdriver, int gmode);
 // GDI+ 初始化
 void gdipluinit();
 
+Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics);
+
 int  swapbuffers();
 
 bool isinitialized();
