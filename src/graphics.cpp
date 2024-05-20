@@ -1049,4 +1049,51 @@ void gdipluinit()
     }
 }
 
+/**
+ * @brief 重新创建 Graphics 对象，并保持和原来的 Graphics 同样的属性配置
+ *
+ * @param hdc 图像所持有的 DC 句柄
+ * @param oldGraphics 旧 graphics 对象，如果为 NULL 则仅创建新的 Graphics 对象，不做额外的设置
+ * @return Gdiplus::Graphics* 创建的 Graphics 对象
+ */
+Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics)
+{
+    Gdiplus::Graphics* newGraphics = Gdiplus::Graphics::FromHDC(hdc);
+
+    /* 保持与原来相同的设置 */
+    if (oldGraphics != NULL) {
+        /* 坐标变换设置 */
+        Gdiplus::Matrix transform;
+        oldGraphics->GetTransform(&transform);
+        newGraphics->SetTransform(&transform);
+
+        /* 绘图质量设置 */
+        newGraphics->SetSmoothingMode(oldGraphics->GetSmoothingMode());
+        newGraphics->SetInterpolationMode(oldGraphics->GetInterpolationMode());
+        newGraphics->SetPixelOffsetMode(oldGraphics->GetPixelOffsetMode());
+        newGraphics->SetTextRenderingHint(oldGraphics->GetTextRenderingHint());
+        newGraphics->SetCompositingQuality(oldGraphics->GetCompositingQuality());
+        newGraphics->SetTextContrast(oldGraphics->GetTextContrast());
+
+        /* 组合模式设置*/
+        newGraphics->SetCompositingMode(oldGraphics->GetCompositingMode());
+
+        /* 裁剪区域设置 */
+        Gdiplus::Region clipRegion;
+        oldGraphics->GetClip(&clipRegion);
+        newGraphics->SetClip(&clipRegion);
+
+        /* 页面单位和比例设置 */
+        newGraphics->SetPageUnit(oldGraphics->GetPageUnit());
+        newGraphics->SetPageScale(oldGraphics->GetPageScale());
+
+        /* 渲染原点 */
+        INT x, y;
+        oldGraphics->GetRenderingOrigin(&x, &y);
+        newGraphics->SetRenderingOrigin(x, y);
+    }
+
+    return newGraphics;
+}
+
 } // namespace ege
