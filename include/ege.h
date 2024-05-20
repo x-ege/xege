@@ -861,13 +861,11 @@ void EGEAPI window_getviewport(int* left, int* top, int* right, int* bottom);
 void EGEAPI window_setviewport(int  left, int  top, int  right, int  bottom);
 
 
-EGE_DEPRECATE(getlinestyle)
 void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* thickness = NULL, PCIMAGE pimg = NULL);
 void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE pimg = NULL);
 void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);
-//EGE_DEPRECATE(getfillstyle)
+
 //void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // ###
-EGE_DEPRECATE(setfillstyle)
 void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);
 
 void EGEAPI setwritemode(int mode, PIMAGE pimg = NULL);
