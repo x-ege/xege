@@ -107,35 +107,44 @@ public:
 
     int getpngimg(FILE* fp);
 
-    int putimage_transparent(PIMAGE imgDest,         // handle to dest
-        int                         xDest,    // x-coord of destination upper-left corner
-        int                         yDest,    // y-coord of destination upper-left corner
-        color_t                     transparentColor,   // color to make transparent
-        int                         xSrc = 0, // x-coord of source upper-left corner
-        int                         ySrc = 0, // y-coord of source upper-left corner
-        int                         widthSrc   = 0, // width of source rectangle
-        int                         heightSrc  = 0  // height of source rectangle
+    int putimage_transparent(PIMAGE imgDest,                // handle to dest
+        int                         xDest,                  // x-coord of destination upper-left corner
+        int                         yDest,                  // y-coord of destination upper-left corner
+        color_t                     transparentColor,       // color to make transparent
+        int                         xSrc = 0,               // x-coord of source upper-left corner
+        int                         ySrc = 0,               // y-coord of source upper-left corner
+        int                         widthSrc   = 0,         // width of source rectangle
+        int                         heightSrc  = 0          // height of source rectangle
     ) const;
 
-    int putimage_alphablend(PIMAGE imgDest,         // handle to dest
-        int                        xDest,    // x-coord of destination upper-left corner
-        int                        yDest,    // y-coord of destination upper-left corner
-        unsigned char              alpha,           // alpha
-        int                        xSrc = 0, // x-coord of source upper-left corner
-        int                        ySrc = 0, // y-coord of source upper-left corner
-        int                        widthSrc   = 0, // width of source rectangle
-        int                        heightSrc  = 0  // height of source rectangle
+    int putimage_alphablend(PIMAGE imgDest,                 // handle to dest
+        int                        xDest,                   // x-coord of destination upper-left corner
+        int                        yDest,                   // y-coord of destination upper-left corner
+        unsigned char              alpha,                   // alpha
+        int                        xSrc = 0,                // x-coord of source upper-left corner
+        int                        ySrc = 0,                // y-coord of source upper-left corner
+        int                        widthSrc   = 0,          // width of source rectangle
+        int                        heightSrc  = 0           // height of source rectangle
     ) const;
 
-    int putimage_alphatransparent(PIMAGE imgDest,         // handle to dest
-        int                              xDest,    // x-coord of destination upper-left corner
-        int                              yDest,    // y-coord of destination upper-left corner
-        color_t                          transparentColor,   // color to make transparent
-        unsigned char                    alpha,           // alpha
-        int                              xSrc = 0, // x-coord of source upper-left corner
-        int                              ySrc = 0, // y-coord of source upper-left corner
-        int                              widthSrc   = 0, // width of source rectangle
-        int                              heightSrc  = 0  // height of source rectangle
+    int putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
+        int                              xDest,             // x-coord of destination upper-left corner
+        int                              yDest,             // y-coord of destination upper-left corner
+        color_t                          transparentColor,  // color to make transparent
+        unsigned char                    alpha,             // alpha
+        int                              xSrc = 0,          // x-coord of source upper-left corner
+        int                              ySrc = 0,          // y-coord of source upper-left corner
+        int                              widthSrc   = 0,    // width of source rectangle
+        int                              heightSrc  = 0     // height of source rectangle
+    ) const;
+
+    int putimage_withalpha(PIMAGE imgDest,          // handle to dest
+        int                       xDest,            // x-coord of destination upper-left corner
+        int                       yDest,            // y-coord of destination upper-left corner
+        int                       xSrc = 0,         // x-coord of source upper-left corner
+        int                       ySrc = 0,         // y-coord of source upper-left corner
+        int                       widthSrc   = 0,   // width of source rectangle
+        int                       heightSrc  = 0    // height of source rectangle
     ) const;
 
     int putimage_withalpha(PIMAGE imgDest,         // handle to dest
@@ -147,24 +156,24 @@ public:
         int                       heightSrc  = 0  // height of source rectangle
     ) const;
 
-    int putimage_withalpha(PIMAGE imgDest,     // handle to dest
-        int                       xDest,       // x-coord of destination upper-left corner
-        int                       yDest,       // y-coord of destination upper-left corner
-        int                       widthDest,   // width of destination rectangle
-        int                       heightDest,  // height of destination rectangle
-        int                       xSrc,        // x-coord of source upper-left corner
-        int                       ySrc,        // y-coord of source upper-left corner
-        int                       widthSrc,    // width of source rectangle
-        int                       heightSrc,   // height of source rectangle
+    int putimage_withalpha(PIMAGE imgDest,          // handle to dest
+        int                       xDest,            // x-coord of destination upper-left corner
+        int                       yDest,            // y-coord of destination upper-left corner
+        int                       widthDest,        // width of destination rectangle
+        int                       heightDest,       // height of destination rectangle
+        int                       xSrc,             // x-coord of source upper-left corner
+        int                       ySrc,             // y-coord of source upper-left corner
+        int                       widthSrc,         // width of source rectangle
+        int                       heightSrc,        // height of source rectangle
         bool                      smooth = false
     ) const;
 
-    int putimage_alphafilter(PIMAGE imgDest,         // handle to dest
-        int                         xDest,    // x-coord of destination upper-left corner
-        int                         yDest,    // y-coord of destination upper-left corner
-        PCIMAGE                     imgAlpha,        // alpha
-        int                         xSrc = 0, // x-coord of source upper-left corner
-        int                         ySrc = 0, // y-coord of source upper-left corner
+    int putimage_alphafilter(PIMAGE imgDest,        // handle to dest
+        int                         xDest,          // x-coord of destination upper-left corner
+        int                         yDest,          // y-coord of destination upper-left corner
+        PCIMAGE                     imgAlpha,       // alpha
+        int                         xSrc = 0,       // x-coord of source upper-left corner
+        int                         ySrc = 0,       // y-coord of source upper-left corner
         int                         widthSrc   = 0, // width of source rectangle
         int                         heightSrc  = 0  // height of source rectangle
     ) const;

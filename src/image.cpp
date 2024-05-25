@@ -2809,14 +2809,14 @@ int putimage_alphatransparent(PIMAGE imgDest,       // handle to dest
         imgDest, xDest, yDest, transparentColor, alpha, xSrc, ySrc, widthSrc, heightSrc);
 }
 
-int putimage_withalpha(PIMAGE imgDest,      // handle to dest
-    PCIMAGE                   imgSrc,       // handle to source
-    int                       xDest, // x-coord of destination upper-left corner
-    int                       yDest, // y-coord of destination upper-left corner
-    int                       xSrc,  // x-coord of source upper-left corner
-    int                       ySrc,  // y-coord of source upper-left corner
-    int                       widthSrc,    // width of source rectangle
-    int                       heightSrc    // height of source rectangle
+int putimage_withalpha(PIMAGE imgDest,  // handle to dest
+    PCIMAGE                   imgSrc,   // handle to source
+    int                       xDest,    // x-coord of destination upper-left corner
+    int                       yDest,    // y-coord of destination upper-left corner
+    int                       xSrc,     // x-coord of source upper-left corner
+    int                       ySrc,     // y-coord of source upper-left corner
+    int                       widthSrc, // width of source rectangle
+    int                       heightSrc // height of source rectangle
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
@@ -2842,15 +2842,15 @@ int EGEAPI putimage_withalpha(PIMAGE imgDest,    // handle to dest
         imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, widthSrc, heightSrc, smooth);
 }
 
-int putimage_alphafilter(PIMAGE imgDest,      // handle to dest
-    PCIMAGE                     imgSrc,       // handle to source
-    int                         xDest, // x-coord of destination upper-left corner
-    int                         yDest, // y-coord of destination upper-left corner
-    PCIMAGE                     imgAlpha,     // alpha
-    int                         xSrc,  // x-coord of source upper-left corner
-    int                         ySrc,  // y-coord of source upper-left corner
-    int                         widthSrc,    // width of source rectangle
-    int                         heightSrc    // height of source rectangle
+int putimage_alphafilter(PIMAGE imgDest,    // handle to dest
+    PCIMAGE                     imgSrc,     // handle to source
+    int                         xDest,      // x-coord of destination upper-left corner
+    int                         yDest,      // y-coord of destination upper-left corner
+    PCIMAGE                     imgAlpha,   // alpha
+    int                         xSrc,       // x-coord of source upper-left corner
+    int                         ySrc,       // y-coord of source upper-left corner
+    int                         widthSrc,   // width of source rectangle
+    int                         heightSrc   // height of source rectangle
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
