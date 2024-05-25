@@ -5,6 +5,11 @@
 #include <fcntl.h>
 #include <wincon.h>
 
+
+#undef _INC_CONIO
+#undef _CONIO_H_
+#include <conio.h>
+
 // macro to check whether hConsole is valid
 #define CHECK_CONSOLE_HANDLE(hHandle) \
     {                                 \
@@ -164,5 +169,14 @@ bool close_console()
 };
 
 #endif
+
+int getch_console()
+{
+#ifdef MSVC_VER
+    return ::_getch();
+#else
+    return ::getch();
+#endif
+}
 
 }
