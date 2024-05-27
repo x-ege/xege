@@ -1257,7 +1257,7 @@ int EGEAPI putimage_rotatetransparent(
     int yCenterSrc,             /* y-coord of rotation center in source */
     color_t transparentColor,   /* color to make transparent */
     float radian,               /* rotation angle (clockwise, in radian) */
-    float zoom=1.0              /* zoom factor */
+    float zoom = 1.0f           /* zoom factor */
 );
 
 int EGEAPI putimage_rotatetransparent(
@@ -1265,15 +1265,15 @@ int EGEAPI putimage_rotatetransparent(
     PCIMAGE imgSrc,             /* handle to source */
     int xCenterDest,            /* x-coord of rotation center in dest */
     int yCenterDest,            /* y-coord of rotation center in dest */
-    int xOriginSrc,             /* x-coord of source upper-left corner */
-    int yOriginSrc,             /* y-coord of source upper-left corner */
+    int xSrc,                   /* x-coord of source upper-left corner */
+    int ySrc,                   /* y-coord of source upper-left corner */
     int widthSrc,               /* width of source rectangle */
     int heightSrc,              /* height of source rectangle */
     int xCenterSrc,             /* x-coord of rotation center in source */
     int yCenterSrc,             /* y-coord of rotation center in source */
     color_t transparentColor,   /* color to make transparent */
     float radian,               /* rotation angle (clockwise, in radian) */
-    float zoom = 1.0            /* zoom factor */
+    float zoom = 1.0f           /* zoom factor */
 );
 
 HWND        EGEAPI getHWnd();
