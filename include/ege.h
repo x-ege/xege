@@ -806,7 +806,7 @@ class IMAGE;
 typedef IMAGE *PIMAGE;
 typedef const IMAGE *PCIMAGE;
 
-// `codepage` sholde be `EGE_CODEPAGE_XXX`, default is `EGE_CODEPAGE_ANSI`.
+// `codepage` should be `EGE_CODEPAGE_XXX`, default is `EGE_CODEPAGE_ANSI`.
 void EGEAPI setcodepage(unsigned int codepage);
 unsigned int EGEAPI getcodepage();
 // set whether char message of `getkey()` use UTF-16
@@ -890,15 +890,16 @@ void    EGEAPI setbkmode(int bkMode, PIMAGE pimg = NULL);
 #define HSLtoRGB    hsl2rgb
 #define HSVtoRGB    hsv2rgb
 
-color_t     EGEAPI rgb2gray(color_t rgb);
-void        EGEAPI rgb2hsl(color_t rgb, float* H, float* S, float* L);
-void        EGEAPI rgb2hsv(color_t rgb, float* H, float* S, float* V);
-color_t     EGEAPI hsl2rgb(float H, float S, float L);
-color_t     EGEAPI hsv2rgb(float H, float S, float V);
+color_t EGEAPI rgb2gray(color_t rgb);
+void    EGEAPI rgb2hsl(color_t rgb, float* H, float* S, float* L);
+void    EGEAPI rgb2hsv(color_t rgb, float* H, float* S, float* V);
+color_t EGEAPI hsl2rgb(float H, float S, float L);
+color_t EGEAPI hsv2rgb(float H, float S, float V);
 
-color_t     EGEAPI alphablend(color_t dst, color_t src);
-color_t     EGEAPI alphablend(color_t dst, color_t src, unsigned char alpha);
-
+color_t EGEAPI colorblend  (color_t dst, color_t src, unsigned char alpha);
+color_t EGEAPI colorblend_f(color_t dst, color_t src, unsigned char alpha);
+color_t EGEAPI alphablend  (color_t dst, color_t src);
+color_t EGEAPI alphablend  (color_t dst, color_t src, unsigned char srcAlphaFactor);
 
 color_t EGEAPI getpixel   (int x, int y, PCIMAGE pimg = NULL);
 void    EGEAPI putpixel   (int x, int y, color_t color, PIMAGE pimg = NULL);
@@ -1002,12 +1003,9 @@ void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, in
 // matrix for transformation
 typedef struct ege_transform_matrix
 {
-    float m11;
-    float m12;
-    float m21;
-    float m22;
-    float m31;
-    float m32;
+    float m11, m12;
+    float m21, m22;
+    float m31, m32;
 } ege_transform_matrix;
 
 // transforms
@@ -1213,7 +1211,7 @@ int EGEAPI putimage_alphafilter(
     int heightSrc               // height of source rectangle
 );
 int EGEAPI imagefilter_blurring (
-    PIMAGE imgDest,             // handle to dest
+    PIMAGE imgDest,
     int intensity,
     int alpha,
     int xDest = 0,
@@ -1257,7 +1255,7 @@ int EGEAPI putimage_rotatetransparent(
     int yCenterSrc,             /* y-coord of rotation center in source */
     color_t transparentColor,   /* color to make transparent */
     float radian,               /* rotation angle (clockwise, in radian) */
-    float zoom=1.0              /* zoom factor */
+    float zoom = 1.0f           /* zoom factor */
 );
 
 int EGEAPI putimage_rotatetransparent(
@@ -1273,7 +1271,7 @@ int EGEAPI putimage_rotatetransparent(
     int yCenterSrc,             /* y-coord of rotation center in source */
     color_t transparentColor,   /* color to make transparent */
     float radian,               /* rotation angle (clockwise, in radian) */
-    float zoom = 1.0            /* zoom factor */
+    float zoom = 1.0f           /* zoom factor */
 );
 
 HWND        EGEAPI getHWnd();

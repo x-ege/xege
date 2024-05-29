@@ -154,7 +154,7 @@ void putpixel_withalpha(int x, int y, color_t color, PIMAGE pimg)
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
         color_t& dst_color = (color_t&)img->m_pBuffer[y * img->m_width + x];
-        dst_color = alphablend_inline(dst_color, color, EGEGET_A(color));
+        dst_color = colorblend_inline(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
 }
@@ -164,7 +164,7 @@ void putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
         color_t& dst_color = (color_t&)img->m_pBuffer[y * img->m_width + x];
-        dst_color = alphablend_inline_fast(dst_color, color, EGEGET_A(color));
+        dst_color = colorblend_inline_fast(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
 }
