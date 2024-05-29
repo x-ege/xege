@@ -908,10 +908,14 @@ void    EGEAPI putpixel_f (int x, int y, color_t color, PIMAGE pimg = NULL);
 void    EGEAPI putpixels  (int numOfPoints, int* points, PIMAGE pimg = NULL);
 void    EGEAPI putpixels_f(int numOfPoints, int* points, PIMAGE pimg = NULL);
 
-void    EGEAPI putpixel_withalpha  (int x, int y, color_t color, PIMAGE pimg = NULL);
-void    EGEAPI putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg = NULL);
-void    EGEAPI putpixel_savealpha  (int x, int y, color_t color, PIMAGE pimg = NULL);
-void    EGEAPI putpixel_savealpha_f(int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_withalpha   (int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_withalpha_f (int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_savealpha   (int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_savealpha_f (int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_alphablend  (int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_alphablend_f(int x, int y, color_t color, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_alphablend  (int x, int y, color_t color, unsigned char alphaFactor, PIMAGE pimg = NULL);
+void    EGEAPI putpixel_alphablend_f(int x, int y, color_t color, unsigned char alphaFactor, PIMAGE pimg = NULL);
 
 void    EGEAPI moveto (int x,  int y,  PIMAGE pimg = NULL);
 void    EGEAPI moverel(int dx, int dy, PIMAGE pimg = NULL);
