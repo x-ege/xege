@@ -47,6 +47,7 @@ typedef long POINTER_SIZE;
 namespace ege
 {
 
+typedef unsigned char byte;
 
 struct Point
 {
