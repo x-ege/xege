@@ -1090,6 +1090,9 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
         Gdiplus::Region region(&path);
 
         Gdiplus::Graphics* graphics = imgDest->getGraphics();
+        Gdiplus::Matrix matrix;
+        graphics->GetTransform(&matrix);
+        graphics->ResetTransform();
         graphics->SetClip(&region);
 
         if (smooth) {
@@ -1104,6 +1107,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
         Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, sizeof(color_t) * imgSrc->m_width,
         PixelFormat32bppARGB, (BYTE*)imgSrc->m_pBuffer);
         graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
+        graphics->SetTransform(&matrix);
     }
     CONVERT_IMAGE_END;
     return grOk;
