@@ -1033,6 +1033,8 @@ bool hide_console();    // Hide the console
 bool close_console();   // Close the console and restore the old STD I/O
 #endif
 
+int  getch_console();   // Used instead of the getch() function in <conio.h>
+
 //int  EGEAPI Begin2d();
 //void EGEAPI EndRender();
 
