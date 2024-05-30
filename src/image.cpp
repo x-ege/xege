@@ -2464,8 +2464,8 @@ int putimage_rotate(PIMAGE imgDest, PCIMAGE imgtexture, int xDest, int yDest, fl
     if (dc_dest) {
         struct trangle2d _tt[2];
         struct trangle2d _dt[2];
-        double           dx, dy, cr = cos(radian), sr = -sin(radian);
-        int              i, j;
+        double dx, dy, cr = cos(radian), sr = sin(radian);
+        int i, j;
         _tt[0].p[0].x = 0;
         _tt[0].p[0].y = 0;
         _tt[0].p[1].x = 0;
@@ -2507,8 +2507,8 @@ int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgtexture, int xDest, int yDest
     if (dc_dest) {
         struct trangle2d _tt[2];
         struct trangle2d _dt[2];
-        double           dx, dy, cr = cos(radian), sr = -sin(radian);
-        int              i, j;
+        double dx, dy, cr = cos(radian), sr = sin(radian);
+        int i, j;
         _tt[0].p[0].x = 0;
         _tt[0].p[0].y = 0;
         _tt[0].p[1].x = 0;
