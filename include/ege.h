@@ -951,6 +951,9 @@ void EGEAPI bar          (int left, int top, int right, int bottom, PIMAGE pimg 
 void EGEAPI rectangle    (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 void EGEAPI fillrect     (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 void EGEAPI bar3d        (int left, int top, int right, int bottom, int depth,   int topFlag, PIMAGE pimg = NULL);
+
+void EGEAPI roundrect    (int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
+void EGEAPI fillroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
 void EGEAPI roundrect    (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 
@@ -982,6 +985,11 @@ void EGEAPI ege_fillrect   (float x, float y, float w, float h, PIMAGE pimg = NU
 void EGEAPI ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg = NULL);
 void EGEAPI ege_arc        (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
 void EGEAPI ege_fillpie    (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
+
+void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
+void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
 
 void EGEAPI ege_setpattern_none(PIMAGE pimg = NULL);
 void EGEAPI ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, float y2, color_t c2, PIMAGE pimg = NULL);

@@ -852,19 +852,21 @@ void roundrect(int left, int top, int right, int bottom, int xRadius, int yRadiu
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        LOGBRUSH lbr;
-        HBRUSH hbr;
-        HGDIOBJ hOld;
-        lbr.lbStyle = BS_NULL;
-        lbr.lbHatch = BS_NULL; // ignored
-        lbr.lbColor = WHITE;   // ignored
-        hbr = CreateBrushIndirect(&lbr);
-        hOld = SelectObject(img->m_hDC, hbr);
-        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2, yRadius * 2);
-        SelectObject(img->m_hDC, hOld);
-        DeleteObject(hbr);
+        HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
+        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2 , yRadius * 2);
+        SelectObject(img->m_hDC, oldBrush);
     }
     CONVERT_IMAGE_END;
+}
+
+void roundrect(int left, int top, int right, int bottom, int radius,  PIMAGE pimg)
+{
+    roundrect(left, top, right, bottom, radius, radius, pimg);
+}
+
+void fillroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE pimg)
+{
+    fillroundrect(left, top, right, bottom, radius, radius, pimg);
 }
 
 void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
@@ -1526,6 +1528,82 @@ void ege_fillrect(float x, float y, float w, float h, PIMAGE pimg)
         graphics->FillRectangle(brush, x, y, w, h);
     }
     CONVERT_IMAGE_END;
+}
+
+static Gdiplus::GraphicsPath* createRoundRectPath(float x, float y, float w, float h,
+    float radius1, float radius2, float radius3, float radius4)
+{
+    if ((w <= 0.0f) || (h <= 0.0f))
+        return NULL;
+
+    radius1 = clamp(radius1, 0.0f, MIN(w, h));
+    radius2 = clamp(radius2, 0.0f, MIN(w - radius1, h));
+    radius3 = clamp(radius3, 0.0f, MIN(h - radius2, w));
+    radius4 = clamp(radius4, 0.0f, MIN(h - radius1, w - radius3));
+
+    Gdiplus::GraphicsPath* path = new Gdiplus::GraphicsPath;
+
+    if (radius2 < w - radius1)
+        path->AddLine(x + radius1,  y,  x + w - radius2,  y);
+
+    if (radius2 > 0.0f)
+        path->AddArc (x + w - (radius2 * 2),  y,  radius2 * 2,  radius2 * 2,  270,  90);
+
+    if (radius3 < h - radius2)
+        path->AddLine(x + w,  y + radius2,  x + w,  y + h - radius3);
+
+    if (radius3 > 0.0f)
+        path->AddArc (x + w - (radius3 * 2),  y + h - (radius3 * 2),  radius3 * 2,  radius3 * 2,  0,  90);
+
+    if (radius4 < w - radius3)
+        path->AddLine(x + w - radius3,  y + h,  x + radius4,  y + h);
+
+    if (radius4 > 0.0f)
+        path->AddArc (x,  y + h - (radius4 * 2),  radius4 * 2,  radius4 * 2,  90,  90);
+
+    if (radius4 < w - radius1)
+        path->AddLine(x,  y + h - radius4 ,  x,  y + radius1);
+
+    if (radius1 > 0.0f)
+        path->AddArc (x,  y, radius1 * 2,  radius1 * 2,  180,  90);
+
+    path->CloseFigure();
+
+    return path;
+}
+
+void ege_roundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg)
+{
+    ege_roundrect(x, y, w, h, radius,  radius,  radius,  radius);
+}
+void ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg)
+{
+    ege_fillroundrect(x, y, w, h, radius,  radius,  radius,  radius);
+}
+void ege_roundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    Gdiplus::GraphicsPath* path = createRoundRectPath(x, y, w, h, radius1,  radius2,  radius3,  radius4);
+
+    if (path != NULL) {
+        Gdiplus::Graphics* graphics = img->getGraphics();
+        graphics->DrawPath(img->getPen(), path);
+        delete path;
+    }
+    CONVERT_IMAGE_END
+}
+
+void ege_fillroundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    Gdiplus::GraphicsPath* path = createRoundRectPath(x, y, w, h, radius1,  radius2,  radius3,  radius4);
+
+    if (path != NULL) {
+        Gdiplus::Graphics* graphics = img->getGraphics();
+        graphics->FillPath(img->getBrush(), path);
+        delete path;
+    }
+    CONVERT_IMAGE_END
 }
 
 void ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg)
