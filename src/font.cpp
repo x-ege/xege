@@ -27,47 +27,63 @@ static unsigned int private_gettextmode(PIMAGE img)
 }
 
 /* private function */
-static void private_textout(PIMAGE img, const wchar_t* text, int x, int y, int horiz, int vert)
+
+static Point private_escapementToOffset(int textHeight, int textEscapement)
 {
-    if (horiz >= 0 && vert >= 0) {
-        UINT fMode = TA_NOUPDATECP; // TA_UPDATECP;
-        img->m_texttype.horiz = horiz;
-        img->m_texttype.vert = vert;
-        if (img->m_texttype.horiz == RIGHT_TEXT) {
-            fMode |= TA_RIGHT;
-        } else if (img->m_texttype.horiz == CENTER_TEXT) {
-            fMode |= TA_CENTER;
-        } else {
-            fMode |= TA_LEFT;
-        }
-        if (img->m_texttype.vert == BOTTOM_TEXT) {
-            fMode |= TA_BOTTOM;
-        } else {
-            fMode |= TA_TOP;
-        }
-        SetTextAlign(img->m_hDC, fMode);
+    Point offset(0, 0);
+    int escapement = textEscapement % 3600;
+    if (escapement != 0) {
+        double radian = escapement / 10.0 * PI / 180.0;
+        offset.x = (int)round(-textHeight * sin(radian) / 2.0);
+        offset.y = (int)round(-textHeight * cos(radian) / 2.0);
     } else {
-        SetTextAlign(img->m_hDC, private_gettextmode(img));
+        offset.y = (int)round(-textHeight / 2.0);
     }
+
+    return offset;
+}
+static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
+{
+    SetTextAlign(img->m_hDC, TA_UPDATECP | private_gettextmode(img));
+
     if (text) {
-        int xOffset = 0, yOffset = 0;
+        Point offset(0, 0);
 
         if (img->m_texttype.vert == CENTER_TEXT) {
             LOGFONTW font;
             getfont(&font, img);
-
-            int textHeight = textheight(text, img);
-            int escapement = font.lfEscapement % 3600;
-            if (escapement != 0) {
-                double radian = escapement / 10.0 * PI / 180.0;
-                xOffset = (int)round(-textHeight * sin(radian) / 2.0);
-                yOffset = (int)round(-textHeight * cos(radian) / 2.0);
-            } else {
-                yOffset = (int)round(-textHeight / 2.0);
-            }
+            offset = private_escapementToOffset(textheight(text, img), font.lfEscapement);
         }
 
-        TextOutW(img->m_hDC, x + xOffset, y + yOffset, text, (int)lstrlenW(text));
+        if ((offset.x != 0) || (offset.y != 0)) {
+            POINT curPos;
+            GetCurrentPositionEx(img->m_hDC, &curPos);
+            MoveToEx(img->m_hDC, curPos.x + offset.x, curPos.y + offset.y, NULL);
+
+            TextOutW(img->m_hDC, 0, 0, text, (int)lstrlenW(text));
+
+            GetCurrentPositionEx(img->m_hDC, &curPos);
+            MoveToEx(img->m_hDC, curPos.x - offset.x, curPos.y - offset.y, NULL);
+        } else {
+            TextOutW(img->m_hDC, 0, 0, text, (int)lstrlenW(text));
+        }
+    }
+}
+
+static void private_textout(PIMAGE img, const wchar_t* text, int x, int y)
+{
+    SetTextAlign(img->m_hDC, private_gettextmode(img));
+
+    if (text) {
+        Point offset(0, 0);
+
+        if (img->m_texttype.vert == CENTER_TEXT) {
+            LOGFONTW font;
+            getfont(&font, img);
+            offset = private_escapementToOffset(textheight(text, img), font.lfEscapement);
+        }
+
+        TextOutW(img->m_hDC, x + offset.x, y + offset.y, text, (int)lstrlenW(text));
     }
 }
 
@@ -82,9 +98,7 @@ void outtext(const wchar_t* text, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
-        POINT pt;
-        GetCurrentPositionEx(img->m_hDC, &pt);
-        private_textout(img, text, pt.x, pt.y, -1, -1);
+        private_textOutAtCurPos(img, text);
     }
     CONVERT_IMAGE_END;
 }
@@ -112,7 +126,7 @@ void outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
-        private_textout(img, text, x, y, -1, -1);
+        private_textout(img, text, x, y);
     }
     CONVERT_IMAGE_END;
 }
