@@ -39,4 +39,10 @@ using std::round;
 // 快除 255，有效范围：[0, 65790)
 #define DIVIDE_255_FAST(x)  (((x) + (((x) + 257) >> 8)) >> 8)
 
+template<typename T>
+T clamp(T value, T min, T max)
+{
+    return (value < min) ? min : ((value > max) ? max : value);
+}
+
 }  // namespace ege
