@@ -26,6 +26,18 @@ static unsigned int private_gettextmode(PIMAGE img)
     return fMode;
 }
 
+static UINT horizontalAlignToDrawTextFormat(int horizontalAlign)
+{
+    UINT format = 0;
+    switch (horizontalAlign) {
+    case LEFT_TEXT:    format |= DT_LEFT;   break;
+    case CENTER_TEXT:  format |= DT_CENTER; break;
+    case RIGHT_TEXT:   format |= DT_RIGHT;  break;
+    }
+
+    return format;
+}
+
 /* private function */
 static void private_textout(PIMAGE img, const wchar_t* text, int x, int y, int horiz, int vert)
 {
@@ -140,10 +152,82 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
-        unsigned int fmode = private_gettextmode(img);
+        if ((text == NULL) || (w <= 0) || (h <= 0)) {
+            return;
+        }
+
+        // DrawTextW 要求必须设置的三个对齐标志
+        UINT textAlignMode = GetTextAlign(img->m_hDC);
+        SetTextAlign(img->m_hDC, TA_TOP | TA_LEFT | TA_NOUPDATECP);
+
+        UINT format = 0;
+        format |= horizontalAlignToDrawTextFormat(img->m_texttype.horiz);
+        format |= DT_NOPREFIX | DT_WORDBREAK | DT_EDITCONTROL | DT_EXPANDTABS;
+
         RECT rect = {x, y, x + w, y + h};
-        DrawTextW(
-            img->m_hDC, text, -1, &rect, fmode | DT_NOPREFIX | DT_WORDBREAK | DT_EDITCONTROL | DT_EXPANDTABS);
+
+        // 原裁剪区域
+        HRGN oldClicRgn = NULL;
+        int  oldClicRegionStatus = 0;
+        bool needRestoreClipRegion = false;
+
+        int topOffset = 0;
+
+        // 通过垂直方向上的偏移实现对齐
+        if (img->m_texttype.vert != TOP_TEXT) {
+            // 测量实际输出时的文本区域
+            RECT measureRect = rect;
+            int textHeight = DrawTextW(img->m_hDC, text, -1, &measureRect, format | DT_CALCRECT);
+
+            int heightDiff = rect.bottom - measureRect.bottom;
+
+            // 根据文本对齐方式偏移
+            if(img->m_texttype.vert == BOTTOM_TEXT) {
+                topOffset = heightDiff;
+            } else if (img->m_texttype.vert == CENTER_TEXT) {
+                topOffset = heightDiff / 2;
+            }
+
+            // 文本输出区域向上偏移，通过创建裁剪区域交集保持原来的文本框裁剪范围
+            if (topOffset < 0) {
+                // 记录原来的裁剪区域
+                needRestoreClipRegion = true;
+                oldClicRgn =  CreateRectRgnIndirect(&rect);
+                oldClicRegionStatus = GetClipRgn(img->m_hDC, oldClicRgn);
+
+                IntersectClipRect(img->m_hDC, rect.left, rect.top, rect.right, rect.bottom);
+            }
+        }
+
+        rect.top += topOffset;
+
+        DrawTextW(img->m_hDC, text, -1, &rect, format);
+
+        // 恢复文本对齐方式
+        SetTextAlign(img->m_hDC, textAlignMode);
+
+        // 恢复裁剪区域
+        if (needRestoreClipRegion) {
+            if (oldClicRegionStatus == 0) {
+                SelectClipRgn(img->m_hDC, NULL);
+            } else if (oldClicRegionStatus == 1) {
+                SelectClipRgn(img->m_hDC, oldClicRgn);
+            } else {
+                HRGN rgn = NULL;
+                if (img->m_vpt.clipflag) {
+                    rgn = CreateRectRgn(img->m_vpt.left, img->m_vpt.top, img->m_vpt.right, img->m_vpt.bottom);
+                } else {
+                    rgn = CreateRectRgn(0, 0, img->m_width, img->m_height);
+                }
+                SelectClipRgn(img->m_hDC, rgn);
+                DeleteObject(rgn);
+            }
+
+            if (oldClicRgn != NULL) {
+                DeleteObject(oldClicRgn);
+            }
+        }
+
     }
 
     CONVERT_IMAGE_END;

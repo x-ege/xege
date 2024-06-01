@@ -428,7 +428,7 @@ enum text_just
     RIGHT_TEXT           = 2,
 
     TOP_TEXT             = 0,
-    /* CENTER_TEXT       = 1,  already defined above */
+/*  CENTER_TEXT          = 1,  already defined above */
     BOTTOM_TEXT          = 2
 };
 
@@ -1057,31 +1057,31 @@ void EGEAPI delay_jfps(double fps);
 double EGEAPI fclock();
 
 
-void EGEAPI outtext(const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtext(const char*    text, PIMAGE pimg = NULL);
 void EGEAPI outtext(const wchar_t* text, PIMAGE pimg = NULL);
-void EGEAPI outtext(char  c, PIMAGE pimg = NULL);
+void EGEAPI outtext(char    c, PIMAGE pimg = NULL);
 void EGEAPI outtext(wchar_t c, PIMAGE pimg = NULL);
 
-void EGEAPI outtextxy(int x, int y, const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, const char*    text, PIMAGE pimg = NULL);
 void EGEAPI outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg = NULL);
-void EGEAPI outtextxy(int x, int y, char c, PIMAGE pimg = NULL);
+void EGEAPI outtextxy(int x, int y, char    c, PIMAGE pimg = NULL);
 void EGEAPI outtextxy(int x, int y, wchar_t c, PIMAGE pimg = NULL);
-void EGEAPI xyprintf (int x, int y, const char*  format, ...);
+void EGEAPI xyprintf (int x, int y, const char*    format, ...);
 void EGEAPI xyprintf (int x, int y, const wchar_t* format, ...);
 
-void EGEAPI outtextrect(int x, int y, int w, int h, const char*  text, PIMAGE pimg = NULL);
+void EGEAPI outtextrect(int x, int y, int w, int h, const char*    text, PIMAGE pimg = NULL);
 void EGEAPI outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg = NULL);
-void EGEAPI rectprintf (int x, int y, int w, int h, const char*  format, ...);
+void EGEAPI rectprintf (int x, int y, int w, int h, const char*    format, ...);
 void EGEAPI rectprintf (int x, int y, int w, int h, const wchar_t* format, ...);
 
-int  EGEAPI textwidth(const char*  text, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(const char*    text, PIMAGE pimg = NULL);
 int  EGEAPI textwidth(const wchar_t* text, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(char  c, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(char    c, PIMAGE pimg = NULL);
 int  EGEAPI textwidth(wchar_t c, PIMAGE pimg = NULL);
 
-int  EGEAPI textheight(const char*  text, PIMAGE pimg = NULL);
+int  EGEAPI textheight(const char*    text, PIMAGE pimg = NULL);
 int  EGEAPI textheight(const wchar_t* text, PIMAGE pimg = NULL);
-int  EGEAPI textheight(char  c, PIMAGE pimg = NULL);
+int  EGEAPI textheight(char    c, PIMAGE pimg = NULL);
 int  EGEAPI textheight(wchar_t c, PIMAGE pimg = NULL);
 
 void EGEAPI settextjustify(int horiz, int vert, PIMAGE pimg = NULL);
