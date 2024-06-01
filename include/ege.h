@@ -957,11 +957,14 @@ void EGEAPI fillroundrect(int left, int top, int right, int bottom, int radius, 
 void EGEAPI roundrect    (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 
-void EGEAPI drawpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI drawpoly(int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI polyline(int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI polygon (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI fillpoly(int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg = NULL);
+
 void EGEAPI drawlines    (int numOfLines,  const int *points, PIMAGE pimg = NULL);
 void EGEAPI drawbezier   (int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI fillpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg = NULL);
 
 void EGEAPI floodfill    (int x, int y, int borderColor, PIMAGE pimg = NULL);
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);

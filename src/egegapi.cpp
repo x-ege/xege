@@ -905,86 +905,74 @@ void bar3d(int x1, int y1, int x2, int y2, int depth, int topFlag, PIMAGE pimg)
     }
 }
 
-void drawpoly(int numpoints, const int* polypoints, PIMAGE pimg)
+void drawpoly(int numOfPoints, const int* points, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
-        const POINT* points = (const POINT*)polypoints;
-        /* 闭合曲线, 转为绘制带边框无填充多边形 */
-        if ((numpoints > 3) && (points[0].x == points[numpoints-1].x)
-                && (points[0].y == points[numpoints-1].y)) {
-            HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
-            Polygon(img->m_hDC, points, numpoints - 1);
-            SelectObject(img->m_hDC, oldBrush);
-        } else {
-            Polyline(img->m_hDC, (POINT*)polypoints, numpoints);
-        }
+    Gdiplus::Point* pointArray = (Gdiplus::Point*)points;
+
+    /* 闭合曲线, 转为绘制带边框无填充多边形 */
+    if ((numOfPoints > 3) && (pointArray[0].Equals(pointArray[numOfPoints-1]))) {
+        polygon(numOfPoints - 1, points, pimg);
+    } else {
+        polyline(numOfPoints, points, pimg);
     }
-    CONVERT_IMAGE_END;
 }
 
-void drawbezier(int numpoints, const int* polypoints, PIMAGE pimg)
-{
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
-        if (numpoints % 3 != 1) {
-            numpoints = numpoints - (numpoints + 2) % 3;
-        }
-        PolyBezier(img->m_hDC, (POINT*)polypoints, numpoints);
-    }
-    CONVERT_IMAGE_END;
-}
-
-void drawlines(int numlines, const int* polypoints, PIMAGE pimg)
-{
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
-        DWORD* pl = (DWORD*)malloc(sizeof(DWORD) * numlines);
-        for (int i = 0; i < numlines; ++i) {
-            pl[i] = 2;
-        }
-        PolyPolyline(img->m_hDC, (POINT*)polypoints, pl, numlines);
-        free(pl);
-    }
-    CONVERT_IMAGE_END;
-}
-
-void fillpoly(int numpoints, const int* polypoints, PIMAGE pimg)
+void fillpoly(int numOfPoints, const int* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
-        Polygon(img->m_hDC, (POINT*)polypoints, numpoints);
+        Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
 
-void fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pimg)
+void polyline(int numOfPoints, const int *points, PIMAGE pimg)
 {
-    if (numpoints < 3) {
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        Polyline(img->m_hDC, (const POINT*)points, numOfPoints);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void polygon (int numOfPoints, const int *points, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
+        Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
+        SelectObject(img->m_hDC, oldBrush);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg)
+{
+    if (numOfPoints < 3) {
         return;
     }
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        TRIVERTEX* vert = (TRIVERTEX*)malloc(sizeof(TRIVERTEX) * numpoints);
+        TRIVERTEX* vert = (TRIVERTEX*)malloc(sizeof(TRIVERTEX) * numOfPoints);
         if (vert) {
-            GRADIENT_TRIANGLE* tri = (GRADIENT_TRIANGLE*)malloc(sizeof(GRADIENT_TRIANGLE) * (numpoints - 2));
+            GRADIENT_TRIANGLE* tri = (GRADIENT_TRIANGLE*)malloc(sizeof(GRADIENT_TRIANGLE) * (numOfPoints - 2));
             if (tri) {
-                for (int i = 0; i < numpoints; ++i) {
-                    vert[i].x = (long)polypoints[i].x;
-                    vert[i].y = (long)polypoints[i].y;
-                    vert[i].Red = EGEGET_R(polypoints[i].color) << 8;
-                    vert[i].Green = EGEGET_G(polypoints[i].color) << 8;
-                    vert[i].Blue = EGEGET_B(polypoints[i].color) << 8;
-                    // vert[i].Alpha   = EGEGET_A(polypoints[i].color) << 8;
+                for (int i = 0; i < numOfPoints; ++i) {
+                    vert[i].x = (long)points[i].x;
+                    vert[i].y = (long)points[i].y;
+                    vert[i].Red = EGEGET_R(points[i].color) << 8;
+                    vert[i].Green = EGEGET_G(points[i].color) << 8;
+                    vert[i].Blue = EGEGET_B(points[i].color) << 8;
+                    // vert[i].Alpha   = EGEGET_A(points[i].color) << 8;
                     vert[i].Alpha = 0;
                 }
-                for (int j = 0; j < numpoints - 2; ++j) {
+                for (int j = 0; j < numOfPoints - 2; ++j) {
                     tri[j].Vertex1 = j;
                     tri[j].Vertex2 = j + 1;
                     tri[j].Vertex3 = j + 2;
                 }
-                dll::GradientFill(img->getdc(), vert, numpoints, tri, numpoints - 2, GRADIENT_FILL_TRIANGLE);
+                dll::GradientFill(img->getdc(), vert, numOfPoints, tri, numOfPoints - 2, GRADIENT_FILL_TRIANGLE);
                 free(tri);
             }
             free(vert);
@@ -992,6 +980,34 @@ void fillpoly_gradient(int numpoints, const ege_colpoint* polypoints, PIMAGE pim
     }
     CONVERT_IMAGE_END;
 }
+
+void drawbezier(int numOfPoints, const int* points, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        if (numOfPoints % 3 != 1) {
+            numOfPoints = numOfPoints - (numOfPoints + 2) % 3;
+        }
+        PolyBezier(img->m_hDC, (POINT*)points, numOfPoints);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void drawlines(int numlines, const int* points, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        DWORD* pl = (DWORD*)malloc(sizeof(DWORD) * numlines);
+        for (int i = 0; i < numlines; ++i) {
+            pl[i] = 2;
+        }
+        PolyPolyline(img->m_hDC, (POINT*)points, pl, numlines);
+        free(pl);
+    }
+    CONVERT_IMAGE_END;
+}
+
+
 
 void floodfill(int x, int y, int borderColor, PIMAGE pimg)
 {
@@ -1329,7 +1345,7 @@ void ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void ege_drawpoly(int numpoints, ege_point* polypoints, PIMAGE pimg)
+void ege_drawpoly(int numOfPoints, ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1340,17 +1356,17 @@ void ege_drawpoly(int numpoints, ege_point* polypoints, PIMAGE pimg)
         Gdiplus::Pen* pen = img->getPen();
 
         /* 当首尾顶点为同一坐标时转成多边形，否则绘制折线 */
-        if (numpoints > 3 && polypoints[0].x == polypoints[numpoints-1].x
-            && polypoints[0].y == polypoints[numpoints-1].y) {
-            graphics->DrawPolygon(pen, (Gdiplus::PointF*)polypoints, numpoints - 1);
+        if (numOfPoints > 3 && points[0].x == points[numOfPoints-1].x
+            && points[0].y == points[numOfPoints-1].y) {
+            graphics->DrawPolygon(pen, (Gdiplus::PointF*)points, numOfPoints - 1);
         } else {
-            graphics->DrawLines(pen, (Gdiplus::PointF*)polypoints, numpoints);
+            graphics->DrawLines(pen, (Gdiplus::PointF*)points, numOfPoints);
         }
     }
     CONVERT_IMAGE_END;
 }
 
-void ege_drawcurve(int numpoints, ege_point* polypoints, PIMAGE pimg)
+void ege_drawcurve(int numOfPoints, ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1359,7 +1375,7 @@ void ege_drawcurve(int numpoints, ege_point* polypoints, PIMAGE pimg)
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Pen* pen = img->getPen();
-        graphics->DrawCurve(pen, (Gdiplus::PointF*)polypoints, numpoints);
+        graphics->DrawCurve(pen, (Gdiplus::PointF*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
@@ -1420,7 +1436,7 @@ void ege_arc(float x, float y, float w, float h, float startAngle, float sweepAn
     CONVERT_IMAGE_END;
 }
 
-void ege_bezier(int numpoints, ege_point* polypoints, PIMAGE pimg)
+void ege_bezier(int numOfPoints, ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1429,7 +1445,7 @@ void ege_bezier(int numpoints, ege_point* polypoints, PIMAGE pimg)
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Pen* pen = img->getPen();
-        graphics->DrawBeziers(pen, (Gdiplus::PointF*)polypoints, numpoints);
+        graphics->DrawBeziers(pen, (Gdiplus::PointF*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
@@ -1508,13 +1524,13 @@ void ege_setpattern_texture(PIMAGE srcimg, float x, float y, float w, float h, P
     CONVERT_IMAGE_END;
 }
 
-void ege_fillpoly(int numpoints, ege_point* polypoints, PIMAGE pimg)
+void ege_fillpoly(int numOfPoints, ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Brush* brush = img->getBrush();
-        graphics->FillPolygon(brush, (Gdiplus::PointF*)polypoints, numpoints);
+        graphics->FillPolygon(brush, (Gdiplus::PointF*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
