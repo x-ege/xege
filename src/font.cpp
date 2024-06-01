@@ -569,5 +569,102 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
+// TODO: 错误处理
+static void ege_drawtext_p(const wchar_t* textstring, float x, float y,  PIMAGE img)
+{
+    using namespace Gdiplus;
+    Gdiplus::Graphics* graphics = img->getGraphics();
+
+    HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+    LOGFONTW lf;
+    GetObjectW(hf, sizeof(LOGFONTW), &lf);
+    if (wcscmp(lf.lfFaceName, L"System") == 0) {
+        hf = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+    }
+
+    Gdiplus::Font font(img->m_hDC, hf);
+
+    // if (!font.IsAvailable()) {
+    // 	fprintf(stderr, "!font.IsAvailable(), hf: %p\n", hf);
+    // }
+    Gdiplus::PointF origin(x, y);
+    Gdiplus::SolidBrush brush(img->m_color);
+
+    Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic()->Clone();
+
+    switch(img->m_texttype.horiz) {
+        case LEFT_TEXT:   format->SetAlignment(Gdiplus::StringAlignmentNear);   break;
+        case CENTER_TEXT: format->SetAlignment(Gdiplus::StringAlignmentCenter); break;
+        case RIGHT_TEXT:  format->SetAlignment(Gdiplus::StringAlignmentFar);    break;
+    }
+
+    float xScale = 1.0f, angle = 0.0f;
+
+    if (lf.lfWidth != 0) {
+        LONG fixedWidth = lf.lfWidth;
+
+        int textCurrentWidth = textwidth(textstring);
+        lf.lfWidth = 0;
+        setfont(&lf);
+        int textNormalWidth = textwidth(textstring);
+        lf.lfWidth = fixedWidth;
+        setfont(&lf);
+
+        if (textCurrentWidth != textNormalWidth && (textCurrentWidth != 0) && (textNormalWidth != 0)) {
+            xScale = (float)((double)textCurrentWidth / textNormalWidth);
+        }
+    }
+
+    if (lf.lfEscapement % 3600 != 0) {
+        angle = (float)(-lf.lfEscapement / 10.0);
+    }
+
+    if ((xScale != 1.0) || (angle != 0.0f)) {
+        Gdiplus::Matrix oldTransformMatrix;
+        graphics->GetTransform(&oldTransformMatrix);
+        graphics->TranslateTransform(origin.X, origin.Y);
+
+        if (angle != 0.0f) {
+            graphics->RotateTransform(angle);
+        }
+
+        if (xScale != 1.0f) {
+            graphics->ScaleTransform(xScale, 1.0f);
+        }
+
+        graphics->DrawString(textstring, -1, &font, Gdiplus::PointF(0, 0), format, &brush);
+        graphics->SetTransform(&oldTransformMatrix);
+    } else {
+        graphics->DrawString(textstring, -1, &font, origin, format, &brush);
+    }
+
+    delete format;
+}
+
+void EGEAPI ege_drawtext(const char* textstring, float x, float y, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_hDC) {
+        int bufferSize = MultiByteToWideChar(getcodepage(), 0, textstring, -1, NULL, 0);
+        if (bufferSize < 128) {
+            WCHAR wStr[128];
+            MultiByteToWideChar(getcodepage(), 0, textstring, -1, wStr, 128);
+            ege_drawtext_p(wStr, x, y, img);
+        } else {
+            const std::wstring& wStr = mb2w(textstring);
+            ege_drawtext_p(wStr.c_str(), x, y, img);
+        }
+    }
+    CONVERT_IMAGE_END;
+}
+
+void EGEAPI ege_drawtext(const wchar_t* textstring, float x, float y, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_hDC) {
+        ege_drawtext_p(textstring, x, y, img);
+    }
+    CONVERT_IMAGE_END;
+}
 
 } // namespace ege
