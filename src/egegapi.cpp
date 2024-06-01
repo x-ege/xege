@@ -765,6 +765,34 @@ void pieslicef(float x, float y, float startAngle, float endAngle, float radius,
 
 void sector(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
+    fillpie(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
+}
+
+void sectorf(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
+{
+    fillpief(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
+}
+
+void pie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
+    fillpie(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
+    SelectObject(img->m_hDC, oldBrush);
+    CONVERT_IMAGE_END
+}
+
+void pief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
+    fillpief(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
+    SelectObject(img->m_hDC, oldBrush);
+    CONVERT_IMAGE_END
+}
+
+void fillpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
+{
     PIMAGE img = CONVERT_IMAGE(pimg);
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
     if (img) {
@@ -781,7 +809,7 @@ void sector(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius
     CONVERT_IMAGE_END;
 }
 
-void sectorf(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
+void fillpief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;

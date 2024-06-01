@@ -933,6 +933,10 @@ void EGEAPI ellipse      (int   x, int   y, int   startAngle, int   endAngle, in
 void EGEAPI ellipsef     (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 void EGEAPI sector       (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
 void EGEAPI sectorf      (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
+void EGEAPI pie          (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
+void EGEAPI pief         (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
+void EGEAPI fillpie      (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
+void EGEAPI fillpief     (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
 void EGEAPI arc          (int   x, int   y, int   startAngle, int   endAngle, int   radius, PIMAGE pimg = NULL);
 void EGEAPI arcf         (float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg = NULL);
@@ -957,10 +961,10 @@ void EGEAPI fillroundrect(int left, int top, int right, int bottom, int radius, 
 void EGEAPI roundrect    (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 
-void EGEAPI drawpoly(int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI polyline(int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI polygon (int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI fillpoly(int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI drawpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI polyline     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI polygon      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI fillpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 void EGEAPI fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg = NULL);
 
 void EGEAPI drawlines    (int numOfLines,  const int *points, PIMAGE pimg = NULL);
