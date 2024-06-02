@@ -905,8 +905,8 @@ color_t EGEAPI getpixel   (int x, int y, PCIMAGE pimg = NULL);
 void    EGEAPI putpixel   (int x, int y, color_t color, PIMAGE pimg = NULL);
 color_t EGEAPI getpixel_f (int x, int y, PCIMAGE pimg = NULL);
 void    EGEAPI putpixel_f (int x, int y, color_t color, PIMAGE pimg = NULL);
-void    EGEAPI putpixels  (int numOfPoints, int* points, PIMAGE pimg = NULL);
-void    EGEAPI putpixels_f(int numOfPoints, int* points, PIMAGE pimg = NULL);
+void    EGEAPI putpixels  (int numOfPoints, const int* points, PIMAGE pimg = NULL);
+void    EGEAPI putpixels_f(int numOfPoints, const int* points, PIMAGE pimg = NULL);
 
 void    EGEAPI putpixel_withalpha   (int x, int y, color_t color, PIMAGE pimg = NULL);
 void    EGEAPI putpixel_withalpha_f (int x, int y, color_t color, PIMAGE pimg = NULL);
@@ -937,6 +937,8 @@ void EGEAPI pie          (int   x, int   y, int   startAngle, int   endAngle, in
 void EGEAPI pief         (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 void EGEAPI fillpie      (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
 void EGEAPI fillpief     (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
+void EGEAPI solidpie     (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
+void EGEAPI solidpief    (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
 void EGEAPI arc          (int   x, int   y, int   startAngle, int   endAngle, int   radius, PIMAGE pimg = NULL);
 void EGEAPI arcf         (float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg = NULL);
@@ -945,44 +947,55 @@ void EGEAPI pieslicef    (float x, float y, float startAngle, float endAngle, fl
 
 void EGEAPI fillellipse  (int   x, int   y, int   xRadius,    int   yRadius,  PIMAGE pimg = NULL);
 void EGEAPI fillellipsef (float x, float y, float xRadius,    float yRadius,  PIMAGE pimg = NULL);
+void EGEAPI solidellipse (int   x, int   y, int   xRadius,    int   yRadius,  PIMAGE pimg = NULL);
+void EGEAPI solidellipsef(float x, float y, float xRadius,    float yRadius,  PIMAGE pimg = NULL);
 
 void EGEAPI circle       (int   x, int   y, int   radius, PIMAGE pimg = NULL);
 void EGEAPI circlef      (float x, float y, float radius, PIMAGE pimg = NULL);
 void EGEAPI fillcircle   (int   x, int   y, int   radius, PIMAGE pimg = NULL);
 void EGEAPI fillcirclef  (float x, float y, float radius, PIMAGE pimg = NULL);
+void EGEAPI solidcircle  (int   x, int   y, int   radius, PIMAGE pimg = NULL);
+void EGEAPI solidcirclef (float x, float y, float radius, PIMAGE pimg = NULL);
 
+void EGEAPI bar3d        (int left, int top, int right, int bottom, int depth,   int topFlag, PIMAGE pimg = NULL);
 void EGEAPI bar          (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 void EGEAPI rectangle    (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 void EGEAPI fillrect     (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
-void EGEAPI bar3d        (int left, int top, int right, int bottom, int depth,   int topFlag, PIMAGE pimg = NULL);
+void EGEAPI solidrect    (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 
-void EGEAPI roundrect    (int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
-void EGEAPI fillroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
-void EGEAPI roundrect    (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
-void EGEAPI fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
+void EGEAPI roundrect     (int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
+void EGEAPI fillroundrect (int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
+void EGEAPI solidroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
 
-void EGEAPI drawpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI polyline     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI polygon      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
-void EGEAPI fillpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI roundrect     (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
+void EGEAPI fillroundrect (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
+void EGEAPI solidroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
+
+void EGEAPI drawpoly      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI polyline      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI polygon       (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI fillpoly      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI solidpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 void EGEAPI fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg = NULL);
 
-void EGEAPI drawlines    (int numOfLines,  const int *points, PIMAGE pimg = NULL);
-void EGEAPI drawbezier   (int numOfPoints, const int *points, PIMAGE pimg = NULL);
+void EGEAPI drawlines     (int numOfLines,  const int *points, PIMAGE pimg = NULL);
+void EGEAPI drawbezier    (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 
-void EGEAPI floodfill    (int x, int y, int borderColor, PIMAGE pimg = NULL);
+void EGEAPI floodfill     (int x, int y, int borderColor, PIMAGE pimg = NULL);
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
 #ifdef EGE_GDIPLUS
-// ege new_api
+
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
+
+void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 
 void EGEAPI ege_line     (float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
 
-void EGEAPI ege_drawpoly (int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
-void EGEAPI ege_drawcurve(int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
-void EGEAPI ege_bezier   (int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
-void EGEAPI ege_fillpoly (int numOfPoints, ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpoly (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_drawcurve(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_bezier   (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpoly (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 void EGEAPI ege_rectangle(float x, float y, float w, float h, PIMAGE pimg = NULL);
 void EGEAPI ege_ellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
@@ -1000,16 +1013,13 @@ void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius1
 
 void EGEAPI ege_setpattern_none(PIMAGE pimg = NULL);
 void EGEAPI ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, float y2, color_t c2, PIMAGE pimg = NULL);
-void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centerColor,
-    int count, ege_point* points, int colorCount, color_t* pointsColor, PIMAGE pimg = NULL);
-void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor,
-    float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centerColor, int count, const ege_point* points, int colorCount, const color_t* pointColors, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor, float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
 void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
 
 void EGEAPI ege_drawtext(const char*  text, float x, float y, PIMAGE pimg = NULL);
 void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg = NULL);
 
-void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 void EGEAPI ege_gentexture(bool generate, PIMAGE pimg = NULL);
 void EGEAPI ege_puttexture(PCIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
 void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, PIMAGE pimg = NULL);
@@ -1040,7 +1050,7 @@ ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);  // C
 //
 #endif
 
-// We don't support VC 6
+// It is not supported in VC 6.0.
 #ifndef EGE_COMPILERINFO_VC6
 // Console
 bool init_console();    // Initialize the console
@@ -1052,13 +1062,10 @@ bool close_console();   // Close the console and restore the old STD I/O
 
 int  getch_console();   // Used instead of the getch() function in <conio.h>
 
-//int  EGEAPI Begin2d();
-//void EGEAPI EndRender();
-
-
 void EGEAPI ege_sleep (long ms);
 void EGEAPI delay     (long ms);
 void EGEAPI delay_ms  (long ms);
+
 void EGEAPI api_sleep (long ms);
 
 void EGEAPI delay_fps (int    fps);
@@ -1114,13 +1121,14 @@ void EGEAPI setfont(int height, int width, const char* typeface,  int escapement
 void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
                     BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
-EGE_DEPRECATE(setfont)
-void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
+
 void EGEAPI setfont(const LOGFONTW *font, PIMAGE pimg = NULL);
-EGE_DEPRECATE(getfont)
-void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
 void EGEAPI getfont(LOGFONTW *font, PCIMAGE pimg = NULL);
 
+EGE_DEPRECATE(setfont)
+void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
+EGE_DEPRECATE(getfont)
+void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
 
 #define getmaxx getwidth
 #define getmaxy getheight
