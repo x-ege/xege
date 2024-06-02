@@ -99,7 +99,7 @@ void putpixel(int x, int y, color_t color, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void putpixels(int numOfPoints, int* points, PIMAGE pimg)
+void putpixels(int numOfPoints, const int* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     int x, y, c;
@@ -115,7 +115,7 @@ void putpixels(int numOfPoints, int* points, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void putpixels_f(int numOfPoints, int* points, PCIMAGE pimg)
+void putpixels_f(int numOfPoints, const int* points, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE(pimg);
     int x, y, c;
@@ -827,6 +827,24 @@ void fillpief(float x, float y, float startAngle, float endAngle, float xRadius,
     CONVERT_IMAGE_END;
 }
 
+void solidpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillpie(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
+void solidpief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillpief(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
 void fillellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
@@ -845,6 +863,24 @@ void fillellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
+void solidellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillellipse(x, y, xRadius, yRadius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
+void solidellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillellipsef(x, y, xRadius, yRadius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
 void fillcircle(int x, int y, int radius, PIMAGE pimg)
 {
     fillellipse(x, y, radius, radius, pimg);
@@ -855,6 +891,24 @@ void fillcirclef(float x, float y, float radius, PIMAGE pimg)
     fillellipsef(x,y,radius,radius,pimg);
 }
 
+void solidcircle(int x, int y, int radius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillcircle(x, y, radius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
+void solidcirclef(float x, float y, float radius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillcirclef(x, y, radius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
 void bar(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
@@ -863,15 +917,6 @@ void bar(int left, int top, int right, int bottom, PIMAGE pimg)
 
     if (img) {
         FillRect(img->m_hDC, &rect, hbr_last);
-    }
-    CONVERT_IMAGE_END;
-}
-
-void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
-{
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
-        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2, yRadius * 2);
     }
     CONVERT_IMAGE_END;
 }
@@ -897,6 +942,33 @@ void fillroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE
     fillroundrect(left, top, right, bottom, radius, radius, pimg);
 }
 
+void solidroundrect(int left, int top, int right, int bottom, int radius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillroundrect(left, top, right, bottom, radius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
+void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2, yRadius * 2);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void solidroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillroundrect(left, top, right, bottom, xRadius, yRadius, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
+}
+
 void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
@@ -904,6 +976,15 @@ void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
         Rectangle(img->m_hDC, left, top, right, bottom);
     }
     CONVERT_IMAGE_END;
+}
+
+void solidrect(int left, int top, int right, int bottom, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillrect(left, top, right, bottom, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
 }
 
 void bar3d(int x1, int y1, int x2, int y2, int depth, int topFlag, PIMAGE pimg)
@@ -953,6 +1034,15 @@ void fillpoly(int numOfPoints, const int* points, PIMAGE pimg)
         Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
+}
+
+void solidpoly(int numOfPoints, const int *points, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
+    fillpoly(numOfPoints, points, pimg);
+    SelectObject(img->m_hDC, oldPen);
+    CONVERT_IMAGE_END
 }
 
 void polyline(int numOfPoints, const int *points, PIMAGE pimg)
@@ -1373,7 +1463,7 @@ void ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void ege_drawpoly(int numOfPoints, ege_point* points, PIMAGE pimg)
+void ege_drawpoly(int numOfPoints, const ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1386,15 +1476,15 @@ void ege_drawpoly(int numOfPoints, ege_point* points, PIMAGE pimg)
         /* 当首尾顶点为同一坐标时转成多边形，否则绘制折线 */
         if (numOfPoints > 3 && points[0].x == points[numOfPoints-1].x
             && points[0].y == points[numOfPoints-1].y) {
-            graphics->DrawPolygon(pen, (Gdiplus::PointF*)points, numOfPoints - 1);
+            graphics->DrawPolygon(pen, (const Gdiplus::PointF*)points, numOfPoints - 1);
         } else {
-            graphics->DrawLines(pen, (Gdiplus::PointF*)points, numOfPoints);
+            graphics->DrawLines(pen, (const Gdiplus::PointF*)points, numOfPoints);
         }
     }
     CONVERT_IMAGE_END;
 }
 
-void ege_drawcurve(int numOfPoints, ege_point* points, PIMAGE pimg)
+void ege_drawcurve(int numOfPoints, const ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1464,7 +1554,12 @@ void ege_arc(float x, float y, float w, float h, float startAngle, float sweepAn
     CONVERT_IMAGE_END;
 }
 
-void ege_bezier(int numOfPoints, ege_point* points, PIMAGE pimg)
+void ege_bezier(int numOfPoints, const ege_point* points, PIMAGE pimg)
+{
+    ege_drawbezier(numOfPoints, points, pimg);
+}
+
+void ege_drawbezier(int numOfPoints, const ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1473,7 +1568,7 @@ void ege_bezier(int numOfPoints, ege_point* points, PIMAGE pimg)
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Pen* pen = img->getPen();
-        graphics->DrawBeziers(pen, (Gdiplus::PointF*)points, numOfPoints);
+        graphics->DrawBeziers(pen, (const Gdiplus::PointF*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
@@ -1496,21 +1591,18 @@ void ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, flo
     CONVERT_IMAGE_END;
 }
 
-void ege_setpattern_pathgradient(ege_point center,
-    color_t centerColor,
-    int count,
-    ege_point* points,
-    int colorCount,
-    color_t* pointsColor,
+void ege_setpattern_pathgradient(ege_point center, color_t centerColor,
+    int count, const ege_point* points,
+    int colorCount, const color_t* pointColors,
     PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         Gdiplus::PathGradientBrush* pbrush =
-            new Gdiplus::PathGradientBrush((Gdiplus::PointF*)points, count, Gdiplus::WrapModeTile);
+            new Gdiplus::PathGradientBrush((const Gdiplus::PointF*)points, count, Gdiplus::WrapModeTile);
         pbrush->SetCenterColor(Gdiplus::Color(centerColor));
         pbrush->SetCenterPoint(Gdiplus::PointF(center.x, center.y));
-        pbrush->SetSurroundColors((Gdiplus::Color*)pointsColor, &colorCount);
+        pbrush->SetSurroundColors((const Gdiplus::Color*)pointColors, &colorCount);
         img->set_pattern(pbrush);
     }
     CONVERT_IMAGE_END;
@@ -1533,7 +1625,7 @@ void ege_setpattern_ellipsegradient(ege_point center,
         int count = 1;
         pbrush->SetCenterColor(Gdiplus::Color(centerColor));
         pbrush->SetCenterPoint(Gdiplus::PointF(center.x, center.y));
-        pbrush->SetSurroundColors((Gdiplus::Color*)&color, &count);
+        pbrush->SetSurroundColors((const Gdiplus::Color*)&color, &count);
         img->set_pattern(pbrush);
     }
     CONVERT_IMAGE_END;
@@ -1552,13 +1644,13 @@ void ege_setpattern_texture(PIMAGE srcimg, float x, float y, float w, float h, P
     CONVERT_IMAGE_END;
 }
 
-void ege_fillpoly(int numOfPoints, ege_point* points, PIMAGE pimg)
+void ege_fillpoly(int numOfPoints, const ege_point* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Brush* brush = img->getBrush();
-        graphics->FillPolygon(brush, (Gdiplus::PointF*)points, numOfPoints);
+        graphics->FillPolygon(brush, (const Gdiplus::PointF*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
