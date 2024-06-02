@@ -1498,6 +1498,19 @@ void ege_drawcurve(int numOfPoints, const ege_point* points, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
+void ege_drawcurve(int numOfPoints, const ege_point *points, float tension, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        if (img->m_linestyle.linestyle == PS_NULL) {
+            return;
+        }
+        Gdiplus::Graphics* graphics = img->getGraphics();
+        graphics->DrawCurve(img->getPen(), (const Gdiplus::PointF*)points, numOfPoints, tension);
+    }
+    CONVERT_IMAGE_END;
+}
+
 void ege_drawclosedcurve(int numOfPoints, const ege_point *points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
@@ -1506,11 +1519,24 @@ void ege_drawclosedcurve(int numOfPoints, const ege_point *points, PIMAGE pimg)
             return;
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
-        Gdiplus::Pen* pen = img->getPen();
-        graphics->DrawClosedCurve(pen, (const Gdiplus::PointF*)points, numOfPoints);
+        graphics->DrawClosedCurve(img->getPen(), (const Gdiplus::PointF*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
+
+void ege_drawclosedcurve(int numOfPoints, const ege_point *points, float tension, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        if (img->m_linestyle.linestyle == PS_NULL) {
+            return;
+        }
+        Gdiplus::Graphics* graphics = img->getGraphics();
+        graphics->DrawClosedCurve(img->getPen(), (const Gdiplus::PointF*)points, numOfPoints, tension);
+    }
+    CONVERT_IMAGE_END;
+}
+
 
 void ege_fillclosedcurve(int numOfPoints, const ege_point *points, PIMAGE pimg)
 {
@@ -1518,6 +1544,17 @@ void ege_fillclosedcurve(int numOfPoints, const ege_point *points, PIMAGE pimg)
     if (img) {
         Gdiplus::Graphics* graphics = img->getGraphics();
         graphics->FillClosedCurve(img->getBrush(), (const Gdiplus::PointF*)points, numOfPoints);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void ege_fillclosedcurve(int numOfPoints, const ege_point *points, float tension, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        Gdiplus::Graphics* graphics = img->getGraphics();
+        graphics->FillClosedCurve(img->getBrush(), (const Gdiplus::PointF*)points, numOfPoints,
+            Gdiplus::FillModeAlternate, tension);
     }
     CONVERT_IMAGE_END;
 }
