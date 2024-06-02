@@ -995,7 +995,8 @@ void EGEAPI ege_line     (float x1, float y1, float x2, float y2, PIMAGE pimg = 
 void EGEAPI ege_drawpoly (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 void EGEAPI ege_drawcurve(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 void EGEAPI ege_bezier   (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
-void EGEAPI ege_fillpoly (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_drawbezier(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);  // Same as ege_bezier
+void EGEAPI ege_fillpoly  (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 void EGEAPI ege_rectangle(float x, float y, float w, float h, PIMAGE pimg = NULL);
 void EGEAPI ege_ellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);

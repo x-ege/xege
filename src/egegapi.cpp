@@ -1556,6 +1556,11 @@ void ege_arc(float x, float y, float w, float h, float startAngle, float sweepAn
 
 void ege_bezier(int numOfPoints, const ege_point* points, PIMAGE pimg)
 {
+    ege_drawbezier(numOfPoints, points, pimg);
+}
+
+void ege_drawbezier(int numOfPoints, const ege_point* points, PIMAGE pimg)
+{
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_linestyle.linestyle == PS_NULL) {
