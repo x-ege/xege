@@ -1414,6 +1414,15 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
     SelectClipRgn(img->m_hDC, rgn);
     DeleteObject(rgn);
 
+    Gdiplus::Graphics* graphics = img->getGraphics();
+    if (img->m_vpt.clipflag) {
+        const viewporttype& viewport = img->m_vpt;
+        Gdiplus::Rect clipRect(viewport.left, viewport.top, viewport.right - viewport.left, viewport.bottom - viewport.top);
+        graphics->SetClip(clipRect);
+    } else {
+        graphics->ResetClip();
+    }
+
     // OffsetViewportOrgEx(img->m_hDC, img->m_vpt.left, img->m_vpt.top, NULL);
     SetViewportOrgEx(img->m_hDC, img->m_vpt.left, img->m_vpt.top, NULL);
 
