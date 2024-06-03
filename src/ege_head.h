@@ -16,7 +16,7 @@
 #endif
 
 #define EGE_GRAPH_LIB_BUILD
-#define EGE_DEPRECATE(text)
+#define EGE_DEPRECATE(function, msg)
 
 #include "../include/ege.h"
 

@@ -125,12 +125,14 @@
 #ifndef EGE_DEPRECATE
 #   ifdef _MSC_VER
 #       ifdef _CRT_DEPRECATE_TEXT
-#           define EGE_DEPRECATE(text) _CRT_DEPRECATE_TEXT("This function is deprecated, more info visit http://tcgraphics.sourceforge.net/")
+#           define EGE_DEPRECATE(function, msg) _CRT_DEPRECATE_TEXT("This function is deprecated. " msg " For more information, visit https://xege.org/.")
 #       else
-#           define EGE_DEPRECATE(text)
+#           define EGE_DEPRECATE(function, msg)
 #       endif
+#   elif ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 5)))
+#       define EGE_DEPRECATE(function, msg) __attribute__((deprecated(msg " For more information, visit https://xege.org/.")))
 #   else
-#       define EGE_DEPRECATE(text) __attribute__((deprecated))
+#       define EGE_DEPRECATE(function, msg) __attribute__((deprecated))
 #   endif
 #endif
 
@@ -850,11 +852,11 @@ void EGEAPI getviewport(int* left, int* top, int* right, int* bottom, int* clip 
 void EGEAPI setviewport(int  left, int  top, int  right, int  bottom, int  clip = 1, PIMAGE  pimg = NULL);
 void EGEAPI clearviewport(PIMAGE pimg = NULL);
 
-EGE_DEPRECATE(setactivepage)
+EGE_DEPRECATE(setactivepage, "Please use the image function instead.")
 void EGEAPI setactivepage(int page);
-EGE_DEPRECATE(setvisualpage)
+EGE_DEPRECATE(setvisualpage, "Please use the image function instead.")
 void EGEAPI setvisualpage(int page);
-EGE_DEPRECATE(swappage)
+EGE_DEPRECATE(swappage, "Please use the image function instead.")
 void EGEAPI swappage();
 void EGEAPI window_getviewport(viewporttype * viewport);
 void EGEAPI window_getviewport(int* left, int* top, int* right, int* bottom);
@@ -1133,9 +1135,9 @@ void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapeme
 void EGEAPI setfont(const LOGFONTW *font, PIMAGE pimg = NULL);
 void EGEAPI getfont(LOGFONTW *font, PCIMAGE pimg = NULL);
 
-EGE_DEPRECATE(setfont)
+EGE_DEPRECATE(setfont, "Please use the 'getfont' function with the LOGFONTW* parameter instead.")
 void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
-EGE_DEPRECATE(getfont)
+EGE_DEPRECATE(getfont, "Please use the 'getfont' function with the LOGFONTW* parameter instead.")
 void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
 
 #define getmaxx getwidth
@@ -1331,9 +1333,9 @@ int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR bu
 
 int     EGEAPI kbmsg();
 key_msg EGEAPI getkey();
-EGE_DEPRECATE(getchEx)
+EGE_DEPRECATE(getchEx, "Please use the 'getch' function instead.")
 int     EGEAPI getchEx(int flag);
-EGE_DEPRECATE(kbhitEx)
+EGE_DEPRECATE(kbhitEx, "Please use the 'kbhit' function instead.")
 int     EGEAPI kbhitEx(int flag);
 int     EGEAPI keystate(int key);
 void    EGEAPI flushkey();
@@ -1350,7 +1352,7 @@ int EGEAPI kbhit();
 
 int         EGEAPI mousemsg();
 mouse_msg   EGEAPI getmouse();
-EGE_DEPRECATE(GetMouseMsg)
+EGE_DEPRECATE(GetMouseMsg, "Please use the 'getmouse' function instead.")
 MOUSEMSG    EGEAPI GetMouseMsg();
 
 void        EGEAPI flushmouse();
