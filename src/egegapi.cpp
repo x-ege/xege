@@ -481,18 +481,16 @@ void rectangle(int left, int top, int right, int bottom, PIMAGE pimg)
 
 color_t getcolor(PCIMAGE pimg)
 {
+    return getlinecolor(pimg);
+}
+
+color_t getlinecolor(PCIMAGE pimg)
+{
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img && img->m_hDC) {
         CONVERT_IMAGE_END;
-        return img->m_color;
-        /*
-        HPEN hpen_c = (HPEN)GetCurrentObject(img->m_hDC, OBJ_PEN);
-        LOGPEN logPen;
-        GetObject(hpen_c, sizeof(logPen), &logPen);
-        CONVERT_IMAGE_END;
-        return logPen.lopnColor;
-        // */
+        return img->m_linecolor;
     }
     CONVERT_IMAGE_END;
     return 0xFFFFFFFF;
@@ -534,7 +532,7 @@ static int upattern2array(unsigned short pattern, DWORD style[])
 static void update_pen(PIMAGE img)
 {
     LOGBRUSH lbr;
-    lbr.lbColor = ARGBTOZBGR(img->m_color);
+    lbr.lbColor = ARGBTOZBGR(img->m_linecolor);
     lbr.lbStyle = BS_SOLID;
     lbr.lbHatch = 0;
 
@@ -560,7 +558,7 @@ static void update_pen(PIMAGE img)
     // why update pen not in IMAGE???
 #ifdef EGE_GDIPLUS
     Gdiplus::Pen* pen = img->getPen();
-    pen->SetColor(img->m_color);
+    pen->SetColor(img->m_linecolor);
     pen->SetWidth(img->m_linewidth);
     pen->SetDashStyle(linestyle_to_dashstyle(img->m_linestyle.linestyle));
 #endif
@@ -568,15 +566,18 @@ static void update_pen(PIMAGE img)
 
 void setcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
+    setlinecolor(color, pimg);
+    settextcolor(color, pimg);
+}
 
+void setlinecolor(color_t color, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
-        img->m_color = color;
-
+        img->m_linecolor = color;
         update_pen(img);
-        SetTextColor(img->m_hDC, ARGBTOZBGR(color));
     }
-    CONVERT_IMAGE_END;
+    CONVERT_IMAGE_END
 }
 
 void setfillcolor(color_t color, PIMAGE pimg)
@@ -609,10 +610,21 @@ color_t getbkcolor(PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
-    CONVERT_IMAGE_END;
     if (img) {
         return img->m_bk_color;
     }
+    CONVERT_IMAGE_END;
+    return 0xFFFFFFFF;
+}
+
+color_t gettextcolor(PCIMAGE pimg)
+{
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
+
+    if (img) {
+        return img->m_textcolor;
+    }
+    CONVERT_IMAGE_END;
     return 0xFFFFFFFF;
 }
 
@@ -642,6 +654,17 @@ void setbkcolor_f(color_t color, PIMAGE pimg)
     if (img && img->m_hDC) {
         img->m_bk_color = color;
         SetBkColor(img->m_hDC, ARGBTOZBGR(color));
+    }
+    CONVERT_IMAGE_END;
+}
+
+void settextcolor(color_t color, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+
+    if (img && img->m_hDC) {
+        img->m_textcolor = color;
+        SetTextColor(img->m_hDC, ARGBTOZBGR(color));
     }
     CONVERT_IMAGE_END;
 }

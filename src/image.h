@@ -18,8 +18,10 @@ public:
     int     m_width;
     int     m_height;
     PDWORD  m_pBuffer;
-    color_t m_color;
+    color_t m_linecolor;
     color_t m_fillcolor;
+    color_t m_textcolor;
+    color_t m_bk_color;
 
 private:
 #ifdef EGE_GDIPLUS
@@ -39,7 +41,6 @@ public:
     textsettingstype m_texttype;
     linestyletype    m_linestyle;
     float            m_linewidth;
-    color_t          m_bk_color;
     void*            m_texture;
 
 private:

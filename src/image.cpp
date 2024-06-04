@@ -39,14 +39,15 @@ void IMAGE::reset()
     m_width     = 0;
     m_height    = 0;
     m_pBuffer   = NULL;
-    m_color     = 0;
+    m_linecolor     = 0;
     m_fillcolor = 0;
+    m_textcolor = 0;
+    m_bk_color  = 0;
     m_aa        = false;
     memset(&m_vpt, 0, sizeof(m_vpt));
     memset(&m_texttype, 0, sizeof(m_texttype));
     memset(&m_linestyle, 0, sizeof(m_linestyle));
     m_linewidth = 0.0f;
-    m_bk_color  = 0;
     m_texture   = NULL;
 #ifdef EGE_GDIPLUS
     m_graphics = NULL;
@@ -245,7 +246,7 @@ Gdiplus::Graphics* IMAGE::getGraphics()
 Gdiplus::Pen* IMAGE::getPen()
 {
     if (NULL == m_pen) {
-        m_pen = new Gdiplus::Pen(m_color, m_linewidth);
+        m_pen = new Gdiplus::Pen(m_linecolor, m_linewidth);
         m_pen->SetDashStyle(linestyle_to_dashstyle(m_linestyle.linestyle));
     }
     return m_pen;
