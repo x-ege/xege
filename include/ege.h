@@ -1007,6 +1007,9 @@ void EGEAPI ege_fillclosedcurve(int numOfPoints, const ege_point* points, float 
 void EGEAPI ege_bezier    (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 void EGEAPI ege_drawbezier(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);  // Same as ege_bezier
 
+void EGEAPI ege_circle    (float x, float y, float radius, PIMAGE pimg);
+void EGEAPI ege_fillcircle(float x, float y, float radius, PIMAGE pimg);
+
 void EGEAPI ege_rectangle(float x, float y, float w, float h, PIMAGE pimg = NULL);
 void EGEAPI ege_ellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
 void EGEAPI ege_pie      (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);

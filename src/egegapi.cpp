@@ -1582,6 +1582,16 @@ void ege_rectangle(float x, float y, float w, float h, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
+void ege_circle(float x, float y, float radius, PIMAGE pimg)
+{
+    ege_ellipse(x - radius, y - radius, radius * 2.0f, radius * 2.0f, pimg);
+}
+
+void ege_fillcircle(float x, float y, float radius, PIMAGE pimg)
+{
+    ege_fillellipse(x - radius, y - radius, radius * 2.0f, radius * 2.0f, pimg);
+}
+
 void ege_ellipse(float x, float y, float w, float h, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
