@@ -992,10 +992,13 @@ void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
 void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 
-void EGEAPI ege_line     (float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
+void EGEAPI ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
 
-void EGEAPI ege_drawpoly (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
-void EGEAPI ege_fillpoly (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpoly       (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpoly       (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+
+void EGEAPI ege_bezier         (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_drawbezier     (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);  // Same as ege_bezier
 
 void EGEAPI ege_drawcurve      (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 void EGEAPI ege_drawclosedcurve(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
@@ -1004,20 +1007,17 @@ void EGEAPI ege_drawcurve      (int numOfPoints, const ege_point* points, float 
 void EGEAPI ege_drawclosedcurve(int numOfPoints, const ege_point* points, float tension, PIMAGE pimg = NULL);
 void EGEAPI ege_fillclosedcurve(int numOfPoints, const ege_point* points, float tension, PIMAGE pimg = NULL);
 
-void EGEAPI ege_bezier    (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
-void EGEAPI ege_drawbezier(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);  // Same as ege_bezier
+void EGEAPI ege_rectangle    (float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_fillrect     (float x, float y, float w, float h, PIMAGE pimg = NULL);
 
-void EGEAPI ege_circle    (float x, float y, float radius, PIMAGE pimg);
-void EGEAPI ege_fillcircle(float x, float y, float radius, PIMAGE pimg);
+void EGEAPI ege_circle       (float x, float y, float radius, PIMAGE pimg);
+void EGEAPI ege_fillcircle   (float x, float y, float radius, PIMAGE pimg);
 
-void EGEAPI ege_rectangle(float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_ellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_pie      (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
-
-void EGEAPI ege_fillrect   (float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg = NULL);
-void EGEAPI ege_arc        (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
-void EGEAPI ege_fillpie    (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
+void EGEAPI ege_ellipse      (float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_fillellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_arc          (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
+void EGEAPI ege_pie          (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpie      (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
 
 void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
 void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
@@ -1030,7 +1030,7 @@ void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centerColor, i
 void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor, float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
 void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
 
-void EGEAPI ege_drawtext(const char*  text, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const char*    text, float x, float y, PIMAGE pimg = NULL);
 void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg = NULL);
 
 void EGEAPI ege_gentexture(bool generate, PIMAGE pimg = NULL);
@@ -1039,7 +1039,7 @@ void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, PIMAGE pimg = NULL);
 void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, ege_rect src, PIMAGE pimg = NULL);
 
 //draw image
-void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest,PIMAGE pimg = NULL);
+void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
 
 // matrix for transformation
