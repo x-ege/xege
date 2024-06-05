@@ -50,6 +50,8 @@ void IMAGE::reset()
     m_linewidth    = 0.0f;
     m_linestartcap = LINECAP_FLAT;
     m_lineendcap   = LINECAP_FLAT;
+    m_linejoin     = LINEJOIN_MITER;
+    m_linejoinmiterlimit = 10.0f;
     m_texture      = NULL;
 #ifdef EGE_GDIPLUS
     m_graphics = NULL;

@@ -43,6 +43,8 @@ public:
     float            m_linewidth;
     linecaptype      m_linestartcap;
     linecaptype      m_lineendcap;
+    linejointype     m_linejoin;
+    float            m_linejoinmiterlimit;
     void*            m_texture;
 
 private:
