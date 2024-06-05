@@ -680,6 +680,13 @@ enum linecaptype
     LINECAP_ROUND,
 };
 
+enum linejointype
+{
+    LINEJOIN_MITER = 0,
+    LINEJOIN_BEVEL,
+    LINEJOIN_ROUND,
+};
+
 typedef struct key_msg
 {
     int             key;
@@ -873,10 +880,16 @@ void EGEAPI window_setviewport(int  left, int  top, int  right, int  bottom);
 void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* thickness = NULL, PCIMAGE pimg = NULL);
 void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE pimg = NULL);
 void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);
+
 void EGEAPI setlinecap(linecaptype linecap, PIMAGE pimg = NULL);
 void EGEAPI setlinecap(linecaptype  startCap, linecaptype  endCap, PIMAGE pimg = NULL);
 void EGEAPI getlinecap(linecaptype* startCap, linecaptype* endCap, PIMAGE pimg = NULL);
 linecaptype EGEAPI getlinecap(PIMAGE pimg = NULL);
+
+void EGEAPI setlinejoin(linejointype  linejoin, PIMAGE pimg = NULL);
+void EGEAPI setlinejoin(linejointype  linejoin, float  miterLimit, PIMAGE pimg = NULL);
+void EGEAPI getlinejoin(linejointype* linejoin, float* miterLimit, PIMAGE pimg = NULL);
+linejointype EGEAPI getlinejoin(PIMAGE pimg = NULL);
 
 //void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // ###
 void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);

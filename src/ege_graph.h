@@ -37,6 +37,8 @@ Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* old
 
 Gdiplus::LineCap convertToGdiplusLineCap(linecaptype linecap);
 
+Gdiplus::LineJoin convertToGdiplusLineJoin(linejointype linejoin);
+
 int  swapbuffers();
 
 bool isinitialized();

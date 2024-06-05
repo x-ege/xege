@@ -550,6 +550,15 @@ static void update_pen(PIMAGE img)
         default:             ls |= PS_ENDCAP_FLAT;   break;
     }
 
+    switch(img->m_linejoin) {
+        case LINEJOIN_MITER: ls |= PS_JOIN_MITER;    break;
+        case LINEJOIN_BEVEL: ls |= PS_JOIN_BEVEL;    break;
+        case LINEJOIN_ROUND: ls |= PS_JOIN_ROUND;    break;
+        default:             ls |= PS_JOIN_MITER;    break;
+    }
+
+    SetMiterLimit(img->m_hDC, img->m_linejoinmiterlimit, NULL);
+
     HPEN hpen;
     if (linestyle == USERBIT_LINE) {
         DWORD style[20] = {0};
@@ -569,8 +578,10 @@ static void update_pen(PIMAGE img)
     pen->SetWidth(img->m_linewidth);
     pen->SetDashStyle(linestyle_to_dashstyle(img->m_linestyle.linestyle));
 
-    pen->SetLineCap(convertToGdiplusLineCap(img->m_linestartcap), convertToGdiplusLineCap(img->m_lineendcap),
-        Gdiplus::DashCapFlat);
+    pen->SetStartCap(convertToGdiplusLineCap(img->m_linestartcap));
+    pen->SetEndCap(convertToGdiplusLineCap(img->m_lineendcap));
+    pen->SetLineJoin(convertToGdiplusLineJoin(img->m_linejoin));
+    pen->SetMiterLimit(img->m_linejoinmiterlimit);
 #endif
 }
 
@@ -1232,10 +1243,21 @@ Gdiplus::LineCap convertToGdiplusLineCap(linecaptype linecap)
         case LINECAP_FLAT:   cap = Gdiplus::LineCapFlat;   break;
         case LINECAP_SQUARE: cap = Gdiplus::LineCapSquare; break;
         case LINECAP_ROUND:  cap = Gdiplus::LineCapRound;  break;
-        default:             cap = Gdiplus::LineCapFlat;   break;
     }
 
     return cap;
+}
+
+Gdiplus::LineJoin convertToGdiplusLineJoin(linejointype linejoin)
+{
+    Gdiplus::LineJoin joinType = Gdiplus::LineJoinMiter;
+    switch(linejoin) {
+        case LINEJOIN_MITER: joinType = Gdiplus::LineJoinMiter; break;
+        case LINEJOIN_BEVEL: joinType = Gdiplus::LineJoinBevel; break;
+        case LINEJOIN_ROUND: joinType = Gdiplus::LineJoinRound; break;
+    }
+
+    return joinType;
 }
 
 void setlinecap(linecaptype linecap, PIMAGE pimg)
@@ -1288,6 +1310,52 @@ linecaptype getlinecap(PIMAGE pimg)
     }
     CONVERT_IMAGE_END;
     return LINECAP_FLAT;
+}
+
+void setlinejoin(linejointype linejoin, PIMAGE pimg)
+{
+    float miterLimit;
+    getlinejoin(NULL, &miterLimit, pimg);
+    setlinejoin(linejoin, miterLimit, pimg);
+}
+
+void setlinejoin(linejointype linejoin, float miterLimit, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+
+    if (img && img->m_hDC) {
+        miterLimit = MAX(1.0f, miterLimit);
+        img->m_linejoin = linejoin;
+        img->m_linejoinmiterlimit = miterLimit;
+        update_pen(img);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void getlinejoin(linejointype *linejoin, float *miterLimit, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    if (img && img->m_hDC) {
+        if (linejoin != NULL) {
+            *linejoin = img->m_linejoin;
+        }
+
+        if (miterLimit != NULL) {
+            *miterLimit = img->m_linejoinmiterlimit;
+        }
+    }
+    CONVERT_IMAGE_END
+}
+
+linejointype getlinejoin(PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+
+    if (img && img->m_hDC) {
+        return img->m_linejoin;
+    }
+    CONVERT_IMAGE_END;
+    return LINEJOIN_MITER;
 }
 
 void setfillstyle(int pattern, color_t color, PIMAGE pimg)
