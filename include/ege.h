@@ -875,13 +875,17 @@ void EGEAPI setwritemode(int mode, PIMAGE pimg = NULL);
 //void EGEAPI graphdefaults(PIMAGE pimg = NULL);                  // ###
 
 color_t EGEAPI getcolor      (PCIMAGE pimg = NULL);
+color_t EGEAPI getlinecolor  (PCIMAGE pimg = NULL);
 color_t EGEAPI getfillcolor  (PCIMAGE pimg = NULL);
 color_t EGEAPI getbkcolor    (PCIMAGE pimg = NULL);
+color_t EGEAPI gettextcolor  (PCIMAGE pimg = NULL);
 
 void    EGEAPI setcolor      (color_t color, PIMAGE pimg = NULL);
+void    EGEAPI setlinecolor  (color_t color, PIMAGE pimg = NULL);
 void    EGEAPI setfillcolor  (color_t color, PIMAGE pimg = NULL);
 void    EGEAPI setbkcolor    (color_t color, PIMAGE pimg = NULL);
 void    EGEAPI setbkcolor_f  (color_t color, PIMAGE pimg = NULL);
+void    EGEAPI settextcolor  (color_t color, PIMAGE pimg = NULL);
 void    EGEAPI setfontbkcolor(color_t color, PIMAGE pimg = NULL);
 
 void    EGEAPI setbkmode(int bkMode, PIMAGE pimg = NULL);

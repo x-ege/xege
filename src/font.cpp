@@ -602,7 +602,7 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y,  PIMAGE 
     // 	fprintf(stderr, "!font.IsAvailable(), hf: %p\n", hf);
     // }
     Gdiplus::PointF origin(x, y);
-    Gdiplus::SolidBrush brush(img->m_color);
+    Gdiplus::SolidBrush brush(img->m_textcolor);
 
     Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic()->Clone();
 
