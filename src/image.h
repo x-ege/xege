@@ -41,6 +41,8 @@ public:
     textsettingstype m_texttype;
     linestyletype    m_linestyle;
     float            m_linewidth;
+    linecaptype      m_linestartcap;
+    linecaptype      m_lineendcap;
     void*            m_texture;
 
 private:
