@@ -1354,8 +1354,10 @@ PVOID       EGEAPI getProcfunc();
 long        EGEAPI getGraphicsVer();
 float       EGEAPI getfps();
 
-void            EGEAPI randomize();
-unsigned int    EGEAPI random(unsigned int n);
+unsigned int    EGEAPI randomize();
+unsigned int    EGEAPI randomize(unsigned int seed);
+
+unsigned int    EGEAPI random(unsigned int n = 0);
 double          EGEAPI randomf();
 
 
