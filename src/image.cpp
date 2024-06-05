@@ -47,8 +47,10 @@ void IMAGE::reset()
     memset(&m_vpt, 0, sizeof(m_vpt));
     memset(&m_texttype, 0, sizeof(m_texttype));
     memset(&m_linestyle, 0, sizeof(m_linestyle));
-    m_linewidth = 0.0f;
-    m_texture   = NULL;
+    m_linewidth    = 0.0f;
+    m_linestartcap = LINECAP_FLAT;
+    m_lineendcap   = LINECAP_FLAT;
+    m_texture      = NULL;
 #ifdef EGE_GDIPLUS
     m_graphics = NULL;
     m_pen      = NULL;

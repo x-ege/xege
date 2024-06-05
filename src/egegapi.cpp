@@ -541,7 +541,14 @@ static void update_pen(PIMAGE img)
     const int thickness = img->m_linestyle.thickness;
 
     // 添加这些属性以获得正确的显示效果
-    int ls = linestyle | PS_GEOMETRIC | PS_ENDCAP_ROUND | PS_JOIN_ROUND;
+    int ls = linestyle | PS_GEOMETRIC | PS_JOIN_ROUND;
+
+    switch (img->m_linestartcap) {
+        case LINECAP_FLAT :  ls |= PS_ENDCAP_FLAT;   break;
+        case LINECAP_ROUND:  ls |= PS_ENDCAP_ROUND;  break;
+        case LINECAP_SQUARE: ls |= PS_ENDCAP_SQUARE; break;
+        default:             ls |= PS_ENDCAP_FLAT;   break;
+    }
 
     HPEN hpen;
     if (linestyle == USERBIT_LINE) {
@@ -561,6 +568,9 @@ static void update_pen(PIMAGE img)
     pen->SetColor(img->m_linecolor);
     pen->SetWidth(img->m_linewidth);
     pen->SetDashStyle(linestyle_to_dashstyle(img->m_linestyle.linestyle));
+
+    pen->SetLineCap(convertToGdiplusLineCap(img->m_linestartcap), convertToGdiplusLineCap(img->m_lineendcap),
+        Gdiplus::DashCapFlat);
 #endif
 }
 
@@ -1077,7 +1087,7 @@ void polyline(int numOfPoints, const int *points, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void polygon (int numOfPoints, const int *points, PIMAGE pimg)
+void polygon(int numOfPoints, const int *points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
@@ -1213,6 +1223,71 @@ void setlinewidth(float width, PIMAGE pimg)
         update_pen(img);
     }
     CONVERT_IMAGE_END;
+}
+
+Gdiplus::LineCap convertToGdiplusLineCap(linecaptype linecap)
+{
+    Gdiplus::LineCap cap = Gdiplus::LineCapFlat;
+    switch(linecap) {
+        case LINECAP_FLAT:   cap = Gdiplus::LineCapFlat;   break;
+        case LINECAP_SQUARE: cap = Gdiplus::LineCapSquare; break;
+        case LINECAP_ROUND:  cap = Gdiplus::LineCapRound;  break;
+        default:             cap = Gdiplus::LineCapFlat;   break;
+    }
+
+    return cap;
+}
+
+void setlinecap(linecaptype linecap, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+
+    if (img && img->m_hDC) {
+        img->m_linestartcap = linecap;
+        img->m_lineendcap   = linecap;
+
+        update_pen(img);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void setlinecap(linecaptype startCap, linecaptype endCap, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+
+    if (img && img->m_hDC) {
+        img->m_linestartcap = startCap;
+        img->m_lineendcap   = endCap;
+
+        update_pen(img);
+    }
+    CONVERT_IMAGE_END;
+}
+
+void getlinecap(linecaptype *startCap, linecaptype *endCap, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    if (img && img->m_hDC) {
+        if (startCap != NULL) {
+            *startCap = img->m_linestartcap;
+        }
+
+        if (endCap != NULL) {
+            *endCap = img->m_lineendcap;
+        }
+    }
+    CONVERT_IMAGE_END
+}
+
+linecaptype getlinecap(PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+
+    if (img && img->m_hDC) {
+        return img->m_linestartcap;
+    }
+    CONVERT_IMAGE_END;
+    return LINECAP_FLAT;
 }
 
 void setfillstyle(int pattern, color_t color, PIMAGE pimg)
