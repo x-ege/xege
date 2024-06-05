@@ -1640,6 +1640,17 @@ void ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg)
 
 void ege_drawpoly(int numOfPoints, const ege_point* points, PIMAGE pimg)
 {
+    /* 当首尾顶点为同一坐标时转成多边形，否则绘制折线 */
+    if (numOfPoints > 3 && points[0].x == points[numOfPoints-1].x
+        && points[0].y == points[numOfPoints-1].y) {
+        ege_polygon(numOfPoints - 1, points, pimg);
+    } else {
+        ege_polyline(numOfPoints, points, pimg);
+    }
+}
+
+void ege_polyline(int numOfPoints, const ege_point *points, PIMAGE pimg)
+{
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_linestyle.linestyle == PS_NULL) {
@@ -1647,14 +1658,21 @@ void ege_drawpoly(int numOfPoints, const ege_point* points, PIMAGE pimg)
         }
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Pen* pen = img->getPen();
+        graphics->DrawLines(pen, (const Gdiplus::PointF*)points, numOfPoints);
+    }
+    CONVERT_IMAGE_END;
+}
 
-        /* 当首尾顶点为同一坐标时转成多边形，否则绘制折线 */
-        if (numOfPoints > 3 && points[0].x == points[numOfPoints-1].x
-            && points[0].y == points[numOfPoints-1].y) {
-            graphics->DrawPolygon(pen, (const Gdiplus::PointF*)points, numOfPoints - 1);
-        } else {
-            graphics->DrawLines(pen, (const Gdiplus::PointF*)points, numOfPoints);
+void ege_polygon(int numOfPoints, const ege_point *points, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        if (img->m_linestyle.linestyle == PS_NULL) {
+            return;
         }
+        Gdiplus::Graphics* graphics = img->getGraphics();
+        Gdiplus::Pen* pen = img->getPen();
+        graphics->DrawPolygon(pen, (const Gdiplus::PointF*)points, numOfPoints);
     }
     CONVERT_IMAGE_END;
 }
