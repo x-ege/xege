@@ -506,8 +506,8 @@ typedef enum key_code_e
 
     key_pageup          = 0x21,
     key_pagedown        = 0x22,
-    key_home            = 0x23,
-    key_end             = 0x24,
+    key_end             = 0x23,
+    key_home            = 0x24,
 
     key_left            = 0x25,
     key_up              = 0x26,
