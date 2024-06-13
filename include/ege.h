@@ -434,6 +434,14 @@ enum text_just
     BOTTOM_TEXT          = 2
 };
 
+enum font_styles
+{
+    FONTSTYLE_BOLD       = 1,
+    FONTSTYLE_ITALIC     = 2,
+    FONTSTYLE_UNDERLINE  = 4,
+    FONTSTYLE_STRIKEOUT  = 8,
+};
+
 /* Line styles for get/setlinestyle */
 enum line_styles
 {
@@ -730,6 +738,30 @@ typedef struct ege_colpoint
     float   y;
     color_t color;
 } ege_colpoint;
+
+// matrix for transformation
+typedef struct ege_transform_matrix
+{
+    float m11, m12;
+    float m21, m22;
+    float m31, m32;
+} ege_transform_matrix;
+
+struct ege_path
+{
+private:
+    void* m_data;
+
+public:
+    ege_path();
+    ege_path(const ege_point* points, const unsigned char* types, int count);
+    ege_path(const ege_path& path);
+    virtual ~ege_path();
+
+    const void* data() const;
+    void* data();
+    ege_path& operator=(const ege_path& path);
+};
 
 struct MOUSEMSG
 {
@@ -1072,13 +1104,49 @@ void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, ege_rect src, PIMAGE p
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
 
-// matrix for transformation
-typedef struct ege_transform_matrix
-{
-    float m11, m12;
-    float m21, m22;
-    float m31, m32;
-} ege_transform_matrix;
+void ege_drawpath(const ege_path* path, PIMAGE pimg = NULL);
+void ege_fillpath(const ege_path* path, PIMAGE pimg = NULL);
+void ege_drawpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
+void ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
+
+ege_path* ege_path_create   ();
+ege_path* ege_path_clone    (const ege_path* path);
+void      ege_path_destroy  (const ege_path* path);
+void      ege_path_start    (ege_path* path);
+void      ege_path_close    (ege_path* path);
+void      ege_path_closeall (ege_path* path);
+void      ege_path_reset    (ege_path* path);
+void      ege_path_reverse  (ege_path* path);
+
+ege_point      ege_path_lastpoint    (ege_path* path);
+int            ege_path_pointcount   (ege_path* path);
+void           ege_path_getbounds    (ege_path* path, ege_point* points, const ege_transform_matrix* matrix = NULL);
+ege_point*     ege_path_getpathpoints(ege_path* path, ege_point* points);
+unsigned char* ege_path_getpathtypes (ege_path* path, unsigned char* types);
+
+void ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
+
+// Adds a non-closed figure to path
+void ege_path_addpath       (ege_path* dstPath, const ege_path* srcPath, bool connect);
+void ege_path_addline       (ege_path* path, float x1, float y1, float x2, float y2);
+void ege_path_addarc        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
+void ege_path_addpolyline   (ege_path* path, int numOfPoints, const ege_point* points);
+void ege_path_addbezier     (ege_path* path, int numOfPoints, const ege_point* points);
+void ege_path_addbezier     (ege_path* path, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+void ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points);
+void ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points, float tension);
+
+// Adds a closed figure to path
+void ege_path_addcircle     (ege_path* path, float x, float y, float radius);
+void ege_path_addrect       (ege_path* path, float x, float y, float width, float height);
+void ege_path_addellipse    (ege_path* path, float x, float y, float width, float height);
+void ege_path_addpie        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
+void ege_path_addstring     (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
+void ege_path_addstring     (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
+void ege_path_addpolygon    (ege_path* path, int numOfPoints, const ege_point* points);
+void ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points);
+void ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points, float tension);
+
 
 // transforms
 void EGEAPI ege_transform_rotate(float angle, PIMAGE pimg = NULL);
@@ -1089,6 +1157,8 @@ void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg = NULL);
 void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg = NULL);
 ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL);       // Calculate transformed coordination of p;
 ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);  // Calculate transformed coordination of point(x,y);
+
+
 
 //
 #endif
