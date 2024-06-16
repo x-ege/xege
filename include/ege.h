@@ -1115,14 +1115,27 @@ void      ege_path_destroy  (const ege_path* path);
 void      ege_path_start    (ege_path* path);
 void      ege_path_close    (ege_path* path);
 void      ege_path_closeall (ege_path* path);
+
 void      ege_path_reset    (ege_path* path);
 void      ege_path_reverse  (ege_path* path);
+void      ege_path_widen    (ege_path* path, float lineWidth, const ege_transform_matrix* matrix = NULL);
+void      ege_path_widen    (ege_path* path, float lineWidth, const ege_transform_matrix* matrix,  float flatness);
+void      ege_path_flatten  (ege_path* path, const ege_transform_matrix* matrix = NULL);
+void      ege_path_flatten  (ege_path* path, const ege_transform_matrix* matrix, float flatness);
+void      ege_path_warp     (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix = NULL);
+void      ege_path_warp     (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix, float flatness);
+void      ege_path_outline  (ege_path* path, const ege_transform_matrix* matrix = NULL);
+void      ege_path_outline  (ege_path* path, const ege_transform_matrix* matrix, float flatness);
 
-ege_point      ege_path_lastpoint    (ege_path* path);
-int            ege_path_pointcount   (ege_path* path);
-void           ege_path_getbounds    (ege_path* path, ege_point* points, const ege_transform_matrix* matrix = NULL);
-ege_point*     ege_path_getpathpoints(ege_path* path, ege_point* points);
-unsigned char* ege_path_getpathtypes (ege_path* path, unsigned char* types);
+bool      ege_path_inpath   (const ege_path* path, float x, float y, PIMAGE pimg);
+bool      ege_path_instroke (const ege_path* path, float x, float y, PIMAGE pimg);
+
+ege_point      ege_path_lastpoint    (const ege_path* path);
+int            ege_path_pointcount   (const ege_path* path);
+void           ege_path_getbounds    (const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix = NULL);
+void           ege_path_getbounds    (const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix, PIMAGE pimg);
+ege_point*     ege_path_getpathpoints(const ege_path* path, ege_point* points);
+unsigned char* ege_path_getpathtypes (const ege_path* path, unsigned char* types);
 
 void ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
 
