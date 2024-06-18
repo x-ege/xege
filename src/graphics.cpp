@@ -737,7 +737,7 @@ inline void init_img_page(struct _graph_setting* pg)
 {
     if (!pg->has_init) {
 #ifdef EGE_GDIPLUS
-    gdipluinit();
+    gdiplusinit();
 #endif
     }
 }
@@ -1041,7 +1041,7 @@ long getGraphicsVer()
     return EGE_VERSION_NUMBER;
 }
 
-void gdipluinit()
+void gdiplusinit()
 {
     if (graph_setting.g_gdiplusToken == 0) {
         Gdiplus::GdiplusStartupInput gdiplusStartupInput;

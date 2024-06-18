@@ -2147,13 +2147,13 @@ void EGEAPI ege_drawimage(PCIMAGE srcimg,
 
 ege_path::ege_path()
 {
-    gdipluinit();
+    gdiplusinit();
     m_data = new Gdiplus::GraphicsPath;
 }
 
 ege_path::ege_path(const ege_point *points, const unsigned char *types, int count)
 {
-    gdipluinit();
+    gdiplusinit();
     m_data = new Gdiplus::GraphicsPath((const Gdiplus::PointF*)points, (const BYTE*)types, count);
 }
 
@@ -2239,7 +2239,9 @@ void ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg)
         const Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             Gdiplus::Graphics* graphics = img->getGraphics();
+            graphics->TranslateTransform(x, y);
             graphics->FillPath(img->getBrush(), graphicsPath);
+            graphics->TranslateTransform(-x, -y);
         }
     }
     CONVERT_IMAGE_END;
@@ -2247,15 +2249,20 @@ void ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg)
 
 ege_path* ege_path_create()
 {
-    return new ege_path;
+    return new(std::nothrow) ege_path;
+}
+
+ege_path* ege_path_createfrom(const ege_point* points, const unsigned char* types, int count)
+{
+    return new(std::nothrow) ege_path(points, types, count);
 }
 
 ege_path* ege_path_clone(const ege_path* path)
 {
-    if (path != NULL) {
-        return new ege_path(*path);
-    }
-    return NULL;
+    if (path == NULL)
+        return NULL;
+
+    return new(std::nothrow) ege_path(*path);
 }
 
 void ege_path_destroy(const ege_path* path)
@@ -2289,6 +2296,22 @@ void ege_path_closeall(ege_path* path)
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             graphicsPath->CloseAllFigures();
+        }
+    }
+}
+
+void ege_path_setfillmode(ege_path* path, fill_mode mode)
+{
+    if (path != NULL) {
+        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        if (graphicsPath != NULL) {
+            Gdiplus::FillMode fillMode = Gdiplus::FillModeAlternate;
+            switch (mode) {
+                case FILLMODE_ALTERNATE: fillMode = Gdiplus::FillModeAlternate; break;
+                case FILLMODE_WINDING:   fillMode = Gdiplus::FillModeWinding;   break;
+                default:                                                        break;
+            }
+            graphicsPath->SetFillMode(fillMode);
         }
     }
 }
@@ -2377,12 +2400,23 @@ void ege_path_outline(ege_path* path, const ege_transform_matrix* matrix, float 
     }
 }
 
-bool ege_path_inpath(const ege_path* path, float x, float y, PIMAGE pimg)
+bool ege_path_inpath(const ege_path* path, float x, float y)
 {
     if (path != NULL) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+            return graphicsPath->IsVisible(x, y);
+        }
+    }
+    return false;
+}
+
+bool ege_path_inpath(const ege_path* path, float x, float y, PCIMAGE pimg)
+{
+    if (path != NULL) {
+        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        if (graphicsPath != NULL) {
+            PIMAGE img = CONVERT_IMAGE_CONST((PIMAGE)pimg);
             if ((img != NULL) && (img->m_hDC != NULL)) {
                 return graphicsPath->IsVisible(x, y, img->getGraphics());
             }
@@ -2391,12 +2425,24 @@ bool ege_path_inpath(const ege_path* path, float x, float y, PIMAGE pimg)
     return false;
 }
 
-bool ege_path_instroke(const ege_path* path, float x, float y, PIMAGE pimg)
+bool ege_path_instroke(const ege_path* path, float x, float y)
 {
     if (path != NULL) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+            Gdiplus::Pen pen(Gdiplus::Color(), 1.0f);
+            return graphicsPath->IsOutlineVisible(x, y, &pen);
+        }
+    }
+    return false;
+}
+
+bool ege_path_instroke(const ege_path* path, float x, float y, PCIMAGE pimg)
+{
+    if (path != NULL) {
+        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        if (graphicsPath != NULL) {
+            PIMAGE img = CONVERT_IMAGE_CONST((PIMAGE)pimg);
             if ((img != NULL) && (img->m_hDC != NULL)) {
                 return graphicsPath->IsOutlineVisible(x, y, img->getPen(), img->getGraphics());
             }
@@ -2409,7 +2455,7 @@ ege_point ege_path_lastpoint(const ege_path* path)
 {
     ege_point lastPoint = {0.0f, 0.0f};
     if (path != NULL) {
-        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             graphicsPath->GetLastPoint((Gdiplus::PointF*)&lastPoint);
         }
@@ -2421,7 +2467,7 @@ int ege_path_pointcount(const ege_path* path)
 {
     int pointCount = 0;
     if (path != NULL) {
-        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             pointCount = graphicsPath->GetPointCount();
         }
@@ -2429,32 +2475,37 @@ int ege_path_pointcount(const ege_path* path)
     return pointCount;
 }
 
-void ege_path_getbounds(const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix)
+ege_rect ege_path_getbounds(const ege_path* path, const ege_transform_matrix* matrix)
 {
+    ege_rect bounds = {0.0f, 0.0f, 0.0f, 0.0f};
     if (path != NULL) {
-        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            graphicsPath->GetBounds((Gdiplus::RectF*)bounds, (const Gdiplus::Matrix*)matrix);
+            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, (const Gdiplus::Matrix*)matrix);
         }
     }
+
+    return bounds;
 }
 
-void ege_path_getbounds(const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix, PIMAGE pimg)
+ege_rect ege_path_getbounds(const ege_path* path, const ege_transform_matrix* matrix, PCIMAGE pimg)
 {
+    ege_rect bounds = {0.0f, 0.0f, 0.0f, 0.0f};
     if (path != NULL) {
-        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            PIMAGE img = CONVERT_IMAGE_CONST(pimg);
-            graphicsPath->GetBounds((Gdiplus::RectF*)bounds, (const Gdiplus::Matrix*)matrix, img->getPen());
+            PIMAGE img = CONVERT_IMAGE((PIMAGE)pimg);
+            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, (const Gdiplus::Matrix*)matrix, img->getPen());
             CONVERT_IMAGE_END
         }
     }
+    return bounds;
 }
 
 ege_point* ege_path_getpathpoints(const ege_path* path, ege_point* points)
 {
     if ((path != NULL)) {
-        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             int pointCount = graphicsPath->GetPointCount();
 
@@ -2473,7 +2524,7 @@ ege_point* ege_path_getpathpoints(const ege_path* path, ege_point* points)
 unsigned char* ege_path_getpathtypes(const ege_path* path, unsigned char* types)
 {
     if ((path != NULL)) {
-        Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+        const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             int pointCount = graphicsPath->GetPointCount();
 
@@ -2481,7 +2532,7 @@ unsigned char* ege_path_getpathtypes(const ege_path* path, unsigned char* types)
                 types = new unsigned char[pointCount];
             }
 
-            graphicsPath->GetPathTypes((BYTE*)types, pointCount);
+            graphicsPath->GetPathTypes(types, pointCount);
             return types;
         }
     }

@@ -31,7 +31,7 @@ float EGE_PRIVATE_GetFPS(int add); // 获取帧数
 void setmode(int gdriver, int gmode);
 
 // GDI+ 初始化
-void gdipluinit();
+void gdiplusinit();
 
 Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics);
 

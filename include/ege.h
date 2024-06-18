@@ -422,6 +422,13 @@ enum fill_patterns
     USER_FILL        /* user defined fill */
 };
 
+enum fill_mode
+{
+    FILLMODE_DEFAULT   = 0,
+    FILLMODE_ALTERNATE = 1,
+    FILLMODE_WINDING   = 2,
+};
+
 /* Horizontal and vertical justification for settextjustify */
 enum text_just
 {
@@ -1104,61 +1111,64 @@ void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, ege_rect src, PIMAGE p
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
 
-void ege_drawpath(const ege_path* path, PIMAGE pimg = NULL);
-void ege_fillpath(const ege_path* path, PIMAGE pimg = NULL);
-void ege_drawpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
-void ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpath(const ege_path* path, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpath(const ege_path* path, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
 
-ege_path* ege_path_create   ();
-ege_path* ege_path_clone    (const ege_path* path);
-void      ege_path_destroy  (const ege_path* path);
-void      ege_path_start    (ege_path* path);
-void      ege_path_close    (ege_path* path);
-void      ege_path_closeall (ege_path* path);
+ege_path* EGEAPI ege_path_create    ();
+ege_path* EGEAPI ege_path_createfrom(const ege_point* points, const unsigned char* types, int count);
+ege_path* EGEAPI ege_path_clone     (const ege_path* path);
+void      EGEAPI ege_path_destroy   (const ege_path* path);
+void      EGEAPI ege_path_start     (ege_path* path);
+void      EGEAPI ege_path_close     (ege_path* path);
+void      EGEAPI ege_path_closeall  (ege_path* path);
 
-void      ege_path_reset    (ege_path* path);
-void      ege_path_reverse  (ege_path* path);
-void      ege_path_widen    (ege_path* path, float lineWidth, const ege_transform_matrix* matrix = NULL);
-void      ege_path_widen    (ege_path* path, float lineWidth, const ege_transform_matrix* matrix,  float flatness);
-void      ege_path_flatten  (ege_path* path, const ege_transform_matrix* matrix = NULL);
-void      ege_path_flatten  (ege_path* path, const ege_transform_matrix* matrix, float flatness);
-void      ege_path_warp     (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix = NULL);
-void      ege_path_warp     (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix, float flatness);
-void      ege_path_outline  (ege_path* path, const ege_transform_matrix* matrix = NULL);
-void      ege_path_outline  (ege_path* path, const ege_transform_matrix* matrix, float flatness);
+void      EGEAPI ege_path_reset     (ege_path* path);
+void      EGEAPI ege_path_reverse   (ege_path* path);
+void      EGEAPI ege_path_widen     (ege_path* path, float lineWidth, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_widen     (ege_path* path, float lineWidth, const ege_transform_matrix* matrix,  float flatness);
+void      EGEAPI ege_path_flatten   (ege_path* path, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_flatten   (ege_path* path, const ege_transform_matrix* matrix, float flatness);
+void      EGEAPI ege_path_warp      (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_warp      (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix, float flatness);
+void      EGEAPI ege_path_outline   (ege_path* path, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_outline   (ege_path* path, const ege_transform_matrix* matrix, float flatness);
 
-bool      ege_path_inpath   (const ege_path* path, float x, float y, PIMAGE pimg);
-bool      ege_path_instroke (const ege_path* path, float x, float y, PIMAGE pimg);
+bool      EGEAPI ege_path_inpath    (const ege_path* path, float x, float y);
+bool      EGEAPI ege_path_inpath    (const ege_path* path, float x, float y, PCIMAGE pimg);
+bool      EGEAPI ege_path_instroke  (const ege_path* path, float x, float y);
+bool      EGEAPI ege_path_instroke  (const ege_path* path, float x, float y, PCIMAGE pimg);
 
-ege_point      ege_path_lastpoint    (const ege_path* path);
-int            ege_path_pointcount   (const ege_path* path);
-void           ege_path_getbounds    (const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix = NULL);
-void           ege_path_getbounds    (const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix, PIMAGE pimg);
-ege_point*     ege_path_getpathpoints(const ege_path* path, ege_point* points);
-unsigned char* ege_path_getpathtypes (const ege_path* path, unsigned char* types);
+ege_point      EGEAPI ege_path_lastpoint    (const ege_path* path);
+int            EGEAPI ege_path_pointcount   (const ege_path* path);
+ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix = NULL);
+ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix, PCIMAGE pimg);
+ege_point*     EGEAPI ege_path_getpathpoints(const ege_path* path, ege_point* points);
+unsigned char* EGEAPI ege_path_getpathtypes (const ege_path* path, unsigned char* types);
 
-void ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
+void EGEAPI ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
 
 // Adds a non-closed figure to path
-void ege_path_addpath       (ege_path* dstPath, const ege_path* srcPath, bool connect);
-void ege_path_addline       (ege_path* path, float x1, float y1, float x2, float y2);
-void ege_path_addarc        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
-void ege_path_addpolyline   (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addbezier     (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addbezier     (ege_path* path, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
-void ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points, float tension);
+void EGEAPI ege_path_addpath       (ege_path* dstPath, const ege_path* srcPath, bool connect);
+void EGEAPI ege_path_addline       (ege_path* path, float x1, float y1, float x2, float y2);
+void EGEAPI ege_path_addarc        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
+void EGEAPI ege_path_addpolyline   (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addbezier     (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addbezier     (ege_path* path, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+void EGEAPI ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points, float tension);
 
 // Adds a closed figure to path
-void ege_path_addcircle     (ege_path* path, float x, float y, float radius);
-void ege_path_addrect       (ege_path* path, float x, float y, float width, float height);
-void ege_path_addellipse    (ege_path* path, float x, float y, float width, float height);
-void ege_path_addpie        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
-void ege_path_addstring     (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
-void ege_path_addstring     (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
-void ege_path_addpolygon    (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points, float tension);
+void EGEAPI ege_path_addcircle     (ege_path* path, float x, float y, float radius);
+void EGEAPI ege_path_addrect       (ege_path* path, float x, float y, float width, float height);
+void EGEAPI ege_path_addellipse    (ege_path* path, float x, float y, float width, float height);
+void EGEAPI ege_path_addpie        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
+void EGEAPI ege_path_addstring     (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
+void EGEAPI ege_path_addstring     (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
+void EGEAPI ege_path_addpolygon    (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points, float tension);
 
 
 // transforms

@@ -69,7 +69,7 @@ void IMAGE::construct(int width, int height)
     }
 
     dll::loadDllsIfNot();
-    gdipluinit();
+    gdiplusinit();
     reset();
     initimage(refDC, width, height);
     setdefaultattribute();
