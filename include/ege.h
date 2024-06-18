@@ -456,21 +456,21 @@ enum line_styles
     USERBIT_LINE         = PS_USERSTYLE, /* User defined line style */
 };
 
-struct linestyletype
+struct line_style_type
 {
     int             linestyle;
     unsigned short  upattern;
     int             thickness;
 };
 
-enum linecaptype
+enum line_cap_type
 {
     LINECAP_FLAT   = 0,
     LINECAP_SQUARE,
     LINECAP_ROUND,
 };
 
-enum linejointype
+enum line_join_type
 {
     LINEJOIN_MITER = 0,
     LINEJOIN_BEVEL,
@@ -919,15 +919,15 @@ void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* th
 void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE pimg = NULL);
 void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);
 
-void EGEAPI setlinecap(linecaptype linecap, PIMAGE pimg = NULL);
-void EGEAPI setlinecap(linecaptype  startCap, linecaptype  endCap, PIMAGE pimg = NULL);
-void EGEAPI getlinecap(linecaptype* startCap, linecaptype* endCap, PIMAGE pimg = NULL);
-linecaptype EGEAPI getlinecap(PIMAGE pimg = NULL);
+void EGEAPI setlinecap(line_cap_type linecap, PIMAGE pimg = NULL);
+void EGEAPI setlinecap(line_cap_type  startCap, line_cap_type  endCap, PIMAGE pimg = NULL);
+void EGEAPI getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg = NULL);
+line_cap_type EGEAPI getlinecap(PIMAGE pimg = NULL);
 
-void EGEAPI setlinejoin(linejointype  linejoin, PIMAGE pimg = NULL);
-void EGEAPI setlinejoin(linejointype  linejoin, float  miterLimit, PIMAGE pimg = NULL);
-void EGEAPI getlinejoin(linejointype* linejoin, float* miterLimit, PIMAGE pimg = NULL);
-linejointype EGEAPI getlinejoin(PIMAGE pimg = NULL);
+void EGEAPI setlinejoin(line_join_type  linejoin, PIMAGE pimg = NULL);
+void EGEAPI setlinejoin(line_join_type  linejoin, float  miterLimit, PIMAGE pimg = NULL);
+void EGEAPI getlinejoin(line_join_type* linejoin, float* miterLimit, PIMAGE pimg = NULL);
+line_join_type EGEAPI getlinejoin(PIMAGE pimg = NULL);
 
 //void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // ###
 void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);

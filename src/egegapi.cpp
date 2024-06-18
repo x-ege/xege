@@ -1236,7 +1236,7 @@ void setlinewidth(float width, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-Gdiplus::LineCap convertToGdiplusLineCap(linecaptype linecap)
+Gdiplus::LineCap convertToGdiplusLineCap(line_cap_type linecap)
 {
     Gdiplus::LineCap cap = Gdiplus::LineCapFlat;
     switch(linecap) {
@@ -1248,7 +1248,7 @@ Gdiplus::LineCap convertToGdiplusLineCap(linecaptype linecap)
     return cap;
 }
 
-Gdiplus::LineJoin convertToGdiplusLineJoin(linejointype linejoin)
+Gdiplus::LineJoin convertToGdiplusLineJoin(line_join_type linejoin)
 {
     Gdiplus::LineJoin joinType = Gdiplus::LineJoinMiter;
     switch(linejoin) {
@@ -1260,7 +1260,7 @@ Gdiplus::LineJoin convertToGdiplusLineJoin(linejointype linejoin)
     return joinType;
 }
 
-void setlinecap(linecaptype linecap, PIMAGE pimg)
+void setlinecap(line_cap_type linecap, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
@@ -1273,7 +1273,7 @@ void setlinecap(linecaptype linecap, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void setlinecap(linecaptype startCap, linecaptype endCap, PIMAGE pimg)
+void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
@@ -1286,7 +1286,7 @@ void setlinecap(linecaptype startCap, linecaptype endCap, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void getlinecap(linecaptype *startCap, linecaptype *endCap, PIMAGE pimg)
+void getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
@@ -1301,7 +1301,7 @@ void getlinecap(linecaptype *startCap, linecaptype *endCap, PIMAGE pimg)
     CONVERT_IMAGE_END
 }
 
-linecaptype getlinecap(PIMAGE pimg)
+line_cap_type getlinecap(PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
@@ -1312,14 +1312,14 @@ linecaptype getlinecap(PIMAGE pimg)
     return LINECAP_FLAT;
 }
 
-void setlinejoin(linejointype linejoin, PIMAGE pimg)
+void setlinejoin(line_join_type linejoin, PIMAGE pimg)
 {
     float miterLimit;
     getlinejoin(NULL, &miterLimit, pimg);
     setlinejoin(linejoin, miterLimit, pimg);
 }
 
-void setlinejoin(linejointype linejoin, float miterLimit, PIMAGE pimg)
+void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
@@ -1332,7 +1332,7 @@ void setlinejoin(linejointype linejoin, float miterLimit, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void getlinejoin(linejointype *linejoin, float *miterLimit, PIMAGE pimg)
+void getlinejoin(line_join_type *linejoin, float *miterLimit, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
@@ -1347,7 +1347,7 @@ void getlinejoin(linejointype *linejoin, float *miterLimit, PIMAGE pimg)
     CONVERT_IMAGE_END
 }
 
-linejointype getlinejoin(PIMAGE pimg)
+line_join_type getlinejoin(PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
