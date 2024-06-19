@@ -39,11 +39,11 @@ private:
 public:
     viewporttype     m_vpt;
     textsettingstype m_texttype;
-    linestyletype    m_linestyle;
+    line_style_type  m_linestyle;
     float            m_linewidth;
-    linecaptype      m_linestartcap;
-    linecaptype      m_lineendcap;
-    linejointype     m_linejoin;
+    line_cap_type    m_linestartcap;
+    line_cap_type    m_lineendcap;
+    line_join_type   m_linejoin;
     float            m_linejoinmiterlimit;
     void*            m_texture;
 

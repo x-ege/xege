@@ -206,6 +206,26 @@ enum graphics_modes
     IBM8514HI  = 1  /*1024x768 256 colors         */
 };
 
+enum initmode_flag
+{
+    INIT_DEFAULT         = 0x0,
+    INIT_NOBORDER        = 0x1,
+    INIT_CHILD           = 0x2,
+    INIT_TOPMOST         = 0x4,
+    INIT_RENDERMANUAL    = 0x8,
+    INIT_NOFORCEEXIT     = 0x10,
+    INIT_UNICODE         = 0x20,    // equal to setunicodecharmessage(true)
+    INIT_HIDE            = 0x40,
+    INIT_WITHLOGO        = 0x100,
+    INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT,
+};
+
+enum rendermode_e
+{
+    RENDER_AUTO,
+    RENDER_MANUAL,
+};
+
 /* graphresult error return codes */
 enum graphics_errors
 {
@@ -257,6 +277,27 @@ enum message_mouse
 #define EGE_COLOR_T_TYPEDEF
 typedef unsigned int color_t;
 #endif
+
+struct ege_point
+{
+    float x;
+    float y;
+};
+
+struct ege_rect
+{
+    float x;
+    float y;
+    float w;
+    float h;
+};
+
+struct ege_colpoint
+{
+    float   x;
+    float   y;
+    color_t color;
+};
 
 enum COLORS
 {
@@ -404,6 +445,38 @@ enum COLORS
     YELLOWGREEN          = EGERGB(0x9A, 0xCD, 0x32),
 };
 
+/* Line styles for get/setlinestyle */
+enum line_styles
+{
+    SOLID_LINE           = PS_SOLID,
+    CENTER_LINE          = PS_DASH,
+    DOTTED_LINE          = PS_DOT,
+    DASHED_LINE          = PS_DASHDOT,
+    NULL_LINE            = PS_NULL,
+    USERBIT_LINE         = PS_USERSTYLE, /* User defined line style */
+};
+
+struct line_style_type
+{
+    int             linestyle;
+    unsigned short  upattern;
+    int             thickness;
+};
+
+enum line_cap_type
+{
+    LINECAP_FLAT   = 0,
+    LINECAP_SQUARE,
+    LINECAP_ROUND,
+};
+
+enum line_join_type
+{
+    LINEJOIN_MITER = 0,
+    LINEJOIN_BEVEL,
+    LINEJOIN_ROUND,
+};
+
 /* Fill patterns for get/set fillstyle */
 enum fill_patterns
 {
@@ -422,6 +495,13 @@ enum fill_patterns
     USER_FILL        /* user defined fill */
 };
 
+enum fill_mode
+{
+    FILLMODE_DEFAULT   = 0,
+    FILLMODE_ALTERNATE = 1,
+    FILLMODE_WINDING   = 2,
+};
+
 /* Horizontal and vertical justification for settextjustify */
 enum text_just
 {
@@ -434,35 +514,21 @@ enum text_just
     BOTTOM_TEXT          = 2
 };
 
+struct textsettingstype
+{
+    int font;
+    int direction;
+    int charsize;
+    int horiz;
+    int vert;
+};
+
 enum font_styles
 {
     FONTSTYLE_BOLD       = 1,
     FONTSTYLE_ITALIC     = 2,
     FONTSTYLE_UNDERLINE  = 4,
     FONTSTYLE_STRIKEOUT  = 8,
-};
-
-/* Line styles for get/setlinestyle */
-enum line_styles
-{
-    SOLID_LINE           = PS_SOLID,
-    CENTER_LINE          = PS_DASH,
-    DOTTED_LINE          = PS_DOT,
-    DASHED_LINE          = PS_DASHDOT,
-    NULL_LINE            = PS_NULL,
-    USERBIT_LINE         = PS_USERSTYLE, /* User defined line style */
-};
-
-enum key_msg_flag
-{
-    KEYMSG_CHAR_FLAG     = 2,
-    KEYMSG_DOWN_FLAG     = 1,
-    KEYMSG_UP_FLAG       = 1,
-
-    KEYMSG_CHAR          = 0x40000,
-    KEYMSG_DOWN          = 0x10000,
-    KEYMSG_UP            = 0x20000,
-    KEYMSG_FIRSTDOWN     = 0x80000,
 };
 
 enum music_state_flag
@@ -476,27 +542,21 @@ enum music_state_flag
     MUSIC_MODE_SEEK      = 0x210,
 };
 
-enum initmode_flag
+#define MUSIC_ERROR  0xFFFFFFFF
+
+enum key_msg_flag
 {
-    INIT_DEFAULT         = 0x0,
-    INIT_NOBORDER        = 0x1,
-    INIT_CHILD           = 0x2,
-    INIT_TOPMOST         = 0x4,
-    INIT_RENDERMANUAL    = 0x8,
-    INIT_NOFORCEEXIT     = 0x10,
-    INIT_UNICODE         = 0x20,    // equal to setunicodecharmessage(true)
-    INIT_HIDE            = 0x40,
-    INIT_WITHLOGO        = 0x100,
-    INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT,
+    KEYMSG_CHAR_FLAG     = 2,
+    KEYMSG_DOWN_FLAG     = 1,
+    KEYMSG_UP_FLAG       = 1,
+
+    KEYMSG_CHAR          = 0x40000,
+    KEYMSG_DOWN          = 0x10000,
+    KEYMSG_UP            = 0x20000,
+    KEYMSG_FIRSTDOWN     = 0x80000,
 };
 
-enum rendermode_e
-{
-    RENDER_AUTO,
-    RENDER_MANUAL,
-};
-
-typedef enum key_code_e
+enum key_code_e
 {
     key_mouse_l         = 0x01,
     key_mouse_r         = 0x02,
@@ -623,86 +683,47 @@ typedef enum key_code_e
     key_quote           = 0xde,
 
     key_ime_process     = 0xe5,
-} key_code_e;
+};
 
-typedef enum key_msg_e
+enum key_msg_e
 {
     key_msg_down        = 1,
     key_msg_up          = 2,
     key_msg_char        = 4,
-} key_msg_e;
+};
 
-typedef enum key_flag_e
+enum key_flag_e
 {
     key_flag_shift      = 0x100,
     key_flag_ctrl       = 0x200,
     key_flag_first_down = 0x80000,
-} key_flag_e;
+};
 
-typedef enum mouse_msg_e
+struct key_msg
+{
+    int             key;
+    key_msg_e       msg;
+    unsigned int    flags;
+};
+
+enum mouse_msg_e
 {
     mouse_msg_down      = 0x10,
     mouse_msg_up        = 0x20,
     mouse_msg_move      = 0x40,
     mouse_msg_wheel     = 0x80,
-} mouse_msg_e;
+};
 
-typedef enum mouse_flag_e
+enum mouse_flag_e
 {
     mouse_flag_left     = 1,
     mouse_flag_right    = 2,
     mouse_flag_mid      = 4,
     mouse_flag_shift    = 0x100,
     mouse_flag_ctrl     = 0x200,
-} mouse_flag_e;
-
-struct viewporttype
-{
-    int left;
-    int top;
-    int right;
-    int bottom;
-    int clipflag;
 };
 
-struct textsettingstype
-{
-    int font;
-    int direction;
-    int charsize;
-    int horiz;
-    int vert;
-};
-
-struct linestyletype
-{
-    int             linestyle;
-    unsigned short  upattern;
-    int             thickness;
-};
-
-enum linecaptype
-{
-    LINECAP_FLAT   = 0,
-    LINECAP_SQUARE,
-    LINECAP_ROUND,
-};
-
-enum linejointype
-{
-    LINEJOIN_MITER = 0,
-    LINEJOIN_BEVEL,
-    LINEJOIN_ROUND,
-};
-
-typedef struct key_msg
-{
-    int             key;
-    key_msg_e       msg;
-    unsigned int    flags;
-} key_msg;
-
-typedef struct mouse_msg
+struct mouse_msg
 {
     int             x;
     int             y;
@@ -716,36 +737,37 @@ typedef struct mouse_msg
     bool is_up()    const {return msg == mouse_msg_up;}
     bool is_move()  const {return msg == mouse_msg_move;}
     bool is_wheel() const {return msg == mouse_msg_wheel;}
-} mouse_msg;
+};
 
-typedef struct ege_point
+struct MOUSEMSG
 {
-    float x;
-    float y;
-} ege_point;
+    UINT  uMsg;
+    bool  mkCtrl;
+    bool  mkShift;
+    bool  mkLButton;
+    bool  mkMButton;
+    bool  mkRButton;
+    short x;
+    short y;
+    short wheel;
+};
 
-typedef struct ege_rect
+struct viewporttype
 {
-    float x;
-    float y;
-    float w;
-    float h;
-} ege_rect;
-
-typedef struct ege_colpoint
-{
-    float   x;
-    float   y;
-    color_t color;
-} ege_colpoint;
+    int left;
+    int top;
+    int right;
+    int bottom;
+    int clipflag;
+};
 
 // matrix for transformation
-typedef struct ege_transform_matrix
+struct ege_transform_matrix
 {
     float m11, m12;
     float m21, m22;
     float m31, m32;
-} ege_transform_matrix;
+};
 
 struct ege_path
 {
@@ -763,19 +785,6 @@ public:
     ege_path& operator=(const ege_path& path);
 };
 
-struct MOUSEMSG
-{
-    UINT  uMsg;
-    bool  mkCtrl;
-    bool  mkShift;
-    bool  mkLButton;
-    bool  mkMButton;
-    bool  mkRButton;
-    short x;
-    short y;
-    short wheel;
-};
-
 struct msg_createwindow
 {
     HANDLE  hEvent;
@@ -786,9 +795,6 @@ struct msg_createwindow
     size_t  id;
     LPVOID  param;
 };
-
-#define MUSIC_ERROR  0xFFFFFFFF
-
 
 typedef void (CALLBACK_PROC)();
 typedef int (__stdcall MSG_KEY_PROC  )(void*, unsigned, int);
@@ -913,15 +919,15 @@ void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* th
 void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE pimg = NULL);
 void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);
 
-void EGEAPI setlinecap(linecaptype linecap, PIMAGE pimg = NULL);
-void EGEAPI setlinecap(linecaptype  startCap, linecaptype  endCap, PIMAGE pimg = NULL);
-void EGEAPI getlinecap(linecaptype* startCap, linecaptype* endCap, PIMAGE pimg = NULL);
-linecaptype EGEAPI getlinecap(PIMAGE pimg = NULL);
+void EGEAPI setlinecap(line_cap_type linecap, PIMAGE pimg = NULL);
+void EGEAPI setlinecap(line_cap_type  startCap, line_cap_type  endCap, PIMAGE pimg = NULL);
+void EGEAPI getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg = NULL);
+line_cap_type EGEAPI getlinecap(PIMAGE pimg = NULL);
 
-void EGEAPI setlinejoin(linejointype  linejoin, PIMAGE pimg = NULL);
-void EGEAPI setlinejoin(linejointype  linejoin, float  miterLimit, PIMAGE pimg = NULL);
-void EGEAPI getlinejoin(linejointype* linejoin, float* miterLimit, PIMAGE pimg = NULL);
-linejointype EGEAPI getlinejoin(PIMAGE pimg = NULL);
+void EGEAPI setlinejoin(line_join_type  linejoin, PIMAGE pimg = NULL);
+void EGEAPI setlinejoin(line_join_type  linejoin, float  miterLimit, PIMAGE pimg = NULL);
+void EGEAPI getlinejoin(line_join_type* linejoin, float* miterLimit, PIMAGE pimg = NULL);
+line_join_type EGEAPI getlinejoin(PIMAGE pimg = NULL);
 
 //void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // ###
 void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);
@@ -1104,61 +1110,65 @@ void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, ege_rect src, PIMAGE p
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
 
-void ege_drawpath(const ege_path* path, PIMAGE pimg = NULL);
-void ege_fillpath(const ege_path* path, PIMAGE pimg = NULL);
-void ege_drawpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
-void ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpath(const ege_path* path, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpath(const ege_path* path, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
 
-ege_path* ege_path_create   ();
-ege_path* ege_path_clone    (const ege_path* path);
-void      ege_path_destroy  (const ege_path* path);
-void      ege_path_start    (ege_path* path);
-void      ege_path_close    (ege_path* path);
-void      ege_path_closeall (ege_path* path);
+ege_path* EGEAPI ege_path_create     ();
+ege_path* EGEAPI ege_path_createfrom (const ege_point* points, const unsigned char* types, int count);
+ege_path* EGEAPI ege_path_clone      (const ege_path* path);
+void      EGEAPI ege_path_destroy    (const ege_path* path);
+void      EGEAPI ege_path_start      (ege_path* path);
+void      EGEAPI ege_path_close      (ege_path* path);
+void      EGEAPI ege_path_closeall   (ege_path* path);
+void      EGEAPI ege_path_setfillmode(ege_path* path, fill_mode mode);
 
-void      ege_path_reset    (ege_path* path);
-void      ege_path_reverse  (ege_path* path);
-void      ege_path_widen    (ege_path* path, float lineWidth, const ege_transform_matrix* matrix = NULL);
-void      ege_path_widen    (ege_path* path, float lineWidth, const ege_transform_matrix* matrix,  float flatness);
-void      ege_path_flatten  (ege_path* path, const ege_transform_matrix* matrix = NULL);
-void      ege_path_flatten  (ege_path* path, const ege_transform_matrix* matrix, float flatness);
-void      ege_path_warp     (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix = NULL);
-void      ege_path_warp     (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix, float flatness);
-void      ege_path_outline  (ege_path* path, const ege_transform_matrix* matrix = NULL);
-void      ege_path_outline  (ege_path* path, const ege_transform_matrix* matrix, float flatness);
+void      EGEAPI ege_path_reset      (ege_path* path);
+void      EGEAPI ege_path_reverse    (ege_path* path);
+void      EGEAPI ege_path_widen      (ege_path* path, float lineWidth, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_widen      (ege_path* path, float lineWidth, const ege_transform_matrix* matrix,  float flatness);
+void      EGEAPI ege_path_flatten    (ege_path* path, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_flatten    (ege_path* path, const ege_transform_matrix* matrix, float flatness);
+void      EGEAPI ege_path_warp       (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_warp       (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix, float flatness);
+void      EGEAPI ege_path_outline    (ege_path* path, const ege_transform_matrix* matrix = NULL);
+void      EGEAPI ege_path_outline    (ege_path* path, const ege_transform_matrix* matrix, float flatness);
 
-bool      ege_path_inpath   (const ege_path* path, float x, float y, PIMAGE pimg);
-bool      ege_path_instroke (const ege_path* path, float x, float y, PIMAGE pimg);
+bool      EGEAPI ege_path_inpath     (const ege_path* path, float x, float y);
+bool      EGEAPI ege_path_inpath     (const ege_path* path, float x, float y, PCIMAGE pimg);
+bool      EGEAPI ege_path_instroke   (const ege_path* path, float x, float y);
+bool      EGEAPI ege_path_instroke   (const ege_path* path, float x, float y, PCIMAGE pimg);
 
-ege_point      ege_path_lastpoint    (const ege_path* path);
-int            ege_path_pointcount   (const ege_path* path);
-void           ege_path_getbounds    (const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix = NULL);
-void           ege_path_getbounds    (const ege_path* path, ege_rect* bounds, const ege_transform_matrix* matrix, PIMAGE pimg);
-ege_point*     ege_path_getpathpoints(const ege_path* path, ege_point* points);
-unsigned char* ege_path_getpathtypes (const ege_path* path, unsigned char* types);
+ege_point      EGEAPI ege_path_lastpoint    (const ege_path* path);
+int            EGEAPI ege_path_pointcount   (const ege_path* path);
+ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix = NULL);
+ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix, PCIMAGE pimg);
+ege_point*     EGEAPI ege_path_getpathpoints(const ege_path* path, ege_point* points = NULL);
+unsigned char* EGEAPI ege_path_getpathtypes (const ege_path* path, unsigned char* types = NULL);
 
-void ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
+void EGEAPI ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
 
 // Adds a non-closed figure to path
-void ege_path_addpath       (ege_path* dstPath, const ege_path* srcPath, bool connect);
-void ege_path_addline       (ege_path* path, float x1, float y1, float x2, float y2);
-void ege_path_addarc        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
-void ege_path_addpolyline   (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addbezier     (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addbezier     (ege_path* path, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
-void ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points, float tension);
+void EGEAPI ege_path_addpath       (ege_path* dstPath, const ege_path* srcPath, bool connect);
+void EGEAPI ege_path_addline       (ege_path* path, float x1, float y1, float x2, float y2);
+void EGEAPI ege_path_addarc        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
+void EGEAPI ege_path_addpolyline   (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addbezier     (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addbezier     (ege_path* path, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+void EGEAPI ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points, float tension);
 
 // Adds a closed figure to path
-void ege_path_addcircle     (ege_path* path, float x, float y, float radius);
-void ege_path_addrect       (ege_path* path, float x, float y, float width, float height);
-void ege_path_addellipse    (ege_path* path, float x, float y, float width, float height);
-void ege_path_addpie        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
-void ege_path_addstring     (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
-void ege_path_addstring     (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
-void ege_path_addpolygon    (ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points);
-void ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points, float tension);
+void EGEAPI ege_path_addcircle     (ege_path* path, float x, float y, float radius);
+void EGEAPI ege_path_addrect       (ege_path* path, float x, float y, float width, float height);
+void EGEAPI ege_path_addellipse    (ege_path* path, float x, float y, float width, float height);
+void EGEAPI ege_path_addpie        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
+void EGEAPI ege_path_addstring     (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
+void EGEAPI ege_path_addstring     (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
+void EGEAPI ege_path_addpolygon    (ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points);
+void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points, float tension);
 
 
 // transforms
