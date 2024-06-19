@@ -1144,8 +1144,8 @@ ege_point      EGEAPI ege_path_lastpoint    (const ege_path* path);
 int            EGEAPI ege_path_pointcount   (const ege_path* path);
 ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix = NULL);
 ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix, PCIMAGE pimg);
-ege_point*     EGEAPI ege_path_getpathpoints(const ege_path* path, ege_point* points);
-unsigned char* EGEAPI ege_path_getpathtypes (const ege_path* path, unsigned char* types);
+ege_point*     EGEAPI ege_path_getpathpoints(const ege_path* path, ege_point* points = NULL);
+unsigned char* EGEAPI ege_path_getpathtypes (const ege_path* path, unsigned char* types = NULL);
 
 void EGEAPI ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
 
