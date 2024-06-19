@@ -2510,10 +2510,12 @@ ege_point* ege_path_getpathpoints(const ege_path* path, ege_point* points)
             int pointCount = graphicsPath->GetPointCount();
 
             if (points == NULL) {
-                points = new ege_point[pointCount];
+                points = new(std::nothrow) ege_point[pointCount];
             }
 
-            graphicsPath->GetPathPoints((Gdiplus::PointF*)points, pointCount);
+            if (points != NULL) {
+                graphicsPath->GetPathPoints((Gdiplus::PointF*)points, pointCount);
+            }
             return points;
         }
     }
@@ -2529,10 +2531,13 @@ unsigned char* ege_path_getpathtypes(const ege_path* path, unsigned char* types)
             int pointCount = graphicsPath->GetPointCount();
 
             if (types == NULL) {
-                types = new unsigned char[pointCount];
+                types = new(std::nothrow) unsigned char[pointCount];
             }
 
-            graphicsPath->GetPathTypes(types, pointCount);
+            if (types != NULL) {
+                graphicsPath->GetPathTypes(types, pointCount);
+            }
+
             return types;
         }
     }
