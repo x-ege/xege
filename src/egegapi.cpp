@@ -2494,7 +2494,7 @@ ege_rect ege_path_getbounds(const ege_path* path, const ege_transform_matrix* ma
     if (path != NULL) {
         const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            PIMAGE img = CONVERT_IMAGE((PIMAGE)pimg);
+            PIMAGE img = CONVERT_IMAGE_CONST((PIMAGE)pimg);
             graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, (const Gdiplus::Matrix*)matrix, img->getPen());
             CONVERT_IMAGE_END
         }
