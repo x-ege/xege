@@ -6,98 +6,25 @@
 namespace ege
 {
 
+//------------------------------------------------------------------------------
+//                               Static Variables
+//------------------------------------------------------------------------------
 
-/* private function */
-static unsigned int private_gettextmode(PIMAGE img)
-{
-    UINT fMode = TA_NOUPDATECP; // TA_UPDATECP;
-    if (img->m_texttype.horiz == RIGHT_TEXT) {
-        fMode |= TA_RIGHT;
-    } else if (img->m_texttype.horiz == CENTER_TEXT) {
-        fMode |= TA_CENTER;
-    } else {
-        fMode |= TA_LEFT;
-    }
-    if (img->m_texttype.vert == BOTTOM_TEXT) {
-        fMode |= TA_BOTTOM;
-    } else {
-        fMode |= TA_TOP;
-    }
-    return fMode;
-}
 
-static UINT horizontalAlignToDrawTextFormat(int horizontalAlign)
-{
-    UINT format = 0;
-    switch (horizontalAlign) {
-    case LEFT_TEXT:    format |= DT_LEFT;   break;
-    case CENTER_TEXT:  format |= DT_CENTER; break;
-    case RIGHT_TEXT:   format |= DT_RIGHT;  break;
-    }
+//------------------------------------------------------------------------------
+//                         Static Function Declarations
+//------------------------------------------------------------------------------
 
-    return format;
-}
+static void ege_drawtext_p(const wchar_t* textstring, float x, float y,  PIMAGE img);
+static unsigned int private_gettextmode(PIMAGE img);
+static UINT horizontalAlignToDrawTextFormat(int horizontalAlign);
+static Point private_escapementToOffset(int textHeight, int textEscapement);
+static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text);
+static void private_textout(PIMAGE img, const wchar_t* text, int x, int y);
 
-/* private function */
-
-static Point private_escapementToOffset(int textHeight, int textEscapement)
-{
-    Point offset(0, 0);
-    int escapement = textEscapement % 3600;
-    if (escapement != 0) {
-        double radian = escapement / 10.0 * PI / 180.0;
-        offset.x = (int)round(-textHeight * sin(radian) / 2.0);
-        offset.y = (int)round(-textHeight * cos(radian) / 2.0);
-    } else {
-        offset.y = (int)round(-textHeight / 2.0);
-    }
-
-    return offset;
-}
-static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
-{
-    SetTextAlign(img->m_hDC, TA_UPDATECP | private_gettextmode(img));
-
-    if (text) {
-        Point offset(0, 0);
-
-        if (img->m_texttype.vert == CENTER_TEXT) {
-            LOGFONTW font;
-            getfont(&font, img);
-            offset = private_escapementToOffset(textheight(text, img), font.lfEscapement);
-        }
-
-        if ((offset.x != 0) || (offset.y != 0)) {
-            POINT curPos;
-            GetCurrentPositionEx(img->m_hDC, &curPos);
-            MoveToEx(img->m_hDC, curPos.x + offset.x, curPos.y + offset.y, NULL);
-
-            TextOutW(img->m_hDC, 0, 0, text, (int)lstrlenW(text));
-
-            GetCurrentPositionEx(img->m_hDC, &curPos);
-            MoveToEx(img->m_hDC, curPos.x - offset.x, curPos.y - offset.y, NULL);
-        } else {
-            TextOutW(img->m_hDC, 0, 0, text, (int)lstrlenW(text));
-        }
-    }
-}
-
-static void private_textout(PIMAGE img, const wchar_t* text, int x, int y)
-{
-    SetTextAlign(img->m_hDC, private_gettextmode(img));
-
-    if (text) {
-        Point offset(0, 0);
-
-        if (img->m_texttype.vert == CENTER_TEXT) {
-            LOGFONTW font;
-            getfont(&font, img);
-            offset = private_escapementToOffset(textheight(text, img), font.lfEscapement);
-        }
-
-        TextOutW(img->m_hDC, x + offset.x, y + offset.y, text, (int)lstrlenW(text));
-    }
-}
+//------------------------------------------------------------------------------
+//                               Global Functions
+//------------------------------------------------------------------------------
 
 void outtext(const char* text, PIMAGE pimg)
 {
@@ -364,6 +291,55 @@ int textheight(wchar_t c, PIMAGE pimg)
     return textheight(str, pimg);
 }
 
+void ege_outtextxy(int x, int y, const char* text, PIMAGE pimg)
+{
+    ege_drawtext(text, x, y, pimg);
+}
+
+void ege_outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg)
+{
+    ege_drawtext(text, x, y, pimg);
+}
+
+void ege_outtextxy(int x, int y, char c, PIMAGE pimg)
+{
+    char str[2] = {c, '\0'};
+    ege_drawtext(str, x, y, pimg);
+}
+
+void ege_outtextxy(int x, int y, wchar_t c, PIMAGE pimg)
+{
+    wchar_t str[2] = {c, L'\0'};
+    ege_drawtext(str, x, y, pimg);
+}
+
+void ege_xyprintf(int x, int y, const char* format, ...)
+{
+    va_list v;
+    va_start(v, format);
+    {
+        struct _graph_setting* pg = &graph_setting;
+        // 由于 ege_drawtext 同样使用这块缓冲区, 从中间开始写入以避免区域重叠造成转换失败
+        char* buff = (char*)(pg->g_t_buff + 4096);
+        vsprintf(buff, format, v);
+        ege_outtextxy(x, y, buff);
+    }
+    va_end(v);
+}
+
+void ege_xyprintf(int x, int y, const wchar_t* format, ...)
+{
+    va_list v;
+    va_start(v, format);
+    {
+        struct _graph_setting* pg = &graph_setting;
+        wchar_t* buff = (wchar_t*)pg->g_t_buff;
+        vswprintf(buff, format, v);
+        ege_outtextxy(x, y, buff);
+    }
+    va_end(v);
+}
+
 void settextjustify(int horiz, int vert, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pimg);
@@ -583,8 +559,131 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
+void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_hDC) {
+        int bufferSize = MultiByteToWideChar(getcodepage(), 0, text, -1, NULL, 0);
+        if (bufferSize <= 2048) {
+            wchar_t* buffer = (wchar_t*)graph_setting.g_t_buff;
+            MultiByteToWideChar(getcodepage(), 0, text, -1, buffer, bufferSize);
+            ege_drawtext_p(buffer, x, y, img);
+        } else {
+            const std::wstring& wStr = mb2w(text);
+            ege_drawtext_p(wStr.c_str(), x, y, img);
+        }
+    }
+    CONVERT_IMAGE_END;
+}
+
+void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_hDC) {
+        ege_drawtext_p(text, x, y, img);
+    }
+    CONVERT_IMAGE_END;
+}
+
+//------------------------------------------------------------------------------
+//                              Static Functions
+//------------------------------------------------------------------------------
+
+/* private function */
+static unsigned int private_gettextmode(PIMAGE img)
+{
+    UINT fMode = TA_NOUPDATECP; // TA_UPDATECP;
+    if (img->m_texttype.horiz == RIGHT_TEXT) {
+        fMode |= TA_RIGHT;
+    } else if (img->m_texttype.horiz == CENTER_TEXT) {
+        fMode |= TA_CENTER;
+    } else {
+        fMode |= TA_LEFT;
+    }
+    if (img->m_texttype.vert == BOTTOM_TEXT) {
+        fMode |= TA_BOTTOM;
+    } else {
+        fMode |= TA_TOP;
+    }
+    return fMode;
+}
+
+static UINT horizontalAlignToDrawTextFormat(int horizontalAlign)
+{
+    UINT format = 0;
+    switch (horizontalAlign) {
+    case LEFT_TEXT:    format |= DT_LEFT;   break;
+    case CENTER_TEXT:  format |= DT_CENTER; break;
+    case RIGHT_TEXT:   format |= DT_RIGHT;  break;
+    }
+
+    return format;
+}
+
+/* private function */
+
+static Point private_escapementToOffset(int textHeight, int textEscapement)
+{
+    Point offset(0, 0);
+    int escapement = textEscapement % 3600;
+    if (escapement != 0) {
+        double radian = escapement / 10.0 * PI / 180.0;
+        offset.x = (int)round(-textHeight * sin(radian) / 2.0);
+        offset.y = (int)round(-textHeight * cos(radian) / 2.0);
+    } else {
+        offset.y = (int)round(-textHeight / 2.0);
+    }
+
+    return offset;
+}
+
+static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
+{
+    SetTextAlign(img->m_hDC, TA_UPDATECP | private_gettextmode(img));
+
+    if (text) {
+        Point offset(0, 0);
+
+        if (img->m_texttype.vert == CENTER_TEXT) {
+            LOGFONTW font;
+            getfont(&font, img);
+            offset = private_escapementToOffset(textheight(text, img), font.lfEscapement);
+        }
+
+        if ((offset.x != 0) || (offset.y != 0)) {
+            POINT curPos;
+            GetCurrentPositionEx(img->m_hDC, &curPos);
+            MoveToEx(img->m_hDC, curPos.x + offset.x, curPos.y + offset.y, NULL);
+
+            TextOutW(img->m_hDC, 0, 0, text, (int)lstrlenW(text));
+
+            GetCurrentPositionEx(img->m_hDC, &curPos);
+            MoveToEx(img->m_hDC, curPos.x - offset.x, curPos.y - offset.y, NULL);
+        } else {
+            TextOutW(img->m_hDC, 0, 0, text, (int)lstrlenW(text));
+        }
+    }
+}
+
+static void private_textout(PIMAGE img, const wchar_t* text, int x, int y)
+{
+    SetTextAlign(img->m_hDC, private_gettextmode(img));
+
+    if (text) {
+        Point offset(0, 0);
+
+        if (img->m_texttype.vert == CENTER_TEXT) {
+            LOGFONTW font;
+            getfont(&font, img);
+            offset = private_escapementToOffset(textheight(text, img), font.lfEscapement);
+        }
+
+        TextOutW(img->m_hDC, x + offset.x, y + offset.y, text, (int)lstrlenW(text));
+    }
+}
+
 // TODO: 错误处理
-static void ege_drawtext_p(const wchar_t* textstring, float x, float y,  PIMAGE img)
+static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE img)
 {
     using namespace Gdiplus;
     Gdiplus::Graphics* graphics = img->getGraphics();
@@ -606,10 +705,11 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y,  PIMAGE 
 
     Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic()->Clone();
 
-    switch(img->m_texttype.horiz) {
+    switch (img->m_texttype.horiz) {
         case LEFT_TEXT:   format->SetAlignment(Gdiplus::StringAlignmentNear);   break;
         case CENTER_TEXT: format->SetAlignment(Gdiplus::StringAlignmentCenter); break;
         case RIGHT_TEXT:  format->SetAlignment(Gdiplus::StringAlignmentFar);    break;
+        default:                                                                break;
     }
 
     float xScale = 1.0f, angle = 0.0f;
@@ -653,32 +753,6 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y,  PIMAGE 
     }
 
     delete format;
-}
-
-void EGEAPI ege_drawtext(const char* textstring, float x, float y, PIMAGE pimg)
-{
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_hDC) {
-        int bufferSize = MultiByteToWideChar(getcodepage(), 0, textstring, -1, NULL, 0);
-        if (bufferSize < 128) {
-            WCHAR wStr[128];
-            MultiByteToWideChar(getcodepage(), 0, textstring, -1, wStr, 128);
-            ege_drawtext_p(wStr, x, y, img);
-        } else {
-            const std::wstring& wStr = mb2w(textstring);
-            ege_drawtext_p(wStr.c_str(), x, y, img);
-        }
-    }
-    CONVERT_IMAGE_END;
-}
-
-void EGEAPI ege_drawtext(const wchar_t* textstring, float x, float y, PIMAGE pimg)
-{
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_hDC) {
-        ege_drawtext_p(textstring, x, y, img);
-    }
-    CONVERT_IMAGE_END;
 }
 
 } // namespace ege
