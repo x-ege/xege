@@ -14,7 +14,7 @@
 #include "ege_graph.h"
 #include "ege_dllimport.h"
 
-#include "type.h"
+#include "types.h"
 #include "utils.h"
 #include "color.h"
 #include "encodeconv.h"
