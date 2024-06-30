@@ -1591,6 +1591,7 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
 
     // OffsetViewportOrgEx(img->m_hDC, img->m_vpt.left, img->m_vpt.top, NULL);
     SetViewportOrgEx(img->m_hDC, img->m_vpt.left, img->m_vpt.top, NULL);
+    MoveToEx(img->m_hDC, 0, 0, NULL);
 
     CONVERT_IMAGE_END;
 }
