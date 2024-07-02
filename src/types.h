@@ -8,6 +8,8 @@
 #include "stdint.h"
 #endif
 
+#include <limits.h>
+
 #include <windows.h>
 
 #if !defined(EGE_W64)
@@ -66,7 +68,24 @@ struct Point
 public:
     Point() : x(0), y(0) {}
     Point(int x, int y) : x(x), y(y) {}
+
+    Point& set(int x, int y);
+    Point& offset(int dx, int dy);
 };
+
+inline Point& Point::set(int x, int y)
+{
+    this->x = x;
+    this->y = y;
+    return *this;
+}
+
+inline Point& Point::offset(int dx, int dy)
+{
+    x += dx;
+    y += dy;
+    return *this;
+}
 #endif
 
 
@@ -86,6 +105,7 @@ public:
     Size(int width, int height) : width(width), height(height) {}
 
     Size& set(int width, int height);
+    Size& setEmpty();
 
     bool isNull()       const { return (width == 0) && (height == 0); }
     bool isEmpty()      const { return (width <= 0) || (height <= 0); }
@@ -108,6 +128,11 @@ inline Size& Size::set(int width, int height)
     this->width  = width;
     this->height = height;
     return *this;
+}
+
+inline Size& Size::setEmpty()
+{
+    return set(0, 0);
 }
 
 inline bool operator== (const Size& a, const Size& b)
@@ -164,7 +189,7 @@ public:
     Rect();
     Rect(int x, int y, int width, int height);
     Rect(const Point& topLeft, const Size& size);
-    Rect(const Point& topLeft, const Point& bottomRight, bool normalize = true);
+    Rect(const Point& topLeft, const Point& bottomRight, bool normalize = false);
 
     int left()   const;
     int top()    const;
@@ -184,6 +209,10 @@ public:
     Rect& setTopBottom(int top,  int bottom);
 	Rect& setSize(const Size& size);
     Rect& setSize(int width, int height);
+    Rect& setX(int x);
+    Rect& setY(int y);
+    Rect& setWidth(int width);
+    Rect& setHeight(int height);
     Rect& setLeft(int left);
     Rect& setTop(int top);
     Rect& setRight(int right);
@@ -207,6 +236,13 @@ public:
     Rect& unite(const Point& point);
     Rect& unite(const Point points[], int count);
 
+    Rect& clip (int xMin, int xMax, int yMin, int yMax);
+    Rect& clipX(int xMin, int xMax);
+    Rect& clipY(int yMin, int yMax);
+    Rect& clip ();
+    Rect& clipX();
+    Rect& clipY();
+
     bool isNull()       const;
     bool isEmpty()      const;
     bool isValid()      const;
@@ -216,6 +252,13 @@ public:
     bool contains (const Point& point) const;
     bool contains (const Rect& rect)   const;
     bool isOverlap(const Rect& rect)   const;
+
+    bool isXOutOfRange(int xMin, int xMax) const;
+    bool isYOutOfRange(int yMin, int yMax) const;
+    bool isXOutOfRange() const;
+    bool isYOutOfRange() const;
+    bool isOutOfRange (int xMin, int xMax, int yMin, int yMax) const;
+    bool isOutOfRange() const;
 }; // Rect
 
 Rect normalize(const Rect& rect);
@@ -254,6 +297,11 @@ inline Point Rect::topLeft()     const { return Point(x, y); }
 inline Point Rect::bottomRight() const { return Point(x + width, y + height); }
 inline Size  Rect::size()        const { return Size(width, height); }
 inline Point Rect::center()      const { return Point(x + width / 2, y + height / 2);}
+
+inline Rect& Rect::setX(int x)           { this->x = x; return *this;}
+inline Rect& Rect::setY(int y)           { this->x = y; return *this; }
+inline Rect& Rect::setWidth(int width)   { this->width  = width;  return *this;}
+inline Rect& Rect::setHeight(int height) { this->height = height; return *this;}
 
 inline Rect& Rect::setLeft(int left)
 {
@@ -437,9 +485,64 @@ inline Rect& Rect::outset(int dx, int dy)
 }
 
 inline bool Rect::isNull()       const { return (width == 0) && (height == 0); }
-inline bool Rect::isEmpty()      const { return (width <= 0) || (height <= 0); }
+inline bool Rect::isEmpty()      const { return (width == 0) || (height == 0); }
 inline bool Rect::isValid()      const { return (width >  0) && (height >  0); }
 inline bool Rect::isNormalized() const { return (width >= 0) && (height >= 0); }
+
+inline bool Rect::isOutOfRange() const
+{
+    return isOutOfRange(INT_MIN, INT_MAX, INT_MIN, INT_MAX);
+}
+
+inline bool Rect::isXOutOfRange(int xMin, int xMax) const
+{
+    if ((xMin > xMax) || ((x < xMin) || (x > xMax)))
+        return true;
+
+    if (width > 0) {
+        if ((unsigned)(xMax - x) < (unsigned)(width - 1))
+            return true;
+    } else if (width < 0) {
+        if ((unsigned)(x - xMin) < (unsigned)(-width - 1))
+            return true;
+    }
+
+    return false;
+}
+
+inline bool Rect::isXOutOfRange() const
+{
+    return isXOutOfRange(INT_MIN, INT_MAX);
+}
+
+inline bool Rect::isYOutOfRange() const
+{
+    return isYOutOfRange(INT_MIN, INT_MAX);
+}
+
+inline bool Rect::isYOutOfRange(int yMin, int yMax) const
+{
+    if (yMin > yMax)
+        return true;
+
+    if ((y < yMin) || (y > yMax))
+        return true;
+
+    if (height > 0) {
+        if ((unsigned)(yMax - y) < (unsigned)(height - 1))
+            return true;
+    } else if (height < 0) {
+        if ((unsigned)(y - yMin) < (unsigned)(-height - 1))
+            return true;
+    }
+
+    return false;
+}
+
+inline bool Rect::isOutOfRange(int xMin, int xMax, int yMin, int yMax) const
+{
+    return isXOutOfRange(xMin, xMax) || isYOutOfRange(yMin, yMax);
+}
 
 inline bool Rect::contains(int x, int y) const
 {
