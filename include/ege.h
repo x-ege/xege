@@ -278,6 +278,12 @@ enum message_mouse
 typedef unsigned int color_t;
 #endif
 
+enum alpha_type
+{
+    ALPHATYPE_STRAIGHT      = 0,
+    ALPHATYPE_PREMULTIPLIED = 1,
+};
+
 struct ege_point
 {
     float x;
@@ -1324,17 +1330,54 @@ int EGEAPI putimage_transparent(
     int widthSrc = 0,           // width of source rectangle
     int heightSrc = 0           // height of source rectangle
 );
+
 int EGEAPI putimage_alphablend(
-    PIMAGE  imgDest,            // handle to dest
-    PCIMAGE imgSrc,             // handle to source
-    int xDest,                  // x-coord of destination upper-left corner
-    int yDest,                  // y-coord of destination upper-left corner
-    unsigned char alpha,        // alpha
-    int xSrc = 0,               // x-coord of source upper-left corner
-    int ySrc = 0,               // y-coord of source upper-left corner
-    int widthSrc = 0,           // width of source rectangle
-    int heightSrc = 0           // height of source rectangle
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    unsigned char alpha,
+    alpha_type alphaType = ALPHATYPE_STRAIGHT
 );
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    unsigned char alpha,
+    int xSrc,
+    int ySrc,
+    alpha_type alphaType = ALPHATYPE_STRAIGHT
+);
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    unsigned char alpha,
+    int xSrc,
+    int ySrc,
+    int widthSrc,
+    int heightSrc,
+    alpha_type alphaType = ALPHATYPE_STRAIGHT
+);
+
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    int widthDest,
+    int heightDest,
+    unsigned char alpha,
+    int xSrc,
+    int ySrc,
+    int widthSrc,
+    int heightSrc,
+    bool smooth = false,
+    alpha_type alphaType = ALPHATYPE_STRAIGHT
+);
+
 int EGEAPI putimage_alphatransparent(
     PIMAGE  imgDest,            // handle to dest
     PCIMAGE imgSrc,             // handle to source

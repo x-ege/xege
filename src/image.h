@@ -129,7 +129,22 @@ public:
         int                        xSrc = 0,                // x-coord of source upper-left corner
         int                        ySrc = 0,                // y-coord of source upper-left corner
         int                        widthSrc   = 0,          // width of source rectangle
-        int                        heightSrc  = 0           // height of source rectangle
+        int                        heightSrc  = 0,          // height of source rectangle
+        alpha_type                 alphaType  = ALPHATYPE_STRAIGHT  // alpha mode(straight alpha or premultiplied alpha)
+    ) const;
+
+    int putimage_alphablend(PIMAGE imgDest,                 // handle to dest
+        int                        xDest,                   // x-coord of destination upper-left corner
+        int                        yDest,                   // y-coord of destination upper-left corner
+        int                        widthDest,               // width of source rectangle
+        int                        heightDest,              // height of source rectangle
+        unsigned char              alpha,                   // alpha
+        int                        xSrc,                    // x-coord of source upper-left corner
+        int                        ySrc,                    // y-coord of source upper-left corner
+        int                        widthSrc,                // width of source rectangle
+        int                        heightSrc,               // height of source rectangle
+        bool                       smooth = false,
+        alpha_type                 alphaType  = ALPHATYPE_STRAIGHT  // alpha mode(straight alpha or premultiplied alpha)
     ) const;
 
     int putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
