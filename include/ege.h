@@ -974,6 +974,8 @@ color_t EGEAPI colorblend  (color_t dst, color_t src, unsigned char alpha);
 color_t EGEAPI colorblend_f(color_t dst, color_t src, unsigned char alpha);
 color_t EGEAPI alphablend  (color_t dst, color_t src);
 color_t EGEAPI alphablend  (color_t dst, color_t src, unsigned char srcAlphaFactor);
+color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src);
+color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor);
 
 color_t EGEAPI getpixel   (int x, int y, PCIMAGE pimg = NULL);
 void    EGEAPI putpixel   (int x, int y, color_t color, PIMAGE pimg = NULL);
