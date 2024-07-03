@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include <windef.h>
-#include "type.h"
+#include "types.h"
 #include <string>
 #include <wchar.h>
 

@@ -3,7 +3,7 @@
 #include <windef.h>
 #include "ege_def.h"
 #include "ege_math.h"
-#include "type.h"
+#include "types.h"
 
 // 交换颜色中 R 通道和 B 通道: 0xAARRGGBB -> 0xAABBGGRR
 #define RGBTOBGR(color) ((color_t)((((color) & 0xFF) << 16) | (((color) & 0xFF0000) >> 16) | ((color) & 0xFF00FF00)))

@@ -45,4 +45,16 @@ T clamp(T value, T min, T max)
     return (value < min) ? min : ((value > max) ? max : value);
 }
 
+// Overflow 判断
+inline bool sumIsOverflow(int a, int b)
+{
+    return (a > 0) && (b > 0) && (b > (INT_MAX - a));
+}
+
+// Underflow 判断
+inline bool sumIsUnderflow(int a, int b)
+{
+    return (a < 0) && (b < 0) && (b < (INT_MIN - a));
+}
+
 }  // namespace ege

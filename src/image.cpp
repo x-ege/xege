@@ -18,7 +18,6 @@
 #include "ege_head.h"
 #include "ege_common.h"
 #include "ege_dllimport.h"
-
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL
 // #endif
@@ -27,6 +26,7 @@
 
 
 #include <math.h>
+#include <limits.h>
 
 namespace ege
 {
@@ -809,58 +809,121 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
     CONVERT_IMAGE_END;
 }
 
+/**
+ * @brief 对两个区域进行裁剪(目标区域大小和源区域相同)
+ *
+ * @param[in,out] dest 目标位置
+ * @param[in,out] src  源区域
+ * @param[in] destClip 目标裁剪区域(需保证边界和宽高在 int 范围内)
+ * @param[in] srcClip  源裁剪区域(需保证边界和宽高在 int 范围内)
+ *
+ * @return true    结果区域不为空
+ * @return false   结果区域为空
+ */
+static bool fixRect(Point& dest, Rect& src, const Rect& destClip, const Rect& srcClip)
+{
+    if ((dest.x < destClip.right()) && dest.y < destClip.bottom()) {
+        Rect srcIntersection = intersect(src, srcClip);
+
+        if (srcIntersection.isValid()) {
+            /* 偏移量，满足 >= 0 关系*/
+            int srcOffsetX = srcIntersection.x - src.x;
+            int srcOffsetY = srcIntersection.y - src.y;
+
+            /* 溢出校验 */
+            if ((dest.x > INT_MAX - srcOffsetX) || (dest.y > INT_MAX - srcOffsetY)) {
+                src.setEmpty();
+                return false;
+            }
+
+            dest.offset(srcOffsetX, srcOffsetY);
+            Rect destRect(dest, srcIntersection.size());
+
+            /* 超出边界则进行裁剪 */
+            if (destRect.x > INT_MAX - destRect.width) {
+                destRect.width = INT_MAX - destRect.x;
+            }
+
+            if (destRect.y > INT_MAX - destRect.height) {
+                destRect.height = INT_MAX - destRect.y;
+            }
+
+            Rect destIntersection = intersect(destRect, destClip);
+
+            if (destIntersection.isValid()) {
+                srcIntersection.setSize(destIntersection.size());
+                int xOffset = destIntersection.x - dest.x;
+                int yOffset = destIntersection.y - dest.y;
+                srcIntersection.offset(xOffset, yOffset);
+
+                src  = srcIntersection;
+                dest = destIntersection.topLeft();
+                return true;
+            }
+        }
+    }
+
+    // 经裁剪后区域为空
+    src.setEmpty();
+    return false;
+}
+
 /* private function */
 static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDest,
-        int* xSrc, int* ySrc, int* widthSrc, int* heightSrc)
+        int* xSrc, int* ySrc, int* width, int* height)
 {
+    /* 区域无效 */
+    if (*xSrc >= imgSrc->m_width || (*ySrc >= imgSrc->m_height)) {
+        *width = *height = 0;
+        return;
+    }
+
     /* prepare viewport region and carry out coordinate transformation */
-    struct viewporttype _vpt  = imgDest->m_vpt;
-    *xDest            += _vpt.left;
-    *yDest            += _vpt.top;
-    /* default value proc */
-    if (*widthSrc == 0) {
-        *widthSrc  = imgSrc->m_width;
-        *heightSrc = imgSrc->m_height;
+    struct viewporttype vpt  = imgDest->m_vpt;
+    *xDest            += vpt.left;
+    *yDest            += vpt.top;
+
+    int left = (*xSrc < 0) ? 0 : *xSrc;
+    int top  = (*ySrc < 0) ? 0 : *ySrc;
+
+    int right  = imgSrc->m_width,  bottom = imgSrc->m_height;;
+    if (*width > 0) {
+        right = sumIsOverflow(*xSrc, *width) ? INT_MAX: (*xSrc + *width);
     }
-    /* fix src rect */
-    if (*widthSrc > imgSrc->m_width) {
-        *widthSrc -= *widthSrc - imgSrc->m_width;
-        *widthSrc  = imgSrc->m_width;
+
+    if (*height > 0) {
+        bottom = sumIsOverflow(*ySrc, *height) ? INT_MAX : (*ySrc + *height);
     }
-    if (*heightSrc > imgSrc->m_height) {
-        *heightSrc -= *heightSrc - imgSrc->m_height;
-        *heightSrc  = imgSrc->m_height;
+
+    /* 偏移量，范围: [0, INT_MAX+1] */
+    unsigned int xOffset = left - *xSrc;
+    unsigned int yOffset = top  - *ySrc;
+
+    Point dstPos(*xDest + vpt.left, *yDest + vpt.top);
+
+    if ((dstPos.x > (int)(INT_MAX - xOffset)) || (dstPos.y > (int)(INT_MAX - yOffset))) {
+        *width = *height = 0;
+        return;
+    } else {
+        dstPos.offset((int)xOffset, (int)yOffset);
     }
-    if (*xSrc < 0) {
-        *widthSrc    += *xSrc;
-        *xDest += *xSrc;
-        *xSrc   = 0;
-    }
-    if (*ySrc < 0) {
-        *heightSrc   += *ySrc;
-        *yDest += *ySrc;
-        *ySrc   = 0;
-    }
-    /* fix dest vpt rect */
-    if (*xDest < _vpt.left) {
-        int dx         = _vpt.left - *xDest;
-        *xDest += dx;
-        *xSrc  += dx;
-        *widthSrc    -= dx;
-    }
-    if (*yDest < _vpt.top) {
-        int dy         = _vpt.top - *yDest;
-        *yDest += dy;
-        *ySrc  += dy;
-        *heightSrc   -= dy;
-    }
-    if (*xDest + *widthSrc > _vpt.right) {
-        int dx      = *xDest + *widthSrc - _vpt.right;
-        *widthSrc -= dx;
-    }
-    if (*yDest + *heightSrc > _vpt.bottom) {
-        int dy       = *yDest + *heightSrc - _vpt.bottom;
-        *heightSrc -= dy;
+
+    Rect  srcRect(Point(left, top), Point(right, bottom));
+    // 设定裁剪区域，源图像
+    Rect dstClip(Point(vpt.left, vpt.top), Point(vpt.right, vpt.bottom));
+    Rect srcClip(Point(0, 0), Point(imgSrc->m_width, imgSrc->m_height));
+
+    bool isValid = fixRect(dstPos, srcRect, dstClip, srcClip);
+    if (!isValid) {
+        *width = *height = 0;
+        return;
+    } else {
+        *xDest  = dstPos.x;
+        *yDest  = dstPos.y;
+        *xSrc   = srcRect.x;
+        *ySrc   = srcRect.y;
+        *width  = srcRect.width;
+        *height = srcRect.height;
     }
 }
 
@@ -883,6 +946,10 @@ int IMAGE::putimage_transparent(PIMAGE imgDest,           // handle to dest
         DWORD * pdp, *psp, cr;
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
+
+        if ((widthSrc == 0) || (heightSrc == 0))
+            return grOk;
+
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -922,6 +989,9 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
         DWORD * pdp, *psp;
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
+
+        if ((widthSrc == 0) || (heightSrc == 0))
+            return grOk;
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -961,6 +1031,9 @@ int IMAGE::putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
         DWORD * pdp, *psp, cr;
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
+
+        if ((widthSrc == 0) || (heightSrc == 0))
+            return grOk;
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -1000,6 +1073,9 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
         DWORD * pdp, *psp;
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
+
+        if ((widthSrc == 0) || (heightSrc == 0))
+            return grOk;
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -1043,6 +1119,9 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         BLENDFUNCTION bf;
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
+
+        if ((widthSrc == 0) || (heightSrc == 0))
+            return grOk;
         // premultiply alpha channel
         pdp = alphaSrc->m_pBuffer;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -1133,6 +1212,9 @@ int IMAGE::putimage_alphafilter(PIMAGE imgDest,     // handle to dest
         // DWORD sa = alpha + 1, da = 0xFF - alpha;
         //  fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
+
+        if ((widthSrc == 0) || (heightSrc == 0))
+            return grOk;
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
