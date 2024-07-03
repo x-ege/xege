@@ -140,6 +140,28 @@ EGE_FORCEINLINE color_t alphablend_inline(color_t dst, color_t src, byte srcAlph
     return alphablend_specify_inline(dst, src, alpha);
 }
 
+/**
+ * @brief 将两个预乘 alpha 的 ARGB 颜色进行混合
+ *
+ * @param dst   背景色(PARGB)
+ * @param src   前景色(PARGB)
+ * @return      混合后的 PARGB 颜色
+ * @note 混合公式:
+ * A = A(src) + (1.0 - alpha) * A(dst);;
+ * R = R(src) + (1.0 - alpha) * R(dst);
+ * G = G(src) + (1.0 - alpha) * G(dst);
+ * B = B(src) + (1.0 - alpha) * B(dst);
+ */
+EGE_FORCEINLINE color_t alphablend_premultiplied_inline(color_t dst, color_t src)
+{
+    const byte a = DIVIDE_255_FAST(255 * EGEGET_A(src) + (255 - EGEGET_A(src)) * EGEGET_A(dst));
+    const byte r = DIVIDE_255_FAST(255 * EGEGET_R(src) + (255 - EGEGET_A(src)) * EGEGET_R(dst));
+    const byte g = DIVIDE_255_FAST(255 * EGEGET_G(src) + (255 - EGEGET_A(src)) * EGEGET_G(dst));
+    const byte b = DIVIDE_255_FAST(255 * EGEGET_B(src) + (255 - EGEGET_A(src)) * EGEGET_B(dst));
+
+    return EGEARGB(a, r, g, b);
+}
+
 } //namespace ege
 
 

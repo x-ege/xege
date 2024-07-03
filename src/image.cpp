@@ -977,34 +977,146 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
     int                               xSrc,     // x-coord of source upper-left corner
     int                               ySrc,     // y-coord of source upper-left corner
     int                               widthSrc, // width of source rectangle
-    int                               heightSrc // height of source rectangle
+    int                               heightSrc,// height of source rectangle
+    alpha_type                        alphaType // alpha mode(straight alpha or premultiplied alpha)
 ) const
 {
     inittest(L"IMAGE::putimage_alphablend");
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
+        if (alpha == 0)
+            return grOk;
+
         PCIMAGE imgSrc = this;
-        int     y, x;
-        DWORD   ddx, dsx;
-        DWORD * pdp, *psp;
-        // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
 
         if ((widthSrc == 0) || (heightSrc == 0))
             return grOk;
-        // draw
-        pdp = img->m_pBuffer + yDest * img->m_width + xDest;
-        psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
-        ddx = img->m_width - widthSrc;
-        dsx = imgSrc->m_width - widthSrc;
 
-        for (y = 0; y < heightSrc; ++y) {
-            for (x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
-                DWORD d = *pdp, s = *psp;
-                *pdp = alphablend_inline(d, s, alpha);
+        if (alphaType == ALPHATYPE_PREMULTIPLIED) {
+            BLENDFUNCTION bf;
+            bf.BlendOp             = AC_SRC_OVER;
+            bf.BlendFlags          = 0;
+            bf.SourceConstantAlpha = alpha;
+            bf.AlphaFormat         = AC_SRC_ALPHA;
+            // draw
+            dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc,
+                imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
+        } else {
+            DWORD* pdp = img->m_pBuffer + yDest * img->m_width + xDest;
+            DWORD* psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
+            DWORD  ddx = img->m_width - widthSrc;
+            DWORD  dsx = imgSrc->m_width - widthSrc;
+
+            if (alpha == 0xFF) {
+                for (int y = 0; y < heightSrc; ++y) {
+                    for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
+                        DWORD d = *pdp, s = *psp;
+                        *pdp = alphablend_inline(d, s);
+                    }
+                    pdp += ddx;
+                    psp += dsx;
+                }
+            } else {
+                for (int y = 0; y < heightSrc; ++y) {
+                    for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
+                        DWORD d = *pdp, s = *psp;
+                        *pdp = alphablend_inline(d, s, alpha);
+                    }
+                    pdp += ddx;
+                    psp += dsx;
+                }
             }
-            pdp += ddx;
-            psp += dsx;
+        }
+    }
+    CONVERT_IMAGE_END;
+    return grOk;
+}
+
+int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
+    int                               xDest,      // x-coord of destination upper-left corner
+    int                               yDest,      // y-coord of destination upper-left corner
+    int                               widthDest,  // width of source rectangle
+    int                               heightDest, // height of source rectangle
+    unsigned char                     alpha,      // alpha
+    int                               xSrc,       // x-coord of source upper-left corner
+    int                               ySrc,       // y-coord of source upper-left corner
+    int                               widthSrc,   // width of source rectangle
+    int                               heightSrc,  // height of source rectangle
+    bool                              smooth,
+    alpha_type                        alphaType   // alpha mode(straight alpha or premultiplied alpha)
+) const
+{
+    inittest(L"IMAGE::putimage_alphablend");
+    const PIMAGE img = CONVERT_IMAGE(imgDest);
+    if (img) {
+        if (alpha == 0)
+            return grOk;
+
+        PCIMAGE imgSrc = this;
+
+        if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
+        if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
+        if (widthDest  <= 0) widthDest  = widthSrc;
+        if (heightDest <= 0) heightDest = heightSrc;
+
+        if ((alphaType == ALPHATYPE_PREMULTIPLIED) && !smooth) {
+            BLENDFUNCTION bf;
+            bf.BlendOp             = AC_SRC_OVER;
+            bf.BlendFlags          = 0;
+            bf.SourceConstantAlpha = alpha;
+            bf.AlphaFormat         = AC_SRC_ALPHA;
+            // draw
+            dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, imgSrc->m_hDC, xSrc, ySrc, widthSrc,
+                heightSrc, bf);
+        } else {
+            const viewporttype& vptDest = img->m_vpt;
+            const viewporttype& vptSrc  = imgSrc->m_vpt;
+            Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
+            Rect drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
+
+            Gdiplus::Graphics* graphics = img->getGraphics();
+            Gdiplus::Matrix matrix;
+            graphics->GetTransform(&matrix);
+            graphics->ResetTransform();
+
+            if (smooth) {
+                graphics->SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+            } else {
+                graphics->SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+            }
+
+            Gdiplus::PixelFormat pixelFormat = PixelFormat32bppARGB;
+
+            if (alphaType == ALPHATYPE_PREMULTIPLIED) {
+                pixelFormat = PixelFormat32bppPARGB;
+            }
+
+            // Create an ImageAttributes object and set its color matrix.
+            Gdiplus::ImageAttributes* imageAtt = NULL;
+
+            if (alpha != 0xFF) {
+                float scale = alpha / 255.0f;
+                Gdiplus::ColorMatrix colorMatrix = {
+                    1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f, scale, 0.0f,
+                    0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+                };
+                imageAtt = new Gdiplus::ImageAttributes;
+                imageAtt->SetColorMatrix(&colorMatrix, Gdiplus::ColorMatrixFlagsDefault, Gdiplus::ColorAdjustTypeBitmap);
+            }
+
+            Gdiplus::RectF rectDest((float)drawDest.x, (float)drawDest.y, (float)drawDest.width, (float)drawDest.height);
+            Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
+
+            int stride = sizeof(color_t) * imgSrc->m_width;
+            Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, stride, pixelFormat, (BYTE*)imgSrc->m_pBuffer);
+            graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, imageAtt);
+            graphics->SetTransform(&matrix);
+
+            delete imageAtt;
         }
     }
     CONVERT_IMAGE_END;
@@ -2869,6 +2981,29 @@ int putimage_transparent(PIMAGE imgDest,            // handle to dest
         imgDest, xDest, yDest, transparentColor, xSrc, ySrc, widthSrc, heightSrc);
 }
 
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest, int yDest,
+    unsigned char alpha,
+    alpha_type alphaType
+)
+{
+    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, 0, 0, 0, 0, alphaType);
+}
+
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest, int yDest,
+    unsigned char alpha,
+    int xSrc, int ySrc,
+    alpha_type alphaType
+)
+{
+    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, xSrc, ySrc, 0, 0, alphaType);
+}
+
 int putimage_alphablend(PIMAGE imgDest,     // handle to dest
     PCIMAGE                    imgSrc,      // handle to source
     int                        xDest,       // x-coord of destination upper-left corner
@@ -2877,12 +3012,33 @@ int putimage_alphablend(PIMAGE imgDest,     // handle to dest
     int                        xSrc,        // x-coord of source upper-left corner
     int                        ySrc,        // y-coord of source upper-left corner
     int                        widthSrc,    // width of source rectangle
-    int                        heightSrc    // height of source rectangle
+    int                        heightSrc,   // height of source rectangle
+    alpha_type                 alphaType    // alpha mode(straight alpha or premultiplied alpha)
+)
+{
+    imgSrc = CONVERT_IMAGE_CONST(imgSrc);
+    return imgSrc->putimage_alphablend(imgDest, xDest, yDest, alpha, xSrc, ySrc, widthSrc, heightSrc, alphaType);
+}
+
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,                                        // handle to dest
+    PCIMAGE imgSrc,                                         // handle to source
+    int xDest, int yDest, int widthDest, int heightDest,
+    unsigned char alpha,
+    int xSrc, int ySrc, int widthSrc, int heightSrc,
+    bool smooth,
+    alpha_type alphaType
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
     return imgSrc->putimage_alphablend(
-        imgDest, xDest, yDest, alpha, xSrc, ySrc, widthSrc, heightSrc);
+                imgDest,
+                xDest, yDest, widthDest, heightDest,
+                alpha,
+                xSrc, ySrc, widthSrc, heightSrc,
+                smooth,
+                alphaType
+           );
 }
 
 int putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
