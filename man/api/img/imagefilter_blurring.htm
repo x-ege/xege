@@ -13,16 +13,16 @@
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
 <pre><font color=#0000FF>int </font><font color=#008080>imagefilter_blurring </font>(
-    <font color=#800080>PIMAGE </font>imgdest,
+    <font color=#800080>PIMAGE </font>imgDest,
     <font color=#0000FF>int </font>intensity,
     <font color=#0000FF>int </font>alpha,
-    <font color=#0000FF>int </font>nXOriginDest = 0,
-    <font color=#0000FF>int </font>nYOriginDest = 0,
-    <font color=#0000FF>int </font>nWidthDest = 0,
-    <font color=#0000FF>int </font>nHeightDest = 0
+    <font color=#0000FF>int </font>xDest = 0,
+    <font color=#0000FF>int </font>yDest = 0,
+    <font color=#0000FF>int </font>widthDest = 0,
+    <font color=#0000FF>int </font>heightDest = 0
 );</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
-imgdest
+imgDest
 要进行模糊操作的图片，如果为NULL则表示操作窗口上的图片
 
 intensity
@@ -31,7 +31,7 @@ intensity
 alpha
 图像亮度。取值为0x100表示亮度不变，取值为0x0表示图像变成纯黑
 
-nXOriginDest, nYOriginDest, nWidthDest, nHeightDest
+xDest, yDest, widthDest, heightDest
 描述要进行此操作的矩形区域。如果nWidthDest和nHeightDest 为0，表示操作整张图片。
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>

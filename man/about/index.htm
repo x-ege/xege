@@ -17,9 +17,10 @@
 
 <pre>
 <font size="4">
-<strong>作者：</strong>misakamm
-<strong>Blog：</strong><a href="http://misakamm.com">http://misakamm.com</a>
-<strong>Mail：</strong>misakamm@gmail.com
+<strong>项目：</strong>https://github.com/wysaid/xege
+<strong>作者：</strong>wysaid
+<strong>官网：</strong>https://xege.org/
+<strong>原作者：</strong>misakamm(misakamm@gmail.com)
 </font>
 </pre>
 
@@ -31,8 +32,93 @@
 <font size="4">
 <table>
 <tr><th>版本</th><th>更新日志</th></tr>
+<tr>
+<td align="center"><pre> 24.04 </pre></td>
+<td><pre><strong>配置变更</strong>
+1. 库文件名统一命名为 graphics(libgraphics.a, graphics.lib)，不区分 64/32 位
+2. GCC 链接的库由 20.08 的 9 个调整为 3个: -lgraphics -lgdi32 -lgdiplus
+
+<strong>新增功能</strong>
+1.  新增 EGE_VERSION, EGE_VERSION_NUMBER 等版本相关的宏
+2.  提供 Linux /MacOs 下的编译支持(使用 MinGW-W64 工具链)
+3.  新增 putimage_rotatetransparent()，支持指定透明色旋转绘制图像
+4.  新增 putpixel_savealpha(写入像素时保留原来的 alpha 值),
+5.  新增 putpixel_alphablend(使用 alpha 混合公式写入像素)
+6.  新增 ege_drawimage()，用于绘制带透明通道图像(支持坐标变换，拉伸)
+7.  新增控制台系列相关函数(不支持 VC++ 6.0)
+8.  新增圆角矩形系列函数、填充圆系列函数，饼形系列函数，闭合曲线系列函数，填充矩形(fillrect)
+9.  新增无边框填充的普通图形函数
+10. 新增与 drawpoly 相似但更明确的 polyline(折线), polygon(多边形)
+11. 新增路径图形
+12. 支持保存带透明通道的 BMP 图片， 新增保存 BMP 格式图片的 savebmp 函数
+13. 新增 key_A 和 key_Z 中间的键码定义
+14. 新增更多预定义颜色
+15. 新增按键标志位key_flag_first_down，指示按键按下时发送的第一次 down 消息
+16. 新增 showwindow(), hidewindow() 函数，用于控制窗口显示/隐藏
+17. 新增 INIT_HIDE 初始化模式，使用窗口创建后不可见(调用 showwindow() 显示窗口)
+18. 支持在 EGE 中使用 UTF-8 字符串
+19. 新增用于刷新窗口的 flushwindow() 函数，确保显示绘图内容
+20. 提供对 VS2022 的支持
+21. putimage_withalpha() 支持缩放
+22. ege_系列绘图函数支持设置线型(由 setlinestyle 设置)
+23. MUSIC 类增加 RepeatPlay(), 支持循环播放
+24. 新增 alpha 颜色混合计算函数 alphablend(标准公式), colorblend(保留目标颜色的alpha值),
+    alphablend_premultiplied(预乘 alpha 格式)
+25. 支持设置线帽和线条连接样式
+26. randomize 支持传入随机数种子，并且会返回所使用的随机数种子
+27. 新增 ege_系列使用 ARGB 颜色的单行文本输出函数(ege_xyprintf, ege_outtextxy)
+28. 支持对使用预乘 alpha 像素格式的图像进行混合
+29. 支持设置和获取 EGE 所使用的代码页
+30. ege_系列高级绘图函数支持坐标变换
+31. 支持独立设置和获取线条颜色和文本颜色
+
+<strong>功能变更</strong>
+1. getimage() 返回值类型统一为 int, 表示是否成功读取图像
+2. saveimage() 根据文件名后缀确定保存为 PNG 格式还是 BMP 格式(优先保存为 PNG 格式)
+3. resize() 恢复为自动填充背景色(20.08 行为改为不填充，现恢复)，另新增不填充背景色的 resize_f()
+4. EGERGB(), EGEARGB() 等宏的返回值类型修改为 color_t
+5. 定时精度提升至 1ms
+6. 为部分类型增加 EGE_XXX_TYPEDEF 宏，控制类型定义
+7. 消除扩展中的头文件包含顺序依赖
+8. 取消 setfillstyle/getfillstyle 的弃用标记
+9. 图像旋转正方向修改为与坐标系一致的顺时针方向
+10. 调整文本垂直对齐方式的值
+11. 为 GCC4.5 以上版本增加弃用信息
+12. 线条连接点默认样式统一修改为尖角
+13. color_t 恢复为与 uint32_t 一致的 unsigned int 类型(20.08 为 DWORD)
+
+<strong>问题修复</strong>
+1. 修复 inputbox_getline() 界面发黑的问题(20.08 引入)
+2. 修复 sector 函数在半径小于等于20时出现绘制错误的问题
+3. 修复 drawpoly 绘制闭合多边形时首尾连接点无拐角的问题
+4. 修复 setinitmode() 无法改变窗口位置的问题 (20.08 引入)
+5. 修复初始化后 initgraph(-1, -1) 无法将窗口大小设置为全屏的问题
+6. 修复 sys_edit的 isfocus() 函数不可用的问题
+7. 修复 sys_edit 在调用 setfocus 后不显示光标的问题
+8. 修复初始化后鼠标初始位置不正确的问题
+9. 修复 rgb2gray 未对做近似处理的问题
+10. 修复用户手动关闭窗口，不能马上退出的问题
+11. 修复 delay_ms(0) 延时过长的问题，改为与 Sleep(0) 一致的行为(放弃剩余 CPU 时间片，其它线程执行后立即返回)
+12. 修复角度不为0的文本在设置垂直居中时发生偏移的问题
+13. 修复 RGB 格式图片文件读取后图像 alpha 通道为 0 的问题
+14. 修复 ege_drawtext() 无法旋转的问题
+15. 修复填充模式 EMPTY_FILL 不正确的问题
+16. 修复矩形区域输出文本无法按照对齐方式正确的问题
+17. 修复ege_drawtext()无法按照指定字体宽度输出文本的问题
+18. 修复 outtext() 不更新当前点的问题
+19. 纠正 HOME 键和END键的键码
+20. 修复设置视口后当前点没有移动至视口左上角的问题
+21. 修复 putimage 系列函数在源矩形区域左上角不为(0,0) 且宽高使用默认值0时会发生越界的问题
+22. 修复设置视口后 GDI+ 绘图坐标系未移动至视口左上角的问题
+23. VECTOR3D 的 GetAngel() 函数纠正为 GetAngle()
+24. 修复 random() 无默认参数的问题
+
+<strong>其它</strong>
+1. 减少初次显示屏幕时的闪烁
+2. 图片读取速度优化</pre></td>
+</tr>
 <tr><td align="center"><pre> 20.08 </pre></td>
-<td><pre> <strong>新增功能</strong> 
+<td><pre> <strong>新增功能</strong>
  1.  [2019-10-26] 提供对 VS2019 的支持
  2.  [2019-10-26] 引入 CMAKE 构建系统，支持 MSVC 系列和 MinGW-W64 版本编译器
  3.  [2020-04-14] 在 key_code_e 中新增小键盘符号键键码
@@ -48,7 +134,7 @@
  13. [2020-07-26] 新增 putpixel_withalpha/putpixel_withalpha_f 绘制带透明通道像素点
  14. [2020-07-26] 新增 alphablend() ARGB 颜色混合函数
  15. [2020-08-12] 添加 LGPL 开源许可证
- 
+
 <strong>功能变更：</strong>
  1.  [2020-04-06] 项目内移除 gdiplus 依赖
  2.  [2020-05-19] 使用 Simsun(宋体)作为默认字体
@@ -60,7 +146,7 @@
  8.  [2020-07-19] 为 getimage() 增加 NULL 参数检查
  9.  [2020-07-26] color_t 的定义由 unsigned int 改为 DWORD(unsigned long)
  10. [2020-07-26] initgraph() 不使用默认参数而改为两个重载
- 
+
 <strong>错误修复：</strong>
  1. [2019-02-02] 修复无法接收到 key_msg_char 类型消息的错误
  2. [2019-02-04] 修复 putimage_xxx 系列函数在裁剪区域外绘图的错误

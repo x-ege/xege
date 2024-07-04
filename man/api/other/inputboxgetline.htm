@@ -12,8 +12,8 @@
 使用对话框让用户输入一个字符串
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
-<pre><font color=#0000FF>int </font><font color=#008080>inputbox_getline</font>(<font color=#800080>LPCSTR  </font>title, <font color=#800080>LPCSTR  </font>text, <font color=#800080>LPSTR  </font>buf, <font color=#0000FF>int </font>len);
-<font color=#0000FF>int </font><font color=#008080>inputbox_getline</font>(<font color=#800080>LPCWSTR </font>title, <font color=#800080>LPCWSTR </font>text, <font color=#800080>LPWSTR </font>buf, <font color=#0000FF>int </font>len);</pre>
+<pre><font color=#0000FF>int </font><font color=#008080>inputbox_getline</font>(<font color=#800080>const char*  </font>title, <font color=#800080>const char*  </font>text, <font color=#800080>LPSTR  </font>buf, <font color=#0000FF>int </font>len);
+<font color=#0000FF>int </font><font color=#008080>inputbox_getline</font>(<font color=#800080>const wchar_t* </font>title, <font color=#800080>const wchar_t* </font>text, <font color=#800080>LPWSTR </font>buf, <font color=#0000FF>int </font>len);</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
 title
 对话框标题
