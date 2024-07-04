@@ -2680,13 +2680,13 @@ void ege_path_addpie(ege_path* path, float x, float y, float width, float height
     }
 }
 
-void ege_path_addstring(ege_path* path, float x, float y, const char* text, float height, int length,
+void ege_path_addtext(ege_path* path, float x, float y, const char* text, float height, int length,
      const char* typeface, int fontStyle)
 {
-    ege_path_addstring(path, x, y, mb2w(text).c_str(), height, length, mb2w(typeface).c_str(), fontStyle);
+    ege_path_addtext(path, x, y, mb2w(text).c_str(), height, length, mb2w(typeface).c_str(), fontStyle);
 }
 
-void ege_path_addstring(ege_path* path, float x, float y, const wchar_t* text, float height, int length,
+void ege_path_addtext(ege_path* path, float x, float y, const wchar_t* text, float height, int length,
      const wchar_t* typeface, int fontStyle)
 {
     if ((path != NULL) && (text != NULL) && (length != 0))  {
