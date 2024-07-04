@@ -9,39 +9,41 @@
 <font size="4">
 <font size="4" color="#0000FF"><strong>功能：</strong></font>
 
-对两张图片进行半透明混合，并把混合结果写入目标图片。
+对两张图像进行透明混合，并将混合结果写入目标图像。
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
 <pre><font color=#0000FF>int </font><font color=#008080>putimage_alphablend</font>(
-    <font color=#800080>PIMAGE </font>imgdest,         <font color=#008000>  // 目标 IMAGE 对象指针</font>
-    <font color=#800080>PCIMAGE </font>imgsrc,         <font color=#008000>  // 源 IMAGE 对象指针</font>
-    <font color=#0000FF>int </font>nXOriginDest,       <font color=#008000>  // 绘制位置的 x 坐标</font>
-    <font color=#0000FF>int </font>nYOriginDest,       <font color=#008000>  // 绘制位置的 y 坐标</font>
-    <font color=#0000FF>unsigned char </font>alpha,    <font color=#008000>  // 透明度值</font>
-    <font color=#0000FF>int </font>nXOriginSrc = 0,    <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 x 坐标</font>
-    <font color=#0000FF>int </font>nYOriginSrc = 0,    <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 y 坐标</font>
-    <font color=#0000FF>int </font>nWidthSrc = 0,      <font color=#008000>  // 绘制内容在源 IMAGE 对象中的宽度</font>
-    <font color=#0000FF>int </font>nHeightSrc = 0      <font color=#008000>  // 绘制内容在源 IMAGE 对象中的高度</font>
+    <font color=#800080>PIMAGE </font>imgDest,       <font color=#008000>// 目标图像</font>
+    <font color=#800080>PCIMAGE </font>imgSrc,       <font color=#008000>// 源图像</font>
+    <font color=#0000FF>int </font>xDest,            <font color=#008000>// 绘制位置的 x 坐标</font>
+    <font color=#0000FF>int </font>yDest,            <font color=#008000>// 绘制位置的 y 坐标</font>
+    <font color=#0000FF>unsigned char </font>alpha,  <font color=#008000>// 透明度</font>
+    <font color=#0000FF>int </font>xSrc = 0,         <font color=#008000>// 绘制内容在 IMAGE 对象中的左上角 x 坐标</font>
+    <font color=#0000FF>int </font>ySrc = 0,         <font color=#008000>// 绘制内容在 IMAGE 对象中的左上角 y 坐标</font>
+    <font color=#0000FF>int </font>widthSrc = 0,     <font color=#008000>// 绘制内容在源 IMAGE 对象中的宽度</font>
+    <font color=#0000FF>int </font>heightSrc = 0     <font color=#008000>// 绘制内容在源 IMAGE 对象中的高度</font>
 );</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
-imgdest
-要进行半透明混合的目标图片，如果为 NULL 则表示操作窗口上的图片
+<b>imgDest</b>
+要进行半透明混合的目标图像，如果为 NULL 则表示窗口。
 
-imgsrc
-要进行半透明混合的源图片，该操作不会改变源图片
+<b>imgSrc</b>
+要进行半透明混合的源图像（该操作不会改变源图像）。
 
-nXOriginDest, nYOriginDest
-要开始进行混合的目标图片坐标，该坐标是混合区域的左上角
+<b>xDest, yDest</b>
+目标图像上要进行混合的混合区域的左上角坐标。
 
-alpha
-透明度值，如果为 0x0，表示源图片完全透明，如果为 0xFF，表示源图片完全不透明。
+<b>alpha</b>
+透明度，范围：0~255，共 256 个透明度级别。
+alpah = 0 时表示源图像完全透明，alpha = 255 时表示源图像完全不透明。
 
-nXOriginDest, nYOriginDest, nWidthDest, nHeightDest
-描述要进行此操作的源图矩形区域。如果 nWidthDest 和 nHeightDest 为 0，表示操作整张图片。
+<b>xSrc, ySrc, widthSrc, heightSrc</b>
+描述要进行此操作的源图像矩形区域（左上角的x, y 坐标，宽度width, 高度 height ）。
+如果 widthSrc 和 heightSrc 为 0，表示操作整张图片。
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>
 
-成功返回 0，否则返回非 0，若 imgdest 或 imgsrc 传入错误，会引发运行时异常。
+成功返回 0，否则返回非 0，若 imgDest 或 imgSrc 传入错误，会引发运行时异常。
 
 <font size="4" color="#0000FF"><strong>示例：</strong></font>
 

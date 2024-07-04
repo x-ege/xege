@@ -9,50 +9,57 @@
 <font size="4">
 <font size="4" color="#0000FF"><strong>功能：</strong></font>
 
-绘制带透明通道的图像
+绘制带透明通道的图像。
+
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
 <pre><font color=#0000FF>int </font><font color=#008080>putimage_withalpha</font>(
-    <font color=#800080>PIMAGE </font>imgdest,         <font color=#008000>  // 目标 IMAGE 对象指针
-    </font><font color=#800080>PCIMAGE </font>imgsrc,         <font color=#008000>  // 源 IMAGE 对象指针
-    </font><font color=#0000FF>int </font>nXOriginDest,       <font color=#008000>  // 绘制位置的 x 坐标
-    </font><font color=#0000FF>int </font>nYOriginDest,       <font color=#008000>  // 绘制位置的 y 坐标
-    </font><font color=#0000FF>int </font>nXOriginSrc = 0,    <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 x 坐标
-    </font><font color=#0000FF>int </font>nYOriginSrc = 0,    <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 y 坐标
-    </font><font color=#0000FF>int </font>nWidthSrc = 0,      <font color=#008000>  // 绘制内容在源 IMAGE 对象中的宽度
-    </font><font color=#0000FF>int </font>nHeightSrc = 0      <font color=#008000>  // 绘制内容在源 IMAGE 对象中的高度
-</font>);</pre>
+    <font color=#800080>PIMAGE </font>imgDest,   <font color=#008000>  // 目标 IMAGE 对象指针</font>
+    <font color=#800080>PCIMAGE </font>imgSrc,   <font color=#008000>  // 源 IMAGE 对象指针</font>
+    <font color=#0000FF>int </font>xDest,        <font color=#008000>  // 绘制位置的 x 坐标</font>
+    <font color=#0000FF>int </font>yDest,        <font color=#008000>  // 绘制位置的 y 坐标</font>
+    <font color=#0000FF>int </font>xSrc = 0,     <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 x 坐标</font>
+    <font color=#0000FF>int </font>ySrc = 0,     <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 y 坐标</font>
+    <font color=#0000FF>int </font>widthSrc = 0, <font color=#008000>  // 绘制内容在源 IMAGE 对象中的宽度</font>
+    <font color=#0000FF>int </font>heightSrc = 0 <font color=#008000>  // 绘制内容在源 IMAGE 对象中的高度</font>
+);
 
-<pre><font color=#0000FF>int </font><font color=#008080>putimage_withalpha</font>(
-    <font color=#800080>PIMAGE </font>imgdest,         <font color=#008000>  // 目标 IMAGE 对象指针
-    </font><font color=#800080>PCIMAGE </font>imgsrc,         <font color=#008000>  // 源 IMAGE 对象指针
-    </font><font color=#0000FF>int </font>nXOriginDest,       <font color=#008000>  // 绘制位置的 x 坐标
-    </font><font color=#0000FF>int </font>nYOriginDest,       <font color=#008000>  // 绘制位置的 y 坐标
-    </font><font color=#0000FF>int </font>nWidthDest,         <font color=#008000>  // 绘制内容在目标 IMAGE 对象中的宽度
-    </font><font color=#0000FF>int </font>nHeightDest,        <font color=#008000>  // 绘制内容在目标 IMAGE 对象中的高度
-    </font><font color=#0000FF>int </font>nXOriginSrc,        <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 x 坐标
-    </font><font color=#0000FF>int </font>nYOriginSrc,        <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 y 坐标
-    </font><font color=#0000FF>int </font>nWidthSrc,          <font color=#008000>  // 绘制内容在源 IMAGE 对象中的宽度
-    </font><font color=#0000FF>int </font>nHeightSrc          <font color=#008000>  // 绘制内容在源 IMAGE 对象中的高度
-</font>);</pre>
+<font color=#0000FF>int </font><font color=#008080>putimage_withalpha</font>(
+    <font color=#800080>PIMAGE </font>imgDest,   <font color=#008000>  // 目标 IMAGE 对象指针</font>
+    <font color=#800080>PCIMAGE </font>imgSrc,   <font color=#008000>  // 源 IMAGE 对象指针</font>
+    <font color=#0000FF>int </font>xDest,        <font color=#008000>  // 绘制位置的 x 坐标</font>
+    <font color=#0000FF>int </font>yDest,        <font color=#008000>  // 绘制位置的 y 坐标</font>
+    <font color=#0000FF>int </font>widthDest,    <font color=#008000>  // 绘制内容在目标 IMAGE 对象中的宽度</font>
+    <font color=#0000FF>int </font>heightDest,   <font color=#008000>  // 绘制内容在目标 IMAGE 对象中的高度</font>
+    <font color=#0000FF>int </font>xSrc,         <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 x 坐标</font>
+    <font color=#0000FF>int </font>ySrc,         <font color=#008000>  // 绘制内容在 IMAGE 对象中的左上角 y 坐标</font>
+    <font color=#0000FF>int </font>widthSrc,     <font color=#008000>  // 绘制内容在源 IMAGE 对象中的宽度</font>
+    <font color=#0000FF>int </font>heightSrc,    <font color=#008000>  // 绘制内容在源 IMAGE 对象中的高度</font>
+    <font color=#0000FF>bool </font>smooth = <font color=#0000FF>false</font><font color=#008000> // 是否进行平滑处理</font>
+);
+</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
-imgdest
-要进行半透明混合的目标图片，如果为NULL则表示操作窗口上的图片
+<b>imgDest</b>
+要进行半透明混合的目标图像，如果为NULL则表示操作窗口上的图片
 
-imgsrc
-要进行半透明混合的源图片，该操作不会改变源图片
+<b>imgSrc</b>
+要进行半透明混合的源图像，该操作不会改变源图像
 
-nXOriginDest, nYOriginDest
-要开始进行混合的目标图片坐标，该坐标是混合区域的左上角
+<b>xDest, yDest</b>
+要开始进行混合的目标图像坐标，该坐标是混合区域的左上角
 
-nWidthDest, nHeightDest
+<b>widthDest, heightDest</b>
 要开始进行混合的目标矩形区域大小
 
-alpha
-透明度值，如果为0x0，表示源图片完全透明，如果为0xFF，表示源图片完全不透明。
+<b>alpha</b>
+范围：0~255，对应不透明度 0~100%，如果为 0，表示源图像完全透明，如果为 255，表示源图像完全不透明。
 
-nXOriginDest, nYOriginDest, nWidthDest, nHeightDest
-描述要进行此操作的源图矩形区域。如果nWidthDest和nHeightDest 为0，表示操作整张图片。
+<b>xSrc, ySrc, widthSrc, heightSrc</b>
+描述要进行此操作的源图像矩形区域（左上角的x, y 坐标，宽度width, 高度 height ）。
+如果 widthSrc 和 heightSrc 为 0，表示操作整张图片。
+
+<b>smooth</b>
+是否进行平滑处理。
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>
 

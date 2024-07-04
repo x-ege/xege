@@ -15,94 +15,144 @@
     另外，这里每一个函数的最后一个参数均为一个 PIMAGE 的指针，是一个可选参数，如果不填或者填入 NULL，则绘制到当前绘图页。如果填上，则绘制到指定的图像。
     关于效率，如果使用手动渲染模式（setrendermode(RENDER_MANUAL)），那以上所有函数的执行速度都会得到提升。
 
-
-<h3>普通绘图函数：</h3>
-
-<table>
-<tr><th>函数或类型</th><th>说明</th><th>最低版本要求</th></tr>
-<tr><td><a href="arc.htm">arc</a></td>							<td>绘制圆弧</td>							<td align="center"></td></tr>
-<tr><td><a href="bar.htm">bar</a></td>								<td>绘制无边框填充矩形</td>					<td align="center"></td></tr>
-<tr><td><a href="bar3d.htm">bar3d</a></td>							<td>绘制有边框三维填充矩形</td>				<td align="center"></td></tr>
-<tr><td><a href="circle.htm">circle</a></td>						<td>绘制圆</td>								<td align="center"></td></tr>
-<tr><td><a href="drawbezier.htm">drawbezier</a></td>				<td>绘制bezier曲线</td>						<td align="center"></td></tr>
-<tr><td><a href="drawlines.htm">drawlines</a></td>					<td>绘制多条不连续线段</td>					<td align="center"></td></tr>
-<tr><td><a href="drawpoly.htm">drawpoly</a></td>					<td>绘制多边形</td>							<td align="center"></td></tr>
-<tr><td><a href="ellipse.htm">ellipse</a></td>						<td>绘制椭圆弧线</td>						<td align="center"></td></tr>
-<tr><td><a href="fillcircle.htm">fillcircle</a></td>				<td>绘制填充的圆</td>						<td align="center"> ege dev </td></tr>
-<tr><td><a href="fillellipse.htm">fillellipse</a></td>				<td>绘制填充的椭圆</td>						<td align="center"></td></tr>
-<tr><td><a href="fillpoly.htm">fillpoly</a></td>					<td>绘制填充的多边形</td>					<td align="center"></td></tr>
-<tr><td><a href="fillpoly_gradient.htm">fillpoly_gradient</a></td>	<td>绘制渐变填充的多边形</td>				<td align="center"></td></tr>
-<tr><td><a href="fillrect.htm">fillrect</a></td>					<td>绘制填充的矩形</td>						<td align="center"> ege dev </td></tr>
-<tr><td><a href="fillroundrect.htm">fillroundrect</a></td>			<td>绘制填充的圆角矩形</td>					<td align="center"> ege dev </td></tr>
-<tr><td><a href="floodfill.htm">floodfill</a></td>					<td>指定边界色填充区域</td>					<td align="center"></td></tr>
-<tr><td><a href="floodfillsurface.htm">floodfillsurface</a></td>	<td>指定区域色填充区域</td>					<td align="center"></td></tr>
-<tr><td><a href="getfillcolor.htm">getfillcolor</a></td>			<td>获取当前填充颜色</td>					<td align="center"></td></tr>
-<tr><td>getfillstyle</td>			 								<td>获取当前填充类型（暂不支持）</td>		<td align="center"></td></tr>
-<tr><td><a href="getheight.htm">getheight</a></td>					<td>获取绘图区的高度</td>					<td align="center"></td></tr>
-<tr><td><a href="getlinestyle.htm">getlinestyle</a></td>			<td>获取当前线形</td>						<td align="center"></td></tr>
-<tr><td><a href="getpixel.htm">getpixel</a></td>					<td>获取像素点的颜色</td>					<td align="center"></td></tr>
-<tr><td><a href="getwidth.htm">getwidth</a></td>					<td>获取绘图区的宽度</td>					<td align="center"></td></tr>
-<tr><td><a href="getx.htm">getx</a></td>							<td>获取当前 x 坐标</td>					<td align="center"></td></tr>
-<tr><td><a href="gety.htm">gety</a></td>							<td>获取当前 y 坐标</td>					<td align="center"></td></tr>
-<tr><td><a href="line.htm">line</a></td>							<td>绘制线</td>								<td align="center"></td></tr>
-<tr><td><a href="linerel.htm">linerel</a></td>						<td>绘制线</td>								<td align="center"></td></tr>
-<tr><td><a href="lineto.htm">lineto</a></td>						<td>绘制线</td>								<td align="center"></td></tr>
-<tr><td><a href="moverel.htm">moverel</a></td>						<td>移动当前点</td>							<td align="center"></td></tr>
-<tr><td><a href="moveto.htm">moveto</a></td>						<td>移动当前点</td>							<td align="center"></td></tr>
-<tr><td><a href="pieslice.htm">pieslice</a></td>					<td>绘制填充圆扇形</td>						<td align="center"></td></tr>
-<tr><td><a href="putpixel.htm">putpixel</a></td>					<td>设置像素点的颜色</td>					<td align="center"></td></tr>
-<tr><td><a href="putpixel_savealpha.htm">putpixel_savealpha</a></td>			<td>设置像素点的颜色（同时保留原有alpha值）</td>	<td align="center">ege dev</td></tr>
-<tr><td><a href="putpixel_withalpha.htm">putpixel_withalpha</a></td>			<td>绘制像素点（根据 alpha 进行混合）</td>	        <td align="center">ege 20.08</td></tr>
-<tr><td><a href="putpixels.htm">putpixels</a></td>					<td>绘制多个像素点</td>						<td align="center"></td></tr>
-<tr><td><a href="rectangle.htm">rectangle</a></td>					<td>绘制空心矩形</td>						<td align="center"></td></tr>
-<tr><td><a href="roundrect.htm">roundrect</a></td>					<td>绘制空心圆角矩形</td>					<td align="center"></td></tr>
-<tr><td><a href="sector.htm">sector</a></td>						<td>绘制填充椭圆扇形</td>					<td align="center"></td></tr>
+<h3>样式设置</h3><table>
+<tr><th>设置样式</th><th>说明</th><th>最低版本要求</th></tr>
 <tr><td><a href="setfillcolor.htm">setfillcolor</a></td>			<td>设置当前填充颜色</td>					<td align="center"></td></tr>
-<tr><td><a href="setfillstyle.htm">setfillstyle</a></td>			<td>设置当前填充类型（过时函数）</td>		<td align="center"></td></tr>
+<tr><td><a href="setcolor.htm">setcolor</a></td>					<td>设置当前前景颜色</td>					<td align="center"></td></tr>
+<tr><td><a href="setlinecolor.htm">setlinecolor</a></td>			<td>设置当前线条颜色</td>					<td align="center">24.04</td></tr>
+<tr><td><a href="setfillstyle.htm">setfillstyle</a></td>			<td>设置当前填充类型</td>					<td align="center"></td></tr>
 <tr><td><a href="setlinestyle.htm">setlinestyle</a></td>			<td>设置当前线形</td>						<td align="center"></td></tr>
+<tr><td><a href="setlinecap.htm">setlinecap</a></td>				<td>设置当前线帽</td>						<td align="center">24.04</td></tr>
+<tr><td><a href="setlinejoin.htm">setlinejoin</a></td>				<td>设置当前线条连接样式</td>				<td align="center">24.04</td></tr>
 <tr><td><a href="setlinewidth.htm">setlinewidth</a></td>			<td>设置当前线宽</td>						<td align="center"></td></tr>
 <tr><td><a href="setwritemode.htm">setwritemode</a></td>			<td>设置绘图位操作模式</td>					<td align="center"></td></tr>
+<tr><td><a href="getfillcolor.htm">getfillcolor</a></td>			<td>获取当前填充颜色</td>					<td align="center"></td></tr>
+<tr><td>getfillstyle</td>			 								<td>获取当前填充类型（暂不支持）</td>		<td align="center"></td></tr>
+<tr><td><a href="getlinestyle.htm">getlinestyle</a></td>			<td>获取当前线形</td>						<td align="center"></td></tr>
+<tr><td><a href="getlinecap.htm">getlinecap</a></td>				<td>获取当前线帽</td>						<td align="center">24.04</td></tr>
+<tr><td><a href="getlinejoin.htm">getlinejoin</a></td>				<td>获取当前线条连接处样式</td>				<td align="center">24.04</td></tr>
+
+<tr><th>绘图环境</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="getwidth.htm">getwidth</a></td>					<td>获取绘图区的宽度</td>					<td align="center"></td></tr>
+<tr><td><a href="getheight.htm">getheight</a></td>					<td>获取绘图区的高度</td>					<td align="center"></td></tr>
+<tr><td><a href="getx.htm">getx</a></td>							<td>获取当前 x 坐标</td>					<td align="center"></td></tr>
+<tr><td><a href="gety.htm">gety</a></td>							<td>获取当前 y 坐标</td>					<td align="center"></td></tr>
+<tr><td><a href="moverel.htm">moverel</a></td>						<td>移动当前点</td>							<td align="center"></td></tr>
+<tr><td><a href="moveto.htm">moveto</a></td>						<td>移动当前点至指定坐标</td>				<td align="center"></td></tr>
 </table>
+
+<h3>普通绘图函数：</h3><table>
+<tr><th>像素点</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="getpixel.htm">getpixel</a></td>					<td>获取像素点的颜色</td>					<td align="center"></td></tr>
+<tr><td><a href="putpixel.htm">putpixel</a></td>					<td>设置像素点的颜色</td>					<td align="center"></td></tr>
+<tr><td><a href="putpixel_savealpha.htm">putpixel_savealpha</a></td>			<td>设置像素点的颜色（同时保留原有alpha值）</td>							<td align="center">24.04</td></tr>
+<tr><td><a href="putpixel_withalpha.htm">putpixel_withalpha</a></td>			<td>绘制像素点（根据 alpha 进行混合，混合结果保留背景色 alpha）</td>		<td align="center">20.08</td></tr>
+<tr><td><a href="putpixel_alphablend.htm">putpixel_alphablend</a></td>			<td>绘制像素点（根据 alpha 进行混合）</td>									<td align="center">24.04</td></tr>
+<tr><td><a href="putpixels.htm">putpixels</a></td>					<td>绘制多个像素点</td>						<td align="center"></td></tr>
+
+<tr><th>弧</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="arc.htm">arc</a></td>								<td>绘制圆弧</td>							<td align="center"></td></tr>
+<tr><td><a href="ellipse.htm">ellipse</a></td>						<td>绘制椭圆或椭圆弧</td>					<td align="center"></td></tr>
+
+<tr><th>直线</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="line.htm">line</a></td>						<td>绘制直线</td>							<td align="center"></td></tr>
+<tr><td><a href="linerel.htm">linerel</a></td>					<td>绘制直线</td>							<td align="center"></td></tr>
+<tr><td><a href="lineto.htm">lineto</a></td>					<td>绘制直线</td>							<td align="center"></td></tr>
+<tr><td><a href="drawlines.htm">drawlines</a></td>				<td>绘制多条不连续线段</td>					<td align="center"></td></tr>
+
+<tr><th>折线</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="polyline.htm">polygon</a></td>					<td>绘制折线</td>							<td align="center">24.04</td></tr>
+<tr><td><a href="drawpoly.htm">drawpoly</a></td>				<td>绘制折线或多边形边框</td>				<td align="center"></td></tr>
+
+<tr><th>曲线</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="drawbezier.htm">drawbezier</a></td>				<td>绘制贝塞尔曲线</td>						<td align="center"></td></tr>
+
+<tr><th>矩形</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="rectangle.htm">rectangle</a></td>					<td>绘制矩形边框</td>						<td align="center"></td></tr>
+<tr><td><a href="fillrect.htm">fillrect</a></td>					<td>绘制填充矩形(有边框)</td>				<td align="center"> 24.04 </td></tr>
+<tr><td><a href="solidrect.htm">solidrect</a></td>					<td>绘制填充矩形(无边框)</td>				<td align="center"> 24.04 </td></tr>
+<tr><td><a href="bar.htm">bar</a></td>								<td>绘制填充矩形(无边框)</td>				<td align="center"></td></tr>
+<tr><td><a href="bar3d.htm">bar3d</a></td>							<td>绘制三维填充矩形(有边框)</td>			<td align="center"></td></tr>
+
+<tr><th>多边形</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="drawpoly.htm">drawpoly</a></td>					<td>绘制折线或多边形边框</td>				<td align="center"></td></tr>
+<tr><td><a href="polygon.htm">polygon</a></td>						<td>绘制多边形边框</td>						<td align="center">24.04</td></tr>
+<tr><td><a href="fillpoly.htm">fillpoly</a></td>					<td>绘制填充多边形(有边框)</td>				<td align="center"></td></tr>
+<tr><td><a href="solidpoly.htm">solidpoly</a></td>					<td>绘制填充多边形(无边框)</td>				<td align="center">24.04</td></tr>
+<tr><td><a href="fillpoly_gradient.htm">fillpoly_gradient</a></td>	<td>绘制渐变填充多边形</td>					<td align="center"></td></tr>
+
+<tr><th>椭圆</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="circle.htm">circle</a></td>						<td>绘制圆</td>								<td align="center"></td></tr>
+<tr><td><a href="ellipse.htm">ellipse</a></td>						<td>绘制椭圆或椭圆弧</td>					<td align="center"></td></tr>
+<tr><td><a href="fillcircle.htm">fillcircle</a></td>				<td>绘制填充圆(有边框)</td>					<td align="center">24.04</td></tr>
+<tr><td><a href="fillellipse.htm">fillellipse</a></td>				<td>绘制填充椭圆(有边框)</td>				<td align="center"></td></tr>
+<tr><td><a href="solidcircle.htm">solidcircle</a></td>				<td>绘制填充圆(无边框)</td>					<td align="center">24.04</td></tr>
+<tr><td><a href="solidellipse.htm">solidellipse</a></td>			<td>绘制填充椭圆(无边框)</td>				<td align="center"></td></tr>
+
+<tr><th>饼形/扇形</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="pie.htm">pie</a></td>								<td>绘制饼形边框</td>						<td align="center">24.04</td></tr>
+<tr><td><a href="fillpie.htm">fillpie</a></td>						<td>绘制填充饼形(有边框)</td>				<td align="center">24.04</td></tr>
+<tr><td><a href="solidpie.htm">solidpie</a></td>					<td>绘制填充饼形(无边框)</td>				<td align="center">24.04</td></tr>
+<tr><td><a href="sector.htm">sector</a></td>						<td>绘制填充椭圆扇形(有边框)</td>			<td align="center"></td></tr>
+<tr><td><a href="pieslice.htm">pieslice</a></td>					<td>绘制填充圆扇形(有边框)</td>				<td align="center"></td></tr>
+
+<tr><th>圆角矩形</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="roundrect.htm">roundrect</a></td>					<td>绘制圆角矩形边框</td>					<td align="center"></td></tr>
+<tr><td><a href="fillroundrect.htm">fillroundrect</a></td>			<td>绘制填充圆角矩形(有边框)</td>			<td align="center"> 24.04 </td></tr>
+<tr><td><a href="solidroundrect.htm">solidroundrect</a></td>		<td>绘制填充圆角矩形(无边框)</td>			<td align="center"> 24.04 </td></tr>
+
+<tr><th>区域填充</th><th>说明</th><th>最低版本要求</th></tr>
+<tr><td><a href="floodfill.htm">floodfill</a></td>					<td>指定边界色填充区域</td>					<td align="center"></td></tr>
+<tr><td><a href="floodfillsurface.htm">floodfillsurface</a></td>	<td>指定区域色填充区域</td>					<td align="center"></td></tr>
+</table>
+
 
 注：最低版本要求中的 ege dev 为 GitHub 开发版本，尚未正式发布。
 
 <h3>高级绘图函数(图形可设置透明度，可带抗锯齿)：</h3>
-
 <table>
-<tr><th>函数或类型</th>		<th>说明</th>		<th>最低版本要求</th></tr>
-<tr><td><a href="ege_enable_aa.htm">ege_enable_aa</a></td>								<td>抗锯齿设置</td>		<td align="center"></td></tr>
+<tr><th>图形设置</th>		<th>说明</th>		<th>最低版本要求</th></tr>
+<tr><td><a href="ege_enable_aa.htm">ege_enable_aa</a></td>								<td>抗锯齿设置</td>				<td align="center"></td></tr>
+<tr><th>线框图形</th>		<th>说明</th>		<th>最低版本要求</th></tr>
 <tr><td><a href="ege_line.htm">ege_line</a></td>										<td>绘制线</td>					<td align="center"></td></tr>
-<tr><td><a href="ege_rectangle.htm">ege_rectangle</a></td>								<td>绘制矩形线框</td>				<td align="center"></td></tr>
-<tr><td><a href="ege_arc.htm">ege_arc</a></td>											<td>绘制圆弧</td>					<td align="center"></td></tr>
-<tr><td><a href="ege_ellipse.htm">ege_ellipse</a></td>									<td>绘制椭圆线框</td>				<td align="center"></td></tr>
-<tr><td><a href="ege_pie.htm">ege_pie</a></td>											<td>绘制扇形线框</td>				<td align="center"></td></tr>
+<tr><td><a href="ege_rectangle.htm">ege_rectangle</a></td>								<td>绘制矩形线框</td>			<td align="center"></td></tr>
+<tr><td><a href="ege_roundrect.htm">ege_roundrect</a></td>								<td>绘制圆角矩形线框</td>		<td align="center">24.04</td></tr>
+<tr><td><a href="ege_arc.htm">ege_arc</a></td>											<td>绘制圆弧</td>				<td align="center"></td></tr>
+<tr><td><a href="ege_ellipse.htm">ege_ellipse</a></td>									<td>绘制椭圆线框</td>			<td align="center"></td></tr>
+<tr><td><a href="ege_pie.htm">ege_pie</a></td>											<td>绘制扇形线框</td>			<td align="center"></td></tr>
 <tr><td><a href="ege_drawpoly.htm">ege_drawpoly</a></td>								<td>绘制多边形线框</td>			<td align="center"></td></tr>
 <tr><td><a href="ege_bezier.htm">ege_bezier</a></td>									<td>绘制贝塞尔曲线</td>			<td align="center"></td></tr>
-<tr><td><a href="ege_drawcurve.htm">ege_drawcurve</a></td>								<td>绘制拟合曲线</td>				<td align="center"></td></tr>
+<tr><td><a href="ege_drawcurve.htm">ege_drawcurve</a></td>								<td>绘制基数样条曲线</td>		<td align="center"></td></tr>
+<tr><td><a href="ege_drawclosedcurve.htm">ege_drawclosedcurve</a></td>					<td>绘制闭合基数样条曲线</td>	<td align="center">24.04</td></tr>
+<tr><td><a href="ege_drawpath.htm">ege_drawpath</a></td>								<td>绘制路径</td>				<td align="center">24.04</td></tr>
 
-
-<tr><td><a href="ege_fillrect.htm">ege_fillrect</a></td>								<td>绘制填充矩形</td>				<td align="center"></td></tr>
-<tr><td><a href="ege_fillpie.htm">ege_fillpie</a></td>									<td>绘制填充扇形</td>				<td align="center"></td></tr>
+<tr><th>填充图形</th>		<th>说明</th>		<th>最低版本要求</th></tr>
+<tr><td><a href="ege_fillrect.htm">ege_fillrect</a></td>								<td>绘制填充矩形</td>			<td align="center"></td></tr>
+<tr><td><a href="ege_fillroundrect.htm">ege_fillroundrect</a></td>						<td>绘制填充圆角矩形</td>		<td align="center">24.04</td></tr>
+<tr><td><a href="ege_fillpie.htm">ege_fillpie</a></td>									<td>绘制填充扇形</td>			<td align="center"></td></tr>
 <tr><td><a href="ege_fillpoly.htm">ege_fillpoly</a></td>								<td>绘制填充多边形</td>			<td align="center"></td></tr>
-<tr><td><a href="ege_fillellipse.htm">ege_fillellipse</a></td>							<td>绘制填充椭圆</td>				<td align="center"></td></tr>
+<tr><td><a href="ege_fillellipse.htm">ege_fillellipse</a></td>							<td>绘制填充椭圆</td>			<td align="center"></td></tr>
+<tr><td><a href="ege_fillclosedcurve.htm">ege_fillclosedcurve</a></td>					<td>绘制填充的闭合基数样条曲线</td>	<td align="center">24.04</td></tr>
+<tr><td><a href="ege_fillpath.htm">ege_fillpath</a></td>								<td>绘制填充路径</td>			<td align="center">24.04</td></tr>
+<tr><td><a href="ege_drawimage.htm">ege_drawimage</a></td>								<td>(alpha混合)绘制图像</td>	<td align="center">24.04</td></tr>
 
-<tr><td><a href="ege_drawimage.htm">ege_drawimage</a></td>								<td>(alpha混合)绘制图像</td>	<td align="center">ege dev</td></tr>
-<tr><td><a href="ege_transform_rotate.htm">ege_transform_rotate</a></td>				<td>旋转坐标变换</td>			<td align="center">ege dev</td></tr>
-<tr><td><a href="ege_transform_translate.htm">ege_translate_rotate</a></td>				<td>平移坐标变换</td>			<td align="center">ege dev</td></tr>
-<tr><td><a href="ege_transform_scale.htm">ege_transform_scale</a></td>					<td>缩放坐标变换</td>			<td align="center">ege dev</td></tr>
-<tr><td><a href="ege_transform_reset.htm">ege_transform_reset</a></td>					<td>重置（清除）所有坐标变换</td>		<td align="center">ege dev</td></tr>
-<tr><td><a href="ege_get_transform.htm">ege_get_transform</a></td>						<td>获取现有坐标变换矩阵</td>	<td align="center">ege dev</td></tr>
-<tr><td><a href="ege_set_transform.htm">ege_set_transform</a></td>						<td>设置坐标变换矩阵</td>		<td align="center">ege dev</td></tr>
-
+<tr><th>坐标变换</th>		<th>说明</th>		<th>最低版本要求</th></tr>
+<tr><td><a href="ege_transform_rotate.htm">ege_transform_rotate</a></td>				<td>旋转坐标变换</td>			<td align="center">24.04</td></tr>
+<tr><td><a href="ege_transform_translate.htm">ege_translate_rotate</a></td>				<td>平移坐标变换</td>			<td align="center">24.04</td></tr>
+<tr><td><a href="ege_transform_scale.htm">ege_transform_scale</a></td>					<td>缩放坐标变换</td>			<td align="center">24.04</td></tr>
+<tr><td><a href="ege_transform_reset.htm">ege_transform_reset</a></td>					<td>重置（清除）所有坐标变换</td>		<td align="center">24.04</td></tr>
+<tr><td><a href="ege_get_transform.htm">ege_get_transform</a></td>						<td>获取现有坐标变换矩阵</td>	<td align="center">24.04</td></tr>
+<tr><td><a href="ege_set_transform.htm">ege_set_transform</a></td>						<td>设置坐标变换矩阵</td>		<td align="center">24.04</td></tr>
+<tr><th>填充模式</th>		<th>说明</th>		<th>最低版本要求</th></tr>
 <tr><td><a href="ege_setpattern_none.htm">ege_setpattern_none</a></td>							<td>设置为默认填充模式</td>		 <td align="center"></td></tr>
 <tr><td><a href="ege_setpattern_lineargradient.htm">ege_setpattern_lineargradient</a></td>		<td>设置为线性渐变填充模式</td>	 <td align="center"></td></tr>
 <tr><td><a href="ege_setpattern_ellipsegradient.htm">ege_setpattern_ellipsegradient</a></td>	<td>设置为椭圆渐变填充模式</td>	 <td align="center"></td></tr>
 <tr><td><a href="ege_setpattern_texture.htm">ege_setpattern_texture</a></td>					<td>设置为纹理填充模式</td>		 <td align="center"></td></tr>
 <tr><td><a href="ege_setpattern_pathgradient.htm">ege_setpattern_pathgradient</a></td>			<td>设置为路径渐变填充模式</td>	 <td align="center"></td></tr>
-
+<tr><th>纹理</th>		<th>说明</th>		<th>最低版本要求</th></tr>
 <tr><td><a href="ege_gentexture.htm">ege_gentexture</a></td>							<td>生成纹理</td>				<td align="center"></td></tr>
 <tr><td><a href="ege_puttexture.htm">ege_puttexture</a></td>							<td>绘制纹理</td>				<td align="center"></td></tr>
-
+<tr><th>类型</th>		<th>说明</th>		<th>最低版本要求</th></tr>
 <tr><td><a href="ege_point.htm">ege_point 结构体</a></td>								<td>点</td>						<td align="center"></td></tr>
 <tr><td><a href="ege_rect.htm">ege_rect 结构体</a></td>									<td>矩形区域</td>				<td align="center"></td></tr>
 <tr><td><a href="ege_colpoint.htm">ege_colpoint 结构体</a></td>							<td>颜色点</td>					<td align="center"></td></tr>

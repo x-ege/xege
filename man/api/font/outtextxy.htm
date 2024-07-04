@@ -15,7 +15,7 @@
 <pre><font color=#0000FF>void </font><font color=#008080>outtextxy</font>(
     <font color=#0000FF>int </font>x,
     <font color=#0000FF>int </font>y,
-    <font color=#800080>LPCSTR </font>textstring,
+    <font color=#800080>const char* </font>text,
     <font color=#800080>PIMAGE</font> pimg = <font color=#800080>NULL
 </font>);
 
@@ -29,14 +29,14 @@
 <font color=#0000FF>void </font><font color=#008080>outtextxy</font>(
     <font color=#0000FF>int </font>x,
     <font color=#0000FF>int </font>y,
-    <font color=#800080>LPCWSTR </font>textstring,
+    <font color=#800080>const wchar_t* </font>text,
     <font color=#800080>PIMAGE</font> pimg = <font color=#800080>NULL
 </font>);
 
 <font color=#0000FF>void </font><font color=#008080>outtextxy</font>(
     <font color=#0000FF>int </font>x,
     <font color=#0000FF>int </font>y,
-    <font color=#800080>WCHAR </font>c,
+    <font color=#800080>wchar_t </font>c,
     <font color=#800080>PIMAGE</font> pimg = <font color=#800080>NULL
 </font>);</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
@@ -47,7 +47,7 @@ x
 y
 字符串输出时头字母的 y 轴的坐标值。
 
-textstring
+text
 要输出的字符串。
 
 c
