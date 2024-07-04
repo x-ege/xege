@@ -45,7 +45,7 @@ alpah = 0 时表示源图像完全透明，alpha = 255 时表示源图像完全�
 
 <b>xSrc, ySrc, widthSrc, heightSrc</b>
 描述要进行此操作的源图像矩形区域（左上角的x, y 坐标，宽度width, 高度 height ）。
-如果 widthSrc 和 heightSrc 为 0，表示操作整张图片。
+如果 widthSrc 和 heightSrc 小于等于 0，则为源图像从(xSrc, ySrc) 至右下角的区域。
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>
 
