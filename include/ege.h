@@ -1172,8 +1172,8 @@ void EGEAPI ege_path_addcircle     (ege_path* path, float x, float y, float radi
 void EGEAPI ege_path_addrect       (ege_path* path, float x, float y, float width, float height);
 void EGEAPI ege_path_addellipse    (ege_path* path, float x, float y, float width, float height);
 void EGEAPI ege_path_addpie        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
-void EGEAPI ege_path_addstring     (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
-void EGEAPI ege_path_addstring     (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
+void EGEAPI ege_path_addtext       (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
+void EGEAPI ege_path_addtext       (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
 void EGEAPI ege_path_addpolygon    (ege_path* path, int numOfPoints, const ege_point* points);
 void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points);
 void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points, float tension);
