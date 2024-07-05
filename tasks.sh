@@ -102,6 +102,9 @@ while [[ $# > 0 ]]; do
         ;;
     --build)
         echo "build"
+        if [[ ! -f "$CMAKE_VS_DIR/CMakeCache.txt" ]]; then
+            loadCMakeProject
+        fi
         cmakeBuildAll
         shift # past argument
         ;;
