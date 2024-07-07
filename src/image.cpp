@@ -3343,7 +3343,7 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
             }
         }
     } else if (bytesPerPixel == 3) {
-        const unsigned char zeroPadding[4] = {0};
+        const unsigned char zeroPadding[4] = {0, 0, 0, 0};
 
         for (int row = rowCnt-1; row >= 0; row--) {
             const color_t* pixels = &buffer[row * colCnt];   // 每行像素首地址

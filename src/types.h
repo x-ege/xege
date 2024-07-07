@@ -6,6 +6,8 @@
 #include <stdint.h>
 #elif !defined(_MSC_VER) || _MSC_VER > 1300
 #include "stdint.h"
+#else
+typedef unsigned uint32_t;
 #endif
 
 #include <limits.h>
