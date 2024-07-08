@@ -229,10 +229,7 @@ int keystate(int key)
     if (key < 0 || key >= MAX_KEY_VCODE) {
         return -1;
     }
-    SHORT s = GetKeyState(key);
-    if (((USHORT)s & 0x8000) == 0) {
-        pg->keystatemap[key] = 0;
-    }
+
     return pg->keystatemap[key];
 }
 
