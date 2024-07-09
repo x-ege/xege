@@ -69,6 +69,17 @@ if (USE_LIBPNG_AND_ZLIB)
             file(RENAME ${EGE_ZLIB_SOURCE_DIR}/zconf.h.included ${EGE_ZLIB_SOURCE_DIR}/zconf.h)
         endif ()
 
+        if (MSVC)
+            target_compile_options(png_static PUBLIC 
+                /MP
+                "$<$<CONFIG:DEBUG>:/MTd>"
+                "$<$<CONFIG:RELEASE>:/MT>")
+            target_compile_options(zlibstatic PUBLIC
+                /MP
+                "$<$<CONFIG:DEBUG>:/MTd>"
+                "$<$<CONFIG:RELEASE>:/MT>")
+        endif()
+
         target_include_directories(xege
             PRIVATE ${EGE_ZLIB_BINARY_DIR}
             PRIVATE ${EGE_ZLIB_SOURCE_DIR}
@@ -77,6 +88,7 @@ if (USE_LIBPNG_AND_ZLIB)
             PRIVATE ${EGE_LIBPNG_BINARY_DIR}
             PRIVATE ${EGE_LIBPNG_SOURCE_DIR}
         )
+
         target_sources(xege
             PRIVATE $<TARGET_OBJECTS:png_static>
             PRIVATE $<TARGET_OBJECTS:zlibstatic>
@@ -111,6 +123,10 @@ endif ()
 # 打印编译器信息
 if (MSVC)
     message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
+    target_compile_options(xege PUBLIC 
+        /MP
+        "$<$<CONFIG:DEBUG>:/MTd>"
+        "$<$<CONFIG:RELEASE>:/MT>")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else ()
