@@ -256,26 +256,44 @@ void moverel(int dx, int dy, PIMAGE pimg)
 void line(int x1, int y1, int x2, int y2, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    MoveToEx(img->m_hDC, x1, y1, NULL);
-    LineTo(img->m_hDC, x2, y2);
+    if (img) {
+        if (img->m_linestyle.linestyle != NULL_LINE) {
+            MoveToEx(img->m_hDC, x1, y1, NULL);
+            LineTo(img->m_hDC, x2, y2);
+        } else {
+            MoveToEx(img->m_hDC, x2, y2, NULL);
+        }
+    }
     CONVERT_IMAGE_END;
 }
 
 void linerel(int dx, int dy, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    POINT pt;
-    GetCurrentPositionEx(img->m_hDC, &pt);
-    dx += pt.x;
-    dy += pt.y;
-    LineTo(img->m_hDC, dx, dy);
+    if (img) {
+        POINT pt;
+        GetCurrentPositionEx(img->m_hDC, &pt);
+        dx += pt.x;
+        dy += pt.y;
+        if (img->m_linestyle.linestyle != NULL_LINE) {
+            LineTo(img->m_hDC, dx, dy);
+        } else {
+            MoveToEx(img->m_hDC, dx, dy, NULL);
+        }
+    }
     CONVERT_IMAGE_END;
 }
 
 void lineto(int x, int y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    LineTo(img->m_hDC, x, y);
+    if (img) {
+        if (img->m_linestyle.linestyle != NULL_LINE) {
+            LineTo(img->m_hDC, x, y);
+        } else {
+            MoveToEx(img->m_hDC, x, y, NULL);
+        }
+    }
     CONVERT_IMAGE_END;
 }
 
