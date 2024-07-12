@@ -1,4 +1,5 @@
 .vs/
+.history
 *.tlog
 *.obj
 [Dd]ebug/
