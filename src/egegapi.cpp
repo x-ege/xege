@@ -531,45 +531,58 @@ static int upattern2array(unsigned short pattern, DWORD style[])
 
 static void update_pen(PIMAGE img)
 {
-    LOGBRUSH lbr;
-    lbr.lbColor = ARGBTOZBGR(img->m_linecolor);
-    lbr.lbStyle = BS_SOLID;
-    lbr.lbHatch = 0;
-
     const int linestyle = img->m_linestyle.linestyle;
     const unsigned short pattern = img->m_linestyle.upattern;
     const int thickness = img->m_linestyle.thickness;
 
-    // 添加这些属性以获得正确的显示效果
-    int ls = linestyle | PS_GEOMETRIC;
-
-    switch (img->m_linestartcap) {
-        case LINECAP_FLAT :  ls |= PS_ENDCAP_FLAT;   break;
-        case LINECAP_ROUND:  ls |= PS_ENDCAP_ROUND;  break;
-        case LINECAP_SQUARE: ls |= PS_ENDCAP_SQUARE; break;
-        default:             ls |= PS_ENDCAP_FLAT;   break;
-    }
-
-    switch(img->m_linejoin) {
-        case LINEJOIN_MITER: ls |= PS_JOIN_MITER;    break;
-        case LINEJOIN_BEVEL: ls |= PS_JOIN_BEVEL;    break;
-        case LINEJOIN_ROUND: ls |= PS_JOIN_ROUND;    break;
-        default:             ls |= PS_JOIN_MITER;    break;
-    }
-
-    SetMiterLimit(img->m_hDC, img->m_linejoinmiterlimit, NULL);
-
     HPEN hpen;
-    if (linestyle == USERBIT_LINE) {
-        DWORD style[20] = {0};
-        int bn = upattern2array(pattern, style);
-        hpen = ExtCreatePen(ls, thickness, &lbr, bn, style);
+
+    if ((thickness == 1) && ((linestyle == SOLID_LINE) || (linestyle == NULL_LINE))) {
+        LOGPEN logPen;
+        logPen.lopnStyle = linestyle; // Other styles may be drawn incorrectly
+        logPen.lopnWidth.x = 1;       // Width
+        logPen.lopnWidth.y = 1;       // Unuse
+        logPen.lopnColor = ARGBTOZBGR(img->m_linecolor);
+
+        hpen = CreatePenIndirect(&logPen);
     } else {
-        hpen = ExtCreatePen(ls, thickness, &lbr, 0, NULL);
+        unsigned int penStyle = linestyle;
+
+        penStyle |= PS_GEOMETRIC;
+
+        switch (img->m_linestartcap) {
+            case LINECAP_FLAT :  penStyle |= PS_ENDCAP_FLAT;   break;
+            case LINECAP_ROUND:  penStyle |= PS_ENDCAP_ROUND;  break;
+            case LINECAP_SQUARE: penStyle |= PS_ENDCAP_SQUARE; break;
+            default:             penStyle |= PS_ENDCAP_FLAT;   break;
+        }
+
+        switch(img->m_linejoin) {
+            case LINEJOIN_MITER: penStyle |= PS_JOIN_MITER;    break;
+            case LINEJOIN_BEVEL: penStyle |= PS_JOIN_BEVEL;    break;
+            case LINEJOIN_ROUND: penStyle |= PS_JOIN_ROUND;    break;
+            default:             penStyle |= PS_JOIN_MITER;    break;
+        }
+
+        LOGBRUSH lbr;
+        lbr.lbColor = ARGBTOZBGR(img->m_linecolor);
+        lbr.lbStyle = BS_SOLID;
+        lbr.lbHatch = 0;
+
+        if (linestyle == USERBIT_LINE) {
+            DWORD style[20] = {0};
+            int bn = upattern2array(pattern, style);
+            hpen = ExtCreatePen(penStyle, thickness, &lbr, bn, style);
+        } else {
+            hpen = ExtCreatePen(penStyle, thickness, &lbr, 0, NULL);
+        }
     }
+
     if (hpen) {
         DeleteObject(SelectObject(img->m_hDC, hpen));
     }
+
+    SetMiterLimit(img->m_hDC, img->m_linejoinmiterlimit, NULL);
 
     // why update pen not in IMAGE???
 #ifdef EGE_GDIPLUS
