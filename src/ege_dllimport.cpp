@@ -1,3 +1,4 @@
+#include "ege_def.h"
 #include "ege_dllimport.h"
 
 #include <windef.h>

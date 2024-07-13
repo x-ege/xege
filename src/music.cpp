@@ -4,10 +4,11 @@ filename  music.cpp
 MUSIC类的定义
 */
 
-#include "music.h"
-
 #include "ege_head.h"
 #include "ege_common.h"
+
+#include "music.h"
+
 #include <mmsystem.h>
 #include <digitalv.h>
 

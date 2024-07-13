@@ -1,7 +1,7 @@
-#include "mouse.h"
-
 #include "ege_head.h"
 #include "ege_common.h"
+
+#include "mouse.h"
 
 namespace ege
 {
