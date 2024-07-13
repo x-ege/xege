@@ -260,8 +260,7 @@ void line(int x1, int y1, int x2, int y2, PIMAGE pimg)
         if (img->m_linestyle.linestyle != NULL_LINE) {
             MoveToEx(img->m_hDC, x1, y1, NULL);
             LineTo(img->m_hDC, x2, y2);
-        } else {
-            MoveToEx(img->m_hDC, x2, y2, NULL);
+            MoveToEx(img->m_hDC, x1, y1, NULL);
         }
     }
     CONVERT_IMAGE_END;
@@ -441,25 +440,34 @@ static void line_base(float x1, float y1, float x2, float y2, PIMAGE img)
 void lineto_f(float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    POINT pt;
-    GetCurrentPositionEx(img->m_hDC, &pt);
-    line_base((float)pt.x, (float)pt.y, x, y, img);
+    if (img) {
+        POINT pt;
+        GetCurrentPositionEx(img->m_hDC, &pt);
+        line_base((float)pt.x, (float)pt.y, x, y, img);
+        MoveToEx(img->m_hDC, (int)round(x), (int)round(y), NULL);
+    }
     CONVERT_IMAGE_END;
 }
 
 void linerel_f(float dx, float dy, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    POINT pt;
-    GetCurrentPositionEx(img->m_hDC, &pt);
-    line_base((float)pt.x, (float)pt.y, (float)pt.x + dx, (float)pt.y + dy, img);
+    if (img) {
+        POINT pt;
+        GetCurrentPositionEx(img->m_hDC, &pt);
+        float endX = (float)pt.x + dx, endY = (float)pt.y + dy;
+        line_base((float)pt.x, (float)pt.y, endX, endY, img);
+        MoveToEx(img->m_hDC, (int)round(endX), (int)round(endY), NULL);
+    }
     CONVERT_IMAGE_END;
 }
 
 void line_f(float x1, float y1, float x2, float y2, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    line_base(x1, y1, x2, y2, img);
+    if (img) {
+        line_base(x1, y1, x2, y2, img);
+    }
     CONVERT_IMAGE_END;
 }
 
