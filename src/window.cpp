@@ -1,7 +1,7 @@
-#include "window.h"
-
 #include "ege_head.h"
 #include "ege_common.h"
+
+#include "window.h"
 
 #define STYLE_NORMAL  (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN)
 

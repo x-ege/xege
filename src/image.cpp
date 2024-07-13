@@ -13,11 +13,11 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
-#include "image.h"
-
 #include "ege_head.h"
 #include "ege_common.h"
 #include "ege_dllimport.h"
+
+#include "image.h"
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL
 // #endif

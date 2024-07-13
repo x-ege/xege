@@ -2,9 +2,9 @@
  * @file  encodeconv.cpp
  * @brief 编码转换
  */
+#include "ege_head.h"
 
 #include "encodeconv.h"
-#include "ege_head.h"
 
 #include <windows.h>
 
