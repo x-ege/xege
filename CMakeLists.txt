@@ -70,14 +70,10 @@ if (USE_LIBPNG_AND_ZLIB)
         endif ()
 
         if (MSVC)
-            target_compile_options(png_static PUBLIC 
-                /MP
-                "$<$<CONFIG:DEBUG>:/MTd>"
-                "$<$<CONFIG:RELEASE>:/MT>")
-            target_compile_options(zlibstatic PUBLIC
-                /MP
-                "$<$<CONFIG:DEBUG>:/MTd>"
-                "$<$<CONFIG:RELEASE>:/MT>")
+            target_compile_options(png_static PRIVATE 
+                /MP)
+            target_compile_options(zlibstatic PRIVATE
+                /MP)
         endif()
 
         target_include_directories(xege
@@ -124,9 +120,7 @@ endif ()
 if (MSVC)
     message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
     target_compile_options(xege PUBLIC 
-        /MP
-        "$<$<CONFIG:DEBUG>:/MTd>"
-        "$<$<CONFIG:RELEASE>:/MT>")
+        /MP)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else ()
