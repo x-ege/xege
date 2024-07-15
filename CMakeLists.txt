@@ -74,6 +74,13 @@ if (USE_LIBPNG_AND_ZLIB)
                 /MP)
             target_compile_options(zlibstatic PRIVATE
                 /MP)
+        else ()
+            target_compile_options(png_static PRIVATE
+                -fPIC -fno-exceptions)
+            target_compile_options(zlibstatic PRIVATE
+                -fPIC -fno-exceptions)
+            target_compile_options(xege PRIVATE
+                -fPIC -fno-exceptions)
         endif()
 
         target_include_directories(xege
