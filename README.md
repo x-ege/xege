@@ -4,20 +4,22 @@
 
 - Website <https://xege.org>  (官网, 附带[教程](https://xege.org/beginner-lesson-1.html)以及[范例](https://xege.org/category/demo)等)
 - HomePage <https://github.com/wysaid/xege>  (代为维护)
-- 社区 <https://club.xege.org>
-- 百度贴吧2 <http://tieba.baidu.com/f?kw=ege>
-- 百度贴吧1 <http://tieba.baidu.com/f?kw=ege%C4%EF>
-- E-Mail new: this@xege.org
+- 社区 [ege club](https://club.xege.org)
+- 百度贴吧 [ege](http://tieba.baidu.com/f?kw=ege)
+- 百度贴吧 [ege娘](http://tieba.baidu.com/f?kw=ege%C4%EF)
+- 教程以及介绍 [EGE教程&介绍](https://blog.csdn.net/qq_39151563/article/details/100154767) (by [`依稀`](https://blog.csdn.net/qq_39151563?type=blog) )
+- E-Mail new: <this@xege.org>
 - QQ Group: 1060223135 (正常, 可加入)
 
-原作者 misakamm 联系方式与相关链接：
-- ~~HomePage1 <http://misakamm.github.com/xege>(原作者仓库, 已停止更新)~~
-- ~~HomePage2 <http://misakamm.bitbucket.org/index.htm>(同上)~~
-- ~~google+ <https://plus.google.com/communities/103680008540979677071>(无法访问)~~
-- ~~Blog: <https://misakamm.com>(无法访问)~~
-- ~~E-Mail: misakamm@gmail.com(无法访问)~~
-
-> 详细帮助文档，在压缩包里的man目录下，用浏览器打开index.htm就可以看到了
+>原作者 misakamm 联系方式与相关链接：
+>
+> - ~~HomePage1 <http://misakamm.github.com/xege>(原作者仓库, 已停止更新)~~
+> - ~~HomePage2 <http://misakamm.bitbucket.org/index.htm>(同上)~~
+> - ~~google+ <https://plus.google.com/communities/103680008540979677071>(无法访问)~~
+> - ~~Blog: <https://misakamm.com>(无法访问)~~
+> - ~~E-Mail: <misakamm@gmail.com>(无法访问)~~
+>
+> 详细帮助文档，在压缩包里的man目录下，用浏览器打开`index.htm`就可以看到了
 > 原作者: [misakamm](https://github.com/misakamm/xege), 目前下落不明
 > 暂由 <https://github.com/wysaid/xege> 代为更新
 
@@ -38,10 +40,10 @@
 
 ### ege图形库的优点
 
-* 效率较好　特别在窗口锁定绘图模式下，640 x 480 的半透明混合，可以直接使用 `getpixel` / `putpixel` 完成，并且优化后可以在大约 1.5 GHz CPU台式机器上达到 60 FPS （60帧/秒）
-* 灵活性强　绘图可以直接针对一个图像，或者画在控件上，不必只能画在屏幕上
-* 功能更多　支持拉伸贴图，支持图片旋转，支持透明半透明贴图，支持图像模糊滤镜操作，可以用对话框函数进行图形化的输入，可以方便地对帧率进行准确的控制，可以读取常见的流行的图片格式（bmp/jpg/png），可以保存图片为 bmp 或 png 格式。
-* 免费开源　本图形库为免费开源的图形库，你不但可以获取本图形库的全部源代码，你也可以参与到本图形库的开发，详情请联系 wysaid (this@xege.org)。
+- 效率较好　特别在窗口锁定绘图模式下，640 x 480 的半透明混合，可以直接使用 `getpixel` / `putpixel` 完成，并且优化后可以在大约 1.5 GHz CPU台式机器上达到 60 FPS （60帧/秒）
+- 灵活性强　绘图可以直接针对一个图像，或者画在控件上，不必只能画在屏幕上
+- 功能更多　支持拉伸贴图，支持图片旋转，支持透明半透明贴图，支持图像模糊滤镜操作，可以用对话框函数进行图形化的输入，可以方便地对帧率进行准确的控制，可以读取常见的流行的图片格式（bmp/jpg/png），可以保存图片为 bmp 或 png 格式。
+- 免费开源　本图形库为免费开源的图形库，你不但可以获取本图形库的全部源代码，你也可以参与到本图形库的开发，详情请联系 wysaid (<this@xege.org>)。
 
 ## ege简要使用说明
 
