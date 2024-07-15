@@ -7,7 +7,8 @@ EGE_DIR=$(pwd)
 if [[ $(uname -s) == "Darwin" ]] || [[ $(uname -s) == "Linux" ]]; then
     # macos/linux
     ./tasks.sh --clean --release --load --target xege --build
-
+    mkdir -p Release/lib/macOS
+    cp -rf build/*.a Release/lib/macOS
 else
     # vs2022 - 64bit
     if ./tasks.sh --clean --release --toolset v143 --arch x64 --target xege --load --build; then
