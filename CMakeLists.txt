@@ -117,25 +117,17 @@ else ()
 endif ()
 
 # 设置库文件名
-math(EXPR TARGET_BITS "8 * ${CMAKE_SIZEOF_VOID_P}")
-if (TARGET_BITS EQUAL 64)
-    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
-elseif (TARGET_BITS EQUAL 32)
-    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
-else ()
-    # 非 32/64 位编译器
-    message(FATAL_ERROR "XEGE does not support ${TARGET_BITS}bit compiler")
-endif ()
+set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
 # 打印编译器信息
 if (MSVC)
-    message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
+    message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
     target_compile_options(xege PRIVATE 
         /MP
         /MT
         /Zl)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
+    message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else ()
     if (CMAKE_CXX_COMPILER_ID)
         message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
