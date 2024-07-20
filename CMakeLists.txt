@@ -71,9 +71,13 @@ if (USE_LIBPNG_AND_ZLIB)
 
         if (MSVC)
             target_compile_options(png_static PRIVATE 
-                /MP)
+                /MP
+                /MT
+                /Zl)
             target_compile_options(zlibstatic PRIVATE
-                /MP)
+                /MP
+                /MT
+                /Zl)
         else ()
             target_compile_options(png_static PRIVATE
                 -fPIC -fno-exceptions)
@@ -126,8 +130,10 @@ endif ()
 # 打印编译器信息
 if (MSVC)
     message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
-    target_compile_options(xege PUBLIC 
-        /MP)
+    target_compile_options(xege PRIVATE 
+        /MP
+        /MT
+        /Zl)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else ()
