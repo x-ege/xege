@@ -46,7 +46,13 @@ int preinit( int argc, char* argv[] ) {
         //return -1;
     } else if ( stricmp( argv[1], "/p" ) == 0 ) { // 小窗口预览模式
         HWND hwnd;
-        sscanf( argv[2], "%d", &hwnd );
+        if (strstr(argv[2], "0x") == argv[2]) {
+            // 十六进制字符串转换为指针
+            sscanf( argv[2], "%p", &hwnd );
+        } else {
+            hwnd = (HWND)atoll( argv[2] );
+        }
+        
         attachHWND( hwnd ); // 新ege函数
         setinitmode( INIT_NOBORDER | INIT_CHILD | INIT_WITHLOGO ); // 指定初始化为无边框子窗口
         g_max = 200;
