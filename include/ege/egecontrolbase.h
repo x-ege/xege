@@ -33,7 +33,7 @@ private:
     } egecontrolbase_preinit_obj;                      \
     enum inherit_e                                     \
     {                                                  \
-        inherit_level_e = parent::inherit_level_e + 1, \
+        inherit_level_e = parent::inherit_level_e + 1  \
     };                                                 \
     static void firstinit(ege::egeControlBase* This)   \
     {                                                  \
@@ -61,18 +61,18 @@ public:
         COPY = SRCCOPY,
         XOR  = SRCINVERT,
         AND  = SRCAND,
-        OR   = SRCPAINT,
+        OR   = SRCPAINT
     };
 
     enum blendmode_e
     {
         SOLIDCOPY  = 0,
-        ALPHABLEND = 1,
+        ALPHABLEND = 1
     };
 
     enum inherit_e
     {
-        inherit_level_e = 0,
+        inherit_level_e = 0
     };
 
     egeControlBase();

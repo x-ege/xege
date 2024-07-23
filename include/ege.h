@@ -217,13 +217,13 @@ enum initmode_flag
     INIT_UNICODE         = 0x20,    // equal to setunicodecharmessage(true)
     INIT_HIDE            = 0x40,
     INIT_WITHLOGO        = 0x100,
-    INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT,
+    INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT
 };
 
 enum rendermode_e
 {
     RENDER_AUTO,
-    RENDER_MANUAL,
+    RENDER_MANUAL
 };
 
 /* graphresult error return codes */
@@ -252,7 +252,7 @@ enum graphics_errors
     grOutOfMemory        = 0x13,
     grNullPointer        = 0x14,
     grAllocError         = 0x15,
-    grInvalidMemory      = 0xCDCDCDCD,
+    grInvalidMemory      = 0xCDCDCDCD
 };
 
 enum message_event
@@ -262,14 +262,14 @@ enum message_event
     MSG_EVENT_CLICK      = 0x01,
     MSG_EVENT_DBCLICK    = 0x02,
     MSG_EVENT_MOVE       = 0x04,
-    MSG_EVENT_WHEEL      = 0x10,
+    MSG_EVENT_WHEEL      = 0x10
 };
 
 enum message_mouse
 {
     MSG_MOUSE_LEFT  	 = 0x01,
     MSG_MOUSE_RIGHT 	 = 0x02,
-    MSG_MOUSE_MID   	 = 0x04,
+    MSG_MOUSE_MID   	 = 0x04
 };
 
 
@@ -281,7 +281,7 @@ typedef unsigned int color_t;
 enum alpha_type
 {
     ALPHATYPE_STRAIGHT      = 0,
-    ALPHATYPE_PREMULTIPLIED = 1,
+    ALPHATYPE_PREMULTIPLIED = 1
 };
 
 struct ege_point
@@ -448,7 +448,7 @@ enum COLORS
     WHITE                = EGERGB(0xFF, 0xFF, 0xFF),
     WHITESMOKE           = EGERGB(0xF5, 0xF5, 0xF5),
     YELLOW               = EGERGB(0xFF, 0xFF, 0x00),
-    YELLOWGREEN          = EGERGB(0x9A, 0xCD, 0x32),
+    YELLOWGREEN          = EGERGB(0x9A, 0xCD, 0x32)
 };
 
 /* Line styles for get/setlinestyle */
@@ -459,7 +459,7 @@ enum line_styles
     DOTTED_LINE          = PS_DOT,
     DASHED_LINE          = PS_DASHDOT,
     NULL_LINE            = PS_NULL,
-    USERBIT_LINE         = PS_USERSTYLE, /* User defined line style */
+    USERBIT_LINE         = PS_USERSTYLE  /* User defined line style */
 };
 
 struct line_style_type
@@ -473,14 +473,14 @@ enum line_cap_type
 {
     LINECAP_FLAT   = 0,
     LINECAP_SQUARE,
-    LINECAP_ROUND,
+    LINECAP_ROUND
 };
 
 enum line_join_type
 {
     LINEJOIN_MITER = 0,
     LINEJOIN_BEVEL,
-    LINEJOIN_ROUND,
+    LINEJOIN_ROUND
 };
 
 /* Fill patterns for get/set fillstyle */
@@ -505,7 +505,7 @@ enum fill_mode
 {
     FILLMODE_DEFAULT   = 0,
     FILLMODE_ALTERNATE = 1,
-    FILLMODE_WINDING   = 2,
+    FILLMODE_WINDING   = 2
 };
 
 /* Horizontal and vertical justification for settextjustify */
@@ -534,7 +534,7 @@ enum font_styles
     FONTSTYLE_BOLD       = 1,
     FONTSTYLE_ITALIC     = 2,
     FONTSTYLE_UNDERLINE  = 4,
-    FONTSTYLE_STRIKEOUT  = 8,
+    FONTSTYLE_STRIKEOUT  = 8
 };
 
 enum music_state_flag
@@ -545,7 +545,7 @@ enum music_state_flag
     MUSIC_MODE_PLAY      = 0x20E,
     MUSIC_MODE_STOP      = 0x20D,
     MUSIC_MODE_OPEN      = 0x212,
-    MUSIC_MODE_SEEK      = 0x210,
+    MUSIC_MODE_SEEK      = 0x210
 };
 
 #define MUSIC_ERROR  0xFFFFFFFF
@@ -559,7 +559,7 @@ enum key_msg_flag
     KEYMSG_CHAR          = 0x40000,
     KEYMSG_DOWN          = 0x10000,
     KEYMSG_UP            = 0x20000,
-    KEYMSG_FIRSTDOWN     = 0x80000,
+    KEYMSG_FIRSTDOWN     = 0x80000
 };
 
 enum key_code_e
@@ -688,21 +688,21 @@ enum key_code_e
     key_rbrace          = 0xdd,
     key_quote           = 0xde,
 
-    key_ime_process     = 0xe5,
+    key_ime_process     = 0xe5
 };
 
 enum key_msg_e
 {
     key_msg_down        = 1,
     key_msg_up          = 2,
-    key_msg_char        = 4,
+    key_msg_char        = 4
 };
 
 enum key_flag_e
 {
     key_flag_shift      = 0x100,
     key_flag_ctrl       = 0x200,
-    key_flag_first_down = 0x80000,
+    key_flag_first_down = 0x80000
 };
 
 struct key_msg
@@ -717,7 +717,7 @@ enum mouse_msg_e
     mouse_msg_down      = 0x10,
     mouse_msg_up        = 0x20,
     mouse_msg_move      = 0x40,
-    mouse_msg_wheel     = 0x80,
+    mouse_msg_wheel     = 0x80
 };
 
 enum mouse_flag_e
@@ -726,7 +726,7 @@ enum mouse_flag_e
     mouse_flag_right    = 2,
     mouse_flag_mid      = 4,
     mouse_flag_shift    = 0x100,
-    mouse_flag_ctrl     = 0x200,
+    mouse_flag_ctrl     = 0x200
 };
 
 struct mouse_msg
