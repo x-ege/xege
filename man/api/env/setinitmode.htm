@@ -28,7 +28,7 @@ mode
 	<tr> <td>INIT_RENDERMANUAL</td>		<td align="center">   0x8 </td>	<td>手动渲染模式</td></tr>
 	<tr> <td>INIT_NOFORCEEXIT</td>		<td align="center">  0x10 </td>	<td>退出时不强制结束程序，而是设置标志位，可由 is_run() 判断<br>当设置了 INIT_NOFORCEEXIT 模式后，用户进行关闭窗口操作时窗口不会关闭，程序也不会退出，此时 is_run() 返回 false。<br>同时 getch(), getmouse() 之类的阻塞性函数将不再阻塞，由于窗口没有主动关闭，所以后续需要在代码中自行做窗口关闭和程序退出的相关处理。</td></tr>
 	<tr> <td>INIT_UNICODE <font size="3" color="#82A14F" bold = "true"><strong>(20.08 起)</strong></font></td>		<td align="center">  0x20 </td>	<td>窗口使用 Unicode 字符集</td></tr>
-	<tr> <td>INIT_HIDE <font size="3" color="#82A14F" bold = "true"><strong>(24.04)</strong></font></td>		<td align="center">  0x40 </td>	<td>窗口使用 Unicode 字符集</td></tr>
+	<tr> <td>INIT_HIDE <font size="3" color="#82A14F" bold = "true"><strong>(24.04)</strong></font></td>			<td align="center">  0x40 </td>	<td>窗口创建后隐藏不可见（便于在窗口首次显示时为画面内容做准备）</td></tr>
 	<tr> <td>INIT_WITHLOGO</td>			<td align="center"> 0x100 </td>	<td>带 EGE logo 出场动画</td></tr>
 </table>
 
