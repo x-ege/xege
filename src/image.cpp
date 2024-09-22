@@ -129,7 +129,7 @@ void IMAGE::gentexture(bool gen)
         }
     } else {
         if (m_texture != NULL) {
-            gentexture(true);
+            gentexture(false);
         }
         Gdiplus::Bitmap* bitmap =
             new Gdiplus::Bitmap(getwidth(), getheight(), getwidth() * 4, PixelFormat32bppARGB, (BYTE*)getbuffer());
