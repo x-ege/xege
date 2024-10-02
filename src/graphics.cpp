@@ -315,7 +315,7 @@ static void on_repaint(struct _graph_setting* pg, HWND hwnd, HDC dc)
 static void on_timer(struct _graph_setting* pg, HWND hwnd, unsigned id)
 {
     if (!pg->skip_timer_mark && id == RENDER_TIMER_ID) {
-        if (pg->update_mark_count <= 0) {
+        if (pg->update_mark_count < UPDATE_MAX_CALL) {
             pg->update_mark_count = UPDATE_MAX_CALL;
             on_repaint(pg, hwnd, NULL);
         }
