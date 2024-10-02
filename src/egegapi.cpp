@@ -1072,29 +1072,36 @@ void solidrect(int left, int top, int right, int bottom, PIMAGE pimg)
 
 void bar3d(int left, int top, int right, int bottom, int depth, int topFlag, PIMAGE pimg)
 {
-    --right;
-    --bottom;
-    {
-        int pt[20] = {
-            right, bottom,
-            right, top,
-            left,  top,
-            left,  bottom,
-            right, bottom,
-            right + depth, bottom - depth,
-            right + depth, top    - depth,
-            left  + depth, top    - depth,
-            left, top,
+    /* 6个外边界顶点(从左上角开始逆时针数) */
+    POINT boundVertexes[6] = {
+        {left, top},
+        {left,  bottom},
+        {right, bottom},
+        {right + depth, bottom - depth},
+        {right + depth, top - depth},
+        {left  + depth, top - depth},
         };
 
-        bar(left, top, right, bottom, pimg);
-        if (topFlag) {
-            drawpoly(9, pt, pimg);
-            line(right, top, right + depth, top - depth, pimg);
-        } else {
-            drawpoly(7, pt, pimg);
-        }
+    /* 正面右上边界的3个顶点 */
+    POINT sideVertexes[3] = {{left, top}, {right, top}, {right, bottom}};
+
+    bar(left, top, right, bottom, pimg);
+
+    line_cap_type startCap, endCap;
+    getlinecap(&startCap, &endCap, pimg);
+    setlinecap(LINECAP_FLAT, pimg);
+
+    if (topFlag) {
+        polygon(6, (const int*)boundVertexes, pimg);
+        polyline(3, (const int*)&sideVertexes, pimg);
+        line(right, top, right + depth, top - depth, pimg);
+    } else {
+        /* 只绘制与底部相连的 5 条边 */
+        polyline(5, (const int*)boundVertexes, pimg);
+        line(sideVertexes[1].x, sideVertexes[1].y, sideVertexes[2].x, sideVertexes[2].y, pimg);
     }
+
+    setlinecap(startCap, endCap, pimg);
 }
 
 void drawpoly(int numOfPoints, const int* points, PIMAGE pimg)
