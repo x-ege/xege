@@ -1070,27 +1070,27 @@ void solidrect(int left, int top, int right, int bottom, PIMAGE pimg)
     CONVERT_IMAGE_END
 }
 
-void bar3d(int x1, int y1, int x2, int y2, int depth, int topFlag, PIMAGE pimg)
+void bar3d(int left, int top, int right, int bottom, int depth, int topFlag, PIMAGE pimg)
 {
-    --x2;
-    --y2;
+    --right;
+    --bottom;
     {
         int pt[20] = {
-            x2, y2,
-            x2, y1,
-            x1, y1,
-            x1, y2,
-            x2, y2,
-            x2 + depth, y2 - depth,
-            x2 + depth, y1 - depth,
-            x1 + depth, y1 - depth,
-            x1, y1,
+            right, bottom,
+            right, top,
+            left,  top,
+            left,  bottom,
+            right, bottom,
+            right + depth, bottom - depth,
+            right + depth, top    - depth,
+            left  + depth, top    - depth,
+            left, top,
         };
 
-        bar(x1, y1, x2, y2, pimg);
+        bar(left, top, right, bottom, pimg);
         if (topFlag) {
             drawpoly(9, pt, pimg);
-            line(x2, y1, x2 + depth, y1 - depth, pimg);
+            line(right, top, right + depth, top - depth, pimg);
         } else {
             drawpoly(7, pt, pimg);
         }
