@@ -20,13 +20,12 @@
 #include "ege_head.h"
 #include "ege_common.h"
 #include "ege_extension.h"
+#include "gdi_conv.h"
 
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
 
-
-#include <stdio.h>
 
 namespace ege
 {
@@ -2388,8 +2387,10 @@ void ege_path_widen(ege_path* path, float lineWidth, const ege_transform_matrix*
     if (path != NULL) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            Gdiplus::Pen pen(Gdiplus::Color(), lineWidth);
-            graphicsPath->Widen(&pen, (const Gdiplus::Matrix*)matrix, flatness);
+            const Gdiplus::Pen pen(Gdiplus::Color(), lineWidth);
+            const Gdiplus::Matrix* mat = matrixConvert(matrix);
+            graphicsPath->Widen(&pen, mat, flatness);
+            delete mat;
         }
     }
 }
@@ -2403,8 +2404,11 @@ void ege_path_flatten(ege_path* path, const ege_transform_matrix* matrix, float 
 {
     if (path != NULL) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
+
         if (graphicsPath != NULL) {
-            graphicsPath->Flatten((const Gdiplus::Matrix*)matrix, flatness);
+            const Gdiplus::Matrix* mat = matrixConvert(matrix);
+            graphicsPath->Flatten(mat, flatness);
+            delete mat;
         }
     }
 }
@@ -2421,8 +2425,11 @@ void ege_path_warp(ege_path* path, const ege_point* points, int count, const ege
     if ((path != NULL) && (points != NULL) && (rect != NULL) && ((count == 3) || (count == 4))) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            graphicsPath->Warp((const Gdiplus::PointF*)points, count, *(const Gdiplus::RectF*)rect,
-                (const Gdiplus::Matrix*)matrix, Gdiplus::WarpModePerspective, flatness);
+            const Gdiplus::PointF* p = (const Gdiplus::PointF*)points;
+            const Gdiplus::RectF r(rect->x, rect->y, rect->w, rect->h);
+            const Gdiplus::Matrix* mat = matrixConvert(matrix);
+            graphicsPath->Warp(p, count, r, mat, Gdiplus::WarpModePerspective, flatness);
+            delete mat;
         }
     }
 }
@@ -2437,7 +2444,9 @@ void ege_path_outline(ege_path* path, const ege_transform_matrix* matrix, float 
     if (path != NULL) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            graphicsPath->Outline((const Gdiplus::Matrix*)matrix, flatness);
+            const Gdiplus::Matrix* mat = matrixConvert(matrix);
+            graphicsPath->Outline(mat, flatness);
+            delete mat;
         }
     }
 }
@@ -2523,7 +2532,9 @@ ege_rect ege_path_getbounds(const ege_path* path, const ege_transform_matrix* ma
     if (path != NULL) {
         const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, (const Gdiplus::Matrix*)matrix);
+            const Gdiplus::Matrix* mat = matrixConvert(matrix);
+            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, mat);
+            delete mat;
         }
     }
 
@@ -2537,10 +2548,13 @@ ege_rect ege_path_getbounds(const ege_path* path, const ege_transform_matrix* ma
         const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             PIMAGE img = CONVERT_IMAGE_CONST((PIMAGE)pimg);
-            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, (const Gdiplus::Matrix*)matrix, img->getPen());
+            const Gdiplus::Matrix* mat = matrixConvert(matrix);
+            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, mat, img->getPen());
+            delete mat;
             CONVERT_IMAGE_END
         }
     }
+
     return bounds;
 }
 
@@ -2589,10 +2603,12 @@ unsigned char* ege_path_getpathtypes(const ege_path* path, unsigned char* types)
 
 void ege_path_transform(ege_path* path, const ege_transform_matrix *matrix)
 {
-    if (path != NULL) {
+    if ((path != NULL) && (matrix != NULL)) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            graphicsPath->Transform((const Gdiplus::Matrix*)matrix);
+            const Gdiplus::Matrix* mat = matrixConvert(matrix);
+            graphicsPath->Transform(mat);
+            delete mat;
         }
     }
 }
