@@ -2844,10 +2844,10 @@ void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && matrix) {
         Gdiplus::Graphics* graphics = img->getGraphics();
-        Gdiplus::Matrix m;
+        Gdiplus::Matrix mat;
         Gdiplus::REAL elements[6];
-        graphics->GetTransform(&m);
-        m.GetElements(elements);
+        graphics->GetTransform(&mat);
+        mat.GetElements(elements);
         matrix->m11 = elements[0];
         matrix->m12 = elements[1];
         matrix->m21 = elements[2];
@@ -2863,38 +2863,29 @@ void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && matrix) {
         Gdiplus::Graphics* graphics = img->getGraphics();
-        Gdiplus::Matrix m(matrix->m11, matrix->m12, matrix->m21, matrix->m22, matrix->m31, matrix->m32);
-        graphics->SetTransform(&m);
+        const Gdiplus::Matrix mat(matrix->m11, matrix->m12, matrix->m21, matrix->m22, matrix->m31, matrix->m32);
+        graphics->SetTransform(&mat);
     }
     CONVERT_IMAGE_END;
 }
 
-ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg) { return ege_transform_calc(p.x, p.y, pimg); }
+ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg)
+{
+    return ege_transform_calc(p.x, p.y, pimg);
+}
 
 ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    ege_point p;
+    ege_point point = {0.0f, 0.0f};
     if (img) {
         Gdiplus::Graphics* graphics = img->getGraphics();
-        Gdiplus::Matrix m;
-        Gdiplus::REAL elements[6], m11, m12, m21, m22, m31, m32;
-        graphics->GetTransform(&m);
-        m.GetElements(elements);
-        m11 = elements[0];
-        m12 = elements[1];
-        m21 = elements[2];
-        m22 = elements[3];
-        m31 = elements[4];
-        m32 = elements[5];
-        p.x = x * m11 + y * m21 + m31;
-        p.y = x * m12 + y * m22 + m32;
-    } else {
-        p.x = 0;
-        p.y = 0;
+        Gdiplus::Matrix matrix;
+        graphics->GetTransform(&matrix);
+        matrix.TransformPoints((Gdiplus::PointF*)&point, 1);
     }
     CONVERT_IMAGE_END;
-    return p;
+    return point;
 }
 
 #endif // EGEGDIPLUS
