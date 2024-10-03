@@ -2842,7 +2842,7 @@ void EGEAPI ege_transform_reset(PIMAGE pimg)
 void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
+    if (img && matrix) {
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Matrix m;
         Gdiplus::REAL elements[6];
@@ -2861,7 +2861,7 @@ void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg)
 void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
+    if (img && matrix) {
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Matrix m(matrix->m11, matrix->m12, matrix->m21, matrix->m22, matrix->m31, matrix->m32);
         graphics->SetTransform(&m);
