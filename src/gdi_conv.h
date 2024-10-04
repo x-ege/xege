@@ -4,6 +4,6 @@
 
 namespace ege
 {
-    /* 矩阵类型转换*/
-    Gdiplus::Matrix* matrixConvert(const ege_transform_matrix* matrix);
+    /* 矩阵类型转换 */
+    void matrixConvert(const ege_transform_matrix* from, Gdiplus::Matrix& to);
 }

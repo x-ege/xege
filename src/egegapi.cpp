@@ -2388,9 +2388,14 @@ void ege_path_widen(ege_path* path, float lineWidth, const ege_transform_matrix*
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             const Gdiplus::Pen pen(Gdiplus::Color(), lineWidth);
-            const Gdiplus::Matrix* mat = matrixConvert(matrix);
-            graphicsPath->Widen(&pen, mat, flatness);
-            delete mat;
+
+            if (matrix != NULL) {
+                Gdiplus::Matrix mat;
+                matrixConvert(matrix, mat);
+                graphicsPath->Widen(&pen, &mat, flatness);
+            } else {
+                graphicsPath->Widen(&pen, NULL, flatness);
+            }
         }
     }
 }
@@ -2406,9 +2411,13 @@ void ege_path_flatten(ege_path* path, const ege_transform_matrix* matrix, float 
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
 
         if (graphicsPath != NULL) {
-            const Gdiplus::Matrix* mat = matrixConvert(matrix);
-            graphicsPath->Flatten(mat, flatness);
-            delete mat;
+            if (matrix != NULL) {
+                Gdiplus::Matrix mat;
+                matrixConvert(matrix, mat);
+                graphicsPath->Flatten(&mat, flatness);
+            } else {
+                graphicsPath->Flatten(NULL, flatness);
+            }
         }
     }
 }
@@ -2427,9 +2436,14 @@ void ege_path_warp(ege_path* path, const ege_point* points, int count, const ege
         if (graphicsPath != NULL) {
             const Gdiplus::PointF* p = (const Gdiplus::PointF*)points;
             const Gdiplus::RectF r(rect->x, rect->y, rect->w, rect->h);
-            const Gdiplus::Matrix* mat = matrixConvert(matrix);
-            graphicsPath->Warp(p, count, r, mat, Gdiplus::WarpModePerspective, flatness);
-            delete mat;
+
+            if (matrix != NULL) {
+                Gdiplus::Matrix mat;
+                matrixConvert(matrix, mat);
+                graphicsPath->Warp(p, count, r, &mat, Gdiplus::WarpModePerspective, flatness);
+            } else {
+                graphicsPath->Warp(p, count, r, NULL, Gdiplus::WarpModePerspective, flatness);
+            }
         }
     }
 }
@@ -2444,9 +2458,13 @@ void ege_path_outline(ege_path* path, const ege_transform_matrix* matrix, float 
     if (path != NULL) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            const Gdiplus::Matrix* mat = matrixConvert(matrix);
-            graphicsPath->Outline(mat, flatness);
-            delete mat;
+            if (matrix != NULL) {
+                Gdiplus::Matrix mat;
+                matrixConvert(matrix, mat);
+                graphicsPath->Outline(&mat, flatness);
+            } else {
+                graphicsPath->Outline(NULL, flatness);
+            }
         }
     }
 }
@@ -2532,9 +2550,13 @@ ege_rect ege_path_getbounds(const ege_path* path, const ege_transform_matrix* ma
     if (path != NULL) {
         const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            const Gdiplus::Matrix* mat = matrixConvert(matrix);
-            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, mat);
-            delete mat;
+            if (matrix != NULL) {
+                Gdiplus::Matrix mat;
+                matrixConvert(matrix, mat);
+                graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, &mat);
+            } else {
+                graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, NULL);
+            }
         }
     }
 
@@ -2548,9 +2570,13 @@ ege_rect ege_path_getbounds(const ege_path* path, const ege_transform_matrix* ma
         const Gdiplus::GraphicsPath* graphicsPath = (const Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             PIMAGE img = CONVERT_IMAGE_CONST((PIMAGE)pimg);
-            const Gdiplus::Matrix* mat = matrixConvert(matrix);
-            graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, mat, img->getPen());
-            delete mat;
+            if (matrix != NULL) {
+                Gdiplus::Matrix mat;
+                matrixConvert(matrix, mat);
+                graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, &mat, img->getPen());
+            } else {
+                graphicsPath->GetBounds((Gdiplus::RectF*)&bounds, NULL, img->getPen());
+            }
             CONVERT_IMAGE_END
         }
     }
@@ -2606,9 +2632,9 @@ void ege_path_transform(ege_path* path, const ege_transform_matrix *matrix)
     if ((path != NULL) && (matrix != NULL)) {
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
-            const Gdiplus::Matrix* mat = matrixConvert(matrix);
-            graphicsPath->Transform(mat);
-            delete mat;
+            Gdiplus::Matrix mat;
+            matrixConvert(matrix, mat);
+            graphicsPath->Transform(&mat);
         }
     }
 }
@@ -2863,7 +2889,8 @@ void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && matrix) {
         Gdiplus::Graphics* graphics = img->getGraphics();
-        const Gdiplus::Matrix mat(matrix->m11, matrix->m12, matrix->m21, matrix->m22, matrix->m31, matrix->m32);
+        Gdiplus::Matrix mat;
+        matrixConvert(matrix, mat);
         graphics->SetTransform(&mat);
     }
     CONVERT_IMAGE_END;

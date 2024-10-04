@@ -5,20 +5,18 @@ namespace ege
 {
 
 /**
- * 将ege_transform_matrix 转换为 Gdiplus::Matrix
- * matrix 参数不为 NULL 时返回 Matrix 对象指针，否则返回 NULL
+ * 将 ege_transform_matrix 类型转换为 Gdiplus::Matrix 类型
+ * @param[in]  from  输入的矩阵
+ * @param[out] to    保存转换结果
+ * @note 如果 from 参数为 NULL，输出结果为单位矩阵。
  */
-Gdiplus::Matrix* matrixConvert(const ege_transform_matrix* matrix)
+void matrixConvert(const ege_transform_matrix* from, Gdiplus::Matrix& to)
 {
-    if (matrix != NULL) {
-        return new Gdiplus::Matrix(
-            matrix->m11, matrix->m12,
-            matrix->m21, matrix->m22,
-            matrix->m31, matrix->m32
-        );
+    if (from) {
+        to.SetElements(from->m11, from->m12, from->m21, from->m22, from->m31, from->m32);
+    } else {
+        to.Reset();
     }
-
-    return NULL;
 }
 
 }
