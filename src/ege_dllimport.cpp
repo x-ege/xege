@@ -27,14 +27,7 @@ namespace dll
     static HIMC (WINAPI *func_ImmGetContext)(HWND);
     static BOOL (WINAPI *func_ImmSetCompositionWindow)(HIMC , LPCOMPOSITIONFORM);
 
-    static void initImm32Dll()
-    {
-        imm32Dll = NULL;
-        func_ImmGetContext           = NULL;
-        func_ImmSetCompositionWindow = NULL;
-    }
-
-    static bool loadImm32Dll()
+    bool loadImm32Dll()
     {
         if(imm32Dll == NULL) {
             imm32Dll = LoadLibraryA("imm32.dll");
@@ -83,14 +76,7 @@ namespace dll
     static BOOL (WINAPI *func_AlphaBlend)(HDC hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,HDC hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,BLENDFUNCTION ftn);
     static BOOL (WINAPI *func_GradientFill)(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
 
-    static void initMsimg32Dll()
-    {
-        msimg32Dll = NULL;
-        func_AlphaBlend   = NULL;
-        func_GradientFill = NULL;
-    }
-
-    static bool loadMsimg32Dll()
+    bool loadMsimg32Dll()
     {
         // -- msimg32.dll --
         if (msimg32Dll == NULL) {
@@ -142,17 +128,7 @@ namespace dll
     static MMRESULT (WINAPI *func_timeKillEvent)(UINT uTimerID);
     static MCIERROR (WINAPI *func_mciSendCommandW)(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
 
-    static void initWinmmDll()
-    {
-        winmmDll = NULL;
-        func_timeBeginPeriod = NULL;
-        func_timeEndPeriod   = NULL;
-        func_timeSetEvent    = NULL;
-        func_timeKillEvent   = NULL;
-        func_mciSendCommandW = NULL;
-    }
-
-    static bool loadWinmmDll()
+    bool loadWinmmDll()
     {
         // winmm.dll
         if (winmmDll == NULL) {
@@ -251,14 +227,6 @@ namespace dll
     void loadDllsIfNot()
     {
         static bool loadingIsFinished = false;
-        static bool firstCall = true;            // 初次调用标记, 因不同编译单元初始化顺序未保证, 防止静态变量未初始化
-
-        if (firstCall) {
-            initImm32Dll();
-            initMsimg32Dll();
-            initWinmmDll();
-            firstCall = false;
-        }
 
         if (!loadingIsFinished) {
             bool isSuccessful = true;
