@@ -27,22 +27,8 @@ namespace dll
     static HIMC (WINAPI *func_ImmGetContext)(HWND);
     static BOOL (WINAPI *func_ImmSetCompositionWindow)(HIMC , LPCOMPOSITIONFORM);
 
-    static void initImm32Dll()
-    {
-        imm32Dll = NULL;
-        func_ImmGetContext           = NULL;
-        func_ImmSetCompositionWindow = NULL;
-    }
-
     bool loadImm32Dll()
     {
-        static bool isFirstLoad = true;
-
-        if (isFirstLoad) {
-            initImm32Dll();
-            isFirstLoad = false;
-        }
-
         if(imm32Dll == NULL) {
             imm32Dll = LoadLibraryA("imm32.dll");
             if (imm32Dll == NULL) {
@@ -90,22 +76,8 @@ namespace dll
     static BOOL (WINAPI *func_AlphaBlend)(HDC hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,HDC hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,BLENDFUNCTION ftn);
     static BOOL (WINAPI *func_GradientFill)(HDC hdc, PTRIVERTEX pVertex, ULONG nVertex, PVOID pMesh, ULONG nMesh, ULONG ulMode);
 
-    static void initMsimg32Dll()
-    {
-        msimg32Dll = NULL;
-        func_AlphaBlend   = NULL;
-        func_GradientFill = NULL;
-    }
-
     bool loadMsimg32Dll()
     {
-        static bool isFirstLoad = true;
-
-        if (isFirstLoad) {
-            initMsimg32Dll();
-            isFirstLoad = false;
-        }
-
         // -- msimg32.dll --
         if (msimg32Dll == NULL) {
             msimg32Dll = LoadLibraryA("msimg32.dll");
@@ -156,25 +128,8 @@ namespace dll
     static MMRESULT (WINAPI *func_timeKillEvent)(UINT uTimerID);
     static MCIERROR (WINAPI *func_mciSendCommandW)(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2);
 
-    static void initWinmmDll()
-    {
-        winmmDll = NULL;
-        func_timeBeginPeriod = NULL;
-        func_timeEndPeriod   = NULL;
-        func_timeSetEvent    = NULL;
-        func_timeKillEvent   = NULL;
-        func_mciSendCommandW = NULL;
-    }
-
     bool loadWinmmDll()
     {
-        static bool isFirstLoad = true;
-
-        if (isFirstLoad) {
-            initWinmmDll();
-            isFirstLoad = false;
-        }
-
         // winmm.dll
         if (winmmDll == NULL) {
             winmmDll = LoadLibraryA("winmm.dll");
