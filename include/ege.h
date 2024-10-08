@@ -1197,14 +1197,15 @@ ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);  // C
 // It is not supported in VC 6.0.
 #ifndef EGE_COMPILERINFO_VC6
 // Console
-bool init_console();    // Initialize the console
-bool clear_console();   // Clear the console
-bool show_console();    // Show the Console
-bool hide_console();    // Hide the console
-bool close_console();   // Close the console and restore the old STD I/O
+bool EGEAPI init_console();    // Initialize the console
+bool EGEAPI clear_console();   // Clear the console
+bool EGEAPI show_console();    // Show the Console
+bool EGEAPI hide_console();    // Hide the console
+bool EGEAPI close_console();   // Close the console and restore the old STD I/O
 #endif
 
-int  getch_console();   // Used instead of the getch() function in <conio.h>
+int  EGEAPI getch_console();   // Replace the getch() function in <conio.h>
+int  EGEAPI kbhit_console();   // Replace the kbhit() function in <conio.h>
 
 void EGEAPI ege_sleep (long ms);
 void EGEAPI delay     (long ms);
