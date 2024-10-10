@@ -1520,14 +1520,17 @@ int     EGEAPI kbhitEx(int flag);
 int     EGEAPI keystate(int key);
 void    EGEAPI flushkey();
 
+int     EGEAPI ege_getch();
+int     EGEAPI ege_kbhit();
+
 #if !defined(_INC_CONIO) && !defined(_CONIO_H_)
 #define _INC_CONIO
 #define _CONIO_H_
-int EGEAPI getch();
-int EGEAPI kbhit();
+int EGEAPI getch();  // Same as ege_getch()
+int EGEAPI kbhit();  // Same as ege_kbhit()
 #else
-#define getch getchEx
-#define kbhit kbhitEx
+#define getch ege_getch
+#define kbhit ege_kbhit
 #endif
 
 int         EGEAPI mousemsg();
