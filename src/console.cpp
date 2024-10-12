@@ -179,4 +179,13 @@ int getch_console()
 #endif
 }
 
+int kbhit_console()
+{
+#ifdef MSVC_VER
+    return ::_kbhit();
+#else
+    return ::kbhit();
+#endif
 }
+
+} // namespace ege
