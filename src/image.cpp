@@ -809,121 +809,61 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
     CONVERT_IMAGE_END;
 }
 
-/**
- * @brief 对两个区域进行裁剪(目标区域大小和源区域相同)
- *
- * @param[in,out] dest 目标位置
- * @param[in,out] src  源区域
- * @param[in] destClip 目标裁剪区域(需保证边界和宽高在 int 范围内)
- * @param[in] srcClip  源裁剪区域(需保证边界和宽高在 int 范围内)
- *
- * @return true    结果区域不为空
- * @return false   结果区域为空
- */
-static bool fixRect(Point& dest, Rect& src, const Rect& destClip, const Rect& srcClip)
-{
-    if ((dest.x < destClip.right()) && dest.y < destClip.bottom()) {
-        Rect srcIntersection = intersect(src, srcClip);
-
-        if (srcIntersection.isValid()) {
-            /* 偏移量，满足 >= 0 关系*/
-            int srcOffsetX = srcIntersection.x - src.x;
-            int srcOffsetY = srcIntersection.y - src.y;
-
-            /* 溢出校验 */
-            if ((dest.x > INT_MAX - srcOffsetX) || (dest.y > INT_MAX - srcOffsetY)) {
-                src.setEmpty();
-                return false;
-            }
-
-            dest.offset(srcOffsetX, srcOffsetY);
-            Rect destRect(dest, srcIntersection.size());
-
-            /* 超出边界则进行裁剪 */
-            if (destRect.x > INT_MAX - destRect.width) {
-                destRect.width = INT_MAX - destRect.x;
-            }
-
-            if (destRect.y > INT_MAX - destRect.height) {
-                destRect.height = INT_MAX - destRect.y;
-            }
-
-            Rect destIntersection = intersect(destRect, destClip);
-
-            if (destIntersection.isValid()) {
-                srcIntersection.setSize(destIntersection.size());
-                int xOffset = destIntersection.x - dest.x;
-                int yOffset = destIntersection.y - dest.y;
-                srcIntersection.offset(xOffset, yOffset);
-
-                src  = srcIntersection;
-                dest = destIntersection.topLeft();
-                return true;
-            }
-        }
-    }
-
-    // 经裁剪后区域为空
-    src.setEmpty();
-    return false;
-}
-
-/* private function */
 static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDest,
         int* xSrc, int* ySrc, int* width, int* height)
 {
-    /* 区域无效 */
-    if (*xSrc >= imgSrc->m_width || (*ySrc >= imgSrc->m_height)) {
-        *width = *height = 0;
-        return;
-    }
-
-    /* prepare viewport region and carry out coordinate transformation */
-    struct viewporttype vpt  = imgDest->m_vpt;
-    *xDest            += vpt.left;
-    *yDest            += vpt.top;
-
-    int left = (*xSrc < 0) ? 0 : *xSrc;
-    int top  = (*ySrc < 0) ? 0 : *ySrc;
-
-    int right  = imgSrc->m_width,  bottom = imgSrc->m_height;;
-    if (*width > 0) {
-        right = sumIsOverflow(*xSrc, *width) ? INT_MAX: (*xSrc + *width);
-    }
-
-    if (*height > 0) {
-        bottom = sumIsOverflow(*ySrc, *height) ? INT_MAX : (*ySrc + *height);
-    }
-
-    /* 偏移量，范围: [0, INT_MAX+1] */
-    unsigned int xOffset = left - *xSrc;
-    unsigned int yOffset = top  - *ySrc;
-
+    viewporttype vpt  = imgDest->m_vpt;
+    Point srcPos(*xSrc, *ySrc);
     Point dstPos(*xDest + vpt.left, *yDest + vpt.top);
 
-    if ((dstPos.x > (int)(INT_MAX - xOffset)) || (dstPos.y > (int)(INT_MAX - yOffset))) {
+    /* 区域位于图像右下角，此区域内无内容 */
+    if (   (srcPos.x >= imgSrc->m_width)  || (srcPos.y >= imgSrc->m_height)
+        || (dstPos.x >= imgDest->m_width) || (dstPos.y >= imgDest->m_height))
+    {
         *width = *height = 0;
         return;
-    } else {
-        dstPos.offset((int)xOffset, (int)yOffset);
     }
 
-    Rect  srcRect(Point(left, top), Point(right, bottom));
-    // 设定裁剪区域，源图像
-    Rect dstClip(Point(vpt.left, vpt.top), Point(vpt.right, vpt.bottom));
-    Rect srcClip(Point(0, 0), Point(imgSrc->m_width, imgSrc->m_height));
+    Bound srcBound;
+    srcBound.setTopLeft(*xSrc, *ySrc);
 
-    bool isValid = fixRect(dstPos, srcRect, dstClip, srcClip);
-    if (!isValid) {
-        *width = *height = 0;
-        return;
+    /* 调整区域: 宽高参数 <= 0 则将区域扩展至图像右下边缘，否则截断在 int 范围内*/
+    (*width <= 0)  ? srcBound.setRight(imgSrc->m_width)   : (void)srcBound.setLargeWidth(*width);
+    (*height <= 0) ? srcBound.setBottom(imgSrc->m_height) : (void)srcBound.setLargeHeight(*height);
+
+    /* 绘制区域 */
+    Bound dstBound;
+    dstBound.setTopLeft(dstPos);
+    dstBound.setLargeSize(srcBound.width(), srcBound.height());
+
+    /* 由视口区域计算绘制目标裁剪区域 */
+    Bound srcClip(0, 0, imgSrc->m_width,  imgSrc->m_height);
+    Bound dstClip(0, 0, imgDest->m_width, imgDest->m_height);
+    dstClip.intersect(Bound(vpt.left, vpt.top, vpt.right, vpt.bottom));
+
+    srcBound.intersect(srcClip);
+    dstBound.intersect(dstClip);
+
+    Rect srcRect(srcBound);
+    Rect dstRect(dstBound);
+
+    /* 由共同区域求实际绘制区域 */
+    Point srcOffset(INT_MIN - srcPos.x, INT_MIN - srcPos.y);
+    Point dstOffset(INT_MIN - dstPos.x, INT_MIN - dstPos.y);
+    srcRect.offset(srcOffset.x, srcOffset.y);
+    dstRect.offset(dstOffset.x, dstOffset.y);
+    Rect actualRect = intersect(srcRect, dstRect);
+
+    if (actualRect.isValid()) {
+        *xDest = actualRect.x - dstOffset.x;
+        *yDest = actualRect.y - dstOffset.y;
+
+        *xSrc   = actualRect.x - srcOffset.x;
+        *ySrc   = actualRect.y - srcOffset.y;
+        *width  = actualRect.width;
+        *height = actualRect.height;
     } else {
-        *xDest  = dstPos.x;
-        *yDest  = dstPos.y;
-        *xSrc   = srcRect.x;
-        *ySrc   = srcRect.y;
-        *width  = srcRect.width;
-        *height = srcRect.height;
+        *width = *height = 0;
     }
 }
 
@@ -2920,8 +2860,8 @@ void putimage(PIMAGE imgDest, int xDest, int yDest, PCIMAGE pSrcImg, DWORD dwRop
     pSrcImg->putimage(imgDest, xDest, yDest, dwRop);
 }
 
-void putimage(
-    PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE pSrcImg, int xSrc, int ySrc, DWORD dwRop)
+void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest,
+    PCIMAGE pSrcImg, int xSrc, int ySrc, DWORD dwRop)
 {
     pSrcImg = CONVERT_IMAGE_CONST(pSrcImg);
     pSrcImg->putimage(imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, dwRop);
@@ -2951,15 +2891,15 @@ int getimage(PIMAGE imgDest, const wchar_t* resType, const wchar_t* resName, int
     return imgDest->getimage(resType, resName, zoomWidth, zoomHeight);
 }
 
-void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE pSrcImg, int xSrc, int ySrc,
-    int srcWidth, int srcHeight, DWORD dwRop)
+void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest,
+    PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHeight, DWORD dwRop)
 {
     pSrcImg = CONVERT_IMAGE_CONST(pSrcImg);
     pSrcImg->putimage(imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, srcWidth, srcHeight, dwRop);
 }
 
-void putimage(int xDest, int yDest, int widthDest, int heightDest, PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth,
-    int srcHeight, DWORD dwRop)
+void putimage(int xDest, int yDest, int widthDest, int heightDest,
+    PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHeight, DWORD dwRop)
 {
     pSrcImg = CONVERT_IMAGE_CONST(pSrcImg);
     pSrcImg->putimage(NULL, xDest, yDest, widthDest, heightDest, xSrc, ySrc, srcWidth, srcHeight, dwRop);
