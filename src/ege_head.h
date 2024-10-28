@@ -200,7 +200,7 @@ struct _graph_setting
     HANDLE threadui_handle;
 
     /* 鼠标状态记录 */
-    int mouse_state_l, mouse_state_m, mouse_state_r;
+    int mouse_state_l, mouse_state_m, mouse_state_r, mouse_state_x1, mouse_state_x2;
     int mouse_last_x, mouse_last_y;
     int mouse_lastclick_x, mouse_lastclick_y;
     int mouse_lastup_x, mouse_lastup_y;

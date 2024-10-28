@@ -567,6 +567,8 @@ enum key_code_e
     key_mouse_l         = 0x01,
     key_mouse_r         = 0x02,
     key_mouse_m         = 0x04,
+    key_mouse_x1        = 0x05,
+    key_mouse_x2        = 0x06,
     key_back            = 0x08,
     key_tab             = 0x09,
     key_enter           = 0x0d,
@@ -722,9 +724,11 @@ enum mouse_msg_e
 
 enum mouse_flag_e
 {
-    mouse_flag_left     = 1,
-    mouse_flag_right    = 2,
-    mouse_flag_mid      = 4,
+    mouse_flag_left     = 0x001,
+    mouse_flag_right    = 0x002,
+    mouse_flag_mid      = 0x004,
+    mouse_flag_x1       = 0x008,
+    mouse_flag_x2       = 0x010,
     mouse_flag_shift    = 0x100,
     mouse_flag_ctrl     = 0x200
 };
@@ -736,9 +740,13 @@ struct mouse_msg
     mouse_msg_e     msg;
     unsigned int    flags;
     int             wheel;
+
     bool is_left()  const {return (flags & mouse_flag_left)  != 0;}
     bool is_right() const {return (flags & mouse_flag_right) != 0;}
     bool is_mid()   const {return (flags & mouse_flag_mid)   != 0;}
+    bool is_x1()    const {return (flags & mouse_flag_x1)    != 0;}
+    bool is_x2()    const {return (flags & mouse_flag_x2)    != 0;}
+
     bool is_down()  const {return msg == mouse_msg_down;}
     bool is_up()    const {return msg == mouse_msg_up;}
     bool is_move()  const {return msg == mouse_msg_move;}
@@ -753,6 +761,8 @@ struct MOUSEMSG
     bool  mkLButton;
     bool  mkMButton;
     bool  mkRButton;
+    bool  mkXButton1;
+    bool  mkXButton2;
     short x;
     short y;
     short wheel;

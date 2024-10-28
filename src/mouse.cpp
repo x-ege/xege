@@ -79,28 +79,59 @@ mouse_msg getmouse()
                 mmsg.x      = (short)((int)msg.lParam & 0xFFFF);
                 mmsg.y      = (short)((unsigned)msg.lParam >> 16);
                 mmsg.msg    = mouse_msg_move;
-                if (msg.message == WM_LBUTTONDOWN) {
+
+                switch (msg.message) {
+                case WM_LBUTTONDOWN:
                     mmsg.msg    = mouse_msg_down;
                     mmsg.flags |= mouse_flag_left;
-                } else if (msg.message == WM_RBUTTONDOWN) {
-                    mmsg.msg    = mouse_msg_down;
-                    mmsg.flags |= mouse_flag_right;
-                } else if (msg.message == WM_MBUTTONDOWN) {
-                    mmsg.msg    = mouse_msg_down;
-                    mmsg.flags |= mouse_flag_mid;
-                } else if (msg.message == WM_LBUTTONUP) {
+                    break;
+                case WM_LBUTTONUP:
                     mmsg.msg    = mouse_msg_up;
                     mmsg.flags |= mouse_flag_left;
-                } else if (msg.message == WM_RBUTTONUP) {
+                    break;
+                case WM_RBUTTONDOWN:
+                    mmsg.msg    = mouse_msg_down;
+                    mmsg.flags |= mouse_flag_right;
+                    break;
+                case WM_RBUTTONUP:
                     mmsg.msg    = mouse_msg_up;
                     mmsg.flags |= mouse_flag_right;
-                } else if (msg.message == WM_MBUTTONUP) {
+                    break;
+                case WM_MBUTTONDOWN:
+                    mmsg.msg    = mouse_msg_down;
+                    mmsg.flags |= mouse_flag_mid;
+                    break;
+                case WM_MBUTTONUP:
                     mmsg.msg    = mouse_msg_up;
                     mmsg.flags |= mouse_flag_mid;
-                } else if (msg.message == WM_MOUSEWHEEL) {
+                    break;
+                case WM_MOUSEWHEEL:
                     mmsg.msg   = mouse_msg_wheel;
                     mmsg.wheel = (short)((unsigned)msg.wParam >> 16);
+                    break;
+                case WM_XBUTTONDOWN:
+                    mmsg.msg    = mouse_msg_down;
+
+                    if ((msg.wParam >> 16) & 0x0001) {
+                        mmsg.flags |= mouse_flag_x1;
+                    } else if ((msg.wParam >> 16) & 0x0002) {
+                        mmsg.flags |= mouse_flag_x2;
+                    }
+
+                    break;
+                case WM_XBUTTONUP:
+                    mmsg.msg    = mouse_msg_up;
+
+                    if ((msg.wParam >> 16) & 0x0001) {
+                        mmsg.flags |= mouse_flag_x1;
+                    } else if ((msg.wParam >> 16) & 0x0002) {
+                        mmsg.flags |= mouse_flag_x2;
+                    }
+                    break;
+
+                default:break;
                 }
+
                 return mmsg;
             }
         } while (!pg->exit_window && !pg->exit_flag && waitdealmessage(pg));
@@ -126,15 +157,26 @@ MOUSEMSG GetMouseMsg()
                 mmsg.mkShift = ((msg.wParam & MK_SHIFT) != 0);
                 mmsg.x       = (short)((int)msg.lParam & 0xFFFF);
                 mmsg.y       = (short)((unsigned)msg.lParam >> 16);
-                if (msg.mousekey & 1) {
+                if (msg.mousekey & 0x01) {
                     mmsg.mkLButton = 1;
                 }
-                if (msg.mousekey & 4) {
-                    mmsg.mkMButton = 1;
-                }
-                if (msg.mousekey & 2) {
+
+                if (msg.mousekey & 0x02) {
                     mmsg.mkRButton = 1;
                 }
+
+                if (msg.mousekey & 0x04) {
+                    mmsg.mkMButton = 1;
+                }
+
+                if (msg.mousekey & 0x08) {
+                    mmsg.mkXButton1 = 1;
+                }
+
+                if (msg.mousekey & 0x10) {
+                    mmsg.mkXButton2 = 1;
+                }
+
                 if (msg.message == WM_MOUSEWHEEL) {
                     mmsg.wheel = (short)((unsigned)msg.wParam >> 16);
                 }

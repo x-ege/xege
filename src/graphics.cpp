@@ -442,7 +442,8 @@ static void push_mouse_msg(struct _graph_setting* pg, UINT message, WPARAM wpara
     msg.message  = message;
     msg.wParam   = wparam;
     msg.lParam   = lparam;
-    msg.mousekey = (pg->mouse_state_m << 2) | (pg->mouse_state_r << 1) | (pg->mouse_state_l << 0);
+    msg.mousekey = (pg->mouse_state_m  << 2) | (pg->mouse_state_r  << 1) | (pg->mouse_state_l << 0)
+                 | (pg->mouse_state_x1 << 3) | (pg->mouse_state_x1 << 4);
     msg.time     = ::GetTickCount();
     pg->msgmouse_queue->push(msg);
 }
@@ -559,12 +560,29 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
             push_mouse_msg(pg, message, wParam, lParam);
         }
         break;
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONDBLCLK:
+        pg->mouse_lastclick_x       = (short int)((UINT)lParam & 0xFFFF);
+        pg->mouse_lastclick_y       = (short int)((UINT)lParam >> 16);
+
+        if ((wParam >> 16) & 0x0001) {
+            pg->keystatemap[VK_XBUTTON1] = 1;
+        } else if ((wParam >> 16) & 0x0002){
+            pg->keystatemap[VK_XBUTTON2] = 1;
+        }
+        SetCapture(hWnd);
+        pg->mouse_state_x1 = 1;
+        if (hWnd == pg->hwnd) {
+            push_mouse_msg(pg, message, wParam, lParam);
+        }
+        break;
     case WM_LBUTTONUP:
         pg->mouse_lastup_x          = (short int)((UINT)lParam & 0xFFFF);
         pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
         pg->mouse_state_l           = 0;
         pg->keystatemap[VK_LBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
+        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0
+            && pg->mouse_state_x1 && pg->mouse_state_x2) {
             ReleaseCapture();
         }
         if (hWnd == pg->hwnd) {
@@ -576,7 +594,8 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
         pg->mouse_state_m           = 0;
         pg->keystatemap[VK_MBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
+        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0
+            && pg->mouse_state_x1 && pg->mouse_state_x2) {
             ReleaseCapture();
         }
         if (hWnd == pg->hwnd) {
@@ -588,7 +607,27 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
         pg->mouse_state_r           = 0;
         pg->keystatemap[VK_RBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
+        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0
+            && pg->mouse_state_x1 && pg->mouse_state_x2) {
+            ReleaseCapture();
+        }
+        if (hWnd == pg->hwnd) {
+            push_mouse_msg(pg, message, wParam, lParam);
+        }
+        break;
+    case WM_XBUTTONUP:
+        pg->mouse_lastup_x = (short int)((UINT)lParam & 0xFFFF);
+        pg->mouse_lastup_y = (short int)((UINT)lParam >> 16);
+
+        if ((wParam >> 16) & 0x0001) {
+            pg->mouse_state_x1 = 0;
+            pg->keystatemap[VK_XBUTTON1] = 0;
+        } else if ((wParam >> 16) & 0x0002){
+            pg->mouse_state_x2 = 0;
+            pg->keystatemap[VK_XBUTTON2] = 0;
+        }
+        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0
+            && pg->mouse_state_x1 && pg->mouse_state_x2) {
             ReleaseCapture();
         }
         if (hWnd == pg->hwnd) {
