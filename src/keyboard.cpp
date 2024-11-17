@@ -160,14 +160,24 @@ int getchEx(int flag)
     return 0;
 }
 
-int kbhit()
+int ege_kbhit()
 {
     return kbhitEx(0);
 }
 
-int getch()
+int ege_getch()
 {
     return getchEx(0);
+}
+
+int kbhit()
+{
+    return ege_kbhit();
+}
+
+int getch()
+{
+    return ege_getch();
 }
 
 key_msg getkey()

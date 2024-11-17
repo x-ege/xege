@@ -29,6 +29,7 @@ MUSIC::MUSIC()
 {
     m_DID        = MUSIC_ERROR;
     m_dwCallBack = 0;
+    dll::loadWinmmDll();
 }
 
 // Class MUSIC Destruction
