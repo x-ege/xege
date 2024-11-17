@@ -1321,6 +1321,113 @@ int  EGEAPI savepng  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChann
 int  EGEAPI savebmp  (PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
 int  EGEAPI savebmp  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
 
+// 映射处理，此函数会对图像中的每个像素进行映射处理
+// 例如：
+// - 灰度变换： rgb2gray
+// - 颜色反转： [](color_t c)->color_t { return EGERGB(255 - EGEGET_R(c), 255 - EGEGET_G(c), 255 - EGEGET_B(c));}
+// - 二值化(灰度)： [](color_t c)->color_t { return EGEGET_R(c) > 128? WHITE : BLACK;}
+inline int image_transform(
+    PIMAGE img,                 // 输入图像
+    color_t(*trans)(color_t)    // 映射函数
+) {
+    const int width = getwidth(img);
+    const int height = getheight(img);
+    color_t(*buf)[width] = (color_t(*)[width])getbuffer(img);
+    // apply transformation to each pixel in the image
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            buf[i][j] = trans(buf[i][j]);
+        }
+    }
+    return 0;
+}
+
+// 模板处理模式
+// 它用于决定如何处理图像边界的像素
+enum TEMPLATE_MODE {
+    WHITE_OUTLINE,  // 超出图像范围的按照白色进行处理
+    BLACK_OUTLINE,  // 超出图像范围的按照黑色进行处理
+    IGNORE_OUTLINE, // 超出图像范围的在应用模板时忽略该位置
+    NOT_ANYTING     // 不对应用模板会超出图像范围的像素进行处理
+};
+
+// 模板处理
+// 此函数会对图像中的每个像素进行模板处理
+// 例如：
+// - 模糊：
+//   const int size = 3;
+//   float kernel_blur7[size][size] = {
+//       {1.f / 9.f, 1.f / 9.f, 1.f / 9.f},
+//       {1.f / 9.f, 1.f / 9.f, 1.f / 9.f},
+//       {1.f / 9.f, 1.f / 9.f, 1.f / 9.f}
+//   };
+//   image_template(img2, img, (float**)kernel_blur7, size, NOT_ANYTING);
+// - 锐化：
+//   const int size = 3;
+//   float kernel_sharpen[size][size] = {
+//       {-0.5f, -0.5f, -0.5f},
+//       {-0.5f, +5.0f, -0.5f},
+//       {-0.5f, -0.5f, -0.5f}
+//   };
+//   image_template(img2, img, (float**)kernel_sharpen, size, NOT_ANYTING);
+// - 边缘检测：
+//   const int size = 3;
+//   float kernel_edge[size][size] = {
+//       {-1.f, -1.f, -1.f},
+//       {-1.f,  8.f, -1.f},
+//       {-1.f, -1.f, -1.f}
+//   };
+//   image_template(img2, img, (float**)kernel_edge, size, NOT_ANYTING);
+inline int image_template(
+    PIMAGE dest,                        // 输出图像    
+    PCIMAGE src,                        // 输入图像
+    float** temp,                       // 模板，是一个二维数组，每个元素代表模板的权重
+    int size,                           // 模板大小，必须为奇数且为模板的边长
+    TEMPLATE_MODE mode = NOT_ANYTING    // 模板处理模式
+) {
+    const int width = getwidth(src);
+    const int height = getheight(src);
+    resize(dest, width, height);
+    float (*temp_)[size] = (float(*)[size])temp;
+    color_t(*buf)[width] = (color_t(*)[width])getbuffer(src);
+    color_t(*buf2)[width] = (color_t(*)[width])getbuffer(dest);
+    // apply template to each pixel in the image
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            float sum_r = 0.f, sum_g = 0.f, sum_b = 0.f;
+            unsigned char r, g, b;
+            for (int k = -size / 2; k <= size / 2; k++) {
+                for (int l = -size / 2; l <= size / 2; l++) {
+                    int x = i + k, y = j + l, m = k + size / 2, n = l + size / 2;
+                    color_t c;
+                    if (x < 0 || x >= height || y < 0 || y >= width) {
+                        switch (mode) {
+                        case WHITE_OUTLINE: c = WHITE; break;
+                        case BLACK_OUTLINE: c = BLACK; break;
+                        case IGNORE_OUTLINE: continue;
+                        case NOT_ANYTING: goto not_anything;
+                        default: return 1;
+                        }
+                    }
+                    else {
+                        c = buf[x][y];
+                    }
+                    sum_r += temp_[m][n] * EGEGET_R(c);
+                    sum_g += temp_[m][n] * EGEGET_G(c);
+                    sum_b += temp_[m][n] * EGEGET_B(c);
+                }
+            }
+            r = sum_r > 255 ? 255 : sum_r < 0 ? 0 : (unsigned char)sum_r;
+            g = sum_g > 255 ? 255 : sum_g < 0 ? 0 : (unsigned char)sum_g;
+            b = sum_b > 255 ? 255 : sum_b < 0 ? 0 : (unsigned char)sum_b;
+            buf2[i][j] = EGERGB(r, g, b);
+        not_anything:
+            (void)0;
+        }
+    }
+    return 0;
+}
+
 int EGEAPI putimage_transparent(
     PIMAGE  imgDest,            // handle to dest
     PCIMAGE imgSrc,             // handle to source
