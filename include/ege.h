@@ -1332,11 +1332,11 @@ inline int image_transform(
 ) {
     const int width = getwidth(img);
     const int height = getheight(img);
-    color_t(*buf)[width] = (color_t(*)[width])getbuffer(img);
+    color_t* buf = (color_t*)getbuffer(img);
     // apply transformation to each pixel in the image
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            buf[i][j] = trans(buf[i][j]);
+            buf[i * width + j] = trans(buf[i * width + j]);
         }
     }
     return 0;
@@ -1356,41 +1356,41 @@ enum TEMPLATE_MODE {
 // 例如：
 // - 模糊：
 //   const int size = 3;
-//   float kernel_blur7[size][size] = {
-//       {1.f / 9.f, 1.f / 9.f, 1.f / 9.f},
-//       {1.f / 9.f, 1.f / 9.f, 1.f / 9.f},
-//       {1.f / 9.f, 1.f / 9.f, 1.f / 9.f}
+//   float kernel_blur7[size * size] = {
+//       1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
+//       1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
+//       1.f / 9.f, 1.f / 9.f, 1.f / 9.f
 //   };
-//   image_template(img2, img, (float**)kernel_blur7, size, NOT_ANYTING);
+//   image_template(img2, img, kernel_blur7, size, NOT_ANYTING);
 // - 锐化：
 //   const int size = 3;
-//   float kernel_sharpen[size][size] = {
-//       {-0.5f, -0.5f, -0.5f},
-//       {-0.5f, +5.0f, -0.5f},
-//       {-0.5f, -0.5f, -0.5f}
+//   float kernel_sharpen[size * size] = {
+//       -0.5f, -0.5f, -0.5f,
+//       -0.5f, +5.0f, -0.5f,
+//       -0.5f, -0.5f, -0.5f
 //   };
-//   image_template(img2, img, (float**)kernel_sharpen, size, NOT_ANYTING);
+//   image_template(img2, img, kernel_sharpen, size, NOT_ANYTING);
 // - 边缘检测：
 //   const int size = 3;
-//   float kernel_edge[size][size] = {
-//       {-1.f, -1.f, -1.f},
-//       {-1.f,  8.f, -1.f},
-//       {-1.f, -1.f, -1.f}
+//   float kernel_edge[size * size] = {
+//       -1.f, -1.f, -1.f,
+//       -1.f,  8.f, -1.f,
+//       -1.f, -1.f, -1.f
 //   };
-//   image_template(img2, img, (float**)kernel_edge, size, NOT_ANYTING);
+//   image_template(img2, img, kernel_edge, size, NOT_ANYTING);
 inline int image_template(
     PIMAGE dest,                        // 输出图像    
     PCIMAGE src,                        // 输入图像
-    float** temp,                       // 模板，是一个二维数组，每个元素代表模板的权重
+    float* temp,                       // 模板，是一个二维数组，每个元素代表模板的权重
     int size,                           // 模板大小，必须为奇数且为模板的边长
     TEMPLATE_MODE mode = NOT_ANYTING    // 模板处理模式
 ) {
     const int width = getwidth(src);
     const int height = getheight(src);
     resize(dest, width, height);
-    float (*temp_)[size] = (float(*)[size])temp;
-    color_t(*buf)[width] = (color_t(*)[width])getbuffer(src);
-    color_t(*buf2)[width] = (color_t(*)[width])getbuffer(dest);
+    color_t* buf = (color_t*)getbuffer(src);
+    color_t* buf2 = (color_t*)getbuffer(dest);
+    float* temp_ = temp;
     // apply template to each pixel in the image
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
@@ -1410,17 +1410,17 @@ inline int image_template(
                         }
                     }
                     else {
-                        c = buf[x][y];
+                        c = buf[x * width + y];
                     }
-                    sum_r += temp_[m][n] * EGEGET_R(c);
-                    sum_g += temp_[m][n] * EGEGET_G(c);
-                    sum_b += temp_[m][n] * EGEGET_B(c);
+                    sum_r += temp_[m * size + n] * EGEGET_R(c);
+                    sum_g += temp_[m * size + n] * EGEGET_G(c);
+                    sum_b += temp_[m * size + n] * EGEGET_B(c);
                 }
             }
             r = sum_r > 255 ? 255 : sum_r < 0 ? 0 : (unsigned char)sum_r;
             g = sum_g > 255 ? 255 : sum_g < 0 ? 0 : (unsigned char)sum_g;
             b = sum_b > 255 ? 255 : sum_b < 0 ? 0 : (unsigned char)sum_b;
-            buf2[i][j] = EGERGB(r, g, b);
+            buf2[i * width + j] = EGERGB(r, g, b);
         not_anything:
             (void)0;
         }
