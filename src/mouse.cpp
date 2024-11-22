@@ -37,20 +37,15 @@ static EGEMSG peekmouse(_graph_setting* pg)
 mouse_msg mouseMessageConvert(UINT message, WPARAM wParam, LPARAM lParam, int* key)
 {
     mouse_msg msg = {0};
-    HWND hwnd = getHWnd();
 
-    POINT mousePos = {GET_X_LPARAM(lParam),  GET_Y_LPARAM(lParam)};
+    /* WINAPI bug: WM_MOUSEWHEEL 提供的是屏幕坐标，DPI 不等于 100% 时 ScreenToClient 的计算
+     * 结果与其它鼠标消息提供的坐标不一致。因此 lParam 参数已经处理过，直接使用之前记录的客户区坐标，
+     * 这里不需要再进行转换。
+     */
+    msg.x = GET_X_LPARAM(lParam);
+    msg.y = GET_Y_LPARAM(lParam);
 
     int vkCode = 0;
-
-    /* WM_MOUSEWHEEL 提供的是屏幕坐标 */
-    if (message == WM_MOUSEWHEEL) {
-        /* ToDo: DPI 缩放不等于 100 % 时，计算结果有偏差，需进行误差纠正 */
-        ScreenToClient(hwnd, &mousePos);
-    }
-
-    msg.x = mousePos.x;
-    msg.y = mousePos.y;
 
     if (message == WM_MOUSEMOVE) {
         msg.msg = mouse_msg_move;
@@ -160,6 +155,10 @@ MOUSEMSG GetMouseMsg()
         if (msg.hwnd) {
             mmsg.uMsg    = msg.message;
 
+            /* WINAPI bug: WM_MOUSEWHEEL 提供的是屏幕坐标，DPI 不等于 100% 时 ScreenToClient 的计算
+             * 结果与其它鼠标消息提供的坐标不一致。因此 lParam 参数已经处理过，直接使用之前记录的客户区坐标，
+             * 这里不需要再进行转换。
+             */
             mmsg.x       = GET_X_LPARAM(msg.lParam);
             mmsg.y       = GET_Y_LPARAM(msg.lParam);
 
@@ -174,11 +173,6 @@ MOUSEMSG GetMouseMsg()
 
             if (msg.message == WM_MOUSEWHEEL) {
                 mmsg.wheel = GET_WHEEL_DELTA_WPARAM(msg.wParam);
-
-                POINT point = {mmsg.x, mmsg.y};
-                ScreenToClient(pg->hwnd, &point);
-                mmsg.x = (int)point.x;
-                mmsg.y = (int)point.y;
             }
             return mmsg;
         }

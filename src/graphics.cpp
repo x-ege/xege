@@ -464,12 +464,19 @@ static void mouseProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     _graph_setting* pg = &graph_setting;
 
-    Point curPos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-
     bool curMsgIsNeedToPush = true;
 
     int key = 0;
+
+    /* WINAPI bug: WM_MOUSEWHEEL 提供的是屏幕坐标，DPI 不等于 100% 时 ScreenToClient 的计算
+     * 结果与其它鼠标消息提供的坐标不一致，故忽略 lParam 提供的值，直接使用之前记录的客户区坐标
+     */
+    if (message == WM_MOUSEWHEEL) {
+        lParam = MAKELPARAM(pg->mouse_pos.x, pg->mouse_pos.y);
+    }
+
     mouse_msg msg = mouseMessageConvert(message, wParam, lParam, &key);
+    Point curPos(msg.x, msg.y);
 
     if (msg.is_up()) {
         skipNextMoveMessage = true;
