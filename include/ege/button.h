@@ -141,7 +141,7 @@ public:
         setcolor(RED);
         cleardevice();
         setbkmode(TRANSPARENT);
-        setfillstyle(_bg_color, SOLID_FILL);
+        setfillstyle(SOLID_FILL, _bg_color);
         bar(0, 0, getw() - 1, geth() - 1);
         setfont(_font_height, 0, _face);
         setcolor(_text_color);
@@ -156,7 +156,7 @@ public:
         setbkcolor(_line_color);
         rectangle(0, 0, getw(), geth());
         rectangle(_side_width, _side_width, getw() - _side_width, geth() - _side_width);
-        setfillstyle(_shadow_color, SOLID_FILL);
+        setfillstyle(SOLID_FILL, _shadow_color);
 
         if (_pushed) {
             int points[12] = {
