@@ -747,9 +747,9 @@ struct mouse_msg
     bool is_x1()    const {return (flags & mouse_flag_x1)    != 0;}
     bool is_x2()    const {return (flags & mouse_flag_x2)    != 0;}
 
-    bool is_down()  const {return msg == mouse_msg_down;}
-    bool is_up()    const {return msg == mouse_msg_up;}
-    bool is_move()  const {return msg == mouse_msg_move;}
+    bool is_down()  const {return msg == mouse_msg_down; }
+    bool is_up()    const {return msg == mouse_msg_up;   }
+    bool is_move()  const {return msg == mouse_msg_move; }
     bool is_wheel() const {return msg == mouse_msg_wheel;}
 };
 
