@@ -124,6 +124,8 @@
 #define DEFAULT_CHARSET ANSI_CHARSET
 #endif
 
+#include "types.h"
+
 
 namespace ege
 {
@@ -200,10 +202,7 @@ struct _graph_setting
     HANDLE threadui_handle;
 
     /* 鼠标状态记录 */
-    int mouse_state_l, mouse_state_m, mouse_state_r;
-    int mouse_last_x, mouse_last_y;
-    int mouse_lastclick_x, mouse_lastclick_y;
-    int mouse_lastup_x, mouse_lastup_y;
+    Point mouse_pos;
     int mouse_show;
 
     LPMSG_KEY_PROC   callback_key;
@@ -212,7 +211,7 @@ struct _graph_setting
     void*            callback_mouse_param;
     LPCALLBACK_PROC  callback_close;
 
-    /* 键盘状态记录 */
+    /* 按键状态记录 */
     int keystatemap[MAX_KEY_VCODE];
 
     /* egeControlBase */

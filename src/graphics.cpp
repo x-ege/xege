@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <windowsx.h>
+
 #include "ege_head.h"
 #include "ege_common.h"
 #include "ege_extension.h"
@@ -435,16 +437,77 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
 }
 
 /*private function*/
-static void push_mouse_msg(struct _graph_setting* pg, UINT message, WPARAM wparam, LPARAM lparam)
+static void push_mouse_msg(struct _graph_setting* pg, UINT message, WPARAM wparam, LPARAM lparam, int time)
 {
     EGEMSG msg   = {0};
     msg.hwnd     = pg->hwnd;
     msg.message  = message;
     msg.wParam   = wparam;
     msg.lParam   = lparam;
-    msg.mousekey = (pg->mouse_state_m << 2) | (pg->mouse_state_r << 1) | (pg->mouse_state_l << 0);
-    msg.time     = ::GetTickCount();
+
+    msg.mousekey |= pg->keystatemap[VK_LBUTTON]  ? mouse_flag_left  : 0;
+    msg.mousekey |= pg->keystatemap[VK_RBUTTON]  ? mouse_flag_right : 0;
+    msg.mousekey |= pg->keystatemap[VK_MBUTTON]  ? mouse_flag_mid   : 0;
+    msg.mousekey |= pg->keystatemap[VK_XBUTTON1] ? mouse_flag_x1    : 0;
+    msg.mousekey |= pg->keystatemap[VK_XBUTTON2] ? mouse_flag_x2    : 0;
+
+    msg.time     = time;
     pg->msgmouse_queue->push(msg);
+}
+
+static void mouseProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    /* up 消息会后紧跟一条 move 消息，标记并将其忽略 */
+    static bool skipNextMoveMessage = false;
+    if ((message < WM_MOUSEFIRST) || (message > WM_MOUSELAST))
+        return;
+
+    _graph_setting* pg = &graph_setting;
+
+    bool curMsgIsNeedToPush = true;
+
+    int key = 0;
+
+    /* WINAPI bug: WM_MOUSEWHEEL 提供的是屏幕坐标，DPI 不等于 100% 时 ScreenToClient 的计算
+     * 结果与其它鼠标消息提供的坐标不一致，故忽略 lParam 提供的值，直接使用之前记录的客户区坐标
+     */
+    if (message == WM_MOUSEWHEEL) {
+        lParam = MAKELPARAM(pg->mouse_pos.x, pg->mouse_pos.y);
+    }
+
+    mouse_msg msg = mouseMessageConvert(message, wParam, lParam, &key);
+    Point curPos(msg.x, msg.y);
+
+    if (msg.is_up()) {
+        skipNextMoveMessage = true;
+    } else if (msg.is_move()) {
+        /* 忽略 up 消息后伴随的同位置 move 消息 */
+        if (skipNextMoveMessage && (curPos == pg->mouse_pos)) {
+            curMsgIsNeedToPush = false;
+            skipNextMoveMessage = false;
+        }
+    }
+
+    /* 鼠标按键动作 */
+    if (key != 0) {
+        pg->keystatemap[key] = msg.is_down();
+
+        /* 设置鼠标消息捕获 */
+        if (msg.is_down()) {
+            SetCapture(hWnd);
+        } else {
+            const int keyStateMask = MK_LBUTTON | MK_RBUTTON | MK_MBUTTON | MK_XBUTTON1 | MK_XBUTTON2;
+            if ((wParam & keyStateMask) == 0) {
+                ReleaseCapture();
+            }
+        }
+    }
+
+    if (curMsgIsNeedToPush && (hWnd == pg->hwnd)) {
+        push_mouse_msg(pg, message, wParam, lParam, GetMessageTime());
+    }
+
+    pg->mouse_pos = curPos;
 }
 
 /*private function*/
@@ -526,95 +589,15 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
             }
         }
         break;
-    case WM_LBUTTONDOWN:
-    case WM_LBUTTONDBLCLK:
-        pg->mouse_lastclick_x       = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastclick_y       = (short int)((UINT)lParam >> 16);
-        pg->keystatemap[VK_LBUTTON] = 1;
-        SetCapture(hWnd);
-        pg->mouse_state_l = 1;
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
+
+    case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDOWN: case WM_MBUTTONUP: case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK:
+    case WM_XBUTTONDOWN: case WM_XBUTTONUP: case WM_XBUTTONDBLCLK:
+    case WM_MOUSEMOVE:   case WM_MOUSEWHEEL:
+        mouseProc(hWnd, message, wParam, lParam);
         break;
-    case WM_MBUTTONDOWN:
-    case WM_MBUTTONDBLCLK:
-        pg->mouse_lastclick_x       = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastclick_y       = (short int)((UINT)lParam >> 16);
-        pg->keystatemap[VK_MBUTTON] = 1;
-        SetCapture(hWnd);
-        pg->mouse_state_m = 1;
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_RBUTTONDOWN:
-    case WM_RBUTTONDBLCLK:
-        pg->mouse_lastclick_x       = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastclick_y       = (short int)((UINT)lParam >> 16);
-        pg->keystatemap[VK_RBUTTON] = 1;
-        SetCapture(hWnd);
-        pg->mouse_state_r = 1;
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_LBUTTONUP:
-        pg->mouse_lastup_x          = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
-        pg->mouse_state_l           = 0;
-        pg->keystatemap[VK_LBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
-            ReleaseCapture();
-        }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_MBUTTONUP:
-        pg->mouse_lastup_x          = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
-        pg->mouse_state_m           = 0;
-        pg->keystatemap[VK_MBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
-            ReleaseCapture();
-        }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_RBUTTONUP:
-        pg->mouse_lastup_x          = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
-        pg->mouse_state_r           = 0;
-        pg->keystatemap[VK_RBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
-            ReleaseCapture();
-        }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_MOUSEMOVE:
-        pg->mouse_last_x = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_last_y = (short int)((UINT)lParam >> 16);
-        if (hWnd == pg->hwnd && (pg->mouse_lastup_x != pg->mouse_last_x || pg->mouse_lastup_y != pg->mouse_last_y)) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_MOUSEWHEEL: {
-        POINT pt;
-        pt.x = (short int)((UINT)lParam & 0xFFFF);
-        pt.y = (short int)((UINT)lParam >> 16);
-        ScreenToClient(pg->hwnd, &pt);
-        pg->mouse_last_x = pt.x;
-        pg->mouse_last_y = pt.y;
-        lParam = ((unsigned short)(short int)pg->mouse_last_y << 16) | (unsigned short)(short int)pg->mouse_last_x;
-    }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
+
     case WM_SETCURSOR:
         if (pg == pg_w) {
             on_setcursor(pg, hWnd);
@@ -850,8 +833,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     POINT pt;
     GetCursorPos(&pt);
     ScreenToClient(pg->hwnd, &pt);
-    pg->mouse_last_x = pt.x;
-    pg->mouse_last_y = pt.y;
+    pg->mouse_pos = Point(pt.x, pt.y);
 
     static egeControlBase _egeControlBase;
 

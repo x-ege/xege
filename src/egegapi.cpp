@@ -55,8 +55,8 @@ int showmouse(int bShow)
 int mousepos(int* x, int* y)
 {
     struct _graph_setting* pg = &graph_setting;
-    *x = pg->mouse_last_x;
-    *y = pg->mouse_last_y;
+    *x = pg->mouse_pos.x;
+    *y = pg->mouse_pos.y;
     return 0;
 }
 
