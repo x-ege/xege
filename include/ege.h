@@ -125,12 +125,12 @@
 #ifndef EGE_DEPRECATE
 #   ifdef _MSC_VER
 #       ifdef _CRT_DEPRECATE_TEXT
-#           define EGE_DEPRECATE(function, msg) _CRT_DEPRECATE_TEXT("This function is deprecated. " msg " For more information, visit https://xege.org/.")
+#           define EGE_DEPRECATE(function, msg) _CRT_DEPRECATE_TEXT("This function is deprecated. " msg " For more information, visit https://xege.org .")
 #       else
 #           define EGE_DEPRECATE(function, msg)
 #       endif
 #   elif ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 5)))
-#       define EGE_DEPRECATE(function, msg) __attribute__((deprecated(msg " For more information, visit https://xege.org/.")))
+#       define EGE_DEPRECATE(function, msg) __attribute__((deprecated(msg " For more information, visit https://xege.org .")))
 #   else
 #       define EGE_DEPRECATE(function, msg) __attribute__((deprecated))
 #   endif
