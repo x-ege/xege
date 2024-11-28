@@ -72,6 +72,7 @@
 #endif
 #endif
 
+#include "ege/stdint.h"
 
 #if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include <windef.h>
