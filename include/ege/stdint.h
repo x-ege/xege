@@ -18,9 +18,67 @@
 
 #ifndef _STDINT_H
 #define _STDINT_H
+
+#if defined(_MSC_VER) && (_MSC_VER > 1000)
+#pragma once
+#endif
+
+#ifndef _STDINT_HEADER_NOT_SUPPORT
+#if defined(_MSC_VER) && (_MSC_VER < 1600)
+#define _STDINT_HEADER_NOT_SUPPORT
+#elif  defined(__GNUC__) && ((__GNUC__ < 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ < 5)))
+#define _STDINT_HEADER_NOT_SUPPORT
+#else
+  /* Other compilers always assume support for <stdint.h>. */
+#endif
+#endif
+
+/* If the compiler provides the stdint.h header, fall back to the compiler's stdint.h,
+ * which might have additional definitions.
+ */
+#if !defined(_STDINT_HEADER_NOT_SUPPORT)
+
+/* Remove the include guard before including the <stdint.h> header file to ensure it is included. */
+#undef _STDINT_H
+#include <stdint.h>
+#ifndef _STDINT_H
+#define _STDINT_H
+#endif
+
+#else
+
+/* Avoid duplication with definitions in other stdint.h header files */
+#if !definded(_STDINT) && !defined(_GCC_STDINT_H)
+#if defined(_MSC_VER)
+#define _STDINT
+#elif defined(__GNUC__)
+#define _GCC_STDINT_H
+#endif
+
 #define __need_wint_t
 #define __need_wchar_t
 #include <stddef.h>
+
+#ifndef _LONGLONG
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
+#define _LONGLONG __int64
+#else
+#define _LONGLONG long long
+#endif
+#endif
+
+#ifndef __GNUC_EXTENSION__
+#if defined(__GNUC__)
+#define __GNUC_EXTENSION__  __extension__
+#else
+#define __GNUC_EXTENSION__
+#endif
+#endif
+
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
+#endif
 
 /* 7.18.1.1  Exact-width integer types */
 typedef signed char        int8_t;
@@ -29,8 +87,8 @@ typedef short              int16_t;
 typedef unsigned short     uint16_t;
 typedef int                int32_t;
 typedef unsigned           uint32_t;
-typedef long long          int64_t;
-typedef unsigned long long uint64_t;
+__GNUC_EXTENSION__ typedef _LONGLONG          int64_t;
+__GNUC_EXTENSION__ typedef unsigned _LONGLONG uint64_t;
 
 /* 7.18.1.2  Minimum-width integer types */
 typedef signed char        int_least8_t;
@@ -39,8 +97,8 @@ typedef short              int_least16_t;
 typedef unsigned short     uint_least16_t;
 typedef int                int_least32_t;
 typedef unsigned           uint_least32_t;
-typedef long long          int_least64_t;
-typedef unsigned long long uint_least64_t;
+__GNUC_EXTENSION__ typedef _LONGLONG          int_least64_t;
+__GNUC_EXTENSION__ typedef unsigned _LONGLONG uint_least64_t;
 
 /*  7.18.1.3  Fastest minimum-width integer types
  *  Not actually guaranteed to be fastest for all purposes
@@ -52,15 +110,16 @@ typedef short              int_fast16_t;
 typedef unsigned short     uint_fast16_t;
 typedef int                int_fast32_t;
 typedef unsigned int       uint_fast32_t;
-typedef long long          int_fast64_t;
-typedef unsigned long long uint_fast64_t;
+__GNUC_EXTENSION__ typedef _LONGLONG          int_fast64_t;
+__GNUC_EXTENSION__ typedef unsigned _LONGLONG uint_fast64_t;
 
 /* 7.18.1.4  Integer types capable of holding object pointers */
-
 #ifndef _INTPTR_T_DEFINED
 #define _INTPTR_T_DEFINED
-#ifdef _WIN64
-typedef __int64 intptr_t;
+#if defined(__INTPTR_TYPE__)
+__GNUC_EXTENSION__ typedef __INTPTR_TYPE__ intptr_t;
+#elif defined(_WIN64) || defined(__x86_64__) || (defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 8))
+__GNUC_EXTENSION__ typedef _LONGLONG intptr_t;
 #else
 typedef int intptr_t;
 #endif
@@ -68,16 +127,18 @@ typedef int intptr_t;
 
 #ifndef _UINTPTR_T_DEFINED
 #define _UINTPTR_T_DEFINED
-#ifdef _WIN64
-typedef unsigned __int64 uintptr_t;
+#if defined(__UINTPTR_TYPE__)
+__GNUC_EXTENSION__ typedef __UINTPTR_TYPE__ uintptr_t;
+#elif defined(_WIN64) || defined(__x86_64__) || (defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 8))
+__GNUC_EXTENSION__ typedef unsigned _LONGLONG uintptr_t;
 #else
 typedef unsigned int uintptr_t;
 #endif
 #endif
 
 /* 7.18.1.5  Greatest-width integer types */
-typedef long long          intmax_t;
-typedef unsigned long long uintmax_t;
+__GNUC_EXTENSION__ typedef _LONGLONG          intmax_t;
+__GNUC_EXTENSION__ typedef unsigned _LONGLONG uintmax_t;
 
 /* 7.18.2  Limits of specified-width integer types */
 #if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
@@ -132,7 +193,7 @@ typedef unsigned long long uintmax_t;
 
 /* 7.18.2.4  Limits of integer types capable of holding
     object pointers */
-#ifdef _WIN64
+#if defined(_WIN64) || defined(__x86_64__) || (defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 8))
 #define INTPTR_MIN  INT64_MIN
 #define INTPTR_MAX  INT64_MAX
 #define UINTPTR_MAX UINT64_MAX
@@ -142,7 +203,7 @@ typedef unsigned long long uintmax_t;
 #define UINTPTR_MAX UINT32_MAX
 #endif
 
-/* 7.18.2.5  Limits of greatest-width integer types */
+    /* 7.18.2.5  Limits of greatest-width integer types */
 #define INTMAX_MIN  INT64_MIN
 #define INTMAX_MAX  INT64_MAX
 #define UINTMAX_MAX UINT64_MAX
@@ -169,7 +230,7 @@ typedef unsigned long long uintmax_t;
 
 #endif /* !defined ( __cplusplus) || defined __STDC_LIMIT_MACROS */
 
-/* 7.18.4  Macros for integer constants */
+ /* 7.18.4  Macros for integer constants */
 #if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
 
 /* 7.18.4.1  Macros for minimum-width integer constants
@@ -198,7 +259,12 @@ typedef unsigned long long uintmax_t;
 /* 7.18.4.2  Macros for greatest-width integer constants */
 #define INTMAX_C(val)  INT64_C(val)
 #define UINTMAX_C(val) UINT64_C(val)
-
 #endif /* !defined ( __cplusplus) || defined __STDC_CONSTANT_MACROS */
 
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)))
+#pragma GCC diagnostic pop
 #endif
+
+#endif /* !definded(_STDINT) && !defined(_GCC_STDINT_H) */
+#endif /* !defined(_STDINT_HEADER_NOT_SUPPORT) */
+#endif /* _STDINT_H */
