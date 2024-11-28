@@ -276,7 +276,7 @@ enum message_mouse
 
 #ifndef EGE_COLOR_T_TYPEDEF
 #define EGE_COLOR_T_TYPEDEF
-typedef unsigned int color_t;
+typedef uint32_t color_t;
 #endif
 
 enum alpha_type
