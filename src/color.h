@@ -1,6 +1,9 @@
 #pragma once
 
 #include <windef.h>
+
+#include "../include/ege/stdint.h"
+
 #include "ege_def.h"
 #include "ege_math.h"
 #include "types.h"
@@ -17,7 +20,7 @@ namespace ege
 
 #ifndef EGE_COLOR_T_TYPEDEF
 #define EGE_COLOR_T_TYPEDEF
-typedef unsigned int color_t;
+typedef uint32_t color_t;
 #endif
 
 typedef struct COLORHSL
