@@ -80,6 +80,8 @@ if (USE_LIBPNG_AND_ZLIB)
             execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive)
         endif ()
 
+        set(ZLIB_BUILD_EXAMPLES OFF  CACHE INTERNAL "")
+
         add_subdirectory(${EGE_ZLIB_SOURCE_DIR} EXCLUDE_FROM_ALL)
 
         set(PNG_BUILD_ZLIB  ON   CACHE INTERNAL "")
