@@ -188,7 +188,7 @@ endmacro()
 
 # 编译测试
 if (EGE_BUILD_TEST)
-    ege_add_executable(graphicstest test/src/maintest.cpp)
+    ege_add_executable(xege_test test/src/maintest.cpp)
 endif()
 
 add_subdirectory(src)

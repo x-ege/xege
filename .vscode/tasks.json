@@ -121,7 +121,7 @@
             "problemMatcher": "$gcc"
         },
         {
-            "label": "Run Demo - GraphicsTest",
+            "label": "Run Demo - XEGE Test",
             "type": "shell",
             "command": "bash",
             "args": [
@@ -129,10 +129,10 @@
                 "tasks.sh",
                 "--debug",
                 "--target",
-                "graphicstest",
+                "xege_test",
                 "--build",
                 "--run",
-                "graphicstest.exe",
+                "xege_test.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
