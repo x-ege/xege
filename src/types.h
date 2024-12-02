@@ -1,4 +1,9 @@
+#if defined(_MSC_VER) && _MSC_VER >= 1000
 #pragma once
+#endif
+
+#ifndef EGE_TYPES_H
+#define EGE_TYPES_H
 
 #include <climits>
 
@@ -1244,7 +1249,7 @@ inline Pointf Rect::exactCenter()   const
 }
 
 inline void Rect::setX(int x)                        { this->x = x;                                 }
-inline void Rect::setY(int y)                        { this->x = y;                                 }
+inline void Rect::setY(int y)                        { this->y = y;                                 }
 inline void Rect::setWidth(int width)                { this->width  = width;                        }
 inline void Rect::setHeight(int height)              { this->height = height;                       }
 inline void Rect::setLeft(int left)                  { width  -= left - this->left();    x = left;  }
@@ -1365,7 +1370,7 @@ inline void Rect::alignTo(const Rect& rect, Alignment alignment)
 
     unsigned int verticalAlignment = ((unsigned int)alignment & ALIGNMENT_VERTICAL_MASK);
     if (verticalAlignment != 0) {
-        switch(verticalAlignment & (~horizontalAlignment + 1)) {
+        switch(verticalAlignment & (~verticalAlignment + 1)) {
             case Alignment_TOP:    topAlign(rect.top());            break;
             case Alignment_VMID:   verticalAlign(rect.centerY());   break;
             case Alignment_BOTTOM: bottomAlign(rect.bottom());      break;
@@ -1536,7 +1541,7 @@ inline bool Rect::isContains(int x, int y) const
 inline bool Rect::isContains(const Point& point) const
 {
     return (point.x >= x) && ((unsigned)(point.x - x) < (unsigned)width)
-        && (point.y >= x) && ((unsigned)(point.y - y) < (unsigned)height);
+        && (point.y >= y) && ((unsigned)(point.y - y) < (unsigned)height);
 }
 
 inline bool Rect::isContains(int x, int y, int width, int height) const
@@ -1883,3 +1888,5 @@ inline Bound getBounds(const Point& a, const Point& b)
 #undef EGE_TEMP_MIDPOINT_INT
 #undef EGE_TEMP_DIFF_UINT
 #undef EGE_TEMP_ROUND
+
+#endif
