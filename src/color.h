@@ -6,7 +6,6 @@
 
 #include "ege_def.h"
 #include "ege_math.h"
-#include "types.h"
 
 // 交换颜色中 R 通道和 B 通道: 0xAARRGGBB -> 0xAABBGGRR
 #define RGBTOBGR(color) ((color_t)((((color) & 0xFF) << 16) | (((color) & 0xFF0000) >> 16) | ((color) & 0xFF00FF00)))
@@ -52,11 +51,11 @@ typedef struct COLORRGB
  * @param alpha 透明度(0~255)
  * @return      混合后的 RGB 颜色，透明度与背景色一致
  */
-EGE_FORCEINLINE color_t colorblend_inline(color_t dst, color_t src, byte alpha)
+EGE_FORCEINLINE color_t colorblend_inline(color_t dst, color_t src, uint8_t alpha)
 {
-    byte r = DIVIDE_255_FAST(255 * EGEGET_R(dst) + ((int)(EGEGET_R(src) - EGEGET_R(dst)) * alpha + 255/2));
-    byte g = DIVIDE_255_FAST(255 * EGEGET_G(dst) + ((int)(EGEGET_G(src) - EGEGET_G(dst)) * alpha + 255/2));
-    byte b = DIVIDE_255_FAST(255 * EGEGET_B(dst) + ((int)(EGEGET_B(src) - EGEGET_B(dst)) * alpha + 255/2));
+    uint8_t r = DIVIDE_255_FAST(255 * EGEGET_R(dst) + ((int)(EGEGET_R(src) - EGEGET_R(dst)) * alpha + 255/2));
+    uint8_t g = DIVIDE_255_FAST(255 * EGEGET_G(dst) + ((int)(EGEGET_G(src) - EGEGET_G(dst)) * alpha + 255/2));
+    uint8_t b = DIVIDE_255_FAST(255 * EGEGET_B(dst) + ((int)(EGEGET_B(src) - EGEGET_B(dst)) * alpha + 255/2));
 
     return EGEARGB(EGEGET_A(dst),r, g, b);
 }
@@ -70,7 +69,7 @@ EGE_FORCEINLINE color_t colorblend_inline(color_t dst, color_t src, byte alpha)
  * @return      混合后的 RGB 颜色，透明度与背景色一致
  * @note        结果与标准公式相比有一定误差
  */
-EGE_FORCEINLINE color_t colorblend_inline_fast(color_t dst, color_t src, byte alpha)
+EGE_FORCEINLINE color_t colorblend_inline_fast(color_t dst, color_t src, uint8_t alpha)
 {
 #define COLORBLEND_INLINE_FAST_OPTION  1
 #if COLORBLEND_INLINE_FAST_OPTION == 0
@@ -107,12 +106,12 @@ EGE_FORCEINLINE color_t colorblend_inline_fast(color_t dst, color_t src, byte al
  * G = G(dst) + alpha * （G(src) - G(dst));
  * B = B(dst) + alpha * （B(src) - B(dst));
  */
-EGE_FORCEINLINE color_t alphablend_specify_inline(color_t dst, color_t src, byte alpha)
+EGE_FORCEINLINE color_t alphablend_specify_inline(color_t dst, color_t src, uint8_t alpha)
 {
-    const byte a = DIVIDE_255_FAST(255 * EGEGET_A(dst) + ((int)(          255 - EGEGET_A(dst)) * alpha + 255/2));
-    const byte r = DIVIDE_255_FAST(255 * EGEGET_R(dst) + ((int)(EGEGET_R(src) - EGEGET_R(dst)) * alpha + 255/2));
-    const byte g = DIVIDE_255_FAST(255 * EGEGET_G(dst) + ((int)(EGEGET_G(src) - EGEGET_G(dst)) * alpha + 255/2));
-    const byte b = DIVIDE_255_FAST(255 * EGEGET_B(dst) + ((int)(EGEGET_B(src) - EGEGET_B(dst)) * alpha + 255/2));
+    const uint8_t a = DIVIDE_255_FAST(255 * EGEGET_A(dst) + ((int)(          255 - EGEGET_A(dst)) * alpha + 255/2));
+    const uint8_t r = DIVIDE_255_FAST(255 * EGEGET_R(dst) + ((int)(EGEGET_R(src) - EGEGET_R(dst)) * alpha + 255/2));
+    const uint8_t g = DIVIDE_255_FAST(255 * EGEGET_G(dst) + ((int)(EGEGET_G(src) - EGEGET_G(dst)) * alpha + 255/2));
+    const uint8_t b = DIVIDE_255_FAST(255 * EGEGET_B(dst) + ((int)(EGEGET_B(src) - EGEGET_B(dst)) * alpha + 255/2));
 
     return EGEARGB(a, r, g, b);
 }
@@ -137,9 +136,9 @@ EGE_FORCEINLINE color_t alphablend_inline(color_t dst, color_t src)
  * @param srcAlphaFactor 前景色的比例系数，0~255 对应 0.0~1.0
  * @return    混合后的 ARGB 颜色
  */
-EGE_FORCEINLINE color_t alphablend_inline(color_t dst, color_t src, byte srcAlphaFactor)
+EGE_FORCEINLINE color_t alphablend_inline(color_t dst, color_t src, uint8_t srcAlphaFactor)
 {
-    byte alpha = DIVIDE_255_FAST(EGEGET_A(src) * srcAlphaFactor + 255/2);
+    uint8_t alpha = DIVIDE_255_FAST(EGEGET_A(src) * srcAlphaFactor + 255/2);
     return alphablend_specify_inline(dst, src, alpha);
 }
 
@@ -157,10 +156,10 @@ EGE_FORCEINLINE color_t alphablend_inline(color_t dst, color_t src, byte srcAlph
  */
 EGE_FORCEINLINE color_t alphablend_premultiplied_inline(color_t dst, color_t src)
 {
-    const byte a = DIVIDE_255_FAST(255 * EGEGET_A(src) + (255 - EGEGET_A(src)) * EGEGET_A(dst));
-    const byte r = DIVIDE_255_FAST(255 * EGEGET_R(src) + (255 - EGEGET_A(src)) * EGEGET_R(dst));
-    const byte g = DIVIDE_255_FAST(255 * EGEGET_G(src) + (255 - EGEGET_A(src)) * EGEGET_G(dst));
-    const byte b = DIVIDE_255_FAST(255 * EGEGET_B(src) + (255 - EGEGET_A(src)) * EGEGET_B(dst));
+    const uint8_t a = DIVIDE_255_FAST(255 * EGEGET_A(src) + (255 - EGEGET_A(src)) * EGEGET_A(dst));
+    const uint8_t r = DIVIDE_255_FAST(255 * EGEGET_R(src) + (255 - EGEGET_A(src)) * EGEGET_R(dst));
+    const uint8_t g = DIVIDE_255_FAST(255 * EGEGET_G(src) + (255 - EGEGET_A(src)) * EGEGET_G(dst));
+    const uint8_t b = DIVIDE_255_FAST(255 * EGEGET_B(src) + (255 - EGEGET_A(src)) * EGEGET_B(dst));
 
     return EGEARGB(a, r, g, b);
 }

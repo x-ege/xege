@@ -10,40 +10,6 @@
 
 #include <windows.h>
 
-#if !defined(EGE_W64)
-#if !defined(__midl) && (defined(_X86_) || defined(_M_IX86)) && _MSC_VER >= 1300
-#define EGE_W64 __w64
-#else
-#define EGE_W64
-#endif
-#endif
-
-#ifndef __int3264
-#if defined(_WIN64)
-typedef __int64          LONG_PTR, *PLONG_PTR;
-typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
-
-#define __int3264 __int64
-
-#else
-typedef EGE_W64 long          LONG_PTR, *PLONG_PTR;
-typedef EGE_W64 unsigned long ULONG_PTR, *PULONG_PTR;
-
-#define __int3264 __int32
-
-#endif
-#endif
-
-typedef ULONG_PTR DWORD_PTR, *PDWORD_PTR;
-
-typedef unsigned int uint32;
-
-#if !defined(_MSC_VER) || _MSC_VER > 1200
-typedef intptr_t POINTER_SIZE;
-#else
-typedef long POINTER_SIZE;
-#endif
-
 #ifndef EGE_TEMP_MIN
 #define EGE_TEMP_MIN(a, b)  ((b) < (a) ? (b) : (a))
 #endif
@@ -70,10 +36,35 @@ typedef long POINTER_SIZE;
 #endif
 
 
-#include "enums.h"
-
 namespace ege
 {
+
+enum Alignment
+{
+    Alignment_LEFT    = 0x01,
+    Alignment_HMID    = 0x02,
+    Alignment_RIGHT   = 0x04,
+
+    Alignment_TOP     = 0x10,
+    Alignment_VMID    = 0x20,
+    Alignment_BOTTOM  = 0x40,
+
+    Alignment_LEFT_TOP     = Alignment_LEFT  | Alignment_TOP,
+    Alignment_LEFT_MID     = Alignment_LEFT  | Alignment_VMID,
+    Alignment_LEFT_BOTTOM  = Alignment_LEFT  | Alignment_BOTTOM,
+
+    Alignment_MID_TOP      = Alignment_HMID  | Alignment_TOP,
+    Alignment_CENTER       = Alignment_HMID  | Alignment_VMID,
+    Alignment_MID_BOTTOM   = Alignment_HMID  | Alignment_BOTTOM,
+
+    Alignment_RIGHT_TOP    = Alignment_RIGHT | Alignment_TOP,
+    Alignment_RIGHT_MID    = Alignment_RIGHT | Alignment_VMID,
+    Alignment_RIGHT_BOTTOM = Alignment_RIGHT | Alignment_BOTTOM
+};
+
+const unsigned int ALIGNMENT_HORIZONTAL_MASK = 0x0F;
+const unsigned int ALIGNMENT_VERTICAL_MASK   = 0xF0;
+
 
 //------------------------------------------------------------------------------
 //                                   Point

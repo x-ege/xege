@@ -560,7 +560,7 @@ int IMAGE::getpngimg(FILE* fp)
 
     {
         char   header[16];
-        uint32 number = 8;
+        uint32_t number = 8;
         fread(header, 1, number, fp);
         int isn_png = png_sig_cmp((png_const_bytep)header, 0, number);
 
@@ -597,8 +597,8 @@ int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
     png_bytep*    row_pointers;
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-    uint32 pixelsize = withAlphaChannel ? 4 : 3;
-    uint32 width = m_width, height = m_height;
+    uint32_t pixelsize = withAlphaChannel ? 4 : 3;
+    uint32_t width = m_width, height = m_height;
 
     if (png_ptr == NULL) {
         return -1;

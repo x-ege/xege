@@ -19,6 +19,7 @@
 #define EGE_DEPRECATE(function, msg)
 
 #include "../include/ege.h"
+#include "../include/ege/types.h"
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -123,8 +124,6 @@
 #ifndef DEFAULT_CHARSET
 #define DEFAULT_CHARSET ANSI_CHARSET
 #endif
-
-#include "types.h"
 
 
 namespace ege
