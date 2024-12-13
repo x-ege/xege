@@ -1,4 +1,4 @@
-#if defined(_MSC_VER) && _MSC_VER >= 1000
+#if defined(_MSC_VER) && _MSC_VER >= 1200
 #pragma once
 #endif
 
@@ -6,6 +6,7 @@
 #define EGE_TYPES_H
 
 #include <climits>
+#include <cmath>
 
 #include <windows.h>
 
@@ -43,7 +44,6 @@ typedef intptr_t POINTER_SIZE;
 typedef long POINTER_SIZE;
 #endif
 
-
 #ifndef EGE_TEMP_MIN
 #define EGE_TEMP_MIN(a, b)  ((b) < (a) ? (b) : (a))
 #endif
@@ -75,16 +75,10 @@ typedef long POINTER_SIZE;
 namespace ege
 {
 
-#ifndef EGE_BYTE_TYPEDEF
-#define EGE_BYTE_TYPEDEF
-typedef unsigned char byte;
-#endif
-
-
 //------------------------------------------------------------------------------
-//                                Point & Pointf
+//                                   Point
 //------------------------------------------------------------------------------
-struct Pointf;
+struct PointF;
 
 struct Point
 {
@@ -94,7 +88,7 @@ struct Point
 public:
     Point() : x(0), y(0) {}
     Point(int x, int y) : x(x), y(y) {}
-    explicit Point(Pointf point);
+    explicit Point(const PointF& point);
 
     void set(int x, int y);
     void set(const Point& point);
@@ -105,36 +99,37 @@ bool operator==(const Point& a, const Point& b);
 bool operator!=(const Point& a, const Point& b);
 
 Point offset(const Point& point, int dx, int dy);
-//------------------------------------------------------------------------------
 
-struct Pointf
+//------------------------------------------------------------------------------
+//                                   PointF
+//------------------------------------------------------------------------------
+struct PointF
 {
     float x;
     float y;
 
 public:
-    Pointf() : x(0.0f), y(0.0f) {}
-    Pointf(float x, float y) : x(x), y(y) {}
-    explicit Pointf(Point point);
+    PointF() : x(0.0f), y(0.0f) {}
+    PointF(float x, float y) : x(x), y(y) {}
+    explicit PointF(const Point& point);
 
     void set(float x, float y);
-    void set(const Pointf& point);
+    void set(const PointF& point);
     void offset(float dx, float dy);
 
-    bool nearEquals(const Pointf& point, float error = 1E-5f) const;
+    bool nearEquals(const PointF& point, float error = 1E-5f) const;
 
     Point nearestPoint() const;
-};  // Pointf
+};  // PointF
 
-bool operator==(const Pointf& a, const Pointf& b);
-bool operator!=(const Pointf& a, const Pointf& b);
+bool operator==(const PointF& a, const PointF& b);
+bool operator!=(const PointF& a, const PointF& b);
 
-Pointf offset(const Pointf& point, float dx, float dy);
+PointF offset(const PointF& point, float dx, float dy);
 
-//------------------------------------------------------------------------------
+//----------------------------------- Point ------------------------------------
 
-inline Point::Point(Pointf point)  : x((int)point.x),   y((int)point.y)   {}
-inline Pointf::Pointf(Point point) : x((float)point.x), y((float)point.y) {}
+inline Point::Point(const PointF& point)  : x((int)point.x),   y((int)point.y)   {}
 
 inline void Point::set(int x, int y)
 {
@@ -163,37 +158,39 @@ inline bool operator!= (const Point& a, const Point& b)
     return !(a == b);
 }
 
-inline void Pointf::set(float x, float y)
+inline PointF::PointF(const Point& point) : x((float)point.x), y((float)point.y) {}
+
+inline void PointF::set(float x, float y)
 {
-    set(Pointf(x, y));
+    set(PointF(x, y));
 }
 
-inline void Pointf::set(const Pointf& point)
+inline void PointF::set(const PointF& point)
 {
     x = point.x;
     y = point.y;
 }
 
-inline void Pointf::offset(float dx, float dy)
+inline void PointF::offset(float dx, float dy)
 {
     x += dx;
     y += dy;
 }
 
-inline bool Pointf::nearEquals(const Pointf& point, float error) const
+inline bool PointF::nearEquals(const PointF& point, float error) const
 {
     return (EGE_TEMP_DIFF(x, point.x) <= error)
         && (EGE_TEMP_DIFF(y, point.y) <= error);
 }
 
-inline Point Pointf::nearestPoint() const
+inline Point PointF::nearestPoint() const
 {
     return Point(EGE_TEMP_ROUND(x), EGE_TEMP_ROUND(y));
 }
 
-inline Pointf offset(const Pointf& point, float dx, float dy)
+inline PointF offset(const PointF& point, float dx, float dy)
 {
-    return Pointf(point.x + dx, point.y + dy);
+    return PointF(point.x + dx, point.y + dy);
 }
 
 inline Point offset(const Point& point, int dx, int dy)
@@ -201,19 +198,19 @@ inline Point offset(const Point& point, int dx, int dy)
     return Point(point.x + dx, point.y + dy);
 }
 
-inline bool operator== (const Pointf& a, const Pointf& b)
+inline bool operator== (const PointF& a, const PointF& b)
 {
     return (a.x == b.x) && (a.y == b.y);
 }
 
-inline bool operator!= (const Pointf& a, const Pointf& b)
+inline bool operator!= (const PointF& a, const PointF& b)
 {
     return !(a == b);
 }
 
 
 //------------------------------------------------------------------------------
-//                               Size & Sizef
+//                                    Size
 //------------------------------------------------------------------------------
 struct Size
 {
@@ -242,15 +239,16 @@ bool operator!= (const Size& a, const Size& b);
 Size normalize(const Size& size);
 
 //------------------------------------------------------------------------------
-
-struct Sizef
+//                                    SizeF
+//------------------------------------------------------------------------------
+struct SizeF
 {
     float width;
     float height;
 
 public:
-    Sizef() : width(0.0f), height(0.0f) {}
-    Sizef(float width, float height) : width(width), height(height) {}
+    SizeF() : width(0.0f), height(0.0f) {}
+    SizeF(float width, float height) : width(width), height(height) {}
 
     void set(float width, float height);
     void setEmpty();
@@ -260,16 +258,16 @@ public:
     bool isValid()      const;
     bool isNormalized() const;
 
-    bool nearEquals(const Sizef& size, float error = 1E-5f) const;
+    bool nearEquals(const SizeF& size, float error = 1E-5f) const;
 
     void tranpose();
     void normalize();
-}; // Sizef
+}; // SizeF
 
-bool operator== (const Sizef& a, const Sizef& b);
-bool operator!= (const Sizef& a, const Sizef& b);
+bool operator== (const SizeF& a, const SizeF& b);
+bool operator!= (const SizeF& a, const SizeF& b);
 
-Sizef normalize(const Sizef& size);
+SizeF normalize(const SizeF& size);
 
 //---------------------------------- Size ----------------------------------
 
@@ -324,48 +322,48 @@ inline Size normalize(const Size& size)
     return s;
 }
 
-//---------------------------------- Sizef ----------------------------------
+//---------------------------------- SizeF ----------------------------------
 
-inline bool Sizef::isNull()       const { return (width == 0.0f) && (height == 0.0f); }
-inline bool Sizef::isEmpty()      const { return (width == 0.0f) || (height == 0.0f); }
-inline bool Sizef::isValid()      const { return (width >  0.0f) && (height >  0.0f); }
-inline bool Sizef::isNormalized() const { return (width >= 0.0f) && (height >= 0.0f); }
+inline bool SizeF::isNull()       const { return (width == 0.0f) && (height == 0.0f); }
+inline bool SizeF::isEmpty()      const { return (width == 0.0f) || (height == 0.0f); }
+inline bool SizeF::isValid()      const { return (width >  0.0f) && (height >  0.0f); }
+inline bool SizeF::isNormalized() const { return (width >= 0.0f) && (height >= 0.0f); }
 
-inline void Sizef::set(float width, float height)
+inline void SizeF::set(float width, float height)
 {
     this->width  = width;
     this->height = height;
 }
 
-inline void Sizef::setEmpty()
+inline void SizeF::setEmpty()
 {
     set(0.0f, 0.0f);
 }
 
-inline bool operator== (const Sizef& a, const Sizef& b)
+inline bool operator== (const SizeF& a, const SizeF& b)
 {
     return (a.width == b.width) && (a.height == b.height);
 }
 
-inline bool operator!= (const Sizef& a, const Sizef& b)
+inline bool operator!= (const SizeF& a, const SizeF& b)
 {
     return !(a == b);
 }
 
-inline bool Sizef::nearEquals(const Sizef& size, float error) const
+inline bool SizeF::nearEquals(const SizeF& size, float error) const
 {
     return (EGE_TEMP_DIFF(width, size.width) <= error)
         && (EGE_TEMP_DIFF(height, size.height) <= error);
 }
 
-inline void Sizef::tranpose()
+inline void SizeF::tranpose()
 {
     float temp = width;
     width = height;
     height = temp;
 }
 
-inline void Sizef::normalize()
+inline void SizeF::normalize()
 {
     if (width  < 0.0f) {
         width  = -width;
@@ -376,16 +374,16 @@ inline void Sizef::normalize()
     }
 }
 
-inline Sizef normalize(const Sizef& size)
+inline SizeF normalize(const SizeF& size)
 {
-    Sizef s(size);
+    SizeF s(size);
     s.normalize();
     return s;
 }
 
 
 //------------------------------------------------------------------------------
-//                                 Bound & Rect
+//                                   Bound
 //------------------------------------------------------------------------------
 struct Rect;
 
@@ -414,7 +412,7 @@ public:
     void setHeight(int height);
 
     void setXY(int x, int y);
-    void setXY(Point xy);
+    void setXY(const Point& xy);
     void setSize(const Size& size);
     void setSize(int width, int height);
 
@@ -459,7 +457,7 @@ public:
 
     double exactCenterX() const;
     double exactCenterY() const;
-    Pointf exactCenter()  const;
+    PointF exactCenter()  const;
 
     bool isNull()         const;
     bool isEmpty()        const;
@@ -512,7 +510,7 @@ public:
 
     void scale(float scale);
     void scale(float xScale, float yScale);
-    void scale(float xScale, float yScale, Pointf center);
+    void scale(float xScale, float yScale, PointF center);
 
     bool intersect(const Bound& bound);
     bool intersect(const Rect& rect);
@@ -540,6 +538,9 @@ Bound unite(const Bound& a, const Bound& b);
 Bound getBounds(const Point points[], int length);
 
 //------------------------------------------------------------------------------
+//                                   Rect
+//------------------------------------------------------------------------------
+struct RectF;
 
 struct Rect
 {
@@ -553,6 +554,7 @@ public:
     Rect(int x, int y, int width, int height, bool normalize = true);
     Rect(const Point& topLeft, const Size& size, bool normalize = true);
     explicit Rect(const Bound& bound);
+    explicit Rect(const RectF& rect);
 
     void set(int x, int y, int width, int height, bool normalize = true);
     void set(const Point& topLeft, const Size& size, bool normalize = true);
@@ -567,7 +569,7 @@ public:
     void setHeight(int height);
 
     void setXY(int x, int y);
-    void setXY(Point xy);
+    void setXY(const Point& xy);
     void setSize(const Size& size);
     void setSize(int width, int height);
 
@@ -608,7 +610,7 @@ public:
 
     double exactCenterX() const;
     double exactCenterY() const;
-    Pointf exactCenter()  const;
+    PointF exactCenter()  const;
 
     bool isNull()         const;
     bool isEmpty()        const;
@@ -646,7 +648,7 @@ public:
     void horizontalAlign(int x);
     void verticalAlign(int y);
     void centerAlign(int x, int y);
-    void centerAlign(Point point);
+    void centerAlign(const Point& point);
 
     void alignTo(const Point& point, Alignment alignment);
     void alignTo(int x, int y, Alignment alignment);
@@ -654,7 +656,7 @@ public:
 
     void scale(float scale);
     void scale(float xScale, float yScale);
-    void scale(float xScale, float yScale, Pointf center);
+    void scale(float xScale, float yScale, PointF center);
 
     bool intersect(const Rect& rect);
     bool intersect(const Bound& bound);
@@ -698,6 +700,142 @@ Rect intersect(const Rect& a, const Rect& b);
 Rect unite(const Rect& a, const Rect& b);
 
 //------------------------------------------------------------------------------
+//                                   RectF
+//------------------------------------------------------------------------------
+struct RectF
+{
+    float x;
+    float y;
+    float width;
+    float height;
+
+public:
+    RectF();
+    RectF(float x, float y, float width, float height, bool normalize = true);
+    RectF(const PointF& topLeft, const SizeF& size, bool normalize = true);
+    explicit RectF(const Rect& rect);
+
+    void set(float x, float y, float width, float height, bool normalize = true);
+    void set(const PointF& topLeft, const SizeF& size, bool normalize = true);
+    void setEmpty();
+
+    void setX(float x);
+    void setY(float y);
+    void setWidth(float width);
+    void setHeight(float height);
+
+    void setXY(float x, float y);
+    void setXY(const PointF& xy);
+    void setSize(const SizeF& size);
+    void setSize(float width, float height);
+
+    void setLeft(float left);
+    void setTop(float top);
+    void setRight(float right);
+    void setBottom(float bottom);
+
+    void setTopLeft    (float x, float y);
+    void setTopRight   (float x, float y);
+    void setBottomLeft (float x, float y);
+    void setBottomRight(float x, float y);
+
+    void setTopLeft    (const PointF& point);
+    void setTopRight   (const PointF& point);
+    void setBottomLeft (const PointF& point);
+    void setBottomRight(const PointF& point);
+
+    float left()   const;
+    float top()    const;
+    float right()  const;
+    float bottom() const;
+
+    PointF xy()    const;
+    SizeF  size()  const;
+
+    PointF topLeft()      const;
+    PointF topRight()     const;
+    PointF bottomLeft()   const;
+    PointF bottomRight()  const;
+
+    float  centerX()      const;
+    float  centerY()      const;
+    PointF center()       const;
+
+    bool isNull()         const;
+    bool isEmpty()        const;
+    bool isValid()        const;
+    bool isNormalized()   const;
+
+    bool isContains(float x, float y)         const;
+    bool isContains(const PointF& point)      const;
+    bool isContains(const RectF& rect)        const;
+    bool isContains(float x, float y, float width, float height) const;
+
+    bool isOverlaps(const RectF& rect)        const;
+    bool isOverlaps(float x, float y, float width, float height) const;
+
+    void transpose();
+    void offset  (float dx, float dy);
+    void offsetTo(float  x, float  y);
+    void offsetTo(const PointF& point);
+
+    bool normalize();
+
+    void inset (float margin);
+    void inset (float dx, float dy);
+    void inset (float leftMargin, float topMargin, float rightMargin, float bottomMargin);
+    void outset(float margin);
+    void outset(float dx, float dy);
+    void outset(float leftMargin, float topMargin, float rightMargin, float bottomMargin);
+
+    void leftAlign  (float left);
+    void topAlign   (float top);
+    void rightAlign (float right);
+    void bottomAlign(float bottom);
+
+    void horizontalAlign(float x);
+    void verticalAlign  (float y);
+    void centerAlign(float x, float y);
+    void centerAlign(const PointF& point);
+
+    void alignTo(const PointF& point, Alignment alignment);
+    void alignTo(float x, float y, Alignment alignment);
+    void alignTo(const RectF& rect, Alignment alignment);
+
+    void scale(float scale);
+    void scale(float xScale, float yScale);
+    void scale(float xScale, float yScale, PointF center);
+
+    bool intersect(const RectF& rect);
+    bool intersect(float x, float y, float width, float height);
+
+    void unite(const RectF& rect);
+    void unite(float x, float y);
+    void unite(const PointF& point);
+    void unite(float x, float y, float width, float height);
+
+    bool nearEquals(const RectF& rect, float error = 1E-5f) const;
+
+    Rect nearestRect()              const;
+    Rect enclosingRect()            const;
+    Rect enclosedRect()             const;
+    Rect enclosingRect(float error) const;
+    Rect enclosedRect(float error)  const;
+
+private:
+    static float floorIgnoringError(float x, float error);
+    static float ceilIgnoringError(float x, float error);
+}; // RectF
+
+bool operator==(const RectF& a, const RectF& b);
+bool operator!=(const RectF& a, const RectF& b);
+
+RectF normalize(const RectF& rect);
+RectF offset(const RectF& rect, float dx, float dy);
+RectF intersect(const RectF& a, const RectF& b);
+RectF unite(const RectF& a, const RectF& b);
+
+//---------------------------------- Bound ------------------------------------
 
 inline Bound::Bound(): left(0), top(0), right(0), bottom(0) {}
 
@@ -725,7 +863,7 @@ inline void Bound::setWidth (int width)               { right   = left + width; 
 inline void Bound::setHeight(int height)              { bottom  = top + height;             }
 
 inline void Bound::setXY(int x, int y)                { setX(x);    setY(y);                }
-inline void Bound::setXY(Point xy)                    { setXY(xy.x, xy.y);                  }
+inline void Bound::setXY(const Point& xy)             { setXY(xy.x, xy.y);                  }
 inline void Bound::setSize(const Size& size)          { setSize(size.width, size.height);   }
 inline void Bound::setSize(int width, int height)     { setWidth(width); setHeight(height); }
 
@@ -766,9 +904,9 @@ inline Point  Bound::center()       const { return Point(centerX(), centerY()); 
 inline double Bound::exactCenterX() const { return 0.5 * left + 0.5 * right;           }
 inline double Bound::exactCenterY() const { return 0.5 * top  + 0.5 * bottom;          }
 
-inline Pointf Bound::exactCenter()  const
+inline PointF Bound::exactCenter()  const
 {
-    return Pointf((float)exactCenterX(), (float)exactCenterY());
+    return PointF((float)exactCenterX(), (float)exactCenterY());
 }
 
 inline void Bound::leftAlign  (int left)     { setX(left);                 }
@@ -795,7 +933,7 @@ inline bool Bound::isWidthOutOfRange() const
     if (left < right)
         return ((unsigned)right - left) > (unsigned)INT_MAX;
     else
-        return ((unsigned)left - right) > (unsigned)INT_MIN;
+        return ((unsigned)left - right) > ((unsigned)INT_MAX + 1);
 }
 
 inline bool Bound::isHeightOutOfRange() const
@@ -803,7 +941,7 @@ inline bool Bound::isHeightOutOfRange() const
     if (top < bottom)
         return (unsigned)bottom - top > (unsigned)INT_MAX;
     else
-        return (unsigned)top - bottom > (unsigned)INT_MIN;
+        return (unsigned)top - bottom > ((unsigned)INT_MAX + 1);
 }
 
 inline bool Bound::isOutOfRange() const
@@ -1051,7 +1189,7 @@ inline void Bound::scale(float xScale, float yScale)
     bottom = top  + EGE_TEMP_ROUND(((double)bottom - top) * yScale);
 }
 
-inline void Bound::scale(float xScale, float yScale, Pointf center)
+inline void Bound::scale(float xScale, float yScale, PointF center)
 {
     left   = EGE_TEMP_ROUND(center.x + ((double)left   - center.x) * xScale);
     top    = EGE_TEMP_ROUND(center.y + ((double)top    - center.y) * yScale);
@@ -1074,7 +1212,7 @@ inline bool Bound::intersect(const Bound& bound)
     int right   = EGE_TEMP_MIN(this->right,  bound.right);
     int bottom  = EGE_TEMP_MIN(this->bottom, bound.bottom);
 
-    set(left, top, right, bottom);
+    set(left, top, right, bottom, false);
 
     return !isEmpty();
 }
@@ -1111,6 +1249,9 @@ inline void Bound::unite(int x, int y)
 
 inline void Bound::unite(const Point points[], int length)
 {
+    if (points == NULL || length <= 0)
+        return;
+
     for (int i = 0; i < length; i++)
         unite(points[i]);
 }
@@ -1154,7 +1295,7 @@ inline Bound unite(const Bound& a, const Bound& b)
 
 inline Bound getBounds(const Point points[], int length)
 {
-    if (length <= 0)
+    if (points == NULL || length <= 0)
         return Bound();
 
     int left   = points[0].x;
@@ -1201,9 +1342,7 @@ inline Bound offset(const Bound& bound, int dx, int dy)
     return Bound(bound.left + dx, bound.top + dy, bound.right + dx, bound.bottom + dy, false);
 }
 
-//------------------------------------------------------------------------------
-//                                    Rect
-//------------------------------------------------------------------------------
+//----------------------------------- Rect -------------------------------------
 
 inline Rect::Rect(): x(0), y(0), width(0), height(0) {}
 
@@ -1225,6 +1364,10 @@ inline Rect::Rect(const Bound& bound)
     : x(bound.x()), y(bound.y()), width(bound.width()), height(bound.height())
 { }
 
+inline Rect::Rect(const RectF& rect)
+    : x((int)rect.x), y((int)rect.y), width((int)rect.width), height((int)rect.height)
+{ }
+
 inline int    Rect::left()          const { return x;                            }
 inline int    Rect::top()           const { return y;                            }
 inline int    Rect::right()         const { return x + width;                    }
@@ -1243,9 +1386,9 @@ inline Point  Rect::center()        const { return Point(centerX(), centerY()); 
 inline double Rect::exactCenterX()  const { return x + 0.5 * width;              }
 inline double Rect::exactCenterY()  const { return y + 0.5 * height;             }
 
-inline Pointf Rect::exactCenter()   const
+inline PointF Rect::exactCenter()   const
 {
-    return Pointf((float)exactCenterX(), (float)exactCenterY());
+    return PointF((float)exactCenterX(), (float)exactCenterY());
 }
 
 inline void Rect::setX(int x)                        { this->x = x;                                 }
@@ -1257,7 +1400,7 @@ inline void Rect::setTop(int top)                    { height -= top  - this->to
 inline void Rect::setRight(int right)                { width  = right - left();                     }
 inline void Rect::setBottom(int bottom)              { height = bottom - top();                     }
 inline void Rect::setXY(int x, int y)                { this->x = x;    this->y = y;                 }
-inline void Rect::setXY(Point xy)                    { setXY(xy.x, xy.y);                           }
+inline void Rect::setXY(const Point& xy)             { setXY(xy.x, xy.y);                           }
 inline void Rect::setSize(const Size& size)          { setSize(size.width, size.height);            }
 inline void Rect::setSize(int width, int height)     { this->width  = width; this->height = height; }
 inline void Rect::setTopLeft    (const Point& point) { setTopLeft(point.x, point.y);                }
@@ -1327,7 +1470,7 @@ inline void Rect::centerAlign(int x, int y)
     centerAlign(Point(x, y));
 }
 
-inline void Rect::centerAlign(Point point)
+inline void Rect::centerAlign(const Point& point)
 {
     horizontalAlign(point.x);
     verticalAlign(point.y);
@@ -1457,17 +1600,14 @@ inline void Rect::scale(float xScale, float yScale)
     height = EGE_TEMP_ROUND(h);
 }
 
-inline void Rect::scale(float xScale, float yScale, Pointf center)
+inline void Rect::scale(float xScale, float yScale, PointF center)
 {
     double x1 = ((double)x - center.x) * xScale + center.x;
-    double y1 = ((double)y - center.y) * xScale + center.y;
-    double w  = (double)width  * xScale;
-    double h  = (double)height * yScale;
+    double y1 = ((double)y - center.y) * yScale + center.y;
+    double w1 = (double)width  * xScale;
+    double h1 = (double)height * yScale;
 
-    x      = EGE_TEMP_ROUND(x1);
-    y      = EGE_TEMP_ROUND(y1);
-    width  = EGE_TEMP_ROUND(w);
-    height = EGE_TEMP_ROUND(h);
+    set(EGE_TEMP_ROUND(x1), EGE_TEMP_ROUND(y1), EGE_TEMP_ROUND(w1), EGE_TEMP_ROUND(h1));
 }
 
 inline bool Rect::isNull()       const { return (width == 0) && (height == 0); }
@@ -1879,9 +2019,443 @@ inline Bound getBounds(const Point& a, const Point& b)
     return Bound(left, top, right, bottom, false);
 }
 
-//------------------------------------------------------------------------------
+//---------------------------------- RectF -------------------------------------
+inline RectF::RectF() : x(0.0f), y(0.0f), width(0.0f), height(0.0f) {}
 
+inline RectF::RectF(float x, float y, float width, float height, bool normalize)
+    : x(x), y(y), width(width), height(height)
+{
+    if (normalize)
+        this->normalize();
 }
+
+inline RectF::RectF(const PointF& topLeft, const SizeF& size, bool normalize)
+    : x(topLeft.x), y(topLeft.y), width(size.width), height(size.height)
+{
+    if (normalize)
+        this->normalize();
+}
+
+inline RectF::RectF(const Rect& rect)
+    : x((float)rect.x), y((float)rect.y) , width((float)rect.width), height((float)rect.height)
+{ }
+
+inline float  RectF::left()          const { return x;                     }
+inline float  RectF::top()           const { return y;                     }
+inline float  RectF::right()         const { return x + width;             }
+inline float  RectF::bottom()        const { return y + height;            }
+inline PointF RectF::topLeft()       const { return PointF(x, y);          }
+inline PointF RectF::topRight()      const { return PointF(x + width, y);  }
+inline PointF RectF::bottomLeft()    const { return PointF(x, y + height); }
+inline PointF RectF::bottomRight()   const { return PointF(x + width, y + height); }
+
+inline PointF RectF::xy()            const { return PointF(x, y);          }
+inline SizeF  RectF::size()          const { return SizeF(width, height);  }
+
+inline float  RectF::centerX()       const { return x + width * 0.5f;      }
+inline float  RectF::centerY()       const { return y + height * 0.5f;     }
+inline PointF RectF::center()        const { return PointF(centerX(), centerY()); }
+
+// Basic setters
+inline void RectF::setX(float x)           { this->x = x;                  }
+inline void RectF::setY(float y)           { this->y = y;                  }
+inline void RectF::setWidth(float width)   { this->width = width;          }
+inline void RectF::setHeight(float height) { this->height = height;        }
+
+inline void RectF::setLeft(float left)     { width += x - left; x = left;  }
+inline void RectF::setTop(float top)       { height += y - top; y = top;   }
+inline void RectF::setRight(float right)   { width = right - x;            }
+inline void RectF::setBottom(float bottom) { height = bottom - y;          }
+
+inline void RectF::setXY(float x, float y) { this->x = x; this->y = y;     }
+inline void RectF::setXY(const PointF& xy) { setXY(xy.x, xy.y);            }
+
+inline void RectF::setSize(const SizeF& size)          { setSize(size.width, size.height); }
+inline void RectF::setSize(float width, float height)  { this->width = width; this->height = height; }
+
+inline void RectF::setTopLeft(float x, float y)        { setLeft(x);  setTop(y);           }
+inline void RectF::setTopRight(float x, float y)       { setRight(x); setTop(y);           }
+inline void RectF::setBottomLeft(float x, float y)     { setLeft(x);  setBottom(y);        }
+inline void RectF::setBottomRight(float x, float y)    { setRight(x); setBottom(y);        }
+
+inline void RectF::setTopLeft(const PointF& point)     { setTopLeft(point.x, point.y);     }
+inline void RectF::setTopRight(const PointF& point)    { setTopRight(point.x, point.y);    }
+inline void RectF::setBottomLeft(const PointF& point)  { setBottomLeft(point.x, point.y);  }
+inline void RectF::setBottomRight(const PointF& point) { setBottomRight(point.x, point.y); }
+
+inline bool RectF::isNull()       const { return width == 0.0f && height == 0.0f; }
+inline bool RectF::isEmpty()      const { return width <= 0.0f || height <= 0.0f; }
+inline bool RectF::isValid()      const { return width >  0.0f && height >  0.0f; }
+inline bool RectF::isNormalized() const { return width >= 0.0f && height >= 0.0f; }
+
+inline bool operator==(const RectF& a, const RectF& b)
+{
+    return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
+}
+
+inline bool operator!=(const RectF& a, const RectF& b)
+{
+    return !(a == b);
+}
+
+inline void RectF::set(float x, float y, float width, float height, bool normalize)
+{
+    this->x = x;
+    this->y = y;
+    this->width = width;
+    this->height = height;
+
+    if (normalize)
+        this->normalize();
+}
+
+inline void RectF::set(const PointF& topLeft, const SizeF& size, bool normalize)
+{
+    set(topLeft.x, topLeft.y, size.width, size.height, normalize);
+}
+
+inline void RectF::setEmpty()
+{
+    x = y = width = height = 0.0f;
+}
+
+inline void RectF::transpose()
+{
+    float temp = width;
+    width = height;
+    height = temp;
+}
+
+inline void RectF::offset(float dx, float dy)    { x += dx;      y += dy;     }
+inline void RectF::offsetTo(float x, float y)    { offsetTo(PointF(x, y));    }
+inline void RectF::offsetTo(const PointF& point) { x = point.x;  y = point.y; }
+
+inline bool RectF::normalize()
+{
+    bool changed = false;
+    if (width < 0.0f) {
+        x += width;
+        width = -width;
+        changed = true;
+    }
+
+    if (height < 0.0f) {
+        y += height;
+        height = -height;
+        changed = true;
+    }
+
+    return changed;
+}
+
+inline void RectF::inset(float margin)        { inset(margin, margin, margin, margin); }
+inline void RectF::inset(float dx, float dy)  { inset(dx, dy, dx, dy); }
+
+inline void RectF::inset(float leftMargin, float topMargin, float rightMargin, float bottomMargin)
+{
+    x += leftMargin;
+    y += topMargin;
+    width -= (leftMargin + rightMargin);
+    height -= (topMargin + bottomMargin);
+}
+
+inline void RectF::outset(float margin)       { outset(margin, margin, margin, margin); }
+inline void RectF::outset(float dx, float dy) { outset(dx, dy, dx, dy); }
+
+inline void RectF::outset(float leftMargin, float topMargin, float rightMargin, float bottomMargin)
+{
+    inset(-leftMargin, -topMargin, -rightMargin, -bottomMargin);
+}
+
+inline void RectF::leftAlign  (float left)   { x = left;            }
+inline void RectF::topAlign   (float top)    { y = top;             }
+inline void RectF::rightAlign (float right)  { x = right - width;   }
+inline void RectF::bottomAlign(float bottom) { y = bottom - height; }
+
+inline void RectF::horizontalAlign(float x)  { this->x = x - width * 0.5f;  }
+inline void RectF::verticalAlign(float y)    { this->y = y - height * 0.5f; }
+
+inline void RectF::centerAlign(float x, float y)
+{
+    horizontalAlign(x);
+    verticalAlign(y);
+}
+
+inline void RectF::centerAlign(const PointF& point)
+{
+    centerAlign(point.x, point.y);
+}
+
+inline void RectF::alignTo(const PointF& point, Alignment alignment)
+{
+    alignTo(point.x, point.y, alignment);
+}
+
+inline void RectF::alignTo(float x, float y, Alignment alignment)
+{
+    unsigned int horizontalAlignment = (unsigned int)alignment & ALIGNMENT_HORIZONTAL_MASK;
+    if (horizontalAlignment != 0) {
+        switch(horizontalAlignment & (~horizontalAlignment + 1)) {
+            case Alignment_LEFT:   leftAlign(x);         break;
+            case Alignment_HMID:   horizontalAlign(x);   break;
+            case Alignment_RIGHT:  rightAlign(x);        break;
+            default: break; // Do nothing
+        }
+    }
+
+    unsigned int verticalAlignment = (unsigned int)alignment & ALIGNMENT_VERTICAL_MASK;
+    if (verticalAlignment != 0) {
+        switch(verticalAlignment & (~verticalAlignment + 1)) {
+            case Alignment_TOP:    topAlign(y);          break;
+            case Alignment_VMID:   verticalAlign(y);     break;
+            case Alignment_BOTTOM: bottomAlign(y);       break;
+            default: break; // Do nothing
+        }
+    }
+}
+
+inline void RectF::alignTo(const RectF& rect, Alignment alignment)
+{
+    unsigned int horizontalAlignment = ((unsigned int)alignment & ALIGNMENT_HORIZONTAL_MASK);
+    if (horizontalAlignment != 0) {
+        switch(horizontalAlignment & (~horizontalAlignment + 1)) {
+            case Alignment_LEFT:   leftAlign(rect.left());          break;
+            case Alignment_HMID:   horizontalAlign(rect.centerX()); break;
+            case Alignment_RIGHT:  rightAlign(rect.right());        break;
+            default: break; // Do nothing.
+        }
+    }
+
+    unsigned int verticalAlignment = ((unsigned int)alignment & ALIGNMENT_VERTICAL_MASK);
+    if (verticalAlignment != 0) {
+        switch(verticalAlignment & (~verticalAlignment + 1)) {
+            case Alignment_TOP:    topAlign(rect.top());            break;
+            case Alignment_VMID:   verticalAlign(rect.centerY());   break;
+            case Alignment_BOTTOM: bottomAlign(rect.bottom());      break;
+            default: break; // Do nothing.
+        }
+    }
+}
+
+inline void RectF::scale(float scale)
+{
+    this->scale(scale, scale);
+}
+
+inline void RectF::scale(float xScale, float yScale)
+{
+    width  *= xScale;
+    height *= yScale;
+}
+
+inline void RectF::scale(float xScale, float yScale, PointF center)
+{
+    x = center.x + (x - center.x) * xScale;
+    y = center.y + (y - center.y) * yScale;
+    width  *= xScale;
+    height *= yScale;
+}
+
+inline bool RectF::isContains(float x, float y) const
+{
+    return (x >= this->x) && (x < (this->x + width)) &&
+           (y >= this->y) && (y < (this->y + height));
+}
+
+inline bool RectF::isContains(const PointF& point) const
+{
+    return ((point.x >= x) && (point.x < x + width)) &&
+           ((point.y >= y) && (point.y < y + height));
+}
+
+inline bool RectF::isContains(const RectF& rect) const
+{
+    return (rect.x >= x && (rect.x + rect.width)  <= (x + width)) &&
+           (rect.y >= y && (rect.y + rect.height) <= (y + height));
+}
+
+inline bool RectF::isContains(float x, float y, float width, float height) const
+{
+    return isContains(RectF(x, y, width, height));
+}
+
+inline bool RectF::isOverlaps(const RectF& rect) const
+{
+    return ((x < rect.x + rect.width)  && (rect.x < x + width)) &&
+           ((y < rect.y + rect.height) && (rect.y < y + height));
+}
+
+inline bool RectF::isOverlaps(float x, float y, float width, float height) const
+{
+    return isOverlaps(RectF(x, y, width, height));
+}
+
+inline bool RectF::intersect(const RectF& rect)
+{
+    /* Unlike isOverlaps(), this only checks for no overlaps at all
+     * and allows edges to overlap. */
+    if ((left() > rect.right()) || (top() > rect.bottom())
+        || (right() < rect.left()) || (bottom() < rect.top()))
+    {
+        setEmpty();
+        return false;
+    }
+
+    float left   = EGE_TEMP_MAX(this->left(),   rect.left());
+    float top    = EGE_TEMP_MAX(this->top(),    rect.top());
+    float right  = EGE_TEMP_MIN(this->right(),  rect.right());
+    float bottom = EGE_TEMP_MIN(this->bottom(), rect.bottom());
+
+    set(left, top, right - left, bottom - top, false);
+
+    return true;
+}
+
+inline bool RectF::intersect(float x, float y, float width, float height)
+{
+    return intersect(RectF(x, y, width, height));
+}
+
+inline void RectF::unite(const RectF& rect)
+{
+    if (rect.isEmpty())
+        return;
+
+    if (isEmpty()) {
+        *this = rect;
+        return;
+    }
+
+    float left   = EGE_TEMP_MIN(this->left(),   rect.left());
+    float top    = EGE_TEMP_MIN(this->top(),    rect.top());
+    float right  = EGE_TEMP_MAX(this->right(),  rect.right());
+    float bottom = EGE_TEMP_MAX(this->bottom(), rect.bottom());
+
+    set(left, top, right - left, bottom - top, false);
+}
+
+inline void RectF::unite(float x, float y)
+{
+    unite(PointF(x, y));
+}
+
+inline void RectF::unite(const PointF& point)
+{
+    if (point.x < left())
+        setLeft(point.x);
+    else if (point.x > right())
+        setRight(point.x);
+
+    if (point.y < top())
+        setTop(point.y);
+    else if (point.y > bottom())
+        setBottom(point.y);
+}
+
+inline void RectF::unite(float x, float y, float width, float height)
+{
+    unite(RectF(x, y, width, height));
+}
+
+inline bool RectF::nearEquals(const RectF& rect, float error) const
+{
+    return EGE_TEMP_DIFF(x, rect.x) <= error &&
+           EGE_TEMP_DIFF(y, rect.y) <= error &&
+           EGE_TEMP_DIFF(width, rect.width) <= error &&
+           EGE_TEMP_DIFF(height, rect.height) <= error;
+}
+
+inline Rect RectF::nearestRect() const
+{
+    int left   = EGE_TEMP_ROUND(this->left());
+    int top    = EGE_TEMP_ROUND(this->top());
+    int right  = EGE_TEMP_ROUND(this->right());
+    int bottom = EGE_TEMP_ROUND(this->bottom());
+
+    return Rect(left, top, right - left, bottom - top, false);
+}
+
+inline Rect RectF::enclosingRect() const
+{
+    int left   = (int)std::floor(this->left());
+    int top    = (int)std::floor(this->top());
+    int right  = (int)std::ceil(this->right());
+    int bottom = (int)std::ceil(this->bottom());
+
+    return Rect(left, top, right - left, bottom - top, false);
+}
+
+inline Rect RectF::enclosingRect(float error) const
+{
+    int left   = (int)floorIgnoringError(this->left(), error);
+    int top    = (int)floorIgnoringError(this->top(), error);
+    int right  = (int)((width  == 0.0f) ? left : ceilIgnoringError(this->right(),  error));
+    int bottom = (int)((height == 0.0f) ? top  : ceilIgnoringError(this->bottom(), error));
+
+    return Rect(left, top, right - left, bottom - top, false);
+}
+
+inline Rect RectF::enclosedRect() const
+{
+    int left   = (int)std::ceil(this->left());
+    int top    = (int)std::ceil(this->top());
+    int right  = (int)std::floor(this->right());
+    int bottom = (int)std::floor(this->bottom());
+
+    return Rect(left, top, right - left, bottom - top, false);
+}
+
+inline Rect RectF::enclosedRect(float error) const
+{
+    int left   = (int)ceilIgnoringError(this->left(), error);
+    int top    = (int)ceilIgnoringError(this->top(), error);
+    int right  = (int)((width  == 0.0f) ? left : floorIgnoringError(this->right(),  error));
+    int bottom = (int)((height == 0.0f) ? top  : floorIgnoringError(this->bottom(), error));
+
+    return Rect(left, top, right - left, bottom - top, false);
+}
+
+inline float RectF::floorIgnoringError(float x, float error)
+{
+    float roundValue = (float)EGE_TEMP_ROUND(x);
+    return (EGE_TEMP_DIFF(roundValue, x) <= error) ? roundValue : std::floor(x);
+}
+
+inline float RectF::ceilIgnoringError(float x, float error)
+{
+    float roundValue = (float)EGE_TEMP_ROUND(x);
+    return (EGE_TEMP_DIFF(roundValue, x) <= error) ? roundValue : std::ceil(x);
+}
+
+
+inline RectF normalize(const RectF& rect)
+{
+    RectF r(rect);
+    r.normalize();
+    return r;
+}
+
+inline RectF offset(const RectF& rect, float dx, float dy)
+{
+    return RectF(rect.x + dx, rect.y + dy, rect.width, rect.height);
+}
+
+inline RectF intersect(const RectF& a, const RectF& b)
+{
+    RectF c(a);
+    c.intersect(b);
+    return c;
+}
+
+inline RectF unite(const RectF& a, const RectF& b)
+{
+    RectF c(a);
+    c.unite(b);
+    return c;
+}
+
+} // namespace ege
+
 
 #undef EGE_TEMP_MIN
 #undef EGE_TEMP_MAX
@@ -1889,4 +2463,4 @@ inline Bound getBounds(const Point& a, const Point& b)
 #undef EGE_TEMP_DIFF_UINT
 #undef EGE_TEMP_ROUND
 
-#endif
+#endif // EGE_TYPES_H
