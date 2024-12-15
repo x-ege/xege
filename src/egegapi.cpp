@@ -114,9 +114,9 @@ void putpixels(int numOfPoints, const int* points, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void putpixels_f(int numOfPoints, const int* points, PCIMAGE pimg)
+void putpixels_f(int numOfPoints, const int* points, PIMAGE pimg)
 {
-    PCIMAGE img = CONVERT_IMAGE(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     int x, y, c;
     int tw = img->m_width;
     int th = img->m_height;
@@ -129,9 +129,9 @@ void putpixels_f(int numOfPoints, const int* points, PCIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-color_t getpixel_f(int x, int y, PIMAGE pimg)
+color_t getpixel_f(int x, int y, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_F_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_F_CONST(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
         return img->m_pBuffer[y * img->m_width + x];
     }
