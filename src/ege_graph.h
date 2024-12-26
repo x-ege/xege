@@ -43,4 +43,7 @@ int  swapbuffers();
 
 bool isinitialized();
 
+void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha = false);
+
+
 }

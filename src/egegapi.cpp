@@ -689,21 +689,9 @@ color_t gettextcolor(PCIMAGE pimg)
 
 void setbkcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-
-    if (img && img->m_hDC) {
-        PDWORD p = img->m_pBuffer;
-        int size = img->m_width * img->m_height;
-        color_t col = img->m_bk_color;
-        img->m_bk_color = color;
-        SetBkColor(img->m_hDC, ARGBTOZBGR(color));
-        for (int n = 0; n < size; n++, p++) {
-            if (*p == col) {
-                *p = color;
-            }
-        }
-    }
-    CONVERT_IMAGE_END;
+    color_t oldBkColor = getbkcolor(pimg);
+    setbkcolor_f(color, pimg);
+    replacePixels(pimg, oldBkColor, color);
 }
 
 void setbkcolor_f(color_t color, PIMAGE pimg)

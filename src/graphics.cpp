@@ -1078,4 +1078,29 @@ Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* old
     return newGraphics;
 }
 
+void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_hDC) {
+        color_t* bufferBegin = img->getbuffer();
+        const color_t* bufferEnd =  bufferBegin + img->m_width * img->m_height;
+
+        if (ignoreAlpha) {
+            for (color_t* itor = bufferBegin; itor != bufferEnd; ++itor) {
+                if ((*itor & 0x00FFFFFF) == (src & 0x00FFFFFF)) {
+                    *itor = dst;
+                }
+            }
+        } else {
+            for (color_t* itor = bufferBegin; itor != bufferEnd; ++itor) {
+                if (*itor == src) {
+                    *itor = dst;
+                }
+            }
+        }
+    }
+
+    CONVERT_IMAGE_END
+}
+
 } // namespace ege
