@@ -60,6 +60,12 @@ void IMAGE::reset()
 #endif
 }
 
+/**
+ * 构造宽高为 width x height 的图像。
+ * @param width
+ * @param height
+ * @note: 创建的图像内容未定义，但经检测像素值均为 0。
+ */
 void IMAGE::construct(int width, int height)
 {
     HDC refDC = NULL;
@@ -79,9 +85,22 @@ void IMAGE::construct(int width, int height)
     }
 }
 
+/**
+ * 构造宽高为 width x height 的图像，将 color 设为背景色并以 color 填充整个图像。
+ * @param width
+ * @param height
+ * @param color
+ */
+void IMAGE::construct(int width, int height, color_t color)
+{
+    construct(width, height);
+    setbkcolor_f(color, this);
+    cleardevice(this);
+}
+
 IMAGE::IMAGE()
 {
-    construct(1, 1);
+    construct(1, 1, BLACK);
 }
 
 IMAGE::IMAGE(int width, int height)
@@ -94,6 +113,18 @@ IMAGE::IMAGE(int width, int height)
         height = 0;
     }
     construct(width, height);
+}
+
+IMAGE::IMAGE(int width, int height, color_t color)
+{
+    // 截止到 0
+    if (width < 0) {
+        width = 0;
+    }
+    if (height < 0) {
+        height = 0;
+    }
+    construct(width, height, color);
 }
 
 IMAGE::IMAGE(const IMAGE& img)
@@ -223,10 +254,11 @@ void IMAGE::initimage(HDC refDC, int width, int height)
 
 void IMAGE::setdefaultattribute()
 {
-    setcolor(LIGHTGRAY, this);
-    setbkcolor(BLACK, this);
-    SetBkMode(m_hDC, OPAQUE); // TRANSPARENT);
-    setfillstyle(SOLID_FILL, 0, this);
+    setlinecolor(initial_line_color, this);
+    settextcolor(initial_text_color, this);
+    setbkcolor_f(initial_bk_color, this);
+    SetBkMode(m_hDC, OPAQUE);
+    setfillstyle(SOLID_FILL, initial_fill_color, this);
     setlinestyle(PS_SOLID, 0, 1, this);
     settextjustify(LEFT_TEXT, TOP_TEXT, this);
     setfont(16, 0, "SimSun", this);
@@ -2774,7 +2806,7 @@ int gety(PCIMAGE pimg)
 
 PIMAGE newimage()
 {
-    return new IMAGE(1, 1);
+    return new IMAGE(1, 1, BLACK);
 }
 
 PIMAGE newimage(int width, int height)
@@ -2785,7 +2817,7 @@ PIMAGE newimage(int width, int height)
     if (height < 1) {
         height = 1;
     }
-    return new IMAGE(width, height);
+    return new IMAGE(width, height, BLACK);
 }
 
 void delimage(PCIMAGE pImg)
