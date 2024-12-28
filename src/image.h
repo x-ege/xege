@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ege_head.h"
+
 #include <windows.h>
 
 
@@ -10,6 +11,13 @@ namespace ege
 // 定义图像对象
 class IMAGE
 {
+public:
+    /* 初始颜色配置 */
+    static const color_t initial_line_color = LIGHTGRAY;
+    static const color_t initial_text_color = LIGHTGRAY;
+    static const color_t initial_fill_color = BLACK;
+    static const color_t initial_bk_color   = BLACK;
+private:
     int m_initflag;
 
 public:
@@ -32,6 +40,7 @@ private:
     bool m_aa;
     void initimage(HDC refDC, int width, int height);
     void construct(int width, int height);
+    void construct(int width, int height, color_t color);
     void setdefaultattribute();
     int  deleteimage();
     void reset();
@@ -53,12 +62,13 @@ private:
 public:
     IMAGE();
     IMAGE(int width, int height);
-    IMAGE(const IMAGE& img);            // 拷贝构造函数
-    IMAGE& operator=(const IMAGE& img); // 赋值运算符重载函数
+    IMAGE(int width, int height, color_t color);
+    IMAGE(const IMAGE& img);
+    IMAGE& operator=(const IMAGE& img);
     ~IMAGE();
+
     void gentexture(bool gen);
 
-public:
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }

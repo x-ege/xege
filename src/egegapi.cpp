@@ -518,7 +518,7 @@ color_t getlinecolor(PCIMAGE pimg)
         return img->m_linecolor;
     }
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+    return IMAGE::initial_line_color;
 }
 
 // 将描述线形的位模式转换为 style 数组
@@ -662,7 +662,7 @@ color_t getfillcolor(PCIMAGE pimg)
         return img->m_fillcolor;
     }
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+    return IMAGE::initial_fill_color;
 }
 
 color_t getbkcolor(PCIMAGE pimg)
@@ -670,50 +670,55 @@ color_t getbkcolor(PCIMAGE pimg)
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img) {
-        return img->m_bk_color;
+        if (img->m_hDC) {
+            return img->m_bk_color;
+        }
+    } else {
+        _graph_setting* pg = &graph_setting;
+        if (!pg->has_init) {
+            return pg->window_initial_color;
+        }
     }
+
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+
+    return IMAGE::initial_bk_color;
 }
 
 color_t gettextcolor(PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
-    if (img) {
+    if (img && img->m_hDC) {
         return img->m_textcolor;
     }
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+    return IMAGE::initial_text_color;
 }
 
 void setbkcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-
-    if (img && img->m_hDC) {
-        PDWORD p = img->m_pBuffer;
-        int size = img->m_width * img->m_height;
-        color_t col = img->m_bk_color;
-        img->m_bk_color = color;
-        SetBkColor(img->m_hDC, ARGBTOZBGR(color));
-        for (int n = 0; n < size; n++, p++) {
-            if (*p == col) {
-                *p = color;
-            }
-        }
-    }
-    CONVERT_IMAGE_END;
+    color_t oldBkColor = getbkcolor(pimg);
+    setbkcolor_f(color, pimg);
+    replacePixels(pimg, oldBkColor, color);
 }
 
 void setbkcolor_f(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img && img->m_hDC) {
-        img->m_bk_color = color;
-        SetBkColor(img->m_hDC, ARGBTOZBGR(color));
+    if (img) {
+        if (img->m_hDC) {
+            img->m_bk_color = color;
+            SetBkColor(img->m_hDC, ARGBTOZBGR(color));
+        }
+    } else {
+        _graph_setting* pg = &graph_setting;
+        if (!pg->has_init) {
+            pg->window_initial_color = color;
+        }
     }
+
     CONVERT_IMAGE_END;
 }
 
@@ -1473,8 +1478,10 @@ void setactivepage(int page)
     if (0 <= page && page < BITMAP_PAGE_SIZE) {
         pg->active_page = page;
 
+        /* 为未创建的绘图页分配图像 */
         if (pg->img_page[page] == NULL) {
-            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h);
+            color_t bkColor = (page == 0) ? pg->window_initial_color : BLACK;
+            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h, bkColor);
         }
 
         pg->imgtarget = pg->img_page[page];
@@ -1488,7 +1495,7 @@ void setvisualpage(int page)
     if (0 <= page && page < BITMAP_PAGE_SIZE) {
         pg->visual_page = page;
         if (pg->img_page[page] == NULL) {
-            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h);
+            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h, BLACK);
         }
         pg->update_mark_count = 0;
     }

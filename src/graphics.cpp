@@ -101,6 +101,12 @@ unsigned long getlogodatasize();
 
 DWORD WINAPI messageloopthread(LPVOID lpParameter);
 
+_graph_setting::_graph_setting()
+{
+    window_caption = EGE_TITLE_W;
+    window_initial_color = IMAGE::initial_bk_color;
+}
+
 /*private function*/
 static void ui_msg_process(EGEMSG& qmsg)
 {
@@ -873,31 +879,29 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
 {
     _graph_setting* pg = (_graph_setting*)lpParameter;
     MSG             msg;
-    {
-        /* 执行应用程序初始化: */
-        if (!init_instance(pg->instance)) {
-            return 0xFFFFFFFF;
-        }
 
-        // 图形初始化
-        if (pg->dc == 0) {
-            graph_init(pg);
-        }
-
-        {
-            pg->mouse_show     = 0;
-            pg->exit_flag      = 0;
-            pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT ? false : true);
-            if (g_initoption & INIT_NOFORCEEXIT) {
-                SetCloseHandler(DefCloseHandler);
-            }
-            pg->close_manually = true;
-        }
-        {
-            pg->skip_timer_mark = false;
-            SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
-        }
+    /* 执行应用程序初始化: */
+    if (!init_instance(pg->instance)) {
+        return 0xFFFFFFFF;
     }
+
+    // 图形初始化
+    if (pg->dc == 0) {
+        graph_init(pg);
+    }
+
+    pg->mouse_show     = 0;
+    pg->exit_flag      = 0;
+    pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT ? false : true);
+
+    if (g_initoption & INIT_NOFORCEEXIT) {
+        SetCloseHandler(DefCloseHandler);
+    }
+
+    pg->close_manually = true;
+    pg->skip_timer_mark = false;
+    SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
+
     pg->has_init = true;
 
     while (!pg->exit_window) {
@@ -1057,7 +1061,7 @@ Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* old
         newGraphics->SetCompositingQuality(oldGraphics->GetCompositingQuality());
         newGraphics->SetTextContrast(oldGraphics->GetTextContrast());
 
-        /* 组合模式设置*/
+        /* 组合模式设置 */
         newGraphics->SetCompositingMode(oldGraphics->GetCompositingMode());
 
         /* 裁剪区域设置 */
@@ -1076,6 +1080,31 @@ Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* old
     }
 
     return newGraphics;
+}
+
+void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_hDC) {
+        color_t* bufferBegin = img->getbuffer();
+        const color_t* bufferEnd =  bufferBegin + img->m_width * img->m_height;
+
+        if (ignoreAlpha) {
+            for (color_t* itor = bufferBegin; itor != bufferEnd; ++itor) {
+                if ((*itor & 0x00FFFFFF) == (src & 0x00FFFFFF)) {
+                    *itor = dst;
+                }
+            }
+        } else {
+            for (color_t* itor = bufferBegin; itor != bufferEnd; ++itor) {
+                if (*itor == src) {
+                    *itor = dst;
+                }
+            }
+        }
+    }
+
+    CONVERT_IMAGE_END
 }
 
 } // namespace ege

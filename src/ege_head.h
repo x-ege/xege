@@ -186,6 +186,7 @@ struct _graph_setting
     HWND         hwnd;
     std::wstring window_caption;
     HICON        window_hicon;
+    color_t      window_initial_color;
     int          exit_flag;
     int          exit_window;
     int          update_mark_count; // 更新标记
@@ -235,7 +236,8 @@ struct _graph_setting
     /* 函数用临时缓冲区 */
     DWORD g_t_buff[1024 * 8];
 
-    _graph_setting() { window_caption = EGE_TITLE_W; }
+public:
+    _graph_setting();
 };
 
 template <typename T> struct count_ptr
