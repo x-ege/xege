@@ -6,7 +6,7 @@ EGE_DIR=$(pwd)
 cd utils
 
 # 先执行一遍 release.sh
-./release.sh
+./release.sh || exit 1
 
 if [[ ! -d "xege_libs/.git" ]]; then
     git clone git@github.com:wysaid/xege.org.git xege_libs

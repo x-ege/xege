@@ -132,6 +132,9 @@ while [[ $# > 0 ]]; do
     --target)
         echo "set build target to $2"
         export BUILD_TARGET="$2"
+        if [[ $BUILD_TARGET == "demos" ]]; then
+            export CMAKE_CONFIG_DEFINE="$CMAKE_CONFIG_DEFINE -DEGE_BUILD_DEMO=ON"
+        fi
         shift
         shift
         ;;
