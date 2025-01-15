@@ -155,7 +155,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                 SelectClipRgn(img->m_hDC, oldClicRgn);
             } else {
                 HRGN rgn = NULL;
-                if (img->m_vpt.clipflag) {
+                if (img->m_enableclip) {
                     rgn = CreateRectRgn(img->m_vpt.left, img->m_vpt.top, img->m_vpt.right, img->m_vpt.bottom);
                 } else {
                     rgn = CreateRectRgn(0, 0, img->m_width, img->m_height);

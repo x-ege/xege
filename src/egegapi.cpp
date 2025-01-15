@@ -1591,7 +1591,7 @@ void getviewport(int* left, int* top, int* right, int* bottom, int* clip, PCIMAG
         *bottom = img->m_vpt.bottom;
     }
     if (clip) {
-        *clip = img->m_vpt.clipflag;
+        *clip = img->m_enableclip;
     }
     CONVERT_IMAGE_END;
 }
@@ -1608,7 +1608,7 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
     img->m_vpt.top = top;
     img->m_vpt.right = right;
     img->m_vpt.bottom = bottom;
-    img->m_vpt.clipflag = clip;
+    img->m_enableclip = clip;
 
     if (img->m_vpt.left < 0) {
         img->m_vpt.left = 0;
@@ -1624,7 +1624,7 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
     }
 
     HRGN rgn = NULL;
-    if (img->m_vpt.clipflag) {
+    if (img->m_enableclip) {
         rgn = CreateRectRgn(img->m_vpt.left, img->m_vpt.top, img->m_vpt.right, img->m_vpt.bottom);
     } else {
         rgn = CreateRectRgn(0, 0, img->m_width, img->m_height);
@@ -1633,9 +1633,9 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
     DeleteObject(rgn);
 
     Gdiplus::Graphics* graphics = img->getGraphics();
-    if (img->m_vpt.clipflag) {
-        const viewporttype& viewport = img->m_vpt;
-        Gdiplus::Rect clipRect(viewport.left, viewport.top, viewport.right - viewport.left, viewport.bottom - viewport.top);
+    if (img->m_enableclip) {
+        const Bound& viewport = img->m_vpt;
+        Gdiplus::Rect clipRect(viewport.x(), viewport.y(), viewport.width(), viewport.height());
         graphics->SetClip(clipRect);
     } else {
         graphics->ResetClip();
