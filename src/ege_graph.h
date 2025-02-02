@@ -22,6 +22,10 @@ void logoscene();
 
 int dealmessage(_graph_setting* pg, bool force_update);
 
+bool needToUpdate(_graph_setting* pg);
+
+int graphupdate(_graph_setting* pg);
+
 void guiupdate(_graph_setting* pg, egeControlBase* root);
 
 int waitdealmessage(_graph_setting* pg);

@@ -182,8 +182,12 @@ int swapbuffers()
     return grOk;
 }
 
-/*private function*/
-static int graphupdate(_graph_setting* pg)
+bool needToUpdate(_graph_setting* pg)
+{
+    return (pg != NULL) && (pg->update_mark_count < UPDATE_MAX_CALL);
+}
+
+int graphupdate(_graph_setting* pg)
 {
     if (pg->exit_window) {
         return grNoInitGraph;
@@ -191,11 +195,12 @@ static int graphupdate(_graph_setting* pg)
 
     if (IsWindowVisible(pg->hwnd)) {
         swapbuffers();
+        updateFrameRate();
+    } else {
+        updateFrameRate(false);
     }
 
     pg->update_mark_count = UPDATE_MAX_CALL;
-
-    EGE_PRIVATE_GetFPS(0x100);
 
     RECT rect, crect;
     HWND hwnd;
@@ -222,12 +227,11 @@ static int graphupdate(_graph_setting* pg)
     }
 
     return grOk;
-
 }
 
 int dealmessage(_graph_setting* pg, bool force_update)
 {
-    if (force_update || pg->update_mark_count <= 0) {
+    if (force_update || pg->update_mark_count < UPDATE_MAX_CALL) {
         graphupdate(pg);
     }
     return !pg->exit_window;
