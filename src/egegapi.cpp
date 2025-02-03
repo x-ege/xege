@@ -3058,42 +3058,57 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     return ret;
 }
 
-float EGE_PRIVATE_GetFPS(int add) // 获取帧数
+static double static_frameRate = 0.0;         /* 帧率 */
+static int    static_frameCount = 0;          /* 帧数 */
+static double static_totalFrameTime = 0.0;    /* 累计时间 */
+static double static_lastFrameTime = 0.0;     /* 上一帧更新时间 */
+
+/**
+ * 更新帧率
+ * @param addFrameCount 是否增加帧数。{true: 帧数计数加一，同时更新帧率; false: 仅更新帧率}
+ * @details 帧率通过统计每个固定周期(0.5秒)内的帧数获得。在每个统计周期中，帧率仅在累计时长满一个周期后才会更新。
+ */
+void updateFrameRate(bool addFrameCount)
 {
-    static int fps = 0;
-    static int fps_inv = 0;
-    static double time = 0;
-    static float flret = 0;
-    static float fret = 0;
-    static float fret_inv = 0;
-
+    static bool firstUpdate = true;
     struct _graph_setting* pg = &graph_setting;
-    double cur = get_highfeq_time_ls(pg);
+    double currentTime = get_highfeq_time_ls(pg);
 
-    if (add == 0x100) {
-        fps += 1;
-    } else if (add == -0x100) {
-        fps += 1;
-        fps_inv += 1;
+    if (static_lastFrameTime == 0.0) {
+        static_lastFrameTime = currentTime;
+        return;
     }
 
-    if (cur - time >= 0.5) {
-        flret = fret;
-        fret = (float)(fps / (cur - time));
-        fret_inv = (float)((fps - fps_inv) / (cur - time));
-        fps = 0;
-        fps_inv = 0;
-        time = cur;
+    double elapsedTime = static_totalFrameTime + (currentTime - static_lastFrameTime);
+
+    if (addFrameCount) {
+        static_frameCount++;
+        static_totalFrameTime = elapsedTime;
+        static_lastFrameTime  = currentTime;
     }
 
-    if (add > 0) {
-        return (fret + flret) / 2;
-    } else {
-        return fret_inv;
+    /* 以 0.5 秒为一个统计周期，统计时间不足时不更新帧率 */
+    if (elapsedTime >= 0.5) {
+        static_frameRate = static_frameCount / elapsedTime;
+
+        static_frameCount = 0;
+        static_totalFrameTime = 0.0;
+        static_lastFrameTime = currentTime;
     }
 }
 
-float getfps() { return EGE_PRIVATE_GetFPS(0); }
+void resetFrameRate()
+{
+    static_frameRate = 0.0;
+    static_frameCount = 0;
+    static_totalFrameTime = 0.0;
+    static_lastFrameTime = 0.0;
+}
+
+float getfps()
+{
+    return static_frameRate;
+}
 
 double fclock()
 {
