@@ -998,7 +998,7 @@ BOOL init_instance(HINSTANCE hInstance)
 void setinitmode(int mode, int x, int y)
 {
     g_initoption              = mode;
-    struct _graph_setting* pg = &graph_setting;
+
     if (mode & INIT_NOBORDER) {
         if (mode & INIT_CHILD) {
             g_windowstyle = WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_VISIBLE;

@@ -1642,7 +1642,7 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
     }
 
     graphics->ResetTransform();
-    graphics->TranslateTransform(img->m_vpt.left, img->m_vpt.top);
+    graphics->TranslateTransform((Gdiplus::REAL)img->m_vpt.left, (Gdiplus::REAL)img->m_vpt.top);
 
     SetViewportOrgEx(img->m_hDC, img->m_vpt.left, img->m_vpt.top, NULL);
     MoveToEx(img->m_hDC, 0, 0, NULL);
@@ -2991,7 +2991,6 @@ int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
 
 int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len)
 {
-    struct _graph_setting* pg = &graph_setting;
     IMAGE bg;
     IMAGE window;
     int w = 400, h = 300, x = (getwidth() - w) / 2, y = (getheight() - h) / 2;
@@ -3070,7 +3069,6 @@ static double static_lastFrameTime = 0.0;     /* 上一帧更新时间 */
  */
 void updateFrameRate(bool addFrameCount)
 {
-    static bool firstUpdate = true;
     struct _graph_setting* pg = &graph_setting;
     double currentTime = get_highfeq_time_ls(pg);
 
@@ -3107,7 +3105,7 @@ void resetFrameRate()
 
 float getfps()
 {
-    return static_frameRate;
+    return (float)static_frameRate;
 }
 
 double fclock()

@@ -89,7 +89,7 @@ void delay_ms(long ms)
         double currentTime = get_highfeq_time_ls(pg) * 1000.0;
 
         if (currentTime < targetTime) {
-            ege_sleep(targetTime - currentTime);
+            ege_sleep((long)(targetTime - currentTime));
         }
     } else {
         /* ms < 0: Do nothing.*/
