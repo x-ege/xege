@@ -118,7 +118,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
         if (img->m_texttype.vert != TOP_TEXT) {
             // 测量实际输出时的文本区域
             RECT measureRect = rect;
-            int textHeight = DrawTextW(img->m_hDC, text, -1, &measureRect, format | DT_CALCRECT);
+            DrawTextW(img->m_hDC, text, -1, &measureRect, format | DT_CALCRECT);
 
             int heightDiff = rect.bottom - measureRect.bottom;
 
@@ -184,7 +184,12 @@ void xyprintf(int x, int y, const char* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         char* buff = (char*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff);
+        vsprintf_s(buff, bufferCount, format, v);
+#else
         vsprintf(buff, format, v);
+#endif
         outtextxy(x, y, buff);
     }
     va_end(v);
@@ -197,7 +202,13 @@ void xyprintf(int x, int y, const wchar_t* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
+        vswprintf_s(buff, bufferCount, format, v);
+#else
         vswprintf(buff, format, v);
+#endif
         outtextxy(x, y, buff);
     }
     va_end(v);
@@ -210,7 +221,12 @@ void rectprintf(int x, int y, int w, int h, const char* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         char* buff = (char*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff);
+        vsprintf_s(buff, bufferCount, format, v);
+#else
         vsprintf(buff, format, v);
+#endif
         outtextrect(x, y, w, h, buff);
     }
     va_end(v);
@@ -223,7 +239,12 @@ void rectprintf(int x, int y, int w, int h, const wchar_t* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
+        vswprintf_s(buff, bufferCount, format, v);
+#else
         vswprintf(buff, format, v);
+#endif
         outtextrect(x, y, w, h, buff);
     }
     va_end(v);
@@ -320,8 +341,14 @@ void ege_xyprintf(int x, int y, const char* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         // 由于 ege_drawtext 同样使用这块缓冲区, 从中间开始写入以避免区域重叠造成转换失败
-        char* buff = (char*)(pg->g_t_buff + 4096);
+        const int bufferLength = sizeof(pg->g_t_buff) / sizeof(pg->g_t_buff[0]);
+        char* buff = (char*)(pg->g_t_buff + bufferLength / 2);
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / 2;
+        vsprintf_s(buff, bufferCount, format, v);
+#else
         vsprintf(buff, format, v);
+#endif
         ege_outtextxy(x, y, buff);
     }
     va_end(v);
@@ -334,7 +361,12 @@ void ege_xyprintf(int x, int y, const wchar_t* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
+        vswprintf_s(buff, bufferCount, format, v);
+#else
         vswprintf(buff, format, v);
+#endif
         ege_outtextxy(x, y, buff);
     }
     va_end(v);

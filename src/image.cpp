@@ -435,8 +435,6 @@ int IMAGE::getimage(const char* filename, int zoomWidth, int zoomHeight)
 
 int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
 {
-    Gdiplus::PixelFormat srcPixelFormat = bitmap.GetPixelFormat();
-
     // 将图像尺寸调整至和 bitmap 一致
     int width  = bitmap.GetWidth();
     int height = bitmap.GetHeight();
@@ -2139,7 +2137,7 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         int   s = float2int((float)t2d.p[0].y), e = float2int((float)t2d.p[2].y), h, m = float2int((float)t2d.p[1].y);
         int   rs, re;
         int   i, lh, rh;
-        float dm = t2d.p[1].y, dh;
+
         struct point2d pl, pr, pt;
         struct point2d spl, spr;
 
@@ -2151,7 +2149,7 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         spr.x = t3d.p[2].x - t3d.p[0].x;
         spl.y = t3d.p[1].y - t3d.p[0].y;
         spr.y = t3d.p[2].y - t3d.p[0].y;
-        dh    = dm - s;
+
         h     = m - s;
         rs    = s;
         if (s < y1) {
@@ -2268,7 +2266,6 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         spl.y = t3d.p[0].y - t3d.p[2].y;
         spr.y = t3d.p[1].y - t3d.p[2].y;
 
-        dh = e - dm;
         h  = e - m;
         re = e;
         if (m < y1) {
@@ -2377,7 +2374,7 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         int   s = float2int((float)t2d.p[0].y), e = float2int((float)t2d.p[2].y), h, m = float2int((float)t2d.p[1].y);
         int   rs, re;
         int   i, lh, rh;
-        float dm = t2d.p[1].y, dh;
+
         struct point2d pl, pr, pt;
         struct point2d spl, spr;
 
@@ -2389,7 +2386,7 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         spr.x = t3d.p[2].x - t3d.p[0].x;
         spl.y = t3d.p[1].y - t3d.p[0].y;
         spr.y = t3d.p[2].y - t3d.p[0].y;
-        dh    = dm - s;
+
         h     = m - s;
         rs    = s;
         if (s < y1) {
@@ -2507,7 +2504,6 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         spl.y = t3d.p[0].y - t3d.p[2].y;
         spr.y = t3d.p[1].y - t3d.p[2].y;
 
-        dh = e - dm;
         h  = e - m;
         re = e;
         if (m < y1) {
@@ -2710,10 +2706,10 @@ int putimage_rotatetransparent(PIMAGE imgDest, PCIMAGE imgSrc, int xCenterDest, 
     float zoom)
 {
     const PIMAGE img             = CONVERT_IMAGE(imgDest);
-    int          zoomed_width    = widthSrc * zoom;
-    int          zoomed_height   = heightSrc * zoom;
-    int          zoomed_center_x = (xCenterSrc - xOriginSrc) * zoom;
-    int          zoomed_center_y = (yCenterSrc - yOriginSrc) * zoom;
+    int          zoomed_width    = (int)round(widthSrc * zoom);
+    int          zoomed_height   = (int)round(heightSrc * zoom);
+    int          zoomed_center_x = (int)round((xCenterSrc - xOriginSrc) * zoom);
+    int          zoomed_center_y = (int)round((yCenterSrc - yOriginSrc) * zoom);
     /* zoom */
     PIMAGE zoomed_img = newimage(zoomed_width, zoomed_height);
     putimage(
@@ -2731,10 +2727,10 @@ int putimage_rotatetransparent(PIMAGE imgDest, PCIMAGE imgSrc, int xCenterDest, 
                 see:
                 https://stackoverflow.com/questions/36201381/how-to-rotate-image-canvas-pixel-manipulation
                 */
-                putpixel_savealpha(src_x, src_y, color, img);
-                putpixel_savealpha(src_x + 0.5, src_y, color, img);
-                putpixel_savealpha(src_x, src_y + 0.5, color, img);
-                putpixel_savealpha(src_x + 0.5, src_y + 0.5, color, img);
+                putpixel_savealpha((int)src_x, (int)src_y, color, img);
+                putpixel_savealpha((int)(src_x + 0.5), (int)src_y, color, img);
+                putpixel_savealpha((int)src_x, (int)(src_y + 0.5), color, img);
+                putpixel_savealpha((int)(src_x + 0.5), (int)(src_y + 0.5), color, img);
             }
         }
     }
@@ -3277,11 +3273,11 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
     bitmapInfoHeader.bV4ClrImportant  = 0;                              // 颜色表中所有颜色都重要
 
     // --------------- BITMAPV4HEADER 特有参数 ------------------
-    bitmapInfoHeader.bV4RedMask       = 0x00FF0000;
-    bitmapInfoHeader.bV4GreenMask     = 0x0000FF00;
-    bitmapInfoHeader.bV4BlueMask      = 0x000000FF;
-    bitmapInfoHeader.bV4AlphaMask     = 0xFF000000;
-    bitmapInfoHeader.bV4CSType        = LCS_sRGB;                       // 使用标准 RGB 颜色空间
+    bitmapInfoHeader.bV4RedMask       = 0x00FF0000U;
+    bitmapInfoHeader.bV4GreenMask     = 0x0000FF00U;
+    bitmapInfoHeader.bV4BlueMask      = 0x000000FFU;
+    bitmapInfoHeader.bV4AlphaMask     = 0xFF000000U;
+    bitmapInfoHeader.bV4CSType        = 0x73524742U;                    // 使用标准 RGB 颜色空间(LCS_sRGB宏: 'sRGB' 的值)
     // 当 bV4CSType 为 'sRGB' 或 'Win ' 时忽略以下参数
     //bitmapInfoHeader.bV4Endpoints
     //bitmapInfoHeader.bV4GammaRed

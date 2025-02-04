@@ -184,7 +184,7 @@ namespace dll
         if (func_timeBeginPeriod) {
             return func_timeBeginPeriod(uPeriod);
         }
-        return NULL;
+        return MMSYSERR_NOTSUPPORTED;
     }
 
     MMRESULT timeEndPeriod(UINT uPeriod)
@@ -192,7 +192,7 @@ namespace dll
         if (func_timeEndPeriod) {
             func_timeEndPeriod(uPeriod);
         }
-        return NULL;
+        return MMSYSERR_NOTSUPPORTED;
     }
 
     MMRESULT timeSetEvent(UINT uDelay,UINT uResolution,LPTIMECALLBACK fptc,DWORD_PTR dwUser,UINT fuEvent)
@@ -201,7 +201,7 @@ namespace dll
             return func_timeSetEvent(uDelay, uResolution, fptc, dwUser, fuEvent);
         }
 
-        return NULL;
+        return MMSYSERR_NOTSUPPORTED;
     }
 
     MMRESULT timeKillEvent(UINT uTimerID)
@@ -210,7 +210,7 @@ namespace dll
             return func_timeKillEvent(uTimerID);
         }
 
-        return NULL;
+        return MMSYSERR_NOTSUPPORTED;
     }
 
     MCIERROR mciSendCommandW(MCIDEVICEID mciId,UINT uMsg,DWORD_PTR dwParam1,DWORD_PTR dwParam2)
@@ -219,7 +219,7 @@ namespace dll
             return func_mciSendCommandW(mciId, uMsg, dwParam1, dwParam2);
         }
 
-        return NULL;
+        return MMSYSERR_ERROR;
     }
 
     // ----------------------------------------------------------------------------

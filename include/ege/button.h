@@ -113,7 +113,12 @@ public:
         CTL_INIT; // must be the first line
         size(64, 32);
         _font_height = 12;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(_face, sizeof(_face), "SimSun");
+#else
         strcpy(_face, "SimSun");
+#endif
+
         _line_color   = BLACK;
         _bg_color     = EGERGB(100, 100, 100);
         _text_color   = BLACK;
@@ -238,7 +243,11 @@ public:
 
     void caption(const char* text)
     {
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(_caption, sizeof(_caption), text);
+#else
         strcpy(_caption, text);
+#endif
         redraw();
     }
 
@@ -250,7 +259,11 @@ public:
 
     void font(const char* fontface)
     {
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(_face, sizeof(_face), fontface);
+#else
         strcpy(_face, fontface);
+#endif
         redraw();
     }
 
@@ -302,7 +315,7 @@ public:
 protected:
     void updatesidewidth()
     {
-        _side_width = ((geth() < getw()) ? geth() : getw()) * 0.2;
+        _side_width = (int)(((geth() < getw()) ? geth() : getw()) * 0.2);
     }
 
 #ifdef DEBUG

@@ -15,6 +15,10 @@
 #define _ALLOW_RUNTIME_LIBRARY_MISMATCH
 #endif
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #define EGE_GRAPH_LIB_BUILD
 #define EGE_DEPRECATE(function, msg)
 
