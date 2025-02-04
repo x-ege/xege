@@ -9,7 +9,7 @@
 <font size="4">
 <font size="4" color="#0000FF"><strong>功能：</strong></font>
 
-设置当前字体样式,字体颜色另外由setcolor() 或 settextcolor() 设置。
+设置图像(窗口)的字体样式,字体颜色另外由setcolor() 或 settextcolor() 设置。
 
 <font size="4" color="#0000FF"><strong>备注：</strong></font>
 另有接收类型为 const wchar_t* 的 typeface 参数的重载。
@@ -122,6 +122,9 @@ pitchAndFamily
 
 font
 指向 LOGFONT 结构体的指针。
+
+pimg
+要设置字体样式的目标图像（ 如果参数为 NULL，则表示窗口）。
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>
 

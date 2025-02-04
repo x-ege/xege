@@ -1262,12 +1262,12 @@ int  EGEAPI textheight(const wchar_t* text, PIMAGE pimg = NULL);
 int  EGEAPI textheight(char    c, PIMAGE pimg = NULL);
 int  EGEAPI textheight(wchar_t c, PIMAGE pimg = NULL);
 
-void EGEAPI ege_outtextxy(int x, int y, const char*    text, PIMAGE pimg = NULL);
-void EGEAPI ege_outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg = NULL);
-void EGEAPI ege_outtextxy(int x, int y, char    c, PIMAGE pimg = NULL);
-void EGEAPI ege_outtextxy(int x, int y, wchar_t c, PIMAGE pimg = NULL);
-void EGEAPI ege_xyprintf (int x, int y, const char*    format, ...);
-void EGEAPI ege_xyprintf (int x, int y, const wchar_t* format, ...);
+void EGEAPI ege_outtextxy(float x, float y, const char*    text, PIMAGE pimg = NULL);
+void EGEAPI ege_outtextxy(float x, float y, const wchar_t* text, PIMAGE pimg = NULL);
+void EGEAPI ege_outtextxy(float x, float y, char    c, PIMAGE pimg = NULL);
+void EGEAPI ege_outtextxy(float x, float y, wchar_t c, PIMAGE pimg = NULL);
+void EGEAPI ege_xyprintf (float x, float y, const char*    format, ...);
+void EGEAPI ege_xyprintf (float x, float y, const wchar_t* format, ...);
 
 void EGEAPI settextjustify(int horiz, int vert, PIMAGE pimg = NULL);
 

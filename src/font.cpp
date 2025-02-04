@@ -312,29 +312,29 @@ int textheight(wchar_t c, PIMAGE pimg)
     return textheight(str, pimg);
 }
 
-void ege_outtextxy(int x, int y, const char* text, PIMAGE pimg)
+void ege_outtextxy(float x, float y, const char* text, PIMAGE pimg)
 {
     ege_drawtext(text, x, y, pimg);
 }
 
-void ege_outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg)
+void ege_outtextxy(float x, float y, const wchar_t* text, PIMAGE pimg)
 {
     ege_drawtext(text, x, y, pimg);
 }
 
-void ege_outtextxy(int x, int y, char c, PIMAGE pimg)
+void ege_outtextxy(float x, float y, char c, PIMAGE pimg)
 {
     char str[2] = {c, '\0'};
     ege_drawtext(str, x, y, pimg);
 }
 
-void ege_outtextxy(int x, int y, wchar_t c, PIMAGE pimg)
+void ege_outtextxy(float x, float y, wchar_t c, PIMAGE pimg)
 {
     wchar_t str[2] = {c, L'\0'};
     ege_drawtext(str, x, y, pimg);
 }
 
-void ege_xyprintf(int x, int y, const char* format, ...)
+void ege_xyprintf(float x, float y, const char* format, ...)
 {
     va_list v;
     va_start(v, format);
@@ -354,7 +354,7 @@ void ege_xyprintf(int x, int y, const char* format, ...)
     va_end(v);
 }
 
-void ege_xyprintf(int x, int y, const wchar_t* format, ...)
+void ege_xyprintf(float x, float y, const wchar_t* format, ...)
 {
     va_list v;
     va_start(v, format);
