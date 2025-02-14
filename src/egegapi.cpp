@@ -62,7 +62,7 @@ int mousepos(int* x, int* y)
 
 void setwritemode(int mode, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     SetROP2(img->m_hDC, mode);
     CONVERT_IMAGE_END;
 }
@@ -631,7 +631,7 @@ void setcolor(color_t color, PIMAGE pimg)
 
 void setlinecolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
         img->m_linecolor = color;
         update_pen(img);
@@ -641,7 +641,7 @@ void setlinecolor(color_t color, PIMAGE pimg)
 
 void setfillcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
     HBRUSH hbr = CreateSolidBrush(ARGBTOZBGR(color));
     if (hbr) {
@@ -724,7 +724,7 @@ void setbkcolor_f(color_t color, PIMAGE pimg)
 
 void settextcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_textcolor = color;
@@ -745,7 +745,7 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 
 void setbkmode(int bkMode, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
         SetBkMode(img->m_hDC, bkMode);
     }
@@ -862,7 +862,7 @@ void sectorf(float x, float y, float startAngle, float endAngle, float xRadius, 
 
 void pie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
     fillpie(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldBrush);
@@ -871,7 +871,7 @@ void pie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, P
 
 void pief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
     fillpief(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldBrush);
@@ -916,7 +916,7 @@ void fillpief(float x, float y, float startAngle, float endAngle, float xRadius,
 
 void solidpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillpie(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -925,7 +925,7 @@ void solidpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadi
 
 void solidpief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillpief(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -952,7 +952,7 @@ void fillellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 
 void solidellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillellipse(x, y, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -961,7 +961,7 @@ void solidellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 
 void solidellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillellipsef(x, y, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -980,7 +980,7 @@ void fillcirclef(float x, float y, float radius, PIMAGE pimg)
 
 void solidcircle(int x, int y, int radius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillcircle(x, y, radius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -989,7 +989,7 @@ void solidcircle(int x, int y, int radius, PIMAGE pimg)
 
 void solidcirclef(float x, float y, float radius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillcirclef(x, y, radius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1031,7 +1031,7 @@ void fillroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE
 
 void solidroundrect(int left, int top, int right, int bottom, int radius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillroundrect(left, top, right, bottom, radius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1049,7 +1049,7 @@ void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yR
 
 void solidroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillroundrect(left, top, right, bottom, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1067,7 +1067,7 @@ void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
 
 void solidrect(int left, int top, int right, int bottom, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillrect(left, top, right, bottom, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1132,7 +1132,7 @@ void fillpoly(int numOfPoints, const int* points, PIMAGE pimg)
 
 void solidpoly(int numOfPoints, const int *points, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillpoly(numOfPoints, points, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1256,7 +1256,7 @@ void getlinestyle(int* linestyle, unsigned short* pattern, int* thickness, PCIMA
 
 void setlinestyle(int linestyle, unsigned short pattern, int thickness, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (!(img && img->m_hDC)) {
         CONVERT_IMAGE_END;
@@ -1275,7 +1275,7 @@ void setlinestyle(int linestyle, unsigned short pattern, int thickness, PIMAGE p
 
 void setlinewidth(float width, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_linestyle.thickness = (int)width;
@@ -1312,7 +1312,7 @@ Gdiplus::LineJoin convertToGdiplusLineJoin(line_join_type linejoin)
 
 void setlinecap(line_cap_type linecap, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_linestartcap = linecap;
@@ -1325,7 +1325,7 @@ void setlinecap(line_cap_type linecap, PIMAGE pimg)
 
 void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_linestartcap = startCap;
@@ -1336,9 +1336,9 @@ void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg)
+void getlinecap(line_cap_type* startCap, line_cap_type* endCap, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
         if (startCap != NULL) {
             *startCap = img->m_linestartcap;
@@ -1351,9 +1351,9 @@ void getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg)
     CONVERT_IMAGE_END
 }
 
-line_cap_type getlinecap(PIMAGE pimg)
+line_cap_type getlinecap(PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img && img->m_hDC) {
         return img->m_linestartcap;
@@ -1371,7 +1371,7 @@ void setlinejoin(line_join_type linejoin, PIMAGE pimg)
 
 void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         miterLimit = MAX(1.0f, miterLimit);
@@ -1382,9 +1382,9 @@ void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void getlinejoin(line_join_type *linejoin, float *miterLimit, PIMAGE pimg)
+void getlinejoin(line_join_type *linejoin, float *miterLimit, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
         if (linejoin != NULL) {
             *linejoin = img->m_linejoin;
@@ -1397,9 +1397,9 @@ void getlinejoin(line_join_type *linejoin, float *miterLimit, PIMAGE pimg)
     CONVERT_IMAGE_END
 }
 
-line_join_type getlinejoin(PIMAGE pimg)
+line_join_type getlinejoin(PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img && img->m_hDC) {
         return img->m_linejoin;
@@ -1410,7 +1410,7 @@ line_join_type getlinejoin(PIMAGE pimg)
 
 void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     LOGBRUSH lbr = {0};
     img->m_fillcolor = color;
     lbr.lbColor = ARGBTOZBGR(color);
@@ -2115,7 +2115,7 @@ void ege_puttexture(PCIMAGE srcimg, float x, float y, float w, float h, PIMAGE p
 void ege_puttexture(PCIMAGE srcimg, ege_rect dest, PIMAGE pimg)
 {
     ege_rect src;
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         src.x = 0;
         src.y = 0;
