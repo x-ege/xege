@@ -931,20 +931,20 @@ void EGEAPI window_getviewport(viewporttype * viewport);
 void EGEAPI window_getviewport(int* left, int* top, int* right, int* bottom);
 void EGEAPI window_setviewport(int  left, int  top, int  right, int  bottom);
 
-
-void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* thickness = NULL, PCIMAGE pimg = NULL);
-void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE pimg = NULL);
 void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);
 
+void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* thickness = NULL, PCIMAGE pimg = NULL);
+void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE  pimg = NULL);
+
 void EGEAPI setlinecap(line_cap_type linecap, PIMAGE pimg = NULL);
-void EGEAPI setlinecap(line_cap_type  startCap, line_cap_type  endCap, PIMAGE pimg = NULL);
-void EGEAPI getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg = NULL);
-line_cap_type EGEAPI getlinecap(PIMAGE pimg = NULL);
+void EGEAPI setlinecap(line_cap_type  startCap, line_cap_type  endCap, PIMAGE  pimg = NULL);
+void EGEAPI getlinecap(line_cap_type* startCap, line_cap_type* endCap, PCIMAGE pimg = NULL);
+line_cap_type EGEAPI getlinecap(PCIMAGE pimg = NULL);
 
 void EGEAPI setlinejoin(line_join_type  linejoin, PIMAGE pimg = NULL);
 void EGEAPI setlinejoin(line_join_type  linejoin, float  miterLimit, PIMAGE pimg = NULL);
-void EGEAPI getlinejoin(line_join_type* linejoin, float* miterLimit, PIMAGE pimg = NULL);
-line_join_type EGEAPI getlinejoin(PIMAGE pimg = NULL);
+void EGEAPI getlinejoin(line_join_type* linejoin, float* miterLimit, PCIMAGE pimg = NULL);
+line_join_type EGEAPI getlinejoin(PCIMAGE pimg = NULL);
 
 //void getfillstyle(color_t *pcolor, int *ppattern = NULL, PIMAGE pimg = NULL);           // ###
 void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);
@@ -1252,15 +1252,15 @@ void EGEAPI outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE 
 void EGEAPI rectprintf (int x, int y, int w, int h, const char*    format, ...);
 void EGEAPI rectprintf (int x, int y, int w, int h, const wchar_t* format, ...);
 
-int  EGEAPI textwidth(const char*    text, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(const wchar_t* text, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(char    c, PIMAGE pimg = NULL);
-int  EGEAPI textwidth(wchar_t c, PIMAGE pimg = NULL);
+int  EGEAPI textwidth(const char*    text, PCIMAGE pimg = NULL);
+int  EGEAPI textwidth(const wchar_t* text, PCIMAGE pimg = NULL);
+int  EGEAPI textwidth(char    c, PCIMAGE pimg = NULL);
+int  EGEAPI textwidth(wchar_t c, PCIMAGE pimg = NULL);
 
-int  EGEAPI textheight(const char*    text, PIMAGE pimg = NULL);
-int  EGEAPI textheight(const wchar_t* text, PIMAGE pimg = NULL);
-int  EGEAPI textheight(char    c, PIMAGE pimg = NULL);
-int  EGEAPI textheight(wchar_t c, PIMAGE pimg = NULL);
+int  EGEAPI textheight(const char*    text, PCIMAGE pimg = NULL);
+int  EGEAPI textheight(const wchar_t* text, PCIMAGE pimg = NULL);
+int  EGEAPI textheight(char    c, PCIMAGE pimg = NULL);
+int  EGEAPI textheight(wchar_t c, PCIMAGE pimg = NULL);
 
 void EGEAPI ege_outtextxy(float x, float y, const char*    text, PIMAGE pimg = NULL);
 void EGEAPI ege_outtextxy(float x, float y, const wchar_t* text, PIMAGE pimg = NULL);

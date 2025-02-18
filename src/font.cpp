@@ -250,15 +250,15 @@ void rectprintf(int x, int y, int w, int h, const wchar_t* format, ...)
     va_end(v);
 }
 
-int textwidth(const char* text, PIMAGE pimg)
+int textwidth(const char* text, PCIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     return textwidth(textstring_w.c_str(), pimg);
 }
 
-int textwidth(const wchar_t* text, PIMAGE pimg)
+int textwidth(const wchar_t* text, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
@@ -269,27 +269,27 @@ int textwidth(const wchar_t* text, PIMAGE pimg)
     return 0;
 }
 
-int textwidth(char c, PIMAGE pimg)
+int textwidth(char c, PCIMAGE pimg)
 {
     char str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textwidth(wchar_t c, PIMAGE pimg)
+int textwidth(wchar_t c, PCIMAGE pimg)
 {
     wchar_t str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textheight(const char* text, PIMAGE pimg)
+int textheight(const char* text, PCIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     return textheight(textstring_w.c_str(), pimg);
 }
 
-int textheight(const wchar_t* text, PIMAGE pimg)
+int textheight(const wchar_t* text, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
@@ -300,13 +300,13 @@ int textheight(const wchar_t* text, PIMAGE pimg)
     return 0;
 }
 
-int textheight(CHAR c, PIMAGE pimg)
+int textheight(CHAR c, PCIMAGE pimg)
 {
     CHAR str[2] = {c};
     return textheight(str, pimg);
 }
 
-int textheight(wchar_t c, PIMAGE pimg)
+int textheight(wchar_t c, PCIMAGE pimg)
 {
     wchar_t str[2] = {c};
     return textheight(str, pimg);
@@ -374,7 +374,7 @@ void ege_xyprintf(float x, float y, const wchar_t* format, ...)
 
 void settextjustify(int horiz, int vert, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         img->m_texttype.horiz = horiz;
         img->m_texttype.vert = vert;
@@ -553,7 +553,7 @@ void setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg)
 
 void setfont(const LOGFONTA* font, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         HFONT hfont = CreateFontIndirectA(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));
@@ -563,7 +563,7 @@ void setfont(const LOGFONTA* font, PIMAGE pimg)
 
 void setfont(const LOGFONTW* font, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         HFONT hfont = CreateFontIndirectW(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));
