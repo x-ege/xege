@@ -2999,7 +2999,7 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
 
     const int defaultWidth = 400, defaultHeight = 300;
 
-    int w = MAX(defaultWidth, getwidth()), h = MAX(defaultHeight, getheight()), x = (getwidth() - w) / 2, y = (getheight() - h) / 2;
+    int w = MIN(defaultWidth, getwidth()), h = MIN(defaultHeight, getheight()), x = (getwidth() - w) / 2, y = (getheight() - h) / 2;
     int ret = 0;
 
     bg.getimage(0, 0, getwidth(), getheight());
