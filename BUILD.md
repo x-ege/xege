@@ -4,7 +4,7 @@ EGE 源码使用 CMake 构建编译系统，以支持各种编译器和 IDE。
 
 EGE 在编译时默认链接 zlib 和 libpng 源代码并将之编译为库的一部分，在编译前需要将
 zlib 和 libpng 的源代码准备在 `3rdparty` 文件夹下，这部分已使用 git submodule 进行
-管理，在克隆源代码后运行 `git submodule --init --recursive` 来同步源代码，或者
+管理，在克隆源代码后运行 `git submodule update --init --recursive` 来同步源代码，或者
 直接执行 CMake 构建步骤，CMake 中已配置了自动同步子模块的指令。
 
 如果不想合并 zlib 和 libpng 的源代码，例如要在 MSYS2 中使用系统安装的库，可在生成编译
@@ -21,6 +21,26 @@ Linux 环境下运行相关程序需要使用 [wine](https://www.winehq.org/) �
 配置中修改 `libgcc_s_seh-1.dll` 、 `libssp-0.dll` 、 `libstdc++-6.dll` 的
 函数库顶替配置，方便起见，可以添加 `-static` 配置编译，免去配置过程（`CMakeLists.txt`
 中在 Linux 环境下默认开启）。
+
+## 快速编译
+
+windows端可以通过运行根目录下的`build_commands.bat`批处理脚本快速在windows下编译代码，
+此代码会尝试检查计算机中是否有配置好的MinGW、Visual Studio 2022等环境，并尝试编译，
+编译得到的文件位于新生成的`build`文件夹下，其中`build/lib`中会分别存放好编译得到的静态库。
+
+具体而言，目前支持快速编译的列表如下：
+
+ - MinGW
+ - Visual Studio 2008
+ - Visual Studio 2010
+ - Visual Studio 2012
+ - Visual Studio 2013
+ - Visual Studio 2015
+ - Visual Studio 2017
+ - Visual Studio 2019
+ - Visual Studio 2022
+
+详细信息请检查脚本具体内容。
 
 ## 常见部分 Linux 发行版以及 MacOS 安装编译运行环境
 
