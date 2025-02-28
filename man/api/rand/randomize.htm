@@ -12,13 +12,17 @@
 初始化随机数序列。如果不调用本函数，那么 random() 返回的序列将会是确定不变的。
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
-<pre><font color=#0000FF>void </font><font color=#008080>randomize</font>();</pre>
+<pre>
+<font color=#0000FF>unsigned int </font><font color=#008080>randomize</font>();
+
+<font color=#0000FF>unsigned int </font><font color=#008080>randomize</font>(<font color=#0000FF>unsigned int </font>seed);
+</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
-（无）
+seed
+指定初始化所使用的随机数种子
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>
-
-（无）
+初始化所使用的随机数种子
 
 <font size="4" color="#0000FF"><strong>示例：</strong></font>
 

@@ -352,14 +352,39 @@ color_t hsv2rgb(float H, float S, float V)
     return EGERGB(crgb.r, crgb.g, crgb.b);
 }
 
-color_t alphablend(color_t dst, color_t src)
+color_t colorblend(color_t dst, color_t src, unsigned char alpha)
 {
-    return alphablend_inline(dst, src, EGEGET_A(src));
+    return colorblend_inline(dst, src, alpha);
 }
 
-color_t alphablend(color_t dst, color_t src, unsigned char alpha)
+color_t colorblend_f(color_t dst, color_t src, unsigned char alpha)
 {
-    return alphablend_inline(dst, src, alpha);
+    return colorblend_inline_fast(dst, src, alpha);
+}
+
+color_t alphablend(color_t dst, color_t src)
+{
+    return alphablend_inline(dst, src);
+}
+
+color_t alphablend(color_t dst, color_t src, unsigned char srcAlphaFactor)
+{
+    return alphablend_inline(dst, src, srcAlphaFactor);
+}
+
+color_t alphablend_premultiplied(color_t dst, color_t src)
+{
+    return alphablend_premultiplied_inline(dst, src);
+}
+
+color_t alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor)
+{
+    byte alpha = DIVIDE_255_FAST(EGEGET_A(src) * srcAlphaFactor + 255/2);
+    byte red   = DIVIDE_255_FAST(EGEGET_R(src) * srcAlphaFactor + 255/2);
+    byte green = DIVIDE_255_FAST(EGEGET_G(src) * srcAlphaFactor + 255/2);
+    byte blue  = DIVIDE_255_FAST(EGEGET_B(src) * srcAlphaFactor + 255/2);
+
+    return alphablend_premultiplied_inline(dst, EGEARGB(alpha, red, green, blue));
 }
 
 } // namespace ege

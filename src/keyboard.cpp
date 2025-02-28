@@ -28,8 +28,8 @@ static int peekkey(_graph_setting* pg)
     while (pg->msgkey_queue->pop(msg)) {
         if (msg.message == WM_CHAR || msg.message == WM_KEYDOWN) {
             if (msg.message == WM_KEYDOWN) {
-                if (msg.wParam <= key_space || msg.wParam >= key_0 && msg.wParam < key_f1 ||
-                    msg.wParam >= key_semicolon && msg.wParam <= key_quote)
+                if (msg.wParam <= key_space || (msg.wParam >= key_0 && msg.wParam < key_f1) ||
+                    (msg.wParam >= key_semicolon && msg.wParam <= key_quote))
                 {
                     continue;
                 }
@@ -146,7 +146,7 @@ int getchEx(int flag)
                             ret = ogn_key;
                         } else {
                             if ((ogn_key & KEYMSG_DOWN) &&
-                                (msg.wParam >= 0x70 && msg.wParam < 0x80 || msg.wParam > ' ' && msg.wParam < '0'))
+                                ((msg.wParam >= 0x70 && msg.wParam < 0x80) || (msg.wParam > ' ' && msg.wParam < '0')))
                             {
                                 ret |= 0x100;
                             }
@@ -160,14 +160,24 @@ int getchEx(int flag)
     return 0;
 }
 
-int kbhit()
+int ege_kbhit()
 {
     return kbhitEx(0);
 }
 
-int getch()
+int ege_getch()
 {
     return getchEx(0);
+}
+
+int kbhit()
+{
+    return ege_kbhit();
+}
+
+int getch()
+{
+    return ege_getch();
 }
 
 key_msg getkey()
@@ -229,10 +239,7 @@ int keystate(int key)
     if (key < 0 || key >= MAX_KEY_VCODE) {
         return -1;
     }
-    SHORT s = GetKeyState(key);
-    if (((USHORT)s & 0x8000) == 0) {
-        pg->keystatemap[key] = 0;
-    }
+
     return pg->keystatemap[key];
 }
 

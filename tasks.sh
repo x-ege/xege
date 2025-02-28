@@ -17,8 +17,17 @@ export BUILD_TARGET="xege" # 默认只构建 xege 静态库
 
 # 默认开Release模式
 export CMAKE_BUILD_TYPE="Release"
+
+if [[ -z "$WIN_CMAKE_BUILD_DEFINE" ]]; then
+    export WIN_CMAKE_BUILD_DEFINE=""
+fi
+
+if [[ -z "$CMAKE_CONFIG_DEFINE" ]]; then
+    export CMAKE_CONFIG_DEFINE=""
+fi
+
 function MY_CMAKE_BUILD_DEFINE() {
-    echo "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+    echo "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ${CMAKE_CONFIG_DEFINE}"
 }
 
 if ! command -v grealpath && command -v realpath; then
@@ -33,11 +42,13 @@ function isWindows() {
 }
 
 function loadCMakeProject() {
+
+    echo "Run cmake command: cmake "$(MY_CMAKE_BUILD_DEFINE)" .."
+
     if mkdir -p "$CMAKE_VS_DIR" &&
         cd "$CMAKE_VS_DIR" &&
-        cmake "$(MY_CMAKE_BUILD_DEFINE)" \
-            ..; then
-        echo "CMake Project Loaded!"
+        cmake $(MY_CMAKE_BUILD_DEFINE) ..; then
+        echo "CMake Project Loaded: MY_CMAKE_BUILD_DEFINE=$(MY_CMAKE_BUILD_DEFINE)"
     else
         echo "CMake Project Load Failed!"
         exit 1
@@ -59,7 +70,7 @@ function cmakeBuildAll() {
     if isWindows; then
 
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
-            export WIN_CMAKE_BUILD_DEFINE="--config $CMAKE_BUILD_TYPE"
+            export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
         fi
 
         echo start: cmake.exe --build . --target "$BUILD_TARGET" $WIN_CMAKE_BUILD_DEFINE -- /m
@@ -102,6 +113,9 @@ while [[ $# > 0 ]]; do
         ;;
     --build)
         echo "build"
+        if [[ ! -f "$CMAKE_VS_DIR/CMakeCache.txt" ]]; then
+            loadCMakeProject
+        fi
         cmakeBuildAll
         shift # past argument
         ;;
@@ -118,6 +132,21 @@ while [[ $# > 0 ]]; do
     --target)
         echo "set build target to $2"
         export BUILD_TARGET="$2"
+        if [[ $BUILD_TARGET == "demos" ]]; then
+            export CMAKE_CONFIG_DEFINE="$CMAKE_CONFIG_DEFINE -DEGE_BUILD_DEMO=ON"
+        fi
+        shift
+        shift
+        ;;
+    --toolset)
+        echo "set toolset to $2"
+        export CMAKE_CONFIG_DEFINE="$CMAKE_CONFIG_DEFINE -T $2"
+        shift
+        shift
+        ;;
+    --arch)
+        echo "set arch to $2"
+        export CMAKE_CONFIG_DEFINE="$CMAKE_CONFIG_DEFINE -A $2"
         shift
         shift
         ;;

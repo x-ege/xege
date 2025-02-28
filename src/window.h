@@ -2,7 +2,6 @@
 
 #include <windows.h>
 #include <windef.h>
-#include "type.h"
 #include <string>
 #include <wchar.h>
 

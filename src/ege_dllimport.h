@@ -5,8 +5,17 @@
 
 namespace dll
 {
-    // 如果没加载 dll 则进行加载
+    // 加载所有的 dll (可重复调用)
     void loadDllsIfNot();
+
+    // 加载 winmm.dll (可重复调用)
+    bool loadWinmmDll();
+
+    // 加载 msimg32.dll (可重复调用)
+    bool loadMsimg32Dll();
+
+    // 加载 imm32.dll (可重复调用)
+    bool loadImm32Dll();
 
     // 释放所有加载的 dll
     void freeDlls();

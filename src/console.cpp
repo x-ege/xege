@@ -5,6 +5,11 @@
 #include <fcntl.h>
 #include <wincon.h>
 
+
+#undef _INC_CONIO
+#undef _CONIO_H_
+#include <conio.h>
+
 // macro to check whether hConsole is valid
 #define CHECK_CONSOLE_HANDLE(hHandle) \
     {                                 \
@@ -24,33 +29,33 @@ static HWND hConsoleWnd = NULL;
 static FILE fOldIn;
 static FILE fOldOut;
 
-BOOL init_console()
+bool init_console()
 {
     HMENU hMenu;
     int hCrt;
     FILE* hf;
     if (hInput != NULL) {
-        return FALSE;
+        return false;
     }
     if (GetConsoleWindow() != NULL) {
-        return FALSE;
+        return false;
     }
     if (!AllocConsole()) {
-        return FALSE;
+        return false;
     }
     hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 
     if (INVALID_HANDLE_VALUE == hOutput) {
-        return FALSE;
+        return false;
     }
     hInput = GetStdHandle(STD_INPUT_HANDLE);
     if (INVALID_HANDLE_VALUE == hInput) {
-        return FALSE;
+        return false;
     }
     SetConsoleTitle("EGE CONSOLE");
     hConsoleWnd = GetConsoleWindow();
     if (INVALID_HANDLE_VALUE == hConsoleWnd) {
-        return FALSE;
+        return false;
     }
     hMenu = GetSystemMenu(hConsoleWnd, 0);
     if (hMenu != NULL) {
@@ -74,10 +79,10 @@ BOOL init_console()
     // SetConsoleTextAttribute(hOutput, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED ); // white text on black bg
     clear_console();
     ShowWindow(hConsoleWnd, SW_SHOW);
-    return TRUE;
+    return true;
 }
 
-void clear_console()
+bool clear_console()
 {
     /***************************************/
     // This code is from one of Microsoft's
@@ -87,13 +92,13 @@ void clear_console()
 
     COORD coordScreen = {0, 0};
 
-    BOOL bSuccess;
+    bool bSuccess;
     DWORD cCharsWritten;
     CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
     DWORD dwConSize;
 
     if (hOutput == NULL) {
-        return;
+        return false;
     }
 
     /* get the number of character cells in the current buffer */
@@ -101,7 +106,7 @@ void clear_console()
     bSuccess = GetConsoleScreenBufferInfo(hOutput, &csbi);
 
     if (!bSuccess) {
-        return;
+        return false;
     }
 
     dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
@@ -110,47 +115,49 @@ void clear_console()
 
     bSuccess = FillConsoleOutputCharacter(hOutput, (TCHAR)' ', dwConSize, coordScreen, &cCharsWritten);
     if (!bSuccess) {
-        return;
+        return false;
     }
 
     /* get the current text attribute */
 
     bSuccess = GetConsoleScreenBufferInfo(hOutput, &csbi);
     if (!bSuccess) {
-        return;
+        return false;
     }
 
     /* now set the buffer's attributes accordingly */
 
     bSuccess = FillConsoleOutputAttribute(hOutput, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
     if (!bSuccess) {
-        return;
+        return false;
     }
 
     /* put the cursor at (0, 0) */
 
     bSuccess = SetConsoleCursorPosition(hOutput, coordScreen);
     if (!bSuccess) {
-        return;
+        return false;
     }
+
+    return true;
 }
 
-BOOL show_console()
+bool show_console()
 {
     CHECK_CONSOLE_HANDLE(hConsoleWnd);
     return ShowWindow(hConsoleWnd, SW_SHOW);
 }
 
-BOOL hide_console()
+bool hide_console()
 {
     CHECK_CONSOLE_HANDLE(hConsoleWnd);
     return ShowWindow(hConsoleWnd, SW_HIDE);
 }
 
-BOOL close_console()
+bool close_console()
 {
     if (!FreeConsole()) {
-        return FALSE;
+        return false;
     }
 
     hOutput = NULL;
@@ -158,9 +165,27 @@ BOOL close_console()
     hConsoleWnd = NULL;
     *stdout = fOldOut;
     *stdin = fOldIn;
-    return TRUE;
+    return true;
 };
 
 #endif
 
+int getch_console()
+{
+#ifdef MSVC_VER
+    return ::_getch();
+#else
+    return ::getch();
+#endif
 }
+
+int kbhit_console()
+{
+#ifdef MSVC_VER
+    return ::_kbhit();
+#else
+    return ::kbhit();
+#endif
+}
+
+} // namespace ege

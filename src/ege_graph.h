@@ -22,6 +22,10 @@ void logoscene();
 
 int dealmessage(_graph_setting* pg, bool force_update);
 
+bool needToUpdate(_graph_setting* pg);
+
+int graphupdate(_graph_setting* pg);
+
 void guiupdate(_graph_setting* pg, egeControlBase* root);
 
 int waitdealmessage(_graph_setting* pg);
@@ -31,10 +35,19 @@ float EGE_PRIVATE_GetFPS(int add); // 获取帧数
 void setmode(int gdriver, int gmode);
 
 // GDI+ 初始化
-void gdipluinit();
+void gdiplusinit();
+
+Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics);
+
+Gdiplus::LineCap convertToGdiplusLineCap(line_cap_type linecap);
+
+Gdiplus::LineJoin convertToGdiplusLineJoin(line_join_type linejoin);
 
 int  swapbuffers();
 
 bool isinitialized();
+
+void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha = false);
+
 
 }

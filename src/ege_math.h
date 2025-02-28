@@ -32,6 +32,29 @@ using std::round;
 #endif  // __cplusplus < 201103L
 
 #else
-// 在低版本 GCC (如 2005-11-30 的 GCC 3.4.5)中 round() 函数也可用
+// round() 函数在低版本 GCC 中可用 (如 2005-11-30 的 GCC 3.4.5)
+
 #endif
+
+// 快除 255，有效范围：[0, 65790)
+#define DIVIDE_255_FAST(x)  (((x) + (((x) + 257) >> 8)) >> 8)
+
+template<typename T>
+T clamp(T value, T min, T max)
+{
+    return (value < min) ? min : ((value > max) ? max : value);
+}
+
+// Overflow 判断
+inline bool sumIsOverflow(int a, int b)
+{
+    return (a > 0) && (b > 0) && (b > (INT_MAX - a));
+}
+
+// Underflow 判断
+inline bool sumIsUnderflow(int a, int b)
+{
+    return (a < 0) && (b < 0) && (b < (INT_MIN - a));
+}
+
 }  // namespace ege

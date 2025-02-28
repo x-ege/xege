@@ -14,7 +14,7 @@
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
 <pre><font color=#0000FF>void </font><font color=#008080>ege_fillpoly</font>(
     <font color=#0000FF>int </font>numpoints,
-    <font color=#0000FF>ege_point* </font>polypoints,
+    <font color=#0000FF>const ege_point* </font>polypoints,
     <font color=#800080>PIMAGE</font> pimg = <font color=#800080>NULL
 </font>);
 </pre>
@@ -24,10 +24,10 @@
 
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
 numpoints
-多边形点的个数。
+多边形顶点个数。
 
 polypoints
-每个点的坐标，数组元素个数为 numpoints，首尾两个点自动相连。
+每个顶点的坐标，数组元素个数为 numpoints，首尾两个点自动相连。
 
 pimg
 绘制的目标图像，默认为 NULL（即绘制到窗口）。

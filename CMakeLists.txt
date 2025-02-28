@@ -1,5 +1,31 @@
 cmake_minimum_required (VERSION 3.13)
 
+# Clear Cmake cache
+if (DEFINED EGE_CLEAR_OPTIONS_CACHE AND CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    unset(EGE_CLEAR_OPTIONS_CACHE CACHE)
+endif()
+
+# Cache Cleanup option.
+# If OFF is selected, the option will not take effect until the CMake cache is cleared.
+option(EGE_CLEAR_OPTIONS_CACHE "Clear caches before setting options" ON)
+message(STATUS "EGE_CLEAR_OPTIONS_CACHE: ${EGE_CLEAR_OPTIONS_CACHE}")
+
+if (EGE_CLEAR_OPTIONS_CACHE AND CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    unset(EGE_BUILD_DEMO  CACHE)
+    unset(EGE_BUILD_TEST  CACHE)
+    unset(EGE_BUILD_TEMP  CACHE)
+endif()
+
+# Options
+option(EGE_BUILD_DEMO  "Build ege demos"    OFF)
+option(EGE_BUILD_TEST  "Build ege tests"    ON)
+option(EGE_BUILD_TEMP  "Build ege temp"     ON)
+
+message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
+message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
+message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
+
+
 if(CMAKE_HOST_UNIX)
     set(CMAKE_SYSTEM_NAME Windows)
     set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
@@ -12,7 +38,6 @@ if(CMAKE_HOST_UNIX)
 
     # target environment on the build host system
     set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
-
 
     # modify default behavior of FIND_XXX() commands
     set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
@@ -55,12 +80,15 @@ if (USE_LIBPNG_AND_ZLIB)
             execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive)
         endif ()
 
+        set(ZLIB_BUILD_EXAMPLES OFF  CACHE INTERNAL "")
+
         add_subdirectory(${EGE_ZLIB_SOURCE_DIR} EXCLUDE_FROM_ALL)
 
         set(PNG_BUILD_ZLIB  ON   CACHE INTERNAL "")
         set(PNG_SHARED      OFF  CACHE INTERNAL "")
         set(PNG_STATIC      ON   CACHE INTERNAL "")
         set(PNG_TESTS       OFF  CACHE INTERNAL "")
+
         set(ZLIB_INCLUDE_DIR ${EGE_ZLIB_BINARY_DIR} ${EGE_ZLIB_SOURCE_DIR})
         add_subdirectory(${EGE_LIBPNG_SOURCE_DIR} EXCLUDE_FROM_ALL)
 
@@ -68,6 +96,24 @@ if (USE_LIBPNG_AND_ZLIB)
         if (EXISTS ${EGE_ZLIB_SOURCE_DIR}/zconf.h.included)
             file(RENAME ${EGE_ZLIB_SOURCE_DIR}/zconf.h.included ${EGE_ZLIB_SOURCE_DIR}/zconf.h)
         endif ()
+
+        if (MSVC)
+            target_compile_options(png_static PRIVATE
+                /MP
+                /MT
+                /Zl)
+            target_compile_options(zlibstatic PRIVATE
+                /MP
+                /MT
+                /Zl)
+        else ()
+            target_compile_options(png_static PRIVATE
+                -fPIC -fno-exceptions)
+            target_compile_options(zlibstatic PRIVATE
+                -fPIC -fno-exceptions)
+            target_compile_options(xege PRIVATE
+                -fPIC -fno-exceptions)
+        endif()
 
         target_include_directories(xege
             PRIVATE ${EGE_ZLIB_BINARY_DIR}
@@ -77,6 +123,7 @@ if (USE_LIBPNG_AND_ZLIB)
             PRIVATE ${EGE_LIBPNG_BINARY_DIR}
             PRIVATE ${EGE_LIBPNG_SOURCE_DIR}
         )
+
         target_sources(xege
             PRIVATE $<TARGET_OBJECTS:png_static>
             PRIVATE $<TARGET_OBJECTS:zlibstatic>
@@ -98,21 +145,17 @@ else ()
 endif ()
 
 # 设置库文件名
-math(EXPR TARGET_BITS "8 * ${CMAKE_SIZEOF_VOID_P}")
-if (TARGET_BITS EQUAL 64)
-    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics64)
-elseif (TARGET_BITS EQUAL 32)
-    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
-else ()
-    # 非 32/64 位编译器
-    message(FATAL_ERROR "XEGE does not support ${TARGET_BITS}bit compiler")
-endif ()
+set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
 # 打印编译器信息
 if (MSVC)
-    message(STATUS "${TARGET_BITS}bit MSVC target: MSVC ${MSVC_VERSION}")
+    message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
+    target_compile_options(xege PRIVATE
+        /MP
+        /MT
+        /Zl)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    message(STATUS "${TARGET_BITS}bit GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
+    message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else ()
     if (CMAKE_CXX_COMPILER_ID)
         message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
@@ -144,12 +187,18 @@ macro(ege_add_executable name source)
 endmacro()
 
 # 编译测试
-ege_add_executable(graphicstest test/src/maintest.cpp)
+if (EGE_BUILD_TEST)
+    ege_add_executable(xege_test test/src/maintest.cpp)
+endif()
 
 add_subdirectory(src)
 
-add_subdirectory(demo)
+if (EGE_BUILD_DEMO)
+    add_subdirectory(demo)
+endif()
 
-if (EXISTS ${PROJECT_SOURCE_DIR}/temp/CMakeLists.txt)
-    add_subdirectory(temp)
-endif ()
+if (EGE_BUILD_TEMP)
+    if (EXISTS ${PROJECT_SOURCE_DIR}/temp/CMakeLists.txt)
+        add_subdirectory(temp)
+    endif()
+endif()

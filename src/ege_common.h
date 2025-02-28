@@ -4,6 +4,8 @@
  * @brief
  */
 
+#include "../include/ege/types.h"
+
 #include "sbt.h"
 #include "array.h"
 #include "set.h"
@@ -14,7 +16,6 @@
 #include "ege_graph.h"
 #include "ege_dllimport.h"
 
-#include "type.h"
 #include "utils.h"
 #include "color.h"
 #include "encodeconv.h"

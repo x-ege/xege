@@ -11,7 +11,9 @@ egeControlBase基类定义和相关操作
 #define _ALLOW_RUNTIME_LIBRARY_MISMATCH
 #endif
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 #include <algorithm>
 // #include <set>

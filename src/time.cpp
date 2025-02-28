@@ -5,11 +5,11 @@
 namespace ege
 {
 
-void api_sleep(long dwMilliseconds)
+void api_sleep(long ms)
 {
-    if (dwMilliseconds >= 0) {
+    if (ms >= 0) {
         dll::timeBeginPeriod(1);
-        ::Sleep(dwMilliseconds);
+        ::Sleep(ms);
         dll::timeEndPeriod(1);
     }
 }
@@ -60,74 +60,56 @@ void delay(long ms)
     ege_sleep(ms);
 }
 
+/**
+ * 刷新后延时。（刷新：处理事件以及交换双缓冲）
+ * @param ms 延时时间，单位为毫秒
+ */
 void delay_ms(long ms)
 {
     struct _graph_setting* pg = &graph_setting;
     egeControlBase* root = pg->egectrl_root;
     pg->skip_timer_mark = true;
 
-    if (ms == 0) {
-        if (pg->update_mark_count < UPDATE_MAX_CALL) {
-            root->draw(NULL);
-            dealmessage(pg, FORCE_UPDATE);
-            root->update();
-            ege_sleep(0);
-        }
-        pg->delay_ms_dwLast = get_highfeq_time_ls(pg) * 1000.0;
-        pg->skip_timer_mark = false;
-        return;
-    }
+    const double targetTime = get_highfeq_time_ls(pg) * 1000.0 + ms;
 
-    {
-        double delay_time = ms;
-        double dw = get_highfeq_time_ls(pg) * 1000.0;
-        int f = 100;
+    /* 处理 UI 事件，更新 UI 控件数据 */
+    guiupdate(pg, root);
 
-        if (ms >= 50) {
-            f = 0;
-        }
-
-        pg->delay_ms_dwLast = 0;
-
-        if (pg->delay_ms_dwLast == 0) {
-            pg->delay_ms_dwLast = get_highfeq_time_ls(pg) * 1000.0;
-        }
-
-        if (pg->delay_ms_dwLast + 200.0 > dw) {
-            dw = pg->delay_ms_dwLast;
-        }
-
+    /* 绘图后重绘UI并交换缓冲区 */
+    if (needToUpdate(pg)) {
         root->draw(NULL);
-
-        while (dw + delay_time >= get_highfeq_time_ls(pg) * 1000.0) {
-            if (f <= 0 || pg->update_mark_count < UPDATE_MAX_CALL) {
-                dealmessage(pg, FORCE_UPDATE);
-                f = 256;
-            } else {
-                ege_sleep((int)(dw + delay_time - get_highfeq_time_ls(pg) * 1000.0));
-            }
-            f -= 1;
-        }
-
-        dealmessage(pg, FORCE_UPDATE);
-        dw = get_highfeq_time_ls(pg) * 1000.0;
-        guiupdate(pg, root);
-
-        if (pg->delay_ms_dwLast + 200.0 <= dw || pg->delay_ms_dwLast > dw) {
-            pg->delay_ms_dwLast = dw;
-        } else {
-            pg->delay_ms_dwLast += delay_time;
-        }
+        graphupdate(pg);
     }
+
+    /* 延时 */
+    if (ms == 0) {
+        /* Sleep(0): 让出 CPU 时间片，处理后立即返回 */
+        ::Sleep(0);
+    } else if (ms > 0) {
+        double currentTime = get_highfeq_time_ls(pg) * 1000.0;
+
+        if (currentTime < targetTime) {
+            ege_sleep((long)(targetTime - currentTime));
+        }
+    } else {
+        /* ms < 0: Do nothing.*/
+    }
+
     pg->skip_timer_mark = false;
 }
 
 /*
 延迟1/fps的时间，调用间隔不大于200ms时能保证每秒能返回fps次
 */
-void delay_fps(int fps) { delay_fps((double)fps); }
+void delay_fps(int fps)
+{
+    delay_fps((double)fps);
+}
 
-void delay_fps(long fps) { delay_fps((double)fps); }
+void delay_fps(long fps)
+{
+    delay_fps((double)fps);
+}
 
 void delay_fps(double fps)
 {
@@ -172,9 +154,15 @@ void delay_fps(double fps)
 /*
 延迟1/fps的时间，调用间隔不大于200ms时能保证每秒能返回fps次
 */
-void delay_jfps(int fps) { delay_jfps((double)fps); }
+void delay_jfps(int fps)
+{
+    delay_jfps((double)fps);
+}
 
-void delay_jfps(long fps) { delay_jfps((double)fps); }
+void delay_jfps(long fps)
+{
+    delay_jfps((double)fps);
+}
 
 void delay_jfps(double fps)
 {
@@ -207,7 +195,7 @@ void delay_jfps(double fps)
         if (bSleep) {
             dealmessage(pg, FORCE_UPDATE);
         } else {
-            EGE_PRIVATE_GetFPS(-0x100);
+            updateFrameRate(false);
         }
 
         dw = get_highfeq_time_ls(pg) * 1000.0;

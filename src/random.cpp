@@ -185,10 +185,18 @@ extern double mtdrand()
     return mtrand_help()(1.0);
 }
 
-void randomize()
+uint32_t randomize()
 {
     static uint32_t add = 0;
-    mtsrand((uint32_t)time(NULL) + add++);
+    uint32_t seed = (uint32_t)time(NULL) + add++;
+    mtsrand(seed);
+    return seed;
+}
+
+uint32_t randomize(uint32_t seed)
+{
+    mtsrand(seed);
+    return seed;
 }
 
 unsigned int random(unsigned int n)

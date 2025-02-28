@@ -15,10 +15,15 @@
 #define _ALLOW_RUNTIME_LIBRARY_MISMATCH
 #endif
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #define EGE_GRAPH_LIB_BUILD
-#define EGE_DEPRECATE(text)
+#define EGE_DEPRECATE(function, msg)
 
 #include "../include/ege.h"
+#include "../include/ege/types.h"
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -36,34 +41,34 @@
 #define SYSBITS_W EGE_L(SYSBITS)
 
 #ifdef _MSC_VER
-#if (_MSC_VER >= 1930)
-#define MSVC_VER "MSVC"
-#elif (_MSC_VER >= 1920)
-#define MSVC_VER "VC2019"
-#elif (_MSC_VER >= 1910)
-#define MSVC_VER "VC2017"
-#elif (_MSC_VER >= 1900)
-#define MSVC_VER "VC2015"
-#elif (_MSC_VER >= 1800)
-#define MSVC_VER "VC2013"
-#elif (_MSC_VER >= 1700)
-#define MSVC_VER "VC2012"
-#elif (_MSC_VER >= 1600)
-#define MSVC_VER "VC2010"
-#elif (_MSC_VER >= 1500)
-#define MSVC_VER "VC2008"
-#elif (_MSC_VER > 1200)
-#define MSVC_VER "VC2005"
+#   if (_MSC_VER >= 1930)
+#       define MSVC_VER "VC2022"
+#   elif (_MSC_VER >= 1920)
+#       define MSVC_VER "VC2019"
+#   elif (_MSC_VER >= 1910)
+#       define MSVC_VER "VC2017"
+#   elif (_MSC_VER >= 1900)
+#       define MSVC_VER "VC2015"
+#   elif (_MSC_VER >= 1800)
+#       define MSVC_VER "VC2013"
+#   elif (_MSC_VER >= 1700)
+#       define MSVC_VER "VC2012"
+#   elif (_MSC_VER >= 1600)
+#       define MSVC_VER "VC2010"
+#   elif (_MSC_VER >= 1500)
+#       define MSVC_VER "VC2008"
+#   elif (_MSC_VER > 1200)
+#       define MSVC_VER "VC2005"
+#   else
+#       define MSVC_VER "VC6"
+#   endif
+#   define COMPILER_VER   MSVC_VER SYSBITS
+#   define COMPILER_VER_W EGE_L(MSVC_VER) SYSBITS_W
 #else
-#define MSVC_VER "VC6"
-#endif
-#define COMPILER_VER   MSVC_VER SYSBITS
-#define COMPILER_VER_W EGE_L(MSVC_VER) SYSBITS_W
-#else
-#define GCC_VER        EGE_TOSTR(__GNUC__) "." EGE_TOSTR(__GNUC_MINOR__)
-#define GCC_VER_W      EGE_L(EGE_TOSTR(__GNUC__)) L"." EGE_L(EGE_TOSTR(__GNUC_MINOR__))
-#define COMPILER_VER   "GCC" GCC_VER SYSBITS
-#define COMPILER_VER_W L"GCC" GCC_VER_W SYSBITS_W
+#   define GCC_VER        EGE_TOSTR(__GNUC__) "." EGE_TOSTR(__GNUC_MINOR__)
+#   define GCC_VER_W      EGE_L(EGE_TOSTR(__GNUC__)) L"." EGE_L(EGE_TOSTR(__GNUC_MINOR__))
+#   define COMPILER_VER   "GCC" GCC_VER SYSBITS
+#   define COMPILER_VER_W L"GCC" GCC_VER_W SYSBITS_W
 #endif
 
 #define EGE_TITLE   "EGE" EGE_VERSION " " COMPILER_VER
@@ -185,6 +190,7 @@ struct _graph_setting
     HWND         hwnd;
     std::wstring window_caption;
     HICON        window_hicon;
+    color_t      window_initial_color;
     int          exit_flag;
     int          exit_window;
     int          update_mark_count; // 更新标记
@@ -200,10 +206,7 @@ struct _graph_setting
     HANDLE threadui_handle;
 
     /* 鼠标状态记录 */
-    int mouse_state_l, mouse_state_m, mouse_state_r;
-    int mouse_last_x, mouse_last_y;
-    int mouse_lastclick_x, mouse_lastclick_y;
-    int mouse_lastup_x, mouse_lastup_y;
+    Point mouse_pos;
     int mouse_show;
 
     LPMSG_KEY_PROC   callback_key;
@@ -212,7 +215,7 @@ struct _graph_setting
     void*            callback_mouse_param;
     LPCALLBACK_PROC  callback_close;
 
-    /* 键盘状态记录 */
+    /* 按键状态记录 */
     int keystatemap[MAX_KEY_VCODE];
 
     /* egeControlBase */
@@ -237,7 +240,8 @@ struct _graph_setting
     /* 函数用临时缓冲区 */
     DWORD g_t_buff[1024 * 8];
 
-    _graph_setting() { window_caption = EGE_TITLE_W; }
+public:
+    _graph_setting();
 };
 
 template <typename T> struct count_ptr
@@ -307,7 +311,7 @@ private:
     // Mutex* m_mutex;
 };
 
-void internal_panic(LPCWSTR errmsg);
+void internal_panic(const wchar_t* errmsg);
 
 HBITMAP newbitmap(int width, int height, PDWORD* p_bmp_buf);
 

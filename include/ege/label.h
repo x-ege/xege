@@ -1,10 +1,6 @@
 #ifndef EGE_LABEL_H
 #define EGE_LABEL_H
 
-#ifndef EGE_H
-#error include "label.h" must after include "ege.h" or "graphics.h"
-#endif
-
 #include "egecontrolbase.h"
 
 namespace ege
@@ -29,13 +25,21 @@ public:
         m_fontheight  = 12;
         m_alpha       = 0xff;
         m_transparent = false;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(m_face, sizeof(m_face), "SimSun");
+#else
         strcpy(m_face, "SimSun");
+#endif
         redraw();
     }
 
     void caption(const char* text)
     {
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(m_caption, sizeof(m_caption), text);
+#else
         strcpy(m_caption, text);
+#endif
         redraw();
     }
 
@@ -51,7 +55,11 @@ public:
 
     void font(const char* fontface)
     {
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(m_face, sizeof(m_face), fontface);
+#else
         strcpy(m_face, fontface);
+#endif
         redraw();
     }
 
