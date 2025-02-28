@@ -3020,7 +3020,7 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
 
     for (int dy = 1; dy < 24; dy++) {
         setcolor(HSLtoRGB(240.0f, 1.0f, 0.5f + float(dy / 24.0 * 0.3)), &window);
-        line(1, dy, w - 1, dy, &window);
+        line(1, dy*h/defaultHeight, w - 1, dy*h/defaultHeight, &window);
     }
 
     setcolor(0xFFFFFF, &window);
