@@ -162,6 +162,48 @@ static int redraw_window(_graph_setting* pg, HDC dc)
 }
 */
 
+/**
+ * @brief 将后台帧缓冲中指定区域的内容复制到前台帧缓冲指定区域
+ * @param frontDC     前台帧缓冲设备句柄
+ * @param frontPoint  前台帧缓冲指定区域的左上角坐标(设备坐标)
+ * @param backDC      后台帧缓冲设备句柄
+ * @param rect        后台帧缓冲中要复制内容的区域(设备坐标)
+ * @return 错误码
+ * @warning 内部使用 BitBlt 进行复制，会受 GDI 坐标变换和视口原点影响，旋转和剪切变换会发生错误。
+ */
+int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect& rect)
+{
+    /* Note: BitBlt 参数指定的位置受 GDI 坐标变换和视口原点影响 */
+
+    /* 保存影响 BitBlt 的设置 */
+    POINT oldViewportOrigin, oldWindowOrigin;
+    SetViewportOrgEx(backDC, 0, 0, &oldViewportOrigin);
+    SetWindowOrgEx(backDC, 0, 0, &oldWindowOrigin);
+    int oldMapMode = SetMapMode(backDC, MM_TEXT);
+
+    XFORM xform;
+    int oldGraphicsMode = GetGraphicsMode(backDC);
+    if (oldGraphicsMode == GM_ADVANCED) {
+        GetWorldTransform(backDC, &xform);
+        ModifyWorldTransform(backDC, NULL, MWT_IDENTITY);
+        SetGraphicsMode(backDC, GM_COMPATIBLE);
+    }
+
+    bool retColde = BitBlt(frontDC, frontPoint.x, frontPoint.y, rect.width, rect.height, backDC, rect.x, rect.y, SRCCOPY);
+
+    /* 恢复之前的设置 */
+    SetViewportOrgEx(backDC, oldViewportOrigin.x, oldViewportOrigin.y, NULL);
+    SetWindowOrgEx(backDC, oldWindowOrigin.x, oldWindowOrigin.y, NULL);
+    SetMapMode(backDC, oldMapMode);
+
+    if (oldGraphicsMode == GM_ADVANCED) {
+        SetGraphicsMode(backDC, oldGraphicsMode);
+        SetWorldTransform(backDC, &xform);;
+    }
+
+    return retColde ? grOk : grError;
+}
+
 int swapbuffers()
 {
     if (!isinitialized())
@@ -172,11 +214,9 @@ int swapbuffers()
     PIMAGE backFrameBuffer = pg->img_page[pg->visual_page];
     HDC backFrameBufferDC = backFrameBuffer->getdc();
 
-    int left = backFrameBuffer->m_vpt.left;
-    int top  = backFrameBuffer->m_vpt.top;
-
     HDC frontFrameBufferDC = GetDC(getHWnd());
-    BitBlt(frontFrameBufferDC, 0, 0, pg->base_w, pg->base_h, backFrameBufferDC, pg->base_x - left, pg->base_y - top, SRCCOPY);
+    Rect backRect(0, 0, pg->base_w, pg->base_h);
+    frameBufferCopy(frontFrameBufferDC, Point(0, 0), backFrameBufferDC, backRect);
     ReleaseDC(getHWnd(), frontFrameBufferDC);
 
     return grOk;
@@ -315,9 +355,9 @@ static void on_repaint(struct _graph_setting* pg, HWND hwnd, HDC dc)
         dc      = GetDC(hwnd);
         release = true;
     }
-    int left = pg->img_timer_update->m_vpt.left, top = pg->img_timer_update->m_vpt.top;
 
-    BitBlt(dc, 0, 0, pg->base_w, pg->base_h, pg->img_timer_update->m_hDC, pg->base_x - left, pg->base_y - top, SRCCOPY);
+    frameBufferCopy(dc, Point(0, 0), pg->img_timer_update->m_hDC, Rect(0, 0, pg->base_w, pg->base_h));
+
     if (release) {
         ReleaseDC(hwnd, dc);
     }
@@ -1048,10 +1088,24 @@ void gdiplusinit()
  */
 Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics)
 {
+    /* 重置视口原点(如果不重置会影响到 GDI+ Graphics 对象坐标系原点) */
+    POINT origin;
+    SetViewportOrgEx(hdc, 0, 0, &origin);
+
+    /* 清除 GDI 裁剪区域，不清除则会对 GDI+ 的裁剪区域造成莫名影响 */
+    HRGN oldClipRgn = CreateRectRgn(0, 0, 0, 0);
+    int result = GetClipRgn(hdc, oldClipRgn);
+    SelectClipRgn(hdc, NULL);
+
     Gdiplus::Graphics* newGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
     /* 保持与原来相同的设置 */
     if (oldGraphics != NULL) {
+        /* 裁剪区域设置 */
+        Gdiplus::Region clipRegion;
+        oldGraphics->GetClip(&clipRegion);
+        newGraphics->SetClip(&clipRegion);
+
         /* 坐标变换设置 */
         Gdiplus::Matrix transform;
         oldGraphics->GetTransform(&transform);
@@ -1068,20 +1122,23 @@ Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* old
         /* 组合模式设置 */
         newGraphics->SetCompositingMode(oldGraphics->GetCompositingMode());
 
-        /* 裁剪区域设置 */
-        Gdiplus::Region clipRegion;
-        oldGraphics->GetClip(&clipRegion);
-        newGraphics->SetClip(&clipRegion);
-
         /* 页面单位和比例设置 */
         newGraphics->SetPageUnit(oldGraphics->GetPageUnit());
         newGraphics->SetPageScale(oldGraphics->GetPageScale());
 
-        /* 渲染原点 */
+        /* 渲染原点设置 */
         INT x, y;
         oldGraphics->GetRenderingOrigin(&x, &y);
         newGraphics->SetRenderingOrigin(x, y);
     }
+
+    /* 恢复 GDI 坐标原点和裁剪区域 */
+    SetViewportOrgEx(hdc, origin.x, origin.y, NULL);
+    if (result == 1) {
+        SelectClipRgn(hdc, oldClipRgn);
+    }
+
+    DeleteObject(oldClipRgn);
 
     return newGraphics;
 }

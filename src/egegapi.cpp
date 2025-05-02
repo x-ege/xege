@@ -1598,53 +1598,46 @@ void getviewport(int* left, int* top, int* right, int* bottom, int* clip, PCIMAG
 
 void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg)
 {
-    // struct _graph_setting * pg = &graph_setting;
-
     PIMAGE img = CONVERT_IMAGE(pimg);
 
+    Bound viewport(left, top, right, bottom, false);
+
+    if (!viewport.isNormalized()) {
+        return;
+    }
+
+    Point oldOrigin(img->m_vpt.left, img->m_vpt.top);
     SetViewportOrgEx(img->m_hDC, 0, 0, NULL);
 
-    img->m_vpt.left = left;
-    img->m_vpt.top = top;
-    img->m_vpt.right = right;
-    img->m_vpt.bottom = bottom;
+    img->m_vpt = viewport;
     img->m_enableclip = clip;
 
-    if (img->m_vpt.left < 0) {
-        img->m_vpt.left = 0;
-    }
-    if (img->m_vpt.top < 0) {
-        img->m_vpt.top = 0;
-    }
-    if (img->m_vpt.right > img->m_width) {
-        img->m_vpt.right = img->m_width;
-    }
-    if (img->m_vpt.bottom > img->m_height) {
-        img->m_vpt.bottom = img->m_height;
-    }
-
-    HRGN rgn = NULL;
-    if (img->m_enableclip) {
-        rgn = CreateRectRgn(img->m_vpt.left, img->m_vpt.top, img->m_vpt.right, img->m_vpt.bottom);
+    if (clip) {
+        HRGN rgn = CreateRectRgn(viewport.left, viewport.top, viewport.right, viewport.bottom);
+        SelectClipRgn(img->m_hDC, rgn);
+        DeleteObject(rgn);
     } else {
-        rgn = CreateRectRgn(0, 0, img->m_width, img->m_height);
+        SelectClipRgn(img->m_hDC, NULL); /* 清除裁剪区域，不做裁剪*/
     }
-    SelectClipRgn(img->m_hDC, rgn);
-    DeleteObject(rgn);
 
+    /* GDI+ 设置裁剪区域时受当前坐标系影响，确保在设备坐标系下进行 */
     Gdiplus::Graphics* graphics = img->getGraphics();
-    if (img->m_enableclip) {
-        const Bound& viewport = img->m_vpt;
-        Gdiplus::Rect clipRect(viewport.x(), viewport.y(), viewport.width(), viewport.height());
-        graphics->SetClip(clipRect);
+    Gdiplus::Matrix matrix;
+    graphics->GetTransform(&matrix);
+    graphics->ResetTransform();
+
+    if (clip) {
+        graphics->SetClip(Gdiplus::Rect(viewport.x(), viewport.y(), viewport.width(), viewport.height()));
     } else {
         graphics->ResetClip();
     }
 
-    graphics->ResetTransform();
-    graphics->TranslateTransform((Gdiplus::REAL)img->m_vpt.left, (Gdiplus::REAL)img->m_vpt.top);
+    /* 恢复 GDI+ 坐标系，同时将原点调整至视口区域左上角 */
+    graphics->SetTransform(&matrix);
+    graphics->TranslateTransform(left - oldOrigin.x, top - oldOrigin.y, Gdiplus::MatrixOrderAppend);
+    SetViewportOrgEx(img->m_hDC, left, top, NULL);
 
-    SetViewportOrgEx(img->m_hDC, img->m_vpt.left, img->m_vpt.top, NULL);
+    /* 改变视口区域后将当前位置重置为 (0, 0)*/
     MoveToEx(img->m_hDC, 0, 0, NULL);
 
     CONVERT_IMAGE_END;

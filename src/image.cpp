@@ -270,7 +270,20 @@ void IMAGE::setdefaultattribute()
 Gdiplus::Graphics* IMAGE::getGraphics()
 {
     if (NULL == m_graphics) {
+        POINT origin;
+        SetViewportOrgEx(m_hDC, 0, 0, &origin);
+        HRGN clipRgn = CreateRectRgn(0, 0, 0, 0);
+        int result = GetClipRgn(m_hDC, clipRgn);
+
         m_graphics = new Gdiplus::Graphics(m_hDC);
+
+        SetViewportOrgEx(m_hDC, origin.x, origin.y, NULL);
+        if (result == 1) {
+            SelectClipRgn(m_hDC, clipRgn);
+        }
+
+        DeleteObject(clipRgn);
+
         m_graphics->SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
         m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);
         m_graphics->SetTextRenderingHint(
@@ -330,9 +343,10 @@ int IMAGE::resize_f(int width, int height)
     }
 
     if (width == m_width && height == m_height) {
-        setviewport(0, 0, m_width, m_height, 1, this);
         return 0;
     }
+
+    Size oldWindowSize(m_width, m_height);
 
     PDWORD  bmp_buf;
     HBITMAP bitmap     = newbitmap(width, height, &bmp_buf);
@@ -344,8 +358,6 @@ int IMAGE::resize_f(int width, int height)
     m_height  = height;
     m_pBuffer = bmp_buf;
 
-    SelectClipRgn(this->m_hDC, NULL);
-
     // BITMAP 更换后需重新创建 Graphics 对象(否则会在已销毁的 old_bitmap 上绘制，引发异常)
     if (m_graphics != NULL) {
         Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
@@ -353,7 +365,14 @@ int IMAGE::resize_f(int width, int height)
         m_graphics = newGraphics;
     }
 
-    setviewport(0, 0, m_width, m_height, 1, this);
+    Bound viewport = m_vpt;
+
+    /* 当原视口区域设置为和窗口一致且不裁剪时，自动调整 */
+    if (!m_enableclip && viewport == Bound(0, 0, oldWindowSize.width, oldWindowSize.height)) {
+        viewport.set(0, 0, width, height);
+    }
+
+    setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
 
     return 0;
 }
