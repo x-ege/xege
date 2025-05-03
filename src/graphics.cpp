@@ -189,7 +189,7 @@ int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect
         SetGraphicsMode(backDC, GM_COMPATIBLE);
     }
 
-    bool retColde = BitBlt(frontDC, frontPoint.x, frontPoint.y, rect.width, rect.height, backDC, rect.x, rect.y, SRCCOPY);
+    bool copyResult = BitBlt(frontDC, frontPoint.x, frontPoint.y, rect.width, rect.height, backDC, rect.x, rect.y, SRCCOPY);
 
     /* 恢复之前的设置 */
     SetViewportOrgEx(backDC, oldViewportOrigin.x, oldViewportOrigin.y, NULL);
@@ -198,10 +198,10 @@ int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect
 
     if (oldGraphicsMode == GM_ADVANCED) {
         SetGraphicsMode(backDC, oldGraphicsMode);
-        SetWorldTransform(backDC, &xform);;
+        SetWorldTransform(backDC, &xform);
     }
 
-    return retColde ? grOk : grError;
+    return copyResult ? grOk : grError;
 }
 
 int swapbuffers()
