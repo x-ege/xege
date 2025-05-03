@@ -46,7 +46,8 @@ private:
     void reset();
 
 public:
-    viewporttype     m_vpt;
+    Bound            m_vpt;
+    bool             m_enableclip;
     textsettingstype m_texttype;
     line_style_type  m_linestyle;
     float            m_linewidth;

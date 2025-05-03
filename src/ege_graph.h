@@ -43,6 +43,8 @@ Gdiplus::LineCap convertToGdiplusLineCap(line_cap_type linecap);
 
 Gdiplus::LineJoin convertToGdiplusLineJoin(line_join_type linejoin);
 
+int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect& rect);
+
 int  swapbuffers();
 
 bool isinitialized();

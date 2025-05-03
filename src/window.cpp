@@ -152,28 +152,22 @@ void EGEAPI resizewindow(int width, int height)
         height = parentH;
     }
 
-    int w = getwidth(), h = getheight();
-    if ((width == w && height == h)) {
+    if ((width == getwidth() && height == getheight())) {
         return;
     }
 
     setmode(TRUECOLORSIZE, width | (height << 16));
-    struct _graph_setting* pg = &graph_setting;
+    _graph_setting* pg = &graph_setting;
 
     for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
         if (pg->img_page[i] != NULL) {
             resize(pg->img_page[i], width, height);
-
-            // 视口调整
-            int vleft, vtop, vright, vbottom, vclip;
-            getviewport(&vleft, &vtop, &vright, &vbottom, &vclip, pg->img_page[i]);
-            if (vleft == 0 && vtop == 0 && vright == w && vbottom == h) {
-                setviewport(0, 0, width, height, vclip, pg->img_page[i]);
-            }
         }
     }
-    // 窗口视口调整
-    window_setviewport(pg->base_x, pg->base_y, width, height);
+
+    /* 修改窗口宽高参数 */
+    pg->base_w = width;
+    pg->base_h = height;
 }
 
 int attachHWND(HWND hWnd)
