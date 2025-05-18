@@ -222,15 +222,12 @@ void flushkey()
 {
     struct _graph_setting* pg = &graph_setting;
     EGEMSG                 msg;
-    if (pg->msgkey_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
+
     if (!pg->msgkey_queue->empty()) {
         while (pg->msgkey_queue->pop(msg)) {
             ;
         }
     }
-    return;
 }
 
 int keystate(int key)

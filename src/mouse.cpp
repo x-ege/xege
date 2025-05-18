@@ -97,15 +97,12 @@ void flushmouse()
 {
     struct _graph_setting* pg = &graph_setting;
     EGEMSG                 msg;
-    if (pg->msgmouse_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
+
     if (!pg->msgmouse_queue->empty()) {
         while (pg->msgmouse_queue->pop(msg)) {
             ;
         }
     }
-    return;
 }
 
 int mousemsg()
