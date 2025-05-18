@@ -21,6 +21,16 @@
 #include <string>
 #include <cassert>
 
+// 判断一下 C++ 版本, 低于 C++11 的编译器不支持
+#if __cplusplus < 201103L
+#pragma message("C++11 or higher is required.")
+
+int main()
+{
+    return 0;
+}
+#else
+
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
 
@@ -528,4 +538,4 @@ int main()
     return 0;
 }
 
-// #endif
+#endif

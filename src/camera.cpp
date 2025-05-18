@@ -4,6 +4,8 @@
 #include <ccap.h>
 #include <cassert>
 #include <cstdint>
+#include <memory>
+#include <algorithm>
 
 #include "image.h"
 
@@ -11,16 +13,15 @@ using namespace ccap;
 
 #define CHECK_AND_PRINT_ERROR_MSG() (void(0))
 #else
-constexpr std::string_view ERROR_MSG = R"(
-EGE 错误: 当前版本的EGE未包含相机模块! 请升级至更高的 ege(25.XX) 版本 (MSVC 2017+ 或者 MinGW, Cygwin, Clang++等的支持 C++17 及以上的版本)
+static const char* ERROR_MSG =
+    "EGE 错误: 当前版本的EGE未包含相机模块! 请升级至更高的 ege(25.XX) 版本 (MSVC 2017+ 或者 MinGW, Cygwin, Clang++等的支持 C++17 及以上的版本)\n"
+    "EGE Error: The current version of EGE does not include the camera module! Please upgrade to a higher version of ege (25.XX) (MSVC 2017+ or MinGW, Cygwin, Clang++ and other versions that support C++17 and above)\n";
 
-EGE Error: The current version of EGE does not include the camera module! Please upgrade to a higher version of ege (25.XX) (MSVC 2017+ or MinGW, Cygwin, Clang++ and other versions that support C++17 and above)
-)";
-
-#define CHECK_AND_PRINT_ERROR_MSG()      \
-    do {                                 \
-        fputs(ERROR_MSG.data(), stderr); \
-        return {};                       \
+// 为了适配 C++11 之前的编译器, 这里不能 `return {};`
+#define CHECK_AND_PRINT_ERROR_MSG(...) \
+    do {                               \
+        fputs(ERROR_MSG, stderr);      \
+        return __VA_ARGS__;            \
     } while (0)
 #endif
 
@@ -31,11 +32,12 @@ class CameraFrameImp;
 // 仅仅是套壳, 避免把 std::shared_ptr 暴露出去.
 struct FrameContainer
 {
+#if EGE_ENABLE_CAMERA_CAPTURE
     std::vector<std::shared_ptr<CameraFrameImp>> allFrames;
     std::vector<std::shared_ptr<CameraFrameImp>> frameInUse;
-
-    /// 缓冲一帧, 避免黑屏.
-    std::shared_ptr<ege::IMAGE> bufferedImage;
+#else
+    int dummy;
+#endif
 };
 
 CameraFrame::CameraFrame() : m_camera(nullptr), m_frame(nullptr)
@@ -210,7 +212,7 @@ Camera::~Camera()
 
 std::vector<std::string> Camera::findDeviceNames()
 {
-    CHECK_AND_PRINT_ERROR_MSG();
+    CHECK_AND_PRINT_ERROR_MSG(std::vector<std::string>());
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_provider) {
         return m_provider->findDeviceNames();
@@ -242,7 +244,7 @@ void Camera::setFrameRate(double fps)
 
 bool Camera::open(const std::string& deviceName)
 {
-    CHECK_AND_PRINT_ERROR_MSG();
+    CHECK_AND_PRINT_ERROR_MSG(false);
 
 #if EGE_ENABLE_CAMERA_CAPTURE
 
@@ -297,7 +299,7 @@ void Camera::close()
 
 bool Camera::isOpened() const
 {
-    CHECK_AND_PRINT_ERROR_MSG();
+    CHECK_AND_PRINT_ERROR_MSG(false);
 #if EGE_ENABLE_CAMERA_CAPTURE
     return m_provider && m_provider->isOpened();
 #endif
@@ -305,7 +307,7 @@ bool Camera::isOpened() const
 
 bool Camera::start()
 {
-    CHECK_AND_PRINT_ERROR_MSG();
+    CHECK_AND_PRINT_ERROR_MSG(false);
 #if EGE_ENABLE_CAMERA_CAPTURE
     return m_provider && m_provider->start();
 #endif
@@ -313,7 +315,7 @@ bool Camera::start()
 
 bool Camera::isStarted() const
 {
-    CHECK_AND_PRINT_ERROR_MSG();
+    CHECK_AND_PRINT_ERROR_MSG(false);
 #if EGE_ENABLE_CAMERA_CAPTURE
     return m_provider && m_provider->isStarted();
 #endif
@@ -331,7 +333,7 @@ void Camera::stop()
 
 CameraFrame* Camera::grabFrame(unsigned int timeoutInMs)
 {
-    CHECK_AND_PRINT_ERROR_MSG();
+    CHECK_AND_PRINT_ERROR_MSG(NULL);
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_provider && m_provider->isStarted()) {
         auto frame = m_provider->grab(timeoutInMs);

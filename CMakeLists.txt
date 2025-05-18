@@ -247,10 +247,8 @@ if(MSVC)
         /MP
         # /MT
         /Zl)
-    target_compile_options(xege PUBLIC
-        /Zc:__cplusplus
-    )
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    target_compile_options(xege PUBLIC /Zc:__cplusplus)
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else()
     if(CMAKE_CXX_COMPILER_ID)

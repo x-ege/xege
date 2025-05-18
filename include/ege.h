@@ -5182,7 +5182,7 @@ unsigned long EGEAPI ege_uncompress_size(const void *source, unsigned long sourc
 
 #ifndef EGE_GRAPH_LIB_BUILD
     #if defined(_MSC_VER) && (defined(HIDE_CONSOLE) || !defined(SHOW_CONSOLE))
-        // #pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+        #pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
     #endif
 
     #define Sleep(ms) delay_ms(ms)
