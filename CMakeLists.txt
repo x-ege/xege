@@ -90,6 +90,43 @@ if(EGE_ENABLE_CPP17)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
+if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
+elseif(NOT MSVC)
+    message(STATUS "CMAKE_BUILD_TYPE is set to ${CMAKE_BUILD_TYPE}")
+endif()
+
+# 检查编译器是否支持 C++17, 支持的话， 启用相机模块.
+include(CheckCXXSourceCompiles)
+
+if (MSVC)
+set(CMAKE_REQUIRED_FLAGS "/std:c++17")
+else()
+set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+endif()
+
+check_cxx_source_compiles("
+    #include <optional>
+    int main() { std::optional<int> o; return 0; }
+" COMPILER_SUPPORTS_CXX17)
+unset(CMAKE_REQUIRED_FLAGS)
+
+if (COMPILER_SUPPORTS_CXX17)
+    option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ON)
+else()
+    set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
+    message(WARNING "Camera capture is disabled because your compiler does not support C++17.")
+endif()
+
+if(EGE_ENABLE_CAMERA_CAPTURE)
+    # 将编译标准设置为 C++17, 仓库对外标准保持不变, 未引入额外的依赖.
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
+
+
 add_library(xege STATIC)
 
 target_include_directories(xege PUBLIC include)
@@ -188,6 +225,18 @@ if(EGE_ENABLE_CPP17)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
 endif()
 
+if (EGE_ENABLE_CAMERA_CAPTURE)
+    # 摄像头捕获
+    # add_subdirectory(3rdparty/ccap) 
+    # 不用 submodule, 直接引入源码, 对齐 ege 的编译条件
+    target_include_directories(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/include)
+    file(GLOB CCAP_SOURCE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/*.cpp)
+    target_sources(xege PRIVATE ${CCAP_SOURCE})
+    target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
+else()
+    message(WARNING "Camera capture is disabled because your compiler does not support C++17.")
+endif()
+
 # 设置库文件名
 set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
@@ -196,7 +245,7 @@ if(MSVC)
     target_compile_options(xege PRIVATE
         /utf-8
         /MP
-        /MT
+        # /MT
         /Zl)
     target_compile_options(xege PUBLIC
         /Zc:__cplusplus

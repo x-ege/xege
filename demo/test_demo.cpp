@@ -1,1226 +1,527 @@
-// @warning 该示例程序文本输出乱码了
-#include "graphics.h"
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
+// By wysaid
+// blog: http://wysaid.org
+// dependency: Easy Graphics Engine: https://github.com/misakamm/xege/ or http://xege.org
+// tips: 本次demo兼容vc6.0, 直接复制下方代码运行即可
 
-class SceneBase
+#define SHOW_CONSOLE
+#define _CRT_SECURE_NO_WARNINGS
+#include <graphics.h>
+#include <vector>
+#include <cmath>
+#include <cassert>
+#include <cstdio>
+
+#define PRINT_FPS 0
+
+#if PRINT_FPS
+#include <chrono>
+#endif
+
+using namespace std;
+
+struct Point
 {
-public:
-    virtual SceneBase* Update()
-    {
-        return NULL;
-    }
+    Point() : x(0), y(0), dx(0), dy(0) {}
+
+    Point(float _x, float _y, float _u, float _v) : x(_x), y(_y), dx(0), dy(0), u(_u), v(_v) {}
+
+    float x, y;
+    float dx, dy;
+    float u, v;
 };
 
-class SceneHelloWorld6 : public SceneBase
+void my_line(int* data, int width, int height, int pnt1x, int pnt1y, int pnt2x, int pnt2y, int color)
 {
-public:
-    SceneHelloWorld6(SceneBase* parent)
-    {
-        m_parent = parent;
+    int   dx   = pnt2x - pnt1x;
+    int   dy   = pnt2y - pnt1y;
+    float x    = pnt1x;
+    float y    = pnt1y;
+    int   step = 0;
+    if (abs(dx) > abs(dy)) {
+        step = abs(dx);
+    } else {
+        step = abs(dy);
     }
-
-    void smain()
-    {
-        setcolor(RED);
-        arc(100, 100, 0, 180, 50);
-        arc(200, 100, 0, 180, 50);
-        line(50, 100, 150, 200);
-        line(250, 100, 150, 200);
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n\n    setcolor(RED);\n    //画弧线，以(100,100)为圆心，0度到180度，半径50\n    arc(100, 100, 0, 180, 50);\n    //同画弧线，只是位置不同\n    arc(200, 100, 0, 180, 50);\n    //从(50,100)到(150,200)画线\n    line(50, 100, 150, 200);\n    //从(250,100)到(150,200)画线\n    line(250, 100, 150, 200);\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-
-        smain();
-
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return m_parent;
-    }
-
-private:
-    SceneBase* m_parent;
-};
-
-class SceneHelloWorld5 : public SceneBase
-{
-public:
-    SceneHelloWorld5(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-
-    void smain()
-    {
-        setcolor(YELLOW);
-        //setfillstyle(SOLID_FILL, MAGENTA);
-        fillellipse(150, 200, 50, 100);
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为黄色\n    setcolor(YELLOW);\n    //设置填充颜色为紫红色\n    setfillstyle(SOLID_FILL, MAGENTA);\n    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆\n    fillellipse(150, 200, 50, 100);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-
-        smain();
-
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return new SceneHelloWorld6(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-};
-
-class SceneHelloWorld4 : public SceneBase
-{
-public:
-    SceneHelloWorld4(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-
-    void smain()
-    {
-        setfillstyle(SOLID_FILL, GREEN);
-        bar(100, 100, 200, 400);
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置填充颜色为绿色，注意是用来填充颜色\n    setfillstyle(SOLID_FILL, GREEN);\n    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色\n    bar(100, 100, 200, 400);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-
-        smain();
-
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return new SceneHelloWorld5(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-};
-
-class SceneHelloWorld3 : public SceneBase
-{
-public:
-    SceneHelloWorld3(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-
-    void smain()
-    {
-        setcolor(GREEN);
-        circle(200, 100, 80);
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为绿色\n    setcolor(GREEN);\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-
-        smain();
-
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return new SceneHelloWorld4(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-};
-
-class SceneHelloWorld2 : public SceneBase
-{
-public:
-    SceneHelloWorld2(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-    void smain()
-    {
-        circle(200, 100, 80);
-    }
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-
-        smain();
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+    float xStep = dx / (float)step;
+    float yStep = dy / (float)step;
+    for (int i = 0; i < step; i++) {
+        x += xStep;
+        y += yStep;
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            continue;
         }
-        getch();
-        return new SceneHelloWorld3(m_parent);
+        data[(int)x + (int)y * width] = color;
     }
+}
 
-private:
-    SceneBase* m_parent;
-};
-
-class SceneHelloWorld : public SceneBase
+class Net
 {
 public:
-    SceneHelloWorld(SceneBase* parent)
+    Net() : m_index(0), m_intensity(0.2f), m_lastIndex(-1) {}
+
+    ~Net() {}
+
+    void setTextureImage(PIMAGE texture)
     {
-        m_parent = parent;
+        m_texture   = texture;
+        m_texWidth  = getwidth(texture);
+        m_texHeight = getheight(texture);
     }
-    SceneBase* Update()
+
+    void setOutputTarget(PIMAGE target)
     {
-        char str[] = "//由两个斜杠\'//\'开始后面的内容为注释，不影响编译\n//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意\n//要正确编译本程序，请先为你的VC或者C-Free安装好PEX\n加了包含这个头文件后，就可以使用图形函数了\n#include \"graphics.h\"\n\nint main() //请使用int声明main，作为规范\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置字体高度为20，宽度为默认值的宋体字\n    setfont(20, 0, \"宋体\");\n\n    //在x=100,y=0的地方开始，显示一段文字\n    outtextxy(100, 0, \"Hello World\");\n\n    //等待用户按键，相当于暂停，注意这是图形库的函数\n    getch();\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        setfont(20, 0, "宋体");
-        outtextxy(100, 0, "Hello World");
-        {
-            setfont(12, 0, "宋体");
-            setcolor(0x808080);
-            line(320, 0, 320, 480);
-            setcolor(0xFFFFFF);
-            outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        m_outputTarget = target;
+        m_outputWidth  = getwidth(target);
+        m_outputHeight = getheight(target);
+    }
+
+    bool initNet(int w, int h, PIMAGE inputTexture, PIMAGE outputTarget)
+    {
+        if (w < 2 || h < 2) {
+            return false;
         }
-        getch();
-        return new SceneHelloWorld2(m_parent);
-    }
 
-private:
-    SceneBase* m_parent;
-};
+        m_texture     = inputTexture;
+        m_texWidth    = getwidth(m_texture);
+        m_texHeight   = getheight(m_texture);
+        m_textureData = (color_t*)getbuffer(m_texture);
 
-class SceneForLoop9 : public SceneBase
-{
-public:
-    SceneForLoop9(SceneBase* parent)
-    {
-        m_parent = parent;
-        img = newimage();
-    }
+        m_outputTarget = outputTarget;
+        m_outputWidth  = getwidth(m_outputTarget);
+        m_outputHeight = getheight(m_outputTarget);
 
-    ~SceneForLoop9()
-    {
-        delimage(img);
-    }
+        m_width  = w;
+        m_height = h;
 
-    void smain()
-    {
-        int y, x;
-        setbkcolor(DARKGRAY);
-        for (y = 0; y < 8; ++y)
-        {
-            for (x = 0; x < 8; ++x)
-            {
-                setfillcolor(((x^y)&1) ? BLACK : WHITE );
-                bar(x * 30, y * 30, (x + 1) * 30, (y + 1) * 30);
+        m_vec[0].resize(w * h);
+        m_vec[1].resize(w * h);
+        float widthStep  = 1.0f / (w - 1);
+        float heightStep = 1.0f / (h - 1);
+
+        for (int i = 0; i != h; ++i) {
+            const float heightI = i * heightStep;
+            int         index   = w * i;
+            for (int j = 0; j != w; ++j) {
+                const float widthJ = j * widthStep;
+                m_vec[0][index]    = Point(widthJ, heightI, widthJ, heightI);
+                m_vec[1][index]    = Point(widthJ, heightI, widthJ, heightI);
+
+                ++index;
             }
         }
-        info();
+        return true;
     }
 
-    void info()
+    void update()
     {
-        if (getwidth(img) <= 1)
-        {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int y, x;\
-\n    setbkcolor(DARKGRAY);\
-\n    for (y = 0; y < 8; ++y)\
-\n    {\
-\n        for (x = 0; x < 8; ++x)\
-\n        {\
-\n            setfillcolor(((x^y)&1) ? BLACK : WHITE );\
-\n            bar(x * 30, y * 30,\
-\n                (x+1) * 30, (y+1) * 30));\
-\n        }\
-\n    }\
-\n    getch();\n    return 0;\n}";
-            resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
-            setbkmode(TRANSPARENT, img);
-            setcolor(0x808080, img);
-            line(0, 0, 0, 480, img);
-            setcolor(0xFFFFFF, img);
-            outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
-        }
-        putimage(320, 0, img);
-    }
+        const float widthStep  = 1.0f / (m_width - 1.0f);
+        const float heightStep = 1.0f / (m_height - 1.0f);
+        int         index      = (m_index + 1) % 2;
 
-    SceneBase* Update()
-    {
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        while (kbhit())
-        {
-            getch();
-        }
-        smain();
-        getch();
-        return m_parent;
-    }
+        for (int i = 1; i < m_height - 1; ++i) {
+            const int k = m_width * i;
+            for (int j = 1; j < m_width - 1; ++j) {
+                const int h = k + j;
+                float     dx, dy;
+                dx = (m_vec[m_index][h - 1].x + m_vec[m_index][h + 1].x - m_vec[m_index][h].x * 2.0f);
+                dy = (m_vec[m_index][h - 1].y + m_vec[m_index][h + 1].y - m_vec[m_index][h].y * 2.0f);
 
-private:
-    SceneBase* m_parent;
-    PIMAGE img;
-};
+                dx += (m_vec[m_index][h - m_width].x + m_vec[m_index][h + m_width].x - m_vec[m_index][h].x * 2.0f);
+                dy += (m_vec[m_index][h - m_width].y + m_vec[m_index][h + m_width].y - m_vec[m_index][h].y * 2.0f);
 
-class SceneForLoop8 : public SceneBase
-{
-public:
-    SceneForLoop8(SceneBase* parent)
-    {
-        m_parent = parent;
-        img = newimage();
-    }
-
-    ~SceneForLoop8()
-    {
-        delimage(img);
-    }
-
-    void smain()
-    {
-        int y, x;
-        setbkcolor(DARKGRAY);
-        for (y = 0; y < 8; ++y)
-        {
-            for (x = 0; x < 8; ++x)
-            {
-                setfillstyle(SOLID_FILL, ((x^y)&1) ? BLACK : WHITE );
-                bar(x * 30, y * 30, (x + 1) * 30, (y + 1) * 30);
-            }
-        }
-        info();
-    }
-
-    void info()
-    {
-        if (getwidth(img) <= 1)
-        {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int y, x;\
-\n    setbkcolor(DARKGRAY);\
-\n    for (y = 0; y < 8; ++y)\
-\n    {\
-\n        for (x = 0; x < 8; ++x)\
-\n        {\
-\n            setfillstyle(SOLID_FILL, ((x^y)&1) ? BLACK : WHITE );\
-\n            bar(x * 30, y * 30,\
-\n                (x+1) * 30, (y+1) * 30));\
-\n        }\
-\n    }\
-\n    getch();\n    return 0;\n}";
-            resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
-            setbkmode(TRANSPARENT, img);
-            setcolor(0x808080, img);
-            line(0, 0, 0, 480, img);
-            setcolor(0xFFFFFF, img);
-            outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
-        }
-        putimage(320, 0, img);
-    }
-
-    SceneBase* Update()
-    {
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        while (kbhit())
-        {
-            getch();
-        }
-        smain();
-        getch();
-        return m_parent;
-    }
-
-private:
-    SceneBase* m_parent;
-    PIMAGE img;
-};
-
-class SceneForLoop7 : public SceneBase
-{
-public:
-    SceneForLoop7(SceneBase* parent)
-    {
-        m_parent = parent;
-        img = newimage();
-    }
-
-    ~SceneForLoop7()
-    {
-        delimage(img);
-    }
-
-    void smain()
-    {
-        int y;
-        for (y = 0; y < 360; ++y)
-        {
-            setcolor(HSVtoRGB((float)y, 1.0f, 1.0f));
-            line(0, y, 200, y);
-        }
-        info();
-    }
-
-    void info()
-    {
-        if (getwidth(img) <= 1)
-        {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    {\
-\n        int y;\
-\n        for (y = 0; y < 360; ++y)\
-\n        {\
-\n            setcolor(HSVtoRGB((float)y, 1.0f, 1.0f));\
-\n            line(0, y, 200, y);\
-\n        }\
-\n    }\n    getch();\n    return 0;\n}";
-            resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
-            setbkmode(TRANSPARENT, img);
-            setcolor(0x808080, img);
-            line(0, 0, 0, 480, img);
-            setcolor(0xFFFFFF, img);
-            outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
-        }
-        putimage(320, 0, img);
-    }
-
-    SceneBase* Update()
-    {
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        while (kbhit())
-        {
-            getch();
-        }
-        smain();
-        getch();
-        return new SceneForLoop8(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-    PIMAGE img;
-};
-
-class SceneForLoop6 : public SceneBase
-{
-public:
-    SceneForLoop6(SceneBase* parent)
-    {
-        m_parent = parent;
-        img = newimage();
-    }
-
-    ~SceneForLoop6()
-    {
-        delimage(img);
-    }
-
-    void smain()
-    {
-        int x = 0, dx = 1, color = 0;
-        for (; kbhit() == 0; delay_fps(60))
-        {
-            cleardevice();
-            if (x >= 320)
-            {
-                dx = -1;
-            }
-            else if (x <= 0)
-            {
-                dx = 1;
-            }
-            x += dx;
-            color += 1;
-            if (color >= 360)
-            {
-                color = 0;
-            }
-            setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));
-            circle(x, 100, 100);
-            info();
-        }
-    }
-
-    void info()
-    {
-        if (getwidth(img) <= 1)
-        {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int x = 0, dx = 1, color = 0; //x表示圆的横坐标，dx表示速度方向\
-\n    //动画主循环，kbhit()检测当前有没有按键，有就退出\
-\n    //delay_fps(60)控制这个循环每秒循环60次\
-\n    for (; kbhit() == 0; delay_fps(60))\
-\n    {\
-\n        cleardevice();\
-\n        //根据x来调整dx的符号\
-\n        if (x >= 320)\
-\n        {\
-\n            dx = -1;\
-\n        }\
-\n        else if (x <= 0)\
-\n        {\
-\n            dx = 1;\
-\n        }\
-\n        //通过对dx的控制，间接控制x的增减方向\
-\n        x += dx;\
-\n        color += 1;\
-\n        if (color >= 360)\
-\n        {\
-\n            color = 0;\
-\n        }\
-\n        //使用HSV方式指定颜色\
-\n        //关于HSV的介绍见图形库文档或者Google\
-\n        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));\
-\n        circle(x, 100, 100);\n    }\n    getch();\n    return 0;\n}";
-            resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
-            setbkmode(TRANSPARENT, img);
-            setcolor(0x808080, img);
-            line(0, 0, 0, 480, img);
-            setcolor(0xFFFFFF, img);
-            outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
-        }
-        putimage(320, 0, img);
-    }
-
-    SceneBase* Update()
-    {
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        while (kbhit())
-        {
-            getch();
-        }
-        smain();
-        getch();
-        return new SceneForLoop7(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-    PIMAGE img;
-};
-
-class SceneForLoop5 : public SceneBase
-{
-public:
-    SceneForLoop5(SceneBase* parent)
-    {
-        m_parent = parent;
-        img = newimage();
-    }
-
-    ~SceneForLoop5()
-    {
-        delimage(img);
-    }
-
-    void smain()
-    {
-        int x = 0, dx = 1;
-        for (; kbhit() == 0; delay_fps(60))
-        {
-            cleardevice();
-            if (x >= 320)
-            {
-                dx = -1;
-            }
-            else if (x <= 0)
-            {
-                dx = 1;
-            }
-            x += dx;
-            setcolor(0xFF0080);
-            circle(x, 100, 100);
-            info();
-        }
-    }
-
-    void info()
-    {
-        if (getwidth(img) <= 1)
-        {
-            char str[] = "#include \"graphics.h\"\n\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int x = 0, dx = 1; //x表示圆的横坐标，dx表示速度方向\
-\n    //动画主循环，kbhit()检测当前有没有按键，有就退出\
-\n    //delay_fps(60)控制这个循环每秒循环60次\
-\n    for (; kbhit() == 0; delay_fps(60))\
-\n    {\
-\n        //清屏\
-\n        cleardevice();\
-\n        //根据x来调整dx的符号\
-\n        if (x >= 320)\
-\n        {\
-\n            dx = -1;\
-\n        }\
-\n        else if (x <= 0)\
-\n        {\
-\n            dx = 1;\
-\n        }\
-\n        //通过对dx的控制，间接控制x的增减方向\
-\n        x += dx;\
-\n        //使用RGB分量方式指定颜色\
-\n        //红色为80，绿为0，蓝为FF\
-\n        setcolor(0xFF0080);\
-\n        circle(x, 100, 100);\n    }\n    getch();\n    return 0;\n}";
-            resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
-            setbkmode(TRANSPARENT, img);
-            setcolor(0x808080, img);
-            line(0, 0, 0, 480, img);
-            setcolor(0xFFFFFF, img);
-            outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
-        }
-        putimage(320, 0, img);
-    }
-
-    SceneBase* Update()
-    {
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        while (kbhit())
-        {
-            getch();
-        }
-        smain();
-        getch();
-        return new SceneForLoop6(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-    PIMAGE img;
-};
-
-class SceneForLoop4 : public SceneBase
-{
-public:
-    SceneForLoop4(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-
-    void smain()
-    {
-        for (int n = 0; n < 320; n++)
-        {
-            double x = ((double)n - 160) / 20;
-            double y = sin(x);
-            y = -y * 80 + 240;
-            putpixel(n, (int)y, WHITE);
-        }
-        line(0, 240, 320, 240);
-        line(160, 0, 160, 480);
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int n; //声明变量x\n    //变量x从0到320，取出每个横坐标\
-\n    for (int n = 0; n < 320; n++)\
-\n    {\
-\n        //映射到-8到8的浮点数范围\
-\n        double x = ((double)n - 160) / 20;\
-\n        //计算对应的y\
-\n        double y = sin(x);\
-\n        //把y映射回屏幕坐标\
-\n        y = -y * 80 + 240;\
-\n        //画出这个点\
-\n        putpixel(n, (int)y, WHITE);\
-\n    }\
-\n    //画坐标轴\
-\n    line(0, 240, 320, 240);\
-\n    line(160, 0, 160, 480);\
-\n    getch();\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-
-        smain();
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return new SceneForLoop5(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-};
-
-class SceneForLoop3 : public SceneBase
-{
-public:
-    SceneForLoop3(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-
-    void smain()
-    {
-        for (int n = 0; n < 320; n++)
-        {
-            double x = ((double)n - 160) / 80;
-            double y = x * x;
-            y = -y * 80 + 240;
-            putpixel(n, (int)y, WHITE);
-        }
-        line(0, 240, 320, 240);
-        line(160, 0, 160, 480);
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int n; //声明变量x\n    //变量x从0到320，取出每个横坐标\
-\n    for (int n = 0; n < 320; n++)\
-\n    {\
-\n        //映射到-2到2的浮点数范围\
-\n        double x = ((double)n - 160) / 80;\
-\n        //计算对应的y\
-\n        double y = x * x;\
-\n        //把y映射回屏幕坐标\
-\n        y = -y * 80 + 240;\
-\n        //画出这个点\
-\n        putpixel(n, (int)y, WHITE);\
-\n    }\
-\n    //画坐标轴\
-\n    line(0, 240, 320, 240);\
-\n    line(160, 0, 160, 480);\
-\n    getch();\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        smain();
-
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return new SceneForLoop4(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-};
-
-class SceneForLoop2 : public SceneBase
-{
-public:
-    SceneForLoop2(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-
-    void smain()
-    {
-        for (int x = 100; x < 300; x += 3)
-        {
-            putpixel(x, 100, GREEN);
-        }
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300，步长为3，这样画出虚线\n    for (x = 100; x < 300; x += 3)\n    {\n        //在y=100的地方画绿点，多个连续点构成线\n        putpixel(x, 100, GREEN);\n    }\n    getch();\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        smain();
-
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return new SceneForLoop3(m_parent);
-    }
-
-private:
-    SceneBase* m_parent;
-};
-
-class SceneForLoop : public SceneBase
-{
-public:
-    SceneForLoop(SceneBase* parent)
-    {
-        m_parent = parent;
-    }
-
-    void smain()
-    {
-        for (int x = 100; x < 300; x++)
-        {
-            putpixel(x, 100, RED);
-        }
-    }
-
-    SceneBase* Update()
-    {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300\n    for (x = 100; x < 300; x++)\n    {\n        //在y=100的地方画红点，多个连续点构成线\n        putpixel(x, 100, RED);\n    }\n    getch();\n    return 0;\n}";
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-
-        smain();
-        setfont(12, 0, "宋体");
-        setcolor(0x808080);
-        line(320, 0, 320, 480);
-        setcolor(0xFFFFFF);
-        outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
-
-        getch();
-        return new SceneForLoop2(m_parent);
-    }
-private:
-    SceneBase* m_parent;
-};
-
-class SceneArray2 : public SceneBase
-{
-public:
-    SceneArray2(SceneBase* parent)
-    {
-        m_parent = parent;
-        m_dline = 0;
-        m_resettext = 1;
-        img = newimage();
-    }
-
-    ~SceneArray2()
-    {
-        delimage(img);
-    }
-
-    void mydelay(int ms)
-    {
-        int nms = 0;
-        for ( ; nms < ms; delay_ms(50), nms += 50)
-        {
-            while (kbhit())
-            {
-                int key = getch();
-                if ( (key & KEYMSG_DOWN) == 0) continue;
-                key &= 0xFFFF;
-                if (key == 'W' || key == VK_UP)
-                {
-                    m_dline += 1;
-                    m_resettext = 1;
+                // 模拟能量损失， 当加速度方向与速度方向相反时，加快减速
+                if (((unsigned&)dx >> 31) != ((unsigned&)m_vec[m_index][h].dx >> 31)) {
+                    dx *= 1.0f + m_intensity;
                 }
-                else if ((key == 'S' || key == VK_DOWN) && m_dline > 0)
-                {
-                    m_dline -= 1;
-                    m_resettext = 1;
+
+                if (((unsigned&)dy >> 31) != ((unsigned&)m_vec[m_index][h].dy >> 31)) {
+                    dy *= 1.0f + m_intensity;
+                }
+
+                m_vec[m_index][h].dx += dx * m_intensity;
+                m_vec[m_index][h].dy += dy * m_intensity;
+                m_vec[index][h].dx    = m_vec[m_index][h].dx;
+                m_vec[index][h].dy    = m_vec[m_index][h].dy;
+
+                m_vec[index][h].x = m_vec[m_index][h].x + m_vec[index][h].dx;
+                m_vec[index][h].y = m_vec[m_index][h].y + m_vec[index][h].dy;
+            }
+        }
+        m_index = index;
+    }
+
+    void catchPoint(float x, float y)
+    {
+        int index;
+
+        if (m_lastIndex < 0) {
+            float mdis = 1e9f;
+            for (int i = 1; i < m_height - 1; ++i) {
+                const int k = m_width * i;
+                for (int j = 1; j < m_width - 1; ++j) {
+                    const int   h   = k + j;
+                    const float dis = fabsf(x - m_vec[m_index][h].x) + fabsf(y - m_vec[m_index][h].y);
+                    if (dis < mdis) {
+                        index = h;
+                        mdis  = dis;
+                    }
                 }
             }
-            info();
+            m_lastIndex = index;
+        } else {
+            index = m_lastIndex;
+        }
+
+        m_vec[0][index].x  = x;
+        m_vec[0][index].y  = y;
+        m_vec[1][index].x  = x;
+        m_vec[1][index].y  = y;
+        m_vec[0][index].dx = 0.0f;
+        m_vec[0][index].dy = 0.0f;
+        m_vec[1][index].dx = 0.0f;
+        m_vec[1][index].dy = 0.0f;
+    }
+
+    void releasePoint() { m_lastIndex = -1; }
+
+    template <class Type> inline void fillTriangle(const Type& v0, const Type& v1, const Type& v2)
+    {
+        if (v0.y == v2.y) {
+            _fillSimpleTriangle(v0, v1, v2);
+        } else if (v1.y == v2.y) {
+            _fillSimpleTriangle(v1, v0, v2);
+        } else if (v0.y == v1.y) {
+            _fillSimpleTriangle(v0, v2, v1);
+        } else {
+            _fillNormalTriangle(v0, v1, v2);
         }
     }
 
-    void display(int arr[], int n, int i)
+    template <class Type> inline void _fillSimpleTriangle(const Type& vv0, const Type& v1, const Type& vv2)
     {
-        int a;
-        cleardevice();
-        for (a = 0; a < n; ++a)
-        {
-            setcolor(WHITE);
-            setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));
-            fillellipse(100, 20 * a + 30, 9, 9);
-        }
-        if (i >= 0)
-        {
-            setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f));
-            fillellipse(80, 20 * i + 30, 9, 9);
-            fillellipse(80, 20 * (i + 1) + 30, 9, 9);
-        }
-        mydelay(500);
-    }
+        assert(vv0.y == vv2.y);
+        bool        isOK = (vv0.x < vv2.x);
+        const Type& v0   = isOK ? vv0 : vv2;
+        const Type& v2   = isOK ? vv2 : vv0;
 
-    void smain()
-    {
-        int arr[20];
-        int a, b;
-        randomize();
-        for (a = 0; a < 20; ++a)
-        {
-            arr[a] = random(32);
-        }
-        display(arr, 20, -1);
-        setfont(12, 0, "宋体");
-        outtextxy(0, 0, "请按任意键开始演示冒泡排序");
-        info();
-        getch();
-        cleardevice();
-        for (b = 20; b > 0; --b)
-        {
-            for (a = 1; a < b; ++a)
-            {
-                if ( arr[a] < arr[a-1])
-                {
-                    int t = arr[a];
-                    arr[a] = arr[a-1];
-                    arr[a-1] = t;
+        float h = v1.y - v0.y;
+
+        float dL = (v1.x - v0.x) / h;
+        float dR = (v1.x - v2.x) / h;
+
+        float dUL = (v1.u - v0.u) / h;
+        float dUR = (v1.u - v2.u) / h;
+
+        float dVL = (v1.v - v0.v) / h;
+        float dVR = (v1.v - v2.v) / h;
+
+        float xL = v0.x, xR = v2.x;
+        float uL = v0.u, uR = v2.u;
+        float vL = v0.v, vR = v2.v;
+
+        const color_t* data         = m_textureData;
+        color_t*       outputBuffer = (color_t*)getbuffer(m_outputTarget);
+
+        if (v0.y < v1.y) {
+            for (int i = v0.y; i < v1.y; ++i) {
+                float len  = xR - xL;
+                float uLen = uR - uL;
+                float vLen = vR - vL;
+                for (int j = xL; j < xR; ++j) {
+                    float percent = (j - xL) / len;
+                    float u       = uL + uLen * percent;
+                    float v       = vL + vLen * percent;
+                    if (u < 0 || v < 0 || u > 1 || v > 1 || i < 0 || j < 0 || i >= m_outputHeight || j >= m_outputWidth)
+                    {
+                        continue;
+                    }
+
+                    int ww                    = u * (m_texWidth - 1);
+                    int hh                    = v * (m_texHeight - 1);
+                    int index                 = ww + hh * m_texWidth;
+                    int outputIndex           = j + i * m_outputWidth;
+                    outputBuffer[outputIndex] = data[index];
                 }
-                display(arr, 20, a-1);
+                xL += dL;
+                xR += dR;
+                uL += dUL;
+                uR += dUR;
+                vL += dVL;
+                vR += dVR;
+            }
+        } else {
+            for (int i = v0.y; i > v1.y; --i) {
+                float len  = xR - xL;
+                float uLen = uR - uL;
+                float vLen = vR - vL;
+                for (int j = xL; j < xR; ++j) {
+                    float percent = (j - xL) / len;
+                    float u       = uL + uLen * percent;
+                    float v       = vL + vLen * percent;
+                    if (u < 0 || v < 0 || u > 1 || v > 1 || i < 0 || j < 0 || i >= m_outputHeight || j >= m_outputWidth)
+                    {
+                        continue;
+                    }
+                    int ww                              = u * (m_texWidth - 1);
+                    int hh                              = v * (m_texHeight - 1);
+                    int index                           = ww + hh * m_texWidth;
+                    outputBuffer[j + i * m_outputWidth] = data[index];
+                }
+                xL -= dL;
+                xR -= dR;
+                uL -= dUL;
+                uR -= dUR;
+                vL -= dVL;
+                vR -= dVR;
             }
         }
-        outtextxy(0, 0, "排序完成");
     }
 
-    void info()
+    template <class Type> inline void _fillNormalTriangle(const Type& v0, const Type& v1, const Type& v2)
     {
-        if (m_resettext)
-        {
-            char str[] = "#include \"graphics.h\"\n#include <stdio.h>\n#include <time.h>\n#include <string.h>\
-\nvoid display(int arr[], int n)\
-\n{\
-\n    int a;\
-\n    cleardevice();\
-\n    for (a = 0; a < n; ++a)\
-\n    {\
-\n        setcolor(WHITE);\
-\n        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));\
-\n        fillellipse(100, 20 * a, 9, 9);\
-\n    }\
-\n    if (i >= 0)\
-\n    {\
-\n        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f)));\
-\n        fillellipse(80, 20 * i + 30, 9, 9);\
-\n        fillellipse(80, 20 * (i + 1) + 30, 9, 9);\
-\n    }\
-\n    delay(500);\
-\n}\
-\nint main()\
-\n{\
-\n    int arr[20];\
-\n    int a, b;\
-\n    initgraph(640, 480);\
-\n    randomize();\
-\n    for (a = 0; a < 20; ++a)\
-\n    {\
-\n        arr[a] = random(32);\
-\n    }\
-\n    display(arr, 20);\
-\n    setfont(12, 0, \"宋体\");\
-\n    outtextxy(0, 0, \"请按任意键开始演示\");\
-\n    getch();\
-\n    cleardevice();\
-\n    for (b = 20; b > 0; --b)\
-\n    {\
-\n        for (a = 1; a < b; ++a)\
-\n        {\
-\n            if ( arr[a] < arr[a-1])\
-\n            {\
-\n                int t = arr[a];\
-\n                arr[a] = arr[b];\
-\n                arr[b] = t;\
-\n            }\
-\n            display(arr, 20, a-1);\
-\n        }\
-\n    }\
-\n    outtextxy(0, 0, \"排序完成\");\
-\n    return 0;\
-\n}\
-";
-            m_resettext = 0;
-            resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
-            setbkmode(TRANSPARENT, img);
-            setcolor(0x808080, img);
-            line(0, 0, 0, 480, img);
-            setcolor(0xFFFFFF, img);
-            outtextrect(0, 50 - m_dline * 12, 320, 2048, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+        const Type* pnts[] = {&v0, &v1, &v2};
+
+        if ((*pnts[0]).y > (*pnts[1]).y) {
+            std::swap(pnts[0], pnts[1]);
         }
-        putimage(320, 0, img);
+
+        if ((*pnts[0]).y > (*pnts[2]).y) {
+            std::swap(pnts[0], pnts[2]);
+        }
+
+        if ((*pnts[1]).y > (*pnts[2]).y) {
+            std::swap(pnts[1], pnts[2]);
+        }
+
+        const Type &vv0 = *pnts[0], &vv1 = *pnts[1], &vv2 = *pnts[2];
+
+        Type newPoint;
+
+        float percent = (vv1.y - vv0.y) / (vv2.y - vv0.y);
+
+        newPoint.x = floorf(vv0.x + (vv2.x - vv0.x) * percent);
+        newPoint.y = vv1.y;
+        newPoint.u = vv0.u + (vv2.u - vv0.u) * percent;
+        newPoint.v = vv0.v + (vv2.v - vv0.v) * percent;
+
+        _fillSimpleTriangle(newPoint, vv0, vv1);
+        _fillSimpleTriangle(newPoint, vv2, vv1);
     }
 
-    SceneBase* Update()
+    void drawNet()
     {
-        setbkcolor_f(BLACK);
-        cleardevice();
-        setcolor(LIGHTGRAY);
-        while (kbhit())
-        {
-            getch();
+        std::vector<Point>& vec = m_vec[m_index];
+        int                 sz  = vec.size();
+        int                 i; // i变量前置, 方便vc6.0 编译
+        m_pointCache.resize(sz);
+#if _MSC_VER < 1600 // 兼容vc6.0
+        Point* v = &m_pointCache[0];
+        memcpy(v, &vec[0], sz * sizeof(vec[0]));
+#else
+        Point* v = m_pointCache.data();
+        memcpy(v, vec.data(), sz * sizeof(vec[0]));
+#endif
+
+        for (i = 0; i != sz; ++i) {
+            v[i].x = floorf(v[i].x * m_outputWidth);
+            v[i].y = floorf(v[i].y * m_outputHeight);
         }
-        smain();
+
+        for (i = 1; i != m_height; ++i) {
+            const int k1 = (i - 1) * m_width;
+            const int k2 = i * m_width;
+
+            for (int j = 1; j != m_width; ++j) {
+                const int p1 = k1 + j - 1;
+                const int p2 = k1 + j;
+                const int p3 = k2 + j - 1;
+                const int p4 = k2 + j;
+
+                fillTriangle(v[p1], v[p2], v[p3]);
+                fillTriangle(v[p3], v[p2], v[p4]);
+            }
+        }
+
+        color_t* outputBuffer = (color_t*)getbuffer(m_outputTarget);
+
+        if (m_lastIndex > 0) {
+            for (i = 0; i != m_height; ++i) {
+                const int k = i * m_width;
+                for (int j = 1; j != m_width; ++j) {
+                    const int h = k + j;
+                    // line(v[h - 1].x, v[h - 1].y, v[h].x, v[h].y, m_outputTarget);
+                    my_line((int*)outputBuffer, m_outputWidth, m_outputHeight, v[h - 1].x, v[h - 1].y, v[h].x, v[h].y,
+                        0x00ffff00);
+                }
+            }
+
+            for (i = 0; i != m_width; ++i) {
+                for (int j = 1; j != m_height; ++j) {
+                    const int h2 = j * m_width + i;
+                    const int h1 = (j - 1) * m_width + i;
+                    // line(v[h1].x, v[h1].y, v[h2].x, v[h2].y, m_outputTarget);
+                    my_line((int*)outputBuffer, m_outputWidth, m_outputHeight, v[h1].x, v[h1].y, v[h2].x, v[h2].y,
+                        0x00ffff00);
+                }
+            }
+        }
+    }
+
+    void intensityInc(float f)
+    {
+        m_intensity += f;
+        if (m_intensity > 0.3f) {
+            m_intensity = 0.3f;
+        }
+    }
+
+    void intensityDec(float f)
+    {
+        m_intensity -= f;
+        if (m_intensity < 0.001f) {
+            m_intensity = 0.001f;
+        }
+    }
+
+    float getIntensity() { return m_intensity; }
+
+private:
+    vector<Point> m_vec[2];
+    vector<Point> m_pointCache;
+    int           m_index;
+    int           m_width, m_height;
+    float         m_intensity;
+    int           m_lastIndex;
+
+    PIMAGE   m_texture;
+    int      m_texWidth, m_texHeight;
+    color_t* m_textureData;
+
+    PIMAGE m_outputTarget;
+    int    m_outputWidth, m_outputHeight;
+};
+
+bool readFileNameDlg(LPSTR filename, LPCSTR title)
+{
+    OPENFILENAMEA ofna;
+    *filename = 0;
+    memset(&ofna, 0, sizeof(OPENFILENAMEA));
+    ofna.lStructSize = sizeof(OPENFILENAMEA);
+    ofna.hwndOwner   = getHWnd();
+    ofna.hInstance   = getHInstance();
+    ofna.lpstrFilter = "Image Files(*.jpg;*.png;*.bmp;*.gif)\0*.jpg;*.jpeg;*.png;*.bmp;*.gif\0All Files(*.*)\0*.*\0\0";
+    ofna.nMaxFile    = MAX_PATH;
+    ofna.lpstrDefExt = "jpg";
+    ofna.lpstrFile   = filename;
+    ofna.lpstrTitle  = title;
+    ofna.Flags       = OFN_HIDEREADONLY | OFN_CREATEPROMPT;
+    return !!GetOpenFileNameA(&ofna);
+}
+
+PIMAGE loadTexture(const char* filename)
+{
+    char   buffer[1024] = {0};
+    PIMAGE pimg         = NULL;
+
+    if (filename != NULL && *filename != '\0') {
+        strcpy(buffer, filename);
+    }
+
+    setcolor(RED);
+    outtextxy(100, 100, "按任意键选择一张图片才能进入下一步");
+
+    do {
         getch();
-        return m_parent;
-    }
 
-private:
-    SceneBase* m_parent;
-    PIMAGE img;
-    int m_dline;
-    int m_resettext;
-};
+        if (*buffer == '\0') {
+            readFileNameDlg(buffer, "Please choose an image file!");
+        }
 
-class SceneArray : public SceneBase
+        if (*buffer != '\0') {
+            pimg    = newimage();
+            int ret = getimage(pimg, buffer);
+            if (ret != 0) {
+                delimage(pimg);
+                pimg = NULL;
+            }
+        }
+    } while (pimg == NULL);
+
+    return pimg;
+}
+
+int main(int argv, char** argc)
 {
-public:
-    SceneArray(SceneBase* parent)
-    {
-        m_parent = parent;
-        img = newimage();
-    }
+    const char* showMsgRule = "使用鼠标拖动可变换网格. 当前网格强度：%g";
+    const char* infoMsg = "按'+'或者'-'可以增大或者减小网格弹力！这个版本由wysaid制作， 参见: http://blog.wysaid.org";
+    const char* titleMsg = "EGE网格 By wysaid - 2024";
 
-    ~SceneArray()
-    {
-        delimage(img);
-    }
+    initgraph(800, 600, INIT_RENDERMANUAL);
+    setcaption(titleMsg);
 
-    void smain()
-    {
-        int t = clock();
-        char str[100];
-        for (; kbhit() == 0; delay_fps(60))
-        {
-            cleardevice();
-            sprintf(str, "经过时间%d", clock() - t);
-            setfont(36, 0, "幼圆");
-            outtextxy(0, 0, str);
-            info();
-        }
-    }
+    Net    net;
+    char   buffer[1024];
+    PIMAGE pimg   = loadTexture(argv > 1 ? argc[1] : NULL);
+    PIMAGE target = newimage(getwidth(), getheight());
 
-    void info()
-    {
-        if (getwidth(img) <= 1)
-        {
-            char str[] = "#include \"graphics.h\"\n#include <stdio.h>\n#include <time.h>\n#include <string.h>\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    {\
-\n        int t = clock(); //记录超始时间\
-\n        char str[100];\
-\n        for (; kbhit() == 0; delay_fps(60))\
-\n        {\
-\n            cleardevice();\
-\n            //把clock()-t的结果输出到字符串str\
-\n            //实现简单的计时，可扩展成秒表\
-\n            sprintf(str, \"经过时间%d\", clock() - t;\
-\n            setfont(36, 0, \"幼圆\");\
-\n            outtextxy(0, 0, str);\
-\n        }\
-\n    }\
-\n    getch();\n    return 0;\n}";
-            resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
-            setbkmode(TRANSPARENT, img);
-            setcolor(0x808080, img);
-            line(0, 0, 0, 480, img);
-            setcolor(0xFFFFFF, img);
-            outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
-        }
-        putimage(320, 0, img);
-    }
+    setcolor(YELLOW, target);
+    sprintf(buffer, showMsgRule, net.getIntensity());
+    net.initNet(80, 60, pimg, target);
 
-    SceneBase* Update()
-    {
-        setbkcolor_f(BLACK);
+#if PRINT_FPS
+    std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
+    int                                            frames   = 0;
+#endif
+
+    for (; is_run(); delay_fps(60)) {
         cleardevice();
-        setcolor(LIGHTGRAY);
-        while (kbhit())
-        {
-            getch();
+
+        if (keystate(key_mouse_l)) {
+            int x, y;
+            mousepos(&x, &y);
+            net.catchPoint(x / 800.0f, y / 600.0f);
+        } else {
+            net.releasePoint();
+            //flushmouse();
         }
-        smain();
-        getch();
-        return new SceneArray2(m_parent);
-    }
 
-private:
-    SceneBase* m_parent;
-    PIMAGE img;
-};
-
-class SceneMenu : public SceneBase
-{
-public:
-    SceneMenu()
-    {
-        memset(m_strlist, 0, sizeof(m_strlist));
-        strcpy(m_strlist[0], "1.如果我刚学会Hello World");
-    }
-
-    SceneBase* Update()
-    {
-        setbkcolor_f(0x808080);
-        cleardevice();
-        setcolor(0xFFFFFF);
-        setfont(24, 0, "宋体");
-        outtextrect(100, 200, 500, 500, "1.如果我刚刚学会Hello World\n2.如果我刚刚学会循环和分支\n3.如果我刚刚学会数组和字符串\n（更多内容有待添加）\n");
-        outtextxy(100, 100, "请按数字键选你要看的内容");
-        int k;
-        while (1)
-        {
-            k = getch();
-            if (k == '1')
-            {
-                return new SceneHelloWorld(new SceneMenu);
+        if (kbhit()) {
+            switch (getch()) {
+            case '+':
+                net.intensityInc(0.005f);
+                break;
+            case '-':
+                net.intensityDec(0.005f);
+                break;
+            case 27:
+                exit(0);
             }
-            else if (k == '2')
-            {
-                return new SceneForLoop(new SceneMenu);
-            }
-            else if (k == '3')
-            {
-                return new SceneArray(new SceneMenu);
-            }
+            flushkey();
+            sprintf(buffer, showMsgRule, net.getIntensity());
         }
+
+        net.drawNet();
+        net.update();
+        putimage(0, 0, target);
+        setcolor(0x00ff0000);
+        outtextxy(10, 10, infoMsg);
+        outtextxy(10, 30, buffer);
+
+#if PRINT_FPS
+
+        ++frames;
+        std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
+        auto                                           dur         = (currentTime - lastTime).count() / 1.e6;
+        if (dur >= 1000) {
+            lastTime = currentTime;
+            printf("FPS: %d\n", frames);
+            frames = 0;
+        }
+#endif
     }
 
-private:
-    int m_x, m_y;
-    int m_highlight;
-    char m_strlist[100][32];
-};
-
-class SceneIntroduce : public SceneBase
-{
-public:
-    SceneIntroduce()
-    {
-        memset(m_str, 0, sizeof(m_str));
-        // 此处没有直接用宽字符串字面量初始化 m_str, 因为 VC6 会转出乱码
-        const char* str = "你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？\r\n本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。\r\n在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。\r\n（请按任意键继续）\r\n";
-        MultiByteToWideChar(getcodepage(), 0, str, -1, m_str, 1024);
-
-        // 理想状态:
-        // wcscpy(m_str, L"你是刚刚学习Ｃ语言的新手吗？...");
-    }
-
-    SceneBase* Update()
-    {
-        wchar_t str[1024] = {0};
-        int len = 0;
-        setfont(20, 0, "宋体");
-        for (len = 0 ; len<=0x80; delay_fps(60))
-        {
-            setbkcolor_f(EGERGB(len, len, len));
-            cleardevice();
-            ++len;
-        }
-
-        for (len = 0 ; m_str[len]; delay_fps(30))
-        {
-            wcsncpy(str, m_str, len);
-            len += 1;
-            cleardevice();
-            setcolor(0x0);
-            outtextrect(102, 101, 440, 480, str);
-            setcolor(0xFFFFFF);
-            outtextrect(100, 100, 440, 480, str);
-        }
-        getch();
-        PIMAGE img = newimage();
-        getimage(img, 0, 0, 640, 480);
-        for (len = 255 ; len>=0; delay_fps(60))
-        {
-            cleardevice();
-            putimage_alphablend(NULL, img, 0, 0, len);
-            len -= 3;
-        }
-        return new SceneMenu;
-    }
-
-private:
-    wchar_t m_str[1024];
-};
-
-int main()
-{
-    setcodepage(EGE_CODEPAGE_UTF8);
-    initgraph(640, 480);
-    SceneBase* scene = new SceneIntroduce; //SceneIntroduce; SceneMenu
-    setbkmode(TRANSPARENT);
-
-    for (SceneBase* newscene = scene; newscene != NULL; delay_fps(60))
-    {
-        newscene = scene->Update();
-        if (newscene != scene)
-        {
-            delete scene;
-            scene = newscene;
-        }
-    }
-
+    delimage(pimg);
+    delimage(target);
     closegraph();
     return 0;
 }
-
