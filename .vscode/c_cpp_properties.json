@@ -15,7 +15,10 @@
                 "${workspaceFolder}/3rdparty/libpng",
                 "${workspaceFolder}/3rdparty/ccap/include"
             ],
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compilerArgs": [
+                "/Zc:__cplusplus"
+            ]
         }
     ]
 }
