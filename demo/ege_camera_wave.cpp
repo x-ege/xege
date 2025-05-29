@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <cmath>
 
 // 判断一下 C++ 版本, 低于 C++11 的编译器不支持
 #if __cplusplus < 201103L
@@ -59,15 +60,24 @@ void my_line(int* data, int width, int height, int pnt1x, int pnt1y, int pnt2x, 
     } else {
         step = abs(dy);
     }
+
+    // 修复：添加除零检查
+    if (step == 0) {
+        // 起点和终点相同，直接绘制单点
+        if (pnt1x >= 0 && pnt1y >= 0 && pnt1x < width && pnt1y < height) {
+            data[pnt1x + pnt1y * width] = color;
+        }
+        return;
+    }
+
     float xStep = dx / (float)step;
     float yStep = dy / (float)step;
-    for (int i = 0; i < step; i++) {
+    for (int i = 0; i <= step; i++) {                      // 修复：应该包含终点，使用 <=
+        if (x >= 0 && y >= 0 && x < width && y < height) { // 修复：边界检查
+            data[(int)x + (int)y * width] = color;
+        }
         x += xStep;
         y += yStep;
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            continue;
-        }
-        data[(int)x + (int)y * width] = color;
     }
 }
 
@@ -224,6 +234,11 @@ public:
 
         float h = v1.y - v0.y;
 
+        // 修复：添加除零检查
+        if (fabs(h) < 1e-6f) {
+            return; // 三角形退化为线段，跳过
+        }
+
         float dL = (v1.x - v0.x) / h;
         float dR = (v1.x - v2.x) / h;
 
@@ -245,20 +260,27 @@ public:
                 float len  = xR - xL;
                 float uLen = uR - uL;
                 float vLen = vR - vL;
-                for (int j = xL; j < xR; ++j) {
-                    float percent = (j - xL) / len;
-                    float u       = uL + uLen * percent;
-                    float v       = vL + vLen * percent;
-                    if (u < 0 || v < 0 || u > 1 || v > 1 || i < 0 || j < 0 || i >= m_outputHeight || j >= m_outputWidth)
-                    {
-                        continue;
-                    }
 
-                    int ww                    = u * (m_texWidth - 1);
-                    int hh                    = v * (m_texHeight - 1);
-                    int index                 = ww + hh * m_texWidth;
-                    int outputIndex           = j + i * m_outputWidth;
-                    outputBuffer[outputIndex] = data[index];
+                // 修复：添加除零检查
+                if (fabs(len) > 1e-6f) {
+                    for (int j = xL; j < xR; ++j) {
+                        float percent = (j - xL) / len;
+                        float u       = uL + uLen * percent;
+                        float v       = vL + vLen * percent;
+                        if (u < 0 || v < 0 || u > 1 || v > 1 || i < 0 || j < 0 || i >= m_outputHeight ||
+                            j >= m_outputWidth)
+                        {
+                            continue;
+                        }
+
+                        // 修复：添加纹理边界检查
+                        int ww = u * (m_texWidth - 1);
+                        int hh = v * (m_texHeight - 1);
+
+                        int index                 = ww + hh * m_texWidth;
+                        int outputIndex           = j + i * m_outputWidth;
+                        outputBuffer[outputIndex] = data[index];
+                    }
                 }
                 xL += dL;
                 xR += dR;
@@ -272,19 +294,27 @@ public:
                 float len  = xR - xL;
                 float uLen = uR - uL;
                 float vLen = vR - vL;
-                for (int j = xL; j < xR; ++j) {
-                    float percent = (j - xL) / len;
-                    float u       = uL + uLen * percent;
-                    float v       = vL + vLen * percent;
-                    if (u < 0 || v < 0 || u > 1 || v > 1 || i < 0 || j < 0 || i >= m_outputHeight || j >= m_outputWidth)
-                    {
-                        continue;
+
+                // 修复：添加除零检查
+                if (fabs(len) > 1e-6f) {
+                    for (int j = xL; j < xR; ++j) {
+                        float percent = (j - xL) / len;
+                        float u       = uL + uLen * percent;
+                        float v       = vL + vLen * percent;
+                        if (u < 0 || v < 0 || u > 1 || v > 1 || i < 0 || j < 0 || i >= m_outputHeight ||
+                            j >= m_outputWidth)
+                        {
+                            continue;
+                        }
+
+                        int ww = u * (m_texWidth - 1);
+                        int hh = v * (m_texHeight - 1);
+
+                        int index                           = ww + hh * m_texWidth;
+                        outputBuffer[j + i * m_outputWidth] = data[index];
                     }
-                    int ww                              = u * (m_texWidth - 1);
-                    int hh                              = v * (m_texHeight - 1);
-                    int index                           = ww + hh * m_texWidth;
-                    outputBuffer[j + i * m_outputWidth] = data[index];
                 }
+
                 xL -= dL;
                 xR -= dR;
                 uL -= dUL;
@@ -313,9 +343,15 @@ public:
 
         const Type &vv0 = *pnts[0], &vv1 = *pnts[1], &vv2 = *pnts[2];
 
+        // 修复：添加除零检查
+        float heightDiff = vv2.y - vv0.y;
+        if (fabs(heightDiff) < 1e-6f) {
+            return; // 三角形退化，跳过
+        }
+
         Type newPoint;
 
-        float percent = (vv1.y - vv0.y) / (vv2.y - vv0.y);
+        float percent = (vv1.y - vv0.y) / heightDiff;
 
         newPoint.x = floorf(vv0.x + (vv2.x - vv0.x) * percent);
         newPoint.y = vv1.y;

@@ -11,7 +11,7 @@
 
 using namespace ccap;
 
-#define CHECK_AND_PRINT_ERROR_MSG() (void(0))
+#define CHECK_AND_PRINT_ERROR_MSG(...) (void(0))
 #else
 static const char* ERROR_MSG =
     "EGE 错误: 当前版本的EGE未包含相机模块! 请升级至更高的 ege(25.XX) 版本 (MSVC 2017+ 或者 MinGW, Cygwin, Clang++等的支持 C++17 及以上的版本)\n"
@@ -172,12 +172,12 @@ public:
         return 0;
     }
 
-    void setCcapFrame(std::shared_ptr<ccap::Frame> frame) { m_realFrame = std::move(frame); }
+    void setCcapFrame(std::shared_ptr<ccap::VideoFrame> frame) { m_realFrame = std::move(frame); }
 
-    ccap::Frame* getCcapFrame() const { return m_realFrame.get(); }
+    ccap::VideoFrame* getCcapFrame() const { return m_realFrame.get(); }
 
 private:
-    std::shared_ptr<ccap::Frame> m_realFrame;
+    std::shared_ptr<ccap::VideoFrame> m_realFrame;
     std::shared_ptr<ege::IMAGE>  m_realImage;
 };
 
@@ -258,7 +258,7 @@ bool Camera::open(const std::string& deviceName)
         m_frameContainer = new FrameContainer();
     }
 
-    m_provider->set(PropertyName::PixelFormat, ccap::PixelFormat::BGRA32);
+    m_provider->set(PropertyName::PixelFormatOutput, ccap::PixelFormat::BGRA32);
     m_provider->set(PropertyName::FrameOrientation, ccap::FrameOrientation::TopToBottom);
 
     return m_provider->open(deviceName);

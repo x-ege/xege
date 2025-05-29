@@ -235,6 +235,19 @@
             },
             "group": "build",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Camera Demo",
+            "type": "shell",
+            "command": "./ege_camera_wave.exe",
+            "options": {
+                "cwd": "${workspaceFolder}/build/demo/Debug"
+            },
+            "group": "build",
+            "problemMatcher": "$msCompile",
+            "dependsOn": [
+                "Build Demos"
+            ]
         }
     ]
 }

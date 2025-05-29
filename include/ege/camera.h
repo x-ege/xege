@@ -28,7 +28,7 @@
 namespace ccap
 {
 class Provider;
-struct Frame;
+struct VideoFrame;
 } // namespace ccap
 
 namespace ege
@@ -85,7 +85,7 @@ public:
 
 protected:
     Camera*      m_camera;
-    ccap::Frame* m_frame;
+    ccap::VideoFrame* m_frame;
 };
 
 class Camera

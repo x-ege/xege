@@ -1,5 +1,4 @@
 {
-    "C_Cpp.default.configurationProvider": "ms-vscode.cpptools",
     "files.associations": {
         "*.cc": "cpp",
         "*.conf": "apacheconf",
@@ -33,7 +32,6 @@
         "cstddef": "cpp",
         "cstdint": "cpp",
         "cstdio": "cpp",
-        "cstdlib": "cpp",
         "cstring": "cpp",
         "ctime": "cpp",
         "cwchar": "cpp",
@@ -72,7 +70,6 @@
         "type_traits": "cpp",
         "typeinfo": "cpp",
         "unordered_map": "cpp",
-        "utility": "cpp",
         "xfacet": "cpp",
         "xhash": "cpp",
         "xiosbase": "cpp",
@@ -86,6 +83,10 @@
         "xmemory": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
-    }
+        "xutility": "cpp",
+        "utility": "cpp",
+        "random": "cpp",
+        "cstdlib": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled",
 }
