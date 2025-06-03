@@ -2026,7 +2026,7 @@ void ege_roundrect(float x, float y, float w, float h,  float radius, PIMAGE pim
 }
 void ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg)
 {
-    ege_fillroundrect(x, y, w, h, radius,  radius,  radius,  radius);
+    ege_fillroundrect(x, y, w, h, radius,  radius,  radius,  radius, pimg);
 }
 void ege_roundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg)
 {
