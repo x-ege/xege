@@ -129,10 +129,10 @@
                 "tasks.sh",
                 "--debug",
                 "--target",
-                "xege_test",
+                "maintest",
                 "--build",
                 "--run",
-                "xege_test.exe"
+                "maintest.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

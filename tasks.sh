@@ -23,7 +23,7 @@ if [[ -z "$WIN_CMAKE_BUILD_DEFINE" ]]; then
 fi
 
 if [[ -z "$CMAKE_CONFIG_DEFINE" ]]; then
-    export CMAKE_CONFIG_DEFINE=""
+    export CMAKE_CONFIG_DEFINE="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
 fi
 
 function MY_CMAKE_BUILD_DEFINE() {
@@ -152,12 +152,12 @@ while [[ $# > 0 ]]; do
         ;;
     --run)
         if isWindows; then
-            echo "run $CMAKE_VS_DIR/$CMAKE_BUILD_TYPE/$2"
-            "$CMAKE_VS_DIR/$CMAKE_BUILD_TYPE/$2"
+            echo "run $CMAKE_VS_DIR/demo/$CMAKE_BUILD_TYPE/$2"
+            "$CMAKE_VS_DIR/demo/$CMAKE_BUILD_TYPE/$2"
         else
-            echo run "$CMAKE_VS_DIR/$2"
+            echo run "$CMAKE_VS_DIR/demo/$2"
             if command -v wine64 &>/dev/null; then
-                wine64 "$CMAKE_VS_DIR/$2"
+                wine64 "$CMAKE_VS_DIR/demo/$2"
             else
                 echo "Command 'wine64' not found, please install wine first."
             fi
