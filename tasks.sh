@@ -13,7 +13,7 @@ else
     export EXIT_WHEN_FAILED=true
 fi
 
-export BUILD_TARGET="xege" # 默认只构建 xege 静态库
+export BUILD_TARGET="" # 默认只构建 xege 静态库
 
 # 默认开Release模式
 export CMAKE_BUILD_TYPE="Release"
@@ -49,7 +49,7 @@ function loadCMakeProject() {
         cd "$CMAKE_VS_DIR" &&
         cmake $(MY_CMAKE_BUILD_DEFINE) ..; then
         echo "CMake Project Loaded: MY_CMAKE_BUILD_DEFINE=$(MY_CMAKE_BUILD_DEFINE)"
-    else
+    elif $EXIT_WHEN_FAILED; then
         echo "CMake Project Load Failed!"
         exit 1
     fi
@@ -67,20 +67,27 @@ function reloadCMakeProject() {
 
 function cmakeBuildAll() {
     pushd "$CMAKE_VS_DIR"
+
+    if [[ -n "$BUILD_TARGET" ]]; then
+        TARGET_RULE="--target $BUILD_TARGET"
+    else
+        TARGET_RULE=""
+    fi
+
     if isWindows; then
 
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
         fi
 
-        echo start: cmake.exe --build . --target "$BUILD_TARGET" $WIN_CMAKE_BUILD_DEFINE -- /m
+        echo start: cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m
         # ref: https://stackoverflow.com/questions/11865085/out-of-a-git-console-how-do-i-execute-a-batch-file-and-then-return-to-git-conso
-        if ! cmd "/C cmake.exe --build . --target "$BUILD_TARGET" $WIN_CMAKE_BUILD_DEFINE -- /m" && $EXIT_WHEN_FAILED; then
+        if ! cmd "/C cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m" && $EXIT_WHEN_FAILED; then
             exit 1
         fi
-        echo end: cmake.exe --build . --target "$BUILD_TARGET" $WIN_CMAKE_BUILD_DEFINE -- /m
+        echo end: cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m
     else
-        if ! cmake --build . --target "$BUILD_TARGET" $(test -n "$CMAKE_BUILD_TYPE" && echo --config $CMAKE_BUILD_TYPE) -- -j $(nproc) && $EXIT_WHEN_FAILED; then
+        if ! cmake --build . $TARGET_RULE $(test -n "$CMAKE_BUILD_TYPE" && echo --config $CMAKE_BUILD_TYPE) -- -j $(nproc) && $EXIT_WHEN_FAILED; then
             exit 1
         fi
     fi
@@ -167,7 +174,9 @@ while [[ $# > 0 ]]; do
         ;;
     *)
         echo "unknown option $PARSE_KEY..."
-        exit 1
+        if $EXIT_WHEN_FAILED; then
+            exit 1
+        fi
         ;;
     esac
 done
