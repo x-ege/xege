@@ -10,6 +10,6 @@
 .idea/
 *-build-*
 
-/build
+build/
 /temp
 /out
