@@ -457,13 +457,33 @@ static void windowmanager(ege::_graph_setting* pg, bool create, struct msg_creat
 /*private function*/
 static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycode, LPARAM keyflag)
 {
+    /* https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keydown */
     unsigned msg = 0;
     if (message == WM_KEYDOWN && keycode < MAX_KEY_VCODE) {
         msg                      = 1;
         pg->keystatemap[keycode] = true;
+
+        /* 按键按下计数，LPARAM 参数第 30 位为 0 代表消息发送前按键状态为 UP */
+        if ((keyflag & 0x40000000) == 0) {
+            /* 按键按下时初次发送的消息*/
+            if (pg->key_press_count[keycode] < UINT16_MAX) {
+                pg->key_press_count[keycode]++;
+            }
+        } else {
+            /* 按键长按时重复发送的消息 */
+            if (pg->key_repeat_count[keycode] < UINT16_MAX) {
+                int repeatCount = keyflag & 0xFFFF; /* 重复次数 */
+                pg->key_repeat_count[keycode] += repeatCount;
+            }
+        }
+
     }
     if (message == WM_KEYUP && keycode < MAX_KEY_VCODE) {
         pg->keystatemap[keycode] = false;
+
+        if (pg->key_release_count[keycode] < UINT16_MAX) {
+            pg->key_release_count[keycode]++;
+        }
     }
     if (pg->callback_key) {
         int ret;
@@ -540,7 +560,14 @@ static void mouseProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     /* 鼠标按键动作 */
     if (key != 0) {
+        /* 鼠标按键状态更新*/
         pg->keystatemap[key] = msg.is_down();
+
+        /* 鼠标按键计数 */
+        uint16_t* keyCountArray = msg.is_down() ? pg->key_press_count : pg->key_release_count;
+        if (keyCountArray[key] < UINT16_MAX) {
+            keyCountArray[key]++;
+        }
 
         /* 设置鼠标消息捕获 */
         if (msg.is_down()) {
