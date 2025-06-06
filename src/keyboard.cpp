@@ -230,11 +230,11 @@ void flushkey()
     }
 }
 
-int keystate(int key)
+bool keystate(int key)
 {
     struct _graph_setting* pg = &graph_setting;
-    if (key < 0 || key >= MAX_KEY_VCODE) {
-        return -1;
+    if (key <= 0 || key >= MAX_KEY_VCODE) {
+        return false;
     }
 
     return pg->keystatemap[key];
