@@ -240,4 +240,46 @@ bool keystate(int key)
     return pg->keystatemap[key];
 }
 
+int keypress(int key)
+{
+    struct _graph_setting* pg = &graph_setting;
+
+    int keyCount = 0;
+
+    if (key > 0 && key < MAX_KEY_VCODE) {
+        keyCount = pg->key_press_count[key];
+        pg->key_press_count[key] = 0;           /* 计数清零*/
+    }
+
+    return keyCount;
 }
+
+int keyrelease(int key)
+{
+    struct _graph_setting* pg = &graph_setting;
+
+    int keyCount = 0;
+
+    if (key > 0 && key < MAX_KEY_VCODE) {
+        keyCount                   = pg->key_release_count[key];
+        pg->key_release_count[key] = 0; /* 计数清零*/
+    }
+
+    return keyCount;
+}
+
+int keyrepeat(int key)
+{
+    struct _graph_setting* pg = &graph_setting;
+
+    int keyCount = 0;
+
+    if (key > 0 && key < MAX_KEY_VCODE) {
+        keyCount = pg->key_repeat_count[key];
+        pg->key_repeat_count[key] = 0; /* 计数清零*/
+    }
+
+    return keyCount;
+}
+
+} // namespace ege

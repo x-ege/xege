@@ -4871,6 +4871,10 @@ int     EGEAPI kbhitEx(int flag);
  * @see key_code_e
  */
 bool    EGEAPI keystate(int key);
+int     EGEAPI keypress(int key);
+int     EGEAPI keyrelease(int key);
+int     EGEAPI keyrepeat(int key);
+
 
 /**
  * @brief Clear key message buffer

@@ -217,6 +217,9 @@ struct _graph_setting
 
     /* 按键状态记录 */
     bool keystatemap[MAX_KEY_VCODE];
+    uint16_t key_press_count[MAX_KEY_VCODE];
+    uint16_t key_release_count[MAX_KEY_VCODE];
+    uint16_t key_repeat_count[MAX_KEY_VCODE];
 
     /* egeControlBase */
     egeControlBase* egectrl_root;
