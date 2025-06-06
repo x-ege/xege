@@ -4870,7 +4870,7 @@ int     EGEAPI kbhitEx(int flag);
  * @note Real-time key state detection, does not consume message queue; supports keyboard and mouse keys
  * @see key_code_e
  */
-int     EGEAPI keystate(int key);
+bool    EGEAPI keystate(int key);
 
 /**
  * @brief Clear key message buffer

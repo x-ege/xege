@@ -216,7 +216,7 @@ struct _graph_setting
     LPCALLBACK_PROC  callback_close;
 
     /* 按键状态记录 */
-    int keystatemap[MAX_KEY_VCODE];
+    bool keystatemap[MAX_KEY_VCODE];
 
     /* egeControlBase */
     egeControlBase* egectrl_root;

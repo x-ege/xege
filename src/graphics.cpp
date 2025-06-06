@@ -460,10 +460,10 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
     unsigned msg = 0;
     if (message == WM_KEYDOWN && keycode < MAX_KEY_VCODE) {
         msg                      = 1;
-        pg->keystatemap[keycode] = 1;
+        pg->keystatemap[keycode] = true;
     }
     if (message == WM_KEYUP && keycode < MAX_KEY_VCODE) {
-        pg->keystatemap[keycode] = 0;
+        pg->keystatemap[keycode] = false;
     }
     if (pg->callback_key) {
         int ret;
