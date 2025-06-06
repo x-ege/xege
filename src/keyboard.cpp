@@ -99,7 +99,7 @@ int kbmsg()
 {
     struct _graph_setting* pg = &graph_setting;
     if (pg->exit_window) {
-        return grNoInitGraph;
+        return 0;
     }
     return peekallkey(pg, 3);
 }
@@ -108,7 +108,7 @@ int kbhitEx(int flag)
 {
     struct _graph_setting* pg = &graph_setting;
     if (pg->exit_window) {
-        return grNoInitGraph;
+        return 0;
     }
     if (flag == 0) {
         return peekkey(pg);
@@ -121,7 +121,7 @@ int getchEx(int flag)
 {
     struct _graph_setting* pg = &graph_setting;
     if (pg->exit_window) {
-        return grNoInitGraph;
+        return -1;
     }
 
     {
