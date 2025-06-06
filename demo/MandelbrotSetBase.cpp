@@ -119,7 +119,7 @@ int main()
         bool isLDown = false;
         int selfx, selfy, seltx, selty; // 定义选区
 
-        while (kbhit() != -1)
+        while (is_run())
         {
             m = getmouse(); // 获取一条鼠标消息
 

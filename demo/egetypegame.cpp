@@ -48,7 +48,7 @@ int main()
     setcolor(WHITE);
     setbkmode(TRANSPARENT);
     setrendermode(RENDER_MANUAL);
-    for ( ; kbhit() != -1; delay_fps(60))
+    for ( ; is_run(); delay_fps(60))
     {
         int bnew = 0, i;
         if (++t > 30) bnew = 1, t = 0;
