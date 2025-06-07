@@ -1,5 +1,5 @@
 #include "test_framework.h"
-#include "../include/ege.h"
+#include "ege.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -83,6 +83,43 @@ bool TestFramework::showWindow() {
         }
     }
     return !windowHidden;
+}
+
+bool TestFramework::setResolution(int width, int height) {
+    try {
+        // 关闭当前图形窗口
+        if (ege::is_run()) {
+            ege::closegraph();
+        }
+        
+        // 重新初始化窗口
+        ege::setinitmode(ege::INIT_DEFAULT | ege::INIT_NOFORCEEXIT);
+        ege::initgraph(width, height);
+        
+        // 更新窗口句柄
+        graphicsWindow = ege::getHWnd();
+        if (!graphicsWindow) {
+            logError("Failed to get graphics window handle after resolution change");
+            return false;
+        }
+        
+        // 设置窗口标题
+        ege::setcaption("EGE Performance Test Window");
+        
+        // 如果之前是隐藏状态，保持隐藏
+        if (windowHidden) {
+            ShowWindow(graphicsWindow, SW_HIDE);
+        }
+        
+        logInfo("Resolution changed to: " + std::to_string(width) + "x" + std::to_string(height));
+        return true;
+    } catch (const std::exception& e) {
+        logError("Exception during resolution change: " + std::string(e.what()));
+        return false;
+    } catch (...) {
+        logError("Unknown exception during resolution change");
+        return false;
+    }
 }
 
 void TestFramework::addTestCase(const std::string& name, const std::string& description, 

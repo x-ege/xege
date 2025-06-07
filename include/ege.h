@@ -1267,6 +1267,10 @@ initmode_flag  EGEAPI getinitmode();
  * @endcode
  */
 void EGEAPI initgraph(int width, int height, initmode_flag mode);
+inline void initgraph(int width, int height, int mode)
+{
+    initgraph(width, height, static_cast<initmode_flag>(mode));
+}
 
 /**
  * @brief 创建 EGE 图形化窗口（简化版本）

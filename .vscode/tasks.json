@@ -109,6 +109,8 @@
             "args": [
                 "-l",
                 "tasks.sh",
+                "--target",
+                "xege",
                 "--debug",
                 "--load",
                 "--build"

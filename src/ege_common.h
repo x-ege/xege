@@ -4,7 +4,7 @@
  * @brief
  */
 
-#include "../include/ege/types.h"
+#include "ege/types.h"
 
 #include "sbt.h"
 #include "array.h"
