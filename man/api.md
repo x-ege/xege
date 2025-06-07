@@ -178,6 +178,135 @@ EGE 库的 API 按功能分为以下主要模块：
 - `putimage(int dstx, int dsty, int dstw, int dsth, PIMAGE pimg, int srcx, int srcy, DWORD dwRop = SRCCOPY)` - 缩放显示图像
 - `putimage_transparent(PIMAGE imgdest, PIMAGE imgsrc, int nXOriginDest, int nYOriginDest, color_t crTransparent, int nXOriginSrc = 0, int nYOriginSrc = 0, int nWidthSrc = 0, int nHeightSrc = 0)` - 透明显示图像
 
+EGE 图形库的 `putimage` 系列函数是图像绘制的核心功能，提供了丰富的图像显示和处理能力：
+
+#### 基础图像绘制
+
+```cpp
+// 基础绘制 - 在指定位置绘制整个图像
+putimage(int x, int y, PCIMAGE pimg, DWORD dwRop = SRCCOPY);
+
+// 区域绘制 - 绘制图像的指定区域
+putimage(int xDest, int yDest, int widthDest, int heightDest, 
+         PCIMAGE imgSrc, int xSrc, int ySrc, DWORD dwRop = SRCCOPY);
+
+// 拉伸绘制 - 将源图像区域拉伸到目标区域
+putimage(int xDest, int yDest, int widthDest, int heightDest,
+         PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc, 
+         DWORD dwRop = SRCCOPY);
+```
+
+#### 高级透明效果
+
+```cpp
+// 透明色绘制 - 指定颜色变为透明
+putimage_transparent(PIMAGE imgDest, PCIMAGE imgSrc, 
+                     int xDest, int yDest, color_t transparentColor,
+                     int xSrc = 0, int ySrc = 0, int widthSrc = 0, int heightSrc = 0);
+
+// Alpha混合 - 半透明效果
+putimage_alphablend(PIMAGE imgDest, PCIMAGE imgSrc,
+                    int xDest, int yDest, unsigned char alpha,
+                    alpha_type alphaType = ALPHATYPE_STRAIGHT);
+
+// Alpha通道绘制 - 使用图像自身的Alpha通道
+putimage_withalpha(PIMAGE imgDest, PCIMAGE imgSrc,
+                   int xDest, int yDest, int xSrc = 0, int ySrc = 0,
+                   int widthSrc = 0, int heightSrc = 0);
+
+// Alpha透明色混合 - 结合透明色和Alpha混合
+putimage_alphatransparent(PIMAGE imgDest, PCIMAGE imgSrc,
+                          int xDest, int yDest, color_t transparentColor,
+                          unsigned char alpha, int xSrc = 0, int ySrc = 0,
+                          int widthSrc = 0, int heightSrc = 0);
+```
+
+#### 图像变换效果
+
+```cpp
+// 旋转绘制 - 围绕中心点旋转图像
+putimage_rotate(PIMAGE imgDest, PCIMAGE imgTexture,
+                int xDest, int yDest, float xCenter, float yCenter,
+                float radian, bool transparent = false,
+                int alpha = -1, bool smooth = false);
+
+// 旋转缩放 - 同时进行旋转和缩放
+putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgTexture,
+                    int xDest, int yDest, float xCenter, float yCenter,
+                    float radian, float zoom, bool transparent = false,
+                    int alpha = -1, bool smooth = false);
+
+// 旋转透明 - 旋转时指定透明色
+putimage_rotatetransparent(PIMAGE imgDest, PCIMAGE imgSrc,
+                           int xCenterDest, int yCenterDest,
+                           int xCenterSrc, int yCenterSrc,
+                           color_t transparentColor, float radian,
+                           float zoom = 1.0f);
+```
+
+#### 特殊效果
+
+```cpp
+// Alpha滤镜 - 使用另一图像作为Alpha遮罩
+putimage_alphafilter(PIMAGE imgDest, PCIMAGE imgSrc,
+                     int xDest, int yDest, PCIMAGE imgAlpha,
+                     int xSrc, int ySrc, int widthSrc, int heightSrc);
+```
+
+#### 参数说明
+
+- **dwRop**: 光栅操作码，常用值包括：
+  - `SRCCOPY`: 直接复制（默认）
+  - `SRCAND`: 按位与运算  
+  - `SRCPAINT`: 按位或运算
+  - `SRCINVERT`: 按位异或运算
+  
+- **alpha**: 透明度值 (0-255)，0为完全透明，255为完全不透明
+
+- **alphaType**: Alpha类型
+  - `ALPHATYPE_STRAIGHT`: 直接Alpha
+  - `ALPHATYPE_PREMULTIPLIED`: 预乘Alpha
+
+- **radian**: 旋转角度（弧度制，顺时针方向）
+
+- **zoom**: 缩放比例，1.0为原始大小
+
+- **smooth**: 是否使用平滑处理（抗锯齿）
+
+#### 使用示例
+
+```cpp
+#include <graphics.h>
+
+int main() {
+    initgraph(800, 600);
+    
+    PIMAGE img = newimage();
+    getimage(img, "test.png");  // 加载PNG图片
+    
+    // 基础绘制
+    putimage(100, 100, img);
+    
+    // 半透明绘制 (透明度50%)
+    putimage_alphablend(NULL, img, 200, 100, 128);
+    
+    // 旋转绘制 (旋转45度)
+    putimage_rotate(NULL, img, 300, 100, 
+                    getwidth(img)/2, getheight(img)/2, 
+                    3.14159f/4);
+    
+    // 透明色绘制 (白色变透明)
+    putimage_transparent(NULL, img, 400, 100, WHITE);
+    
+    getch();
+    delimage(img);
+    closegraph();
+    return 0;
+}
+```
+
+这些函数组合使用可以实现复杂的视觉效果，是游戏开发和图形程序设计的强大工具。
+
 ### 图像属性
 
 - `getwidth(PIMAGE pimg)` - 获取图像宽度
