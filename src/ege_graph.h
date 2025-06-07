@@ -16,7 +16,7 @@ namespace ege
 extern struct _graph_setting graph_setting;
 class egeControlBase;   // 前置声明
 
-int getinitmode();
+initmode_flag getinitmode();
 
 void logoscene();
 

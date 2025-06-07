@@ -27,6 +27,10 @@
 
 　　`EGE (Easy Graphics Engine)` 是 Windows 下的简易绘图库，是一个类似 BGI(graphics.h) 的面向 C/C++ 语言新手的图形库，它的目标也是为了替代 TC 的 BGI 库而存在。它的使用方法与 TC 中的 `graphics.h` 相当接近，对新手来说，简单，友好，容易上手，免费开源，而且因为接口意义直观，即使是之前完全没有接触过图形编程的，也能迅速学会基本的绘图。 目前，EGE 图形库已经完美支持 Visual C++ 6.0, Visual Studio 2008 ~ Visual Studio 2022, 小熊猫C++, CLion, C-Free, Dev-C++, Code::Blocks, wxDev, Eclipse for C/C++ 等 IDE，即支持使用 MinGW 为编译环境的IDE。如果你需要在 VC 下使用 `graphics.h`，那么 ege 将会是很好的替代品。
 
+### API 文档
+
+可参考: [API 文档](man/api.md)
+
 ## 为什么要写这个库？
 
 ### 许多学编程的都是从 C 语言开始入门的，而目前的现状是
