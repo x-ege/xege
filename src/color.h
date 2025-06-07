@@ -2,7 +2,7 @@
 
 #include <windef.h>
 
-#include "../include/ege/stdint.h"
+#include "ege/stdint.h"
 
 #include "ege_def.h"
 #include "ege_math.h"

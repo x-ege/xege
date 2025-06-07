@@ -1,7 +1,7 @@
 #ifndef IMAGE_GENERATOR_H
 #define IMAGE_GENERATOR_H
 
-#include "../include/ege.h"
+#include "ege.h"
 #include <vector>
 #include <string>
 

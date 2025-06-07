@@ -61,10 +61,12 @@ public:
     // 初始化和清理
     bool initialize(int windowWidth = 800, int windowHeight = 600);
     void cleanup();
-    
-    // 窗口管理
+      // 窗口管理
     bool hideWindow();
     bool showWindow();
+    
+    // 分辨率设置
+    bool setResolution(int width, int height);
     
     // 测试管理
     void addTestCase(const std::string& name, const std::string& description, 

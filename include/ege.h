@@ -567,7 +567,7 @@ enum line_join_type
  */
 enum fill_patterns
 {
-    EMPTY_FILL,         ///< 空填充（使用背景色填充）
+    EMPTY_FILL,         ///< 无填充
     SOLID_FILL,         ///< 实心填充（使用填充色填充）
     LINE_FILL,          ///< 水平线填充 ---
     LTSLASH_FILL,       ///< 细斜线填充 "///"
@@ -1267,6 +1267,10 @@ initmode_flag  EGEAPI getinitmode();
  * @endcode
  */
 void EGEAPI initgraph(int width, int height, initmode_flag mode);
+inline void initgraph(int width, int height, int mode)
+{
+    initgraph(width, height, static_cast<initmode_flag>(mode));
+}
 
 /**
  * @brief 创建 EGE 图形化窗口（简化版本）
@@ -1722,7 +1726,7 @@ color_t EGEAPI hsv2rgb(float H, float S, float V);
 color_t EGEAPI colorblend  (color_t dst, color_t src, unsigned char alpha);
 
 /**
- * @brief 颜色混合（浮点版本）
+ * @brief 颜色混合（fast版本, 精度较低）
  * @param dst 目标颜色
  * @param src 源颜色
  * @param alpha Alpha透明度（0-255）
@@ -1783,7 +1787,7 @@ color_t EGEAPI getpixel   (int x, int y, PCIMAGE pimg = NULL);
 void    EGEAPI putpixel   (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 获取像素颜色（浮点版本）
+ * @brief 获取像素颜色（快速版本, 无边界检查，无视viewport）
  * @param x x坐标
  * @param y y坐标
  * @param pimg 目标图像指针，NULL 表示当前ege窗口
@@ -1792,7 +1796,7 @@ void    EGEAPI putpixel   (int x, int y, color_t color, PIMAGE pimg = NULL);
 color_t EGEAPI getpixel_f (int x, int y, PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素颜色（浮点版本）
+ * @brief 设置像素颜色（快速版本, 无边界检查，无视viewport）
  * @param x x坐标
  * @param y y坐标
  * @param color 颜色值
@@ -1809,7 +1813,7 @@ void    EGEAPI putpixel_f (int x, int y, color_t color, PIMAGE pimg = NULL);
 void    EGEAPI putpixels  (int numOfPoints, const int* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 批量设置像素（浮点版本）
+ * @brief 批量设置像素（快速版本, 无边界检查）
  * @param numOfPoints 点的数量
  * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
  * @param pimg 目标图像指针，NULL 表示当前ege窗口
@@ -1826,7 +1830,7 @@ void    EGEAPI putpixels_f(int numOfPoints, const int* points, PIMAGE pimg = NUL
 void    EGEAPI putpixel_withalpha   (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（保留Alpha通道，浮点版本）
+ * @brief 设置像素（保留Alpha通道，快速版本, 无边界检查）
  * @param x x坐标
  * @param y y坐标
  * @param color 颜色值（包含Alpha通道）
@@ -1844,7 +1848,7 @@ void    EGEAPI putpixel_withalpha_f (int x, int y, color_t color, PIMAGE pimg = 
 void    EGEAPI putpixel_savealpha   (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（保存Alpha通道，浮点版本）
+ * @brief 设置像素（保存Alpha通道，快速版本, 无边界检查）
  * @param x x坐标
  * @param y y坐标
  * @param color 颜色值
@@ -1862,7 +1866,7 @@ void    EGEAPI putpixel_savealpha_f (int x, int y, color_t color, PIMAGE pimg = 
 void    EGEAPI putpixel_alphablend  (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（Alpha混合，浮点版本）
+ * @brief 设置像素（Alpha混合，快速版本, 无边界检查）
  * @param x x坐标
  * @param y y坐标
  * @param color 颜色值
@@ -1881,7 +1885,7 @@ void    EGEAPI putpixel_alphablend_f(int x, int y, color_t color, PIMAGE pimg = 
 void    EGEAPI putpixel_alphablend  (int x, int y, color_t color, unsigned char alphaFactor, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（Alpha混合，带透明度因子，浮点版本）
+ * @brief 设置像素（Alpha混合，带透明度因子，快速版本, 无边界检查）
  * @param x x坐标
  * @param y y坐标
  * @param color 颜色值
