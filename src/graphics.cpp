@@ -83,7 +83,7 @@ namespace ege
 // 静态分配，零初始化
 struct _graph_setting graph_setting;
 
-static int   g_initoption    = INIT_DEFAULT;
+static initmode_flag   g_initoption    = INIT_DEFAULT;
 static DWORD g_windowstyle   = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
 static DWORD g_windowexstyle = WS_EX_LEFT | WS_EX_LTRREADING;
 static int   g_windowpos_x   = CW_USEDEFAULT;
@@ -899,7 +899,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->mouse_show = true;
 }
 
-void initgraph(int width, int height, int mode)
+void initgraph(int width, int height, initmode_flag mode)
 {
     int g = TRUECOLORSIZE, m = (width) | (height << 16);
     setinitmode(mode, g_windowpos_x, g_windowpos_y);
@@ -1035,7 +1035,7 @@ BOOL init_instance(HINSTANCE hInstance)
     return TRUE;
 }
 
-void setinitmode(int mode, int x, int y)
+void setinitmode(initmode_flag mode, int x, int y)
 {
     g_initoption              = mode;
 
@@ -1060,7 +1060,7 @@ void setinitmode(int mode, int x, int y)
     g_windowpos_y = y;
 }
 
-int getinitmode()
+initmode_flag getinitmode()
 {
     return g_initoption;
 }

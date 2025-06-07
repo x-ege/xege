@@ -9,6 +9,7 @@
         "CMakeLists*.txt": "cmake",
         "params.txt": "json",
         "*.pch": "objective-cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "random": "cpp"
     }
 }
