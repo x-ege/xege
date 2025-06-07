@@ -1,5 +1,30 @@
 #!/usr/bin/env bash
 
+function isWsl() {
+    [[ -d "/mnt/c" ]] || command -v wslpath &>/dev/null
+}
+
+function isWindows() {
+    [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || isWsl || [[ -n "$WINDIR" ]]
+}
+
+if isWsl; then
+    # Switch to Git Bash when running in WSL
+    echo "You're using WSL, but WSL linux is not supported! Tring to run with Git Bash!" >&2
+    GIT_BASH_PATH_WIN=$(/mnt/c/Windows/system32/cmd.exe /C "where bash.exe" | grep -i Git | head -n 1 | tr -d '\n\r')
+    GIT_BASH_PATH_WSL=$(wslpath -u "$GIT_BASH_PATH_WIN")
+    echo "== GIT_BASH_PATH_WIN=$GIT_BASH_PATH_WIN"
+    echo "== GIT_BASH_PATH_WSL=$GIT_BASH_PATH_WSL"
+    if [[ -f "$GIT_BASH_PATH_WSL" ]]; then
+        THIS_BASE_NAME=$(basename "$0")
+        "$GIT_BASH_PATH_WSL" "$THIS_BASE_NAME" $@
+        exit $?
+    else
+        echo "Git Bash not found, please install Git Bash!" >&2
+        exit 1
+    fi
+fi
+
 cd "$(dirname "$0")"
 PROJECT_DIR=$(pwd)
 
@@ -35,11 +60,6 @@ if ! command -v grealpath && command -v realpath; then
         realpath $@
     }
 fi
-
-function isWindows() {
-    # check mingw and cygwin
-    [[ -d "/c" ]] || [[ -d "/cygdrive/c" ]]
-}
 
 function loadCMakeProject() {
 

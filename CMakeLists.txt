@@ -150,13 +150,16 @@ endif()
 # 设置库文件名
 set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
-# 打印编译器信息
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
     target_compile_options(xege PRIVATE
+        /utf-8
         /MP
         /MT
         /Zl)
+    target_compile_options(xege PUBLIC
+        /Zc:__cplusplus
+    )
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else()
