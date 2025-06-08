@@ -2991,7 +2991,17 @@ int EGEAPI putimage_alphablend(
     return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, xSrc, ySrc, 0, 0, alphaType);
 }
 
-int putimage_alphablend(PIMAGE imgDest,     // handle to dest
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    unsigned char alpha)
+{
+    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, getalphatype());
+}
+
+int EGEAPI putimage_alphablend(PIMAGE imgDest,     // handle to dest
     PCIMAGE                    imgSrc,      // handle to source
     int                        xDest,       // x-coord of destination upper-left corner
     int                        yDest,       // y-coord of destination upper-left corner
@@ -3005,6 +3015,29 @@ int putimage_alphablend(PIMAGE imgDest,     // handle to dest
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
     return imgSrc->putimage_alphablend(imgDest, xDest, yDest, alpha, xSrc, ySrc, widthSrc, heightSrc, alphaType);
+}
+
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    unsigned char alpha,
+    int xSrc,
+    int ySrc)
+{
+    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, xSrc, ySrc, getalphatype());
+}
+
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    int xSrc,
+    int ySrc)
+{
+    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, 0xff, xSrc, ySrc, getalphatype());
 }
 
 int EGEAPI putimage_alphablend(

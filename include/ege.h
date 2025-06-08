@@ -1249,6 +1249,19 @@ inline void setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT)
  */
 initmode_flag  EGEAPI getinitmode();
 
+
+/**
+ * @brief 设置全局预乘模式(预乘还是非预乘), 不设置默认预乘.
+ * 
+ * 设置后将影响图片的加载和绘制方式. 
+ * 当加载 png 带 alpha 通道的图片时，如果当前是预乘模式, 那么图像也将被加载为预乘的图像
+ * 当调用 putimage_alphablend 时, 如果当前是预乘模式, 那么将使用预乘的方式进行混合
+ */
+void EGEAPI setalphatype(alpha_type type);
+
+/// @brief 获取当前全局预乘模式
+alpha_type EGEAPI getalphatype();
+
 /**
  * @brief 创建 EGE 图形化窗口，并进行环境初始化
  * 
@@ -4380,8 +4393,23 @@ int EGEAPI putimage_alphablend(
     int xDest,
     int yDest,
     unsigned char alpha,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
-);
+    alpha_type alphaType);
+
+/**
+ * @brief Alpha混合绘制函数 - 基础版本，指定整体透明度
+ * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
+ * @param imgSrc 源 IMAGE 对象指针
+ * @param xDest 绘制位置的 x 坐标
+ * @param yDest 绘制位置的 y 坐标
+ * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
+ * @return 成功返回 grOk，失败返回相应错误码
+ */
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    unsigned char alpha = 0xff);
 
 /**
  * @brief Alpha混合绘制函数 - 指定源图像起始位置
@@ -4403,8 +4431,25 @@ int EGEAPI putimage_alphablend(
     unsigned char alpha,
     int xSrc,
     int ySrc,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    alpha_type alphaType
 );
+
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    unsigned char alpha,
+    int xSrc,
+    int ySrc);
+
+int EGEAPI putimage_alphablend(
+    PIMAGE  imgDest,
+    PCIMAGE imgSrc,
+    int xDest,
+    int yDest,
+    int xSrc,
+    int ySrc);
 
 /**
  * @brief Alpha混合绘制函数 - 指定源图像区域

@@ -89,6 +89,8 @@ static DWORD g_windowexstyle = WS_EX_LEFT | WS_EX_LTRREADING;
 static int   g_windowpos_x   = CW_USEDEFAULT;
 static int   g_windowpos_y   = CW_USEDEFAULT;
 
+static alpha_type g_alpha_type = ALPHATYPE_PREMULTIPLIED;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -1063,6 +1065,16 @@ void setinitmode(initmode_flag mode, int x, int y)
 initmode_flag getinitmode()
 {
     return g_initoption;
+}
+
+void EGEAPI setalphatype(alpha_type type)
+{
+    g_alpha_type = type;
+}
+
+alpha_type EGEAPI getalphatype()
+{
+    return g_alpha_type;
 }
 
 // 获取当前版本
