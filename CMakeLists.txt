@@ -154,10 +154,12 @@ if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
     target_compile_options(xege PRIVATE
         /utf-8
-        /Zc:__cplusplus
         /MP
         /MT
         /Zl)
+    target_compile_options(xege PUBLIC
+        /Zc:__cplusplus
+    )
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 else()

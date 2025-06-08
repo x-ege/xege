@@ -28,7 +28,6 @@ int main() {
 
     // 测试不同分辨率的透明色性能
     auto resolutions = TestFramework::getTestResolutions();
-    ImageGenerator generator;
 
     for (const auto& res : resolutions) {
         std::cout << "\nTesting resolution: " << res.width << "x" << res.height << std::endl;

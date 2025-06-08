@@ -86,7 +86,7 @@
             "group": "build",
             "problemMatcher": "$gcc"
         },
-         {
+        {
             "label": "Build All",
             "type": "shell",
             "command": "bash",
@@ -94,6 +94,22 @@
                 "-l",
                 "tasks.sh",
                 "--debug",
+                "--build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Build All (Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--release",
                 "--build"
             ],
             "options": {

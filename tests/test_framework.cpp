@@ -19,12 +19,9 @@ TestFramework::~TestFramework() {
 }
 
 bool TestFramework::initialize(int windowWidth, int windowHeight) {
-    try {
-        // 设置初始化模式，保持控制台窗口
-        ege::setinitmode(ege::INIT_DEFAULT | ege::INIT_NOFORCEEXIT);
-        
+    try {        
         // 初始化图形窗口
-        ege::initgraph(windowWidth, windowHeight);
+        ege::initgraph(windowWidth, windowHeight, ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
         
         // 获取窗口句柄
         graphicsWindow = ege::getHWnd();
@@ -93,8 +90,7 @@ bool TestFramework::setResolution(int width, int height) {
         }
         
         // 重新初始化窗口
-        ege::setinitmode(ege::INIT_DEFAULT | ege::INIT_NOFORCEEXIT);
-        ege::initgraph(width, height);
+        ege::initgraph(width, height, ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
         
         // 更新窗口句柄
         graphicsWindow = ege::getHWnd();
