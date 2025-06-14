@@ -163,6 +163,14 @@ int main() {
         double clipAvgTime = timer.getElapsedMs() / clipIterations;
         std::cout << "    With clipping - Avg time: " << clipAvgTime << " ms" << std::endl;
         std::cout << "    Operations/sec: " << (1000.0 / clipAvgTime) << std::endl;
+        
+        // 释放创建的图像内存
+        if (srcImg) {
+            delimage(srcImg);
+        }
+        if (bgImg) {
+            delimage(bgImg);
+        }
     }
       std::cout << "\nRotation performance test completed!" << std::endl;
     

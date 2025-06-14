@@ -337,6 +337,17 @@ int main() {
     std::cout << "4. 高频小图像绘制应考虑批处理或纹理打包优化" << std::endl;
     std::cout << "5. Alpha=0 的早期返回是有效优化，可在调用前预检查" << std::endl;
     
+    // 释放创建的图像内存
+    if (srcImg) {
+        delimage(srcImg);
+    }
+    if (smallSrcImg) {
+        delimage(smallSrcImg);
+    }
+    if (bgImg) {
+        delimage(bgImg);
+    }
+    
     framework.cleanup();
     return 0;
 }

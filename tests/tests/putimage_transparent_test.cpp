@@ -137,6 +137,20 @@ int main() {
         avgTime = timer.getElapsedMs() / iterations;
         std::cout << "    Many transparent pixels - Avg time: " << avgTime << " ms" << std::endl;
         std::cout << "    Operations/sec: " << (1000.0 / avgTime) << std::endl;
+        
+        // 释放创建的图像内存
+        if (srcImg) {
+            delimage(srcImg);
+        }
+        if (bgImg) {
+            delimage(bgImg);
+        }
+        if (solidImg) {
+            delimage(solidImg);
+        }
+        if (sparseImg) {
+            delimage(sparseImg);
+        }
     }
     std::cout << "\nTransparent performance test completed!" << std::endl;
 
