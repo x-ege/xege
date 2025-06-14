@@ -213,7 +213,7 @@ enum initmode_flag
     INIT_CHILD           = 0x2,   ///< 子窗口模式
     INIT_TOPMOST         = 0x4,   ///< 置顶窗口
     INIT_RENDERMANUAL    = 0x8,   ///< 手动渲染模式
-    INIT_NOFORCEEXIT     = 0x10,  ///< 禁用退出按钮
+    INIT_NOFORCEEXIT     = 0x10,  ///< 关闭窗口时不强制退出程序，只设置内部标志位，is_run() 可以获取标志位
     INIT_UNICODE         = 0x20,  ///< Unicode字符消息 (等同于setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< 隐藏窗口
     INIT_WITHLOGO        = 0x100, ///< 启动时显示EGE Logo 动画 (Debug版本下默认不显示)
@@ -567,7 +567,7 @@ enum line_join_type
  */
 enum fill_patterns
 {
-    EMPTY_FILL,         ///< 空填充（使用背景色填充）
+    EMPTY_FILL,         ///< 无填充, 对应 GDI 的 BS_NULL 无填充画刷实现。
     SOLID_FILL,         ///< 实心填充（使用填充色填充）
     LINE_FILL,          ///< 水平线填充 ---
     LTSLASH_FILL,       ///< 细斜线填充 "///"
@@ -1630,14 +1630,14 @@ void    EGEAPI setlinecolor  (color_t color, PIMAGE pimg = NULL);
 void    EGEAPI setfillcolor  (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置背景颜色
+ * @brief 设置背景颜色, 会主动将旧背景色像素替换为新背景色像素
  * @param color 背景颜色
  * @param pimg 目标图像指针，NULL 表示当前ege窗口
  */
 void    EGEAPI setbkcolor    (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置背景颜色（立即生效版本）
+ * @brief 设置背景颜色, 但不会将旧背景色像素替换为新背景色像素
  * @param color 背景颜色
  * @param pimg 目标图像指针，NULL 表示当前ege窗口
  */
@@ -1821,7 +1821,7 @@ void    EGEAPI putpixels  (int numOfPoints, const int* points, PIMAGE pimg = NUL
 void    EGEAPI putpixels_f(int numOfPoints, const int* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（保留Alpha通道）
+ * @brief 设置像素(RGB 通道设置为与 ARGB 颜色混合的结果，alpha 通道保持不变)
  * @param x x坐标
  * @param y y坐标
  * @param color 颜色值（包含Alpha通道）
@@ -1839,7 +1839,7 @@ void    EGEAPI putpixel_withalpha   (int x, int y, color_t color, PIMAGE pimg = 
 void    EGEAPI putpixel_withalpha_f (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（保存Alpha通道）
+ * @brief 设置像素 (RGB 通道替换为指定的颜色值，alpha 通道保持不变)
  * @param x x坐标
  * @param y y坐标
  * @param color 颜色值
@@ -3436,7 +3436,7 @@ void EGEAPI delay_fps (long   fps);
 void EGEAPI delay_fps (double fps);
 
 /**
- * @brief 精确按帧率延时（整数版本）
+ * @brief 带跳帧的按帧率延时
  * @param fps 目标帧率
  * @note 更精确的帧率控制
  */
