@@ -185,6 +185,8 @@ while [[ $# > 0 ]]; do
             echo run "$CMAKE_VS_DIR/demo/$2"
             if command -v wine64 &>/dev/null; then
                 wine64 "$CMAKE_VS_DIR/demo/$2"
+            elif command -v wine &>/dev/null; then
+                wine "$CMAKE_VS_DIR/demo/$2"
             else
                 echo "Command 'wine64' not found, please install wine first."
             fi
