@@ -208,155 +208,155 @@ enum graphics_modes
 
 enum initmode_flag
 {
-    INIT_DEFAULT         = 0x0,   ///< 默认模式
-    INIT_NOBORDER        = 0x1,   ///< 无边框窗口
-    INIT_CHILD           = 0x2,   ///< 子窗口模式
-    INIT_TOPMOST         = 0x4,   ///< 置顶窗口
-    INIT_RENDERMANUAL    = 0x8,   ///< 手动渲染模式
-    INIT_NOFORCEEXIT     = 0x10,  ///< 关闭窗口时不强制退出程序，只设置内部标志位，is_run() 可以获取标志位
-    INIT_UNICODE         = 0x20,  ///< Unicode字符消息 (等同于setunicodecharmessage(true))
-    INIT_HIDE            = 0x40,  ///< 隐藏窗口
-    INIT_WITHLOGO        = 0x100, ///< 启动时显示EGE Logo 动画 (Debug版本下默认不显示)
-    INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< 动画模式
+    INIT_DEFAULT         = 0x0,   ///< Default mode
+    INIT_NOBORDER        = 0x1,   ///< Borderless window
+    INIT_CHILD           = 0x2,   ///< Child window mode
+    INIT_TOPMOST         = 0x4,   ///< Topmost window
+    INIT_RENDERMANUAL    = 0x8,   ///< Manual rendering mode
+    INIT_NOFORCEEXIT     = 0x10,  ///< Don't force exit program when closing window, only set internal flag, is_run() can get the flag
+    INIT_UNICODE         = 0x20,  ///< Unicode character messages (equivalent to setunicodecharmessage(true))
+    INIT_HIDE            = 0x40,  ///< Hidden window
+    INIT_WITHLOGO        = 0x100, ///< Show EGE Logo animation on startup (not shown by default in Debug version)
+    INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< Animation mode
 };
 
 /**
  * @enum rendermode_e
- * @brief 渲染模式
+ * @brief Rendering mode
  */
 enum rendermode_e
 {
-    RENDER_AUTO,   ///< 自动渲染
-    RENDER_MANUAL  ///< 手动渲染
+    RENDER_AUTO,   ///< Automatic rendering
+    RENDER_MANUAL  ///< Manual rendering
 };
 
 /**
  * @enum graphics_errors
- * @brief 图形操作错误码
+ * @brief Graphics operation error codes
  * 
- * 定义了图形操作可能返回的各种错误代码
+ * Defines various error codes that can be returned by graphics operations
  */
 enum graphics_errors
 {
-    grOk                 = 0,           ///< 操作成功
-    grNoInitGraph        = -1,          ///< 图形系统未初始化
-    grNotDetected        = -2,          ///< 未检测到图形设备
-    grFileNotFound       = -3,          ///< 文件未找到
-    grInvalidDriver      = -4,          ///< 无效的驱动
-    grNoLoadMem          = -5,          ///< 内存加载失败
-    grNoScanMem          = -6,          ///< 扫描内存失败
-    grNoFloodMem         = -7,          ///< 填充内存失败
-    grFontNotFound       = -8,          ///< 字体未找到
-    grNoFontMem          = -9,          ///< 字体内存不足
-    grInvalidMode        = -10,         ///< 无效模式
-    grError              = -11,         ///< 通用错误
-    grIOerror            = -12,         ///< I/O错误
-    grInvalidFont        = -13,         ///< 无效字体
-    grInvalidFontNum     = -14,         ///< 无效字体编号
-    grInvalidVersion     = -18,         ///< 版本不兼容
+    grOk                 = 0,           ///< Operation successful
+    grNoInitGraph        = -1,          ///< Graphics system not initialized
+    grNotDetected        = -2,          ///< Graphics device not detected
+    grFileNotFound       = -3,          ///< File not found
+    grInvalidDriver      = -4,          ///< Invalid driver
+    grNoLoadMem          = -5,          ///< Memory loading failed
+    grNoScanMem          = -6,          ///< Scan memory failed
+    grNoFloodMem         = -7,          ///< Fill memory failed
+    grFontNotFound       = -8,          ///< Font not found
+    grNoFontMem          = -9,          ///< Insufficient font memory
+    grInvalidMode        = -10,         ///< Invalid mode
+    grError              = -11,         ///< General error
+    grIOerror            = -12,         ///< I/O error
+    grInvalidFont        = -13,         ///< Invalid font
+    grInvalidFontNum     = -14,         ///< Invalid font number
+    grInvalidVersion     = -18,         ///< Version incompatible
 
-    grException          = 0x10,        ///< EGE异常
-    grParamError         = 0x11,        ///< 参数错误
-    grInvalidRegion      = 0x12,        ///< 无效区域
-    grOutOfMemory        = 0x13,        ///< 内存不足
-    grNullPointer        = 0x14,        ///< 空指针
-    grAllocError         = 0x15,        ///< 分配错误
-    grInvalidMemory      = 0xCDCDCDCD   ///< 无效内存
+    grException          = 0x10,        ///< EGE exception
+    grParamError         = 0x11,        ///< Parameter error
+    grInvalidRegion      = 0x12,        ///< Invalid region
+    grOutOfMemory        = 0x13,        ///< Out of memory
+    grNullPointer        = 0x14,        ///< Null pointer
+    grAllocError         = 0x15,        ///< Allocation error
+    grInvalidMemory      = 0xCDCDCDCD   ///< Invalid memory
 };
 
 /**
  * @enum message_event
- * @brief 消息事件类型
+ * @brief Message event types
  * 
- * 定义了鼠标和键盘消息的事件类型，用于消息处理
+ * Defines event types for mouse and keyboard messages, used for message handling
  */
 enum message_event
 {
-    MSG_EVENT_UP         = 0x00,    ///< 按键/鼠标按钮释放事件
-    MSG_EVENT_DOWN       = 0x01,    ///< 按键/鼠标按钮按下事件
-    MSG_EVENT_CLICK      = 0x01,    ///< 鼠标单击事件（等同于DOWN）
-    MSG_EVENT_DBCLICK    = 0x02,    ///< 鼠标双击事件
-    MSG_EVENT_MOVE       = 0x04,    ///< 鼠标移动事件
-    MSG_EVENT_WHEEL      = 0x10     ///< 鼠标滚轮事件
+    MSG_EVENT_UP         = 0x00,    ///< Key/mouse button release event
+    MSG_EVENT_DOWN       = 0x01,    ///< Key/mouse button press event  
+    MSG_EVENT_CLICK      = 0x01,    ///< Mouse click event (equivalent to DOWN)
+    MSG_EVENT_DBCLICK    = 0x02,    ///< Mouse double-click event
+    MSG_EVENT_MOVE       = 0x04,    ///< Mouse move event
+    MSG_EVENT_WHEEL      = 0x10     ///< Mouse wheel event
 };
 
 /**
  * @enum message_mouse
- * @brief 鼠标按钮标识
+ * @brief Mouse button identifiers
  * 
- * 定义了不同的鼠标按钮，可以通过位或操作组合使用
+ * Defines different mouse buttons, can be combined using bitwise OR operations
  */
 enum message_mouse
 {
-    MSG_MOUSE_LEFT  	 = 0x01,    ///< 鼠标左键
-    MSG_MOUSE_RIGHT 	 = 0x02,    ///< 鼠标右键
-    MSG_MOUSE_MID   	 = 0x04     ///< 鼠标中键（滚轮按键）
+    MSG_MOUSE_LEFT  	 = 0x01,    ///< Left mouse button
+    MSG_MOUSE_RIGHT 	 = 0x02,    ///< Right mouse button
+    MSG_MOUSE_MID   	 = 0x04     ///< Middle mouse button (wheel button)
 };
 
 
 #ifndef EGE_COLOR_T_TYPEDEF
 #define EGE_COLOR_T_TYPEDEF
-/// @brief 颜色类型定义，使用32位无符号整数表示ARGB颜色
+/// @brief Color type definition, uses 32-bit unsigned integer to represent ARGB color
 typedef uint32_t color_t;
 #endif
 
 /**
  * @enum alpha_type
- * @brief Alpha通道类型
+ * @brief Alpha channel types
  * 
- * 定义了图像Alpha通道的不同处理方式
+ * Defines different handling methods for image alpha channels
  */
 enum alpha_type
 {
-    ALPHATYPE_STRAIGHT      = 0,    ///< 直接Alpha（非预乘Alpha）
-    ALPHATYPE_PREMULTIPLIED = 1     ///< 预乘Alpha
+    ALPHATYPE_STRAIGHT      = 0,    ///< Straight alpha (non-premultiplied alpha)
+    ALPHATYPE_PREMULTIPLIED = 1     ///< Premultiplied alpha
 };
 
 /**
  * @struct ege_point
- * @brief 浮点坐标点结构
+ * @brief Floating-point coordinate point structure
  * 
- * 用于表示二维空间中的一个点，坐标使用浮点数
+ * Used to represent a point in 2D space with floating-point coordinates
  */
 struct ege_point
 {
-    float x;    ///< x坐标
-    float y;    ///< y坐标
+    float x;    ///< x coordinate
+    float y;    ///< y coordinate
 };
 
 /**
  * @struct ege_rect
- * @brief 矩形区域结构
+ * @brief Rectangle area structure
  * 
- * 用于表示矩形区域，包含位置和尺寸信息
+ * Used to represent a rectangular area, including position and size information
  */
 struct ege_rect
 {
-    float x;    ///< 矩形左上角x坐标
-    float y;    ///< 矩形左上角y坐标
-    float w;    ///< 矩形宽度
-    float h;    ///< 矩形高度
+    float x;    ///< Rectangle top-left x coordinate
+    float y;    ///< Rectangle top-left y coordinate
+    float w;    ///< Rectangle width
+    float h;    ///< Rectangle height
 };
 
 /**
  * @struct ege_colpoint
- * @brief 带颜色的坐标点结构
+ * @brief Coordinate point structure with color
  * 
- * 用于表示带有颜色信息的二维坐标点，常用于渐变效果
+ * Used to represent a 2D coordinate point with color information, commonly used for gradient effects
  */
 struct ege_colpoint
 {
-    float   x;      ///< x坐标
-    float   y;      ///< y坐标
-    color_t color;  ///< 该点的颜色值
+    float   x;      ///< x coordinate
+    float   y;      ///< y coordinate
+    color_t color;  ///< Color value of this point
 };
 
 /**
  * @enum COLORS
- * @brief 预定义颜色常量
+ * @brief Predefined color constants
  * 
- * 提供了常用的颜色常量，基于Web安全色彩标准定义
- * 颜色值使用RGB格式，可以直接用于绘图函数
+ * Provides commonly used color constants, defined based on web-safe color standards
+ * Color values use RGB format and can be used directly in drawing functions
  */
 enum COLORS
 {
@@ -506,615 +506,615 @@ enum COLORS
 
 /**
  * @enum line_styles
- * @brief 线条样式
+ * @brief Line styles
  * 
- * 定义了绘制线条时可以使用的不同样式
+ * Defines different styles that can be used when drawing lines
  */
 enum line_styles
 {
-    SOLID_LINE           = PS_SOLID,        ///< 实线
-    CENTER_LINE          = PS_DASH,         ///< 中心线（虚线）
-    DOTTED_LINE          = PS_DOT,          ///< 点线
-    DASHED_LINE          = PS_DASHDOT,      ///< 点划线
-    NULL_LINE            = PS_NULL,         ///< 空线（不绘制）
-    USERBIT_LINE         = PS_USERSTYLE     ///< 用户自定义线条样式
+    SOLID_LINE           = PS_SOLID,        ///< Solid line
+    CENTER_LINE          = PS_DASH,         ///< Center line (dashed line)
+    DOTTED_LINE          = PS_DOT,          ///< Dotted line
+    DASHED_LINE          = PS_DASHDOT,      ///< Dash-dot line
+    NULL_LINE            = PS_NULL,         ///< Null line (no drawing)
+    USERBIT_LINE         = PS_USERSTYLE     ///< User-defined line style
 };
 
 /**
  * @struct line_style_type
- * @brief 线条样式结构
+ * @brief Line style structure
  * 
- * 描述线条的详细样式属性
+ * Describes detailed style attributes of lines
  */
 struct line_style_type
 {
-    int             linestyle;  ///< 线条样式
-    unsigned short  upattern;   ///< 用户定义的线条模式
-    int             thickness;  ///< 线条粗细
+    int             linestyle;  ///< Line style
+    unsigned short  upattern;   ///< User-defined line pattern
+    int             thickness;  ///< Line thickness
 };
 
 /**
  * @enum line_cap_type
- * @brief 线条端点样式
+ * @brief Line cap styles
  * 
- * 定义了线条两端的绘制样式
+ * Defines the drawing styles for line endpoints
  */
 enum line_cap_type
 {
-    LINECAP_FLAT   = 0,     ///< 平直端点
-    LINECAP_SQUARE,         ///< 方形端点  
-    LINECAP_ROUND           ///< 圆形端点
+    LINECAP_FLAT   = 0,     ///< Flat cap
+    LINECAP_SQUARE,         ///< Square cap  
+    LINECAP_ROUND           ///< Round cap
 };
 
 /**
  * @enum line_join_type
- * @brief 线条连接样式
+ * @brief Line join styles
  * 
- * 定义了多条线连接处的绘制样式
+ * Defines the drawing styles for line connection points
  */
 enum line_join_type
 {
-    LINEJOIN_MITER = 0,     ///< 尖角连接
-    LINEJOIN_BEVEL,         ///< 斜角连接
-    LINEJOIN_ROUND          ///< 圆角连接
+    LINEJOIN_MITER = 0,     ///< Miter join
+    LINEJOIN_BEVEL,         ///< Bevel join
+    LINEJOIN_ROUND          ///< Round join
 };
 
 /**
  * @enum fill_patterns
- * @brief 填充图案
+ * @brief Fill patterns
  * 
- * 定义了几何图形填充时可以使用的不同图案样式
+ * Defines different pattern styles that can be used when filling geometric shapes
  */
 enum fill_patterns
 {
-    EMPTY_FILL,         ///< 无填充
-    SOLID_FILL,         ///< 实心填充（使用填充色填充）
-    LINE_FILL,          ///< 水平线填充 ---
-    LTSLASH_FILL,       ///< 细斜线填充 "///"
-    SLASH_FILL,         ///< 粗斜线填充 "///"
-    BKSLASH_FILL,       ///< 粗反斜线填充 "\\\"
-    LTBKSLASH_FILL,     ///< 细反斜线填充 "\\\"
-    HATCH_FILL,         ///< 浅网格填充
-    XHATCH_FILL,        ///< 深交叉网格填充
-    INTERLEAVE_FILL,    ///< 交错线填充
-    WIDE_DOT_FILL,      ///< 稀疏点填充
-    CLOSE_DOT_FILL,     ///< 密集点填充
-    USER_FILL           ///< 用户自定义填充
+    EMPTY_FILL,         ///< No fill
+    SOLID_FILL,         ///< Solid fill (fill with fill color)
+    LINE_FILL,          ///< Horizontal line fill ---
+    LTSLASH_FILL,       ///< Light slash fill "///"
+    SLASH_FILL,         ///< Heavy slash fill "///"
+    BKSLASH_FILL,       ///< Heavy backslash fill "\\\"
+    LTBKSLASH_FILL,     ///< Light backslash fill "\\\"
+    HATCH_FILL,         ///< Light grid fill
+    XHATCH_FILL,        ///< Heavy cross grid fill
+    INTERLEAVE_FILL,    ///< Interleaved line fill
+    WIDE_DOT_FILL,      ///< Sparse dot fill
+    CLOSE_DOT_FILL,     ///< Dense dot fill
+    USER_FILL           ///< User-defined fill
 };
 
 /**
  * @enum fill_mode
- * @brief 填充模式
+ * @brief Fill modes
  * 
- * 定义了复杂图形的填充算法
+ * Defines filling algorithms for complex graphics
  */
 enum fill_mode
 {
-    FILLMODE_DEFAULT   = 0,     ///< 默认填充模式
-    FILLMODE_ALTERNATE = 1,     ///< 交替填充模式
-    FILLMODE_WINDING   = 2      ///< 回卷填充模式
+    FILLMODE_DEFAULT   = 0,     ///< Default fill mode
+    FILLMODE_ALTERNATE = 1,     ///< Alternate fill mode
+    FILLMODE_WINDING   = 2      ///< Winding fill mode
 };
 
 /**
  * @enum text_just
- * @brief 文本对齐方式
+ * @brief Text alignment methods
  * 
- * 定义了文本的水平和垂直对齐方式
+ * Defines horizontal and vertical alignment methods for text
  */
 enum text_just
 {
-    LEFT_TEXT            = 0,   ///< 左对齐
-    CENTER_TEXT          = 1,   ///< 居中对齐
-    RIGHT_TEXT           = 2,   ///< 右对齐
+    LEFT_TEXT            = 0,   ///< Left align
+    CENTER_TEXT          = 1,   ///< Center align
+    RIGHT_TEXT           = 2,   ///< Right align
 
-    TOP_TEXT             = 0,   ///< 上对齐
-/*  CENTER_TEXT          = 1,     已在上面定义 */
-    BOTTOM_TEXT          = 2    ///< 下对齐
+    TOP_TEXT             = 0,   ///< Top align
+/*  CENTER_TEXT          = 1,     Already defined above */
+    BOTTOM_TEXT          = 2    ///< Bottom align
 };
 
 /**
  * @struct textsettingstype
- * @brief 文本设置结构
+ * @brief Text settings structure
  * 
- * 包含文本的字体、方向、大小和对齐方式等设置
+ * Contains text settings such as font, direction, size and alignment
  */
 struct textsettingstype
 {
-    int font;       ///< 字体类型
-    int direction;  ///< 文字方向
-    int charsize;   ///< 字符大小
-    int horiz;      ///< 水平对齐方式
-    int vert;       ///< 垂直对齐方式
+    int font;       ///< Font type
+    int direction;  ///< Text direction
+    int charsize;   ///< Character size
+    int horiz;      ///< Horizontal alignment
+    int vert;       ///< Vertical alignment
 };
 
 /**
  * @enum font_styles
- * @brief 字体样式
+ * @brief Font styles
  * 
- * 定义了字体的各种样式，可以通过位或操作组合使用
+ * Defines various font styles, can be combined using bitwise OR operations
  */
 enum font_styles
 {
-    FONTSTYLE_BOLD       = 1,   ///< 粗体
-    FONTSTYLE_ITALIC     = 2,   ///< 斜体  
-    FONTSTYLE_UNDERLINE  = 4,   ///< 下划线
-    FONTSTYLE_STRIKEOUT  = 8    ///< 删除线
+    FONTSTYLE_BOLD       = 1,   ///< Bold
+    FONTSTYLE_ITALIC     = 2,   ///< Italic  
+    FONTSTYLE_UNDERLINE  = 4,   ///< Underline
+    FONTSTYLE_STRIKEOUT  = 8    ///< Strikeout
 };
 
 /**
  * @enum music_state_flag
- * @brief 音乐播放状态标志
+ * @brief Music playback state flags
  * 
- * 定义了音乐播放器的各种状态
+ * Defines various states of the music player
  */
 enum music_state_flag
 {
-    MUSIC_MODE_NOT_OPEN  = 0x0,     ///< 未打开状态
-    MUSIC_MODE_NOT_READY = 0x20C,   ///< 未就绪状态
-    MUSIC_MODE_PAUSE     = 0x211,   ///< 暂停状态
-    MUSIC_MODE_PLAY      = 0x20E,   ///< 播放状态
-    MUSIC_MODE_STOP      = 0x20D,   ///< 停止状态
-    MUSIC_MODE_OPEN      = 0x212,   ///< 已打开状态
-    MUSIC_MODE_SEEK      = 0x210    ///< 定位状态
+    MUSIC_MODE_NOT_OPEN  = 0x0,     ///< Not opened state
+    MUSIC_MODE_NOT_READY = 0x20C,   ///< Not ready state
+    MUSIC_MODE_PAUSE     = 0x211,   ///< Paused state
+    MUSIC_MODE_PLAY      = 0x20E,   ///< Playing state
+    MUSIC_MODE_STOP      = 0x20D,   ///< Stopped state
+    MUSIC_MODE_OPEN      = 0x212,   ///< Opened state
+    MUSIC_MODE_SEEK      = 0x210    ///< Seeking state
 };
 
-/// @brief 音乐操作错误代码
+/// @brief Music operation error code
 #define MUSIC_ERROR  0xFFFFFFFF
 
 /**
  * @enum key_msg_flag
- * @brief 按键消息标志
+ * @brief Key message flags
  * 
- * 定义了按键消息的类型和状态标志
+ * Defines types and state flags for key messages
  */
 enum key_msg_flag
 {
-    KEYMSG_CHAR_FLAG     = 2,       ///< 字符消息标志
-    KEYMSG_DOWN_FLAG     = 1,       ///< 按下消息标志
-    KEYMSG_UP_FLAG       = 1,       ///< 释放消息标志
+    KEYMSG_CHAR_FLAG     = 2,       ///< Character message flag
+    KEYMSG_DOWN_FLAG     = 1,       ///< Key down message flag
+    KEYMSG_UP_FLAG       = 1,       ///< Key up message flag
 
-    KEYMSG_CHAR          = 0x40000, ///< 字符消息
-    KEYMSG_DOWN          = 0x10000, ///< 按键按下消息
-    KEYMSG_UP            = 0x20000, ///< 按键释放消息
-    KEYMSG_FIRSTDOWN     = 0x80000  ///< 首次按下消息
+    KEYMSG_CHAR          = 0x40000, ///< Character message
+    KEYMSG_DOWN          = 0x10000, ///< Key down message
+    KEYMSG_UP            = 0x20000, ///< Key up message
+    KEYMSG_FIRSTDOWN     = 0x80000  ///< First key down message
 };
 
 /**
  * @enum key_code_e
- * @brief 键盘和鼠标键码
+ * @brief Keyboard and mouse key codes
  * 
- * 定义了所有可以检测的键盘按键和鼠标按钮的键码值
- * 键码值基于Windows虚拟键码(Virtual Key Codes)
+ * Defines key code values for all detectable keyboard keys and mouse buttons
+ * Key code values are based on Windows Virtual Key Codes
  */
 enum key_code_e
 {
-    // 鼠标按钮
-    key_mouse_l         = 0x01,     ///< 鼠标左键
-    key_mouse_r         = 0x02,     ///< 鼠标右键
-    key_mouse_m         = 0x04,     ///< 鼠标中键
-    key_mouse_x1        = 0x05,     ///< 鼠标X1键
-    key_mouse_x2        = 0x06,     ///< 鼠标X2键
+    // Mouse buttons
+    key_mouse_l         = 0x01,     ///< Left mouse button
+    key_mouse_r         = 0x02,     ///< Right mouse button
+    key_mouse_m         = 0x04,     ///< Middle mouse button
+    key_mouse_x1        = 0x05,     ///< Mouse X1 button
+    key_mouse_x2        = 0x06,     ///< Mouse X2 button
     
-    // 特殊功能键
-    key_back            = 0x08,     ///< 退格键 (Backspace)
-    key_tab             = 0x09,     ///< 制表键 (Tab)
-    key_enter           = 0x0d,     ///< 回车键 (Enter)
-    key_shift           = 0x10,     ///< Shift键
-    key_control         = 0x11,     ///< Ctrl键
-    key_menu            = 0x12,     ///< Alt键
-    key_pause           = 0x13,     ///< 暂停键 (Pause)
-    key_capslock        = 0x14,     ///< 大写锁定键 (Caps Lock)
-    key_esc             = 0x1b,     ///< 逃逸键 (Escape)
-    key_space           = 0x20,     ///< 空格键 (Space)
+    // Special function keys
+    key_back            = 0x08,     ///< Backspace key
+    key_tab             = 0x09,     ///< Tab key
+    key_enter           = 0x0d,     ///< Enter key
+    key_shift           = 0x10,     ///< Shift key
+    key_control         = 0x11,     ///< Ctrl key
+    key_menu            = 0x12,     ///< Alt key
+    key_pause           = 0x13,     ///< Pause key
+    key_capslock        = 0x14,     ///< Caps Lock key
+    key_esc             = 0x1b,     ///< Escape key
+    key_space           = 0x20,     ///< Space key
 
-    // 导航键
-    key_pageup          = 0x21,     ///< 向上翻页键 (Page Up)
-    key_pagedown        = 0x22,     ///< 向下翻页键 (Page Down)
-    key_end             = 0x23,     ///< 结束键 (End)
-    key_home            = 0x24,     ///< 主页键 (Home)
+    // Navigation keys
+    key_pageup          = 0x21,     ///< Page Up key
+    key_pagedown        = 0x22,     ///< Page Down key
+    key_end             = 0x23,     ///< End key
+    key_home            = 0x24,     ///< Home key
 
-    // 方向键
-    key_left            = 0x25,     ///< 左方向键
-    key_up              = 0x26,     ///< 上方向键
-    key_right           = 0x27,     ///< 右方向键
-    key_down            = 0x28,     ///< 下方向键
+    // Arrow keys
+    key_left            = 0x25,     ///< Left arrow key
+    key_up              = 0x26,     ///< Up arrow key
+    key_right           = 0x27,     ///< Right arrow key
+    key_down            = 0x28,     ///< Down arrow key
 
-    // 编辑键
-    key_print           = 0x2a,     ///< 打印键 (Print)
-    key_snapshot        = 0x2c,     ///< 截图键 (Print Screen)
-    key_insert          = 0x2d,     ///< 插入键 (Insert)
-    key_delete          = 0x2e,     ///< 删除键 (Delete)
+    // Editing keys
+    key_print           = 0x2a,     ///< Print key
+    key_snapshot        = 0x2c,     ///< Print Screen key
+    key_insert          = 0x2d,     ///< Insert key
+    key_delete          = 0x2e,     ///< Delete key
 
-    // 数字键 (主键盘区)
-    key_0               = 0x30,     ///< 数字键0
-    key_1               = 0x31,     ///< 数字键1
-    key_2               = 0x32,     ///< 数字键2
-    key_3               = 0x33,     ///< 数字键3
-    key_4               = 0x34,     ///< 数字键4
-    key_5               = 0x35,     ///< 数字键5
-    key_6               = 0x36,     ///< 数字键6
-    key_7               = 0x37,     ///< 数字键7
-    key_8               = 0x38,     ///< 数字键8
-    key_9               = 0x39,     ///< 数字键9
+    // Number keys (main keyboard)
+    key_0               = 0x30,     ///< Number key 0
+    key_1               = 0x31,     ///< Number key 1
+    key_2               = 0x32,     ///< Number key 2
+    key_3               = 0x33,     ///< Number key 3
+    key_4               = 0x34,     ///< Number key 4
+    key_5               = 0x35,     ///< Number key 5
+    key_6               = 0x36,     ///< Number key 6
+    key_7               = 0x37,     ///< Number key 7
+    key_8               = 0x38,     ///< Number key 8
+    key_9               = 0x39,     ///< Number key 9
 
-    // 字母键
-    key_A               = 0x41,     ///< 字母键A
-    key_B               = 0x42,     ///< 字母键B
-    key_C               = 0x43,     ///< 字母键C
-    key_D               = 0x44,     ///< 字母键D
-    key_E               = 0x45,     ///< 字母键E
-    key_F               = 0x46,     ///< 字母键F
-    key_G               = 0x47,     ///< 字母键G
-    key_H               = 0x48,     ///< 字母键H
-    key_I               = 0x49,     ///< 字母键I
-    key_J               = 0x4a,     ///< 字母键J
-    key_K               = 0x4b,     ///< 字母键K
-    key_L               = 0x4c,     ///< 字母键L
-    key_M               = 0x4d,     ///< 字母键M
-    key_N               = 0x4e,     ///< 字母键N
-    key_O               = 0x4f,     ///< 字母键O
-    key_P               = 0x50,     ///< 字母键P
-    key_Q               = 0x51,     ///< 字母键Q
-    key_R               = 0x52,     ///< 字母键R
-    key_S               = 0x53,     ///< 字母键S
-    key_T               = 0x54,     ///< 字母键T
-    key_U               = 0x55,     ///< 字母键U
-    key_V               = 0x56,     ///< 字母键V
-    key_W               = 0x57,     ///< 字母键W
-    key_X               = 0x58,     ///< 字母键X
-    key_Y               = 0x59,     ///< 字母键Y
-    key_Z               = 0x5a,     ///< 字母键Z
+    // Letter keys
+    key_A               = 0x41,     ///< Letter key A
+    key_B               = 0x42,     ///< Letter key B
+    key_C               = 0x43,     ///< Letter key C
+    key_D               = 0x44,     ///< Letter key D
+    key_E               = 0x45,     ///< Letter key E
+    key_F               = 0x46,     ///< Letter key F
+    key_G               = 0x47,     ///< Letter key G
+    key_H               = 0x48,     ///< Letter key H
+    key_I               = 0x49,     ///< Letter key I
+    key_J               = 0x4a,     ///< Letter key J
+    key_K               = 0x4b,     ///< Letter key K
+    key_L               = 0x4c,     ///< Letter key L
+    key_M               = 0x4d,     ///< Letter key M
+    key_N               = 0x4e,     ///< Letter key N
+    key_O               = 0x4f,     ///< Letter key O
+    key_P               = 0x50,     ///< Letter key P
+    key_Q               = 0x51,     ///< Letter key Q
+    key_R               = 0x52,     ///< Letter key R
+    key_S               = 0x53,     ///< Letter key S
+    key_T               = 0x54,     ///< Letter key T
+    key_U               = 0x55,     ///< Letter key U
+    key_V               = 0x56,     ///< Letter key V
+    key_W               = 0x57,     ///< Letter key W
+    key_X               = 0x58,     ///< Letter key X
+    key_Y               = 0x59,     ///< Letter key Y
+    key_Z               = 0x5a,     ///< Letter key Z
     
-    // Windows键
-    key_win_l           = 0x5b,     ///< 左Windows键
-    key_win_r           = 0x5c,     ///< 右Windows键
+    // Windows keys
+    key_win_l           = 0x5b,     ///< Left Windows key
+    key_win_r           = 0x5c,     ///< Right Windows key
 
-    key_sleep           = 0x5f,     ///< 休眠键
+    key_sleep           = 0x5f,     ///< Sleep key
 
-    // 数字键盘
-    key_num0            = 0x60,     ///< 数字键盘0
-    key_num1            = 0x61,     ///< 数字键盘1
-    key_num2            = 0x62,     ///< 数字键盘2
-    key_num3            = 0x63,     ///< 数字键盘3
-    key_num4            = 0x64,     ///< 数字键盘4
-    key_num5            = 0x65,     ///< 数字键盘5
-    key_num6            = 0x66,     ///< 数字键盘6
-    key_num7            = 0x67,     ///< 数字键盘7
-    key_num8            = 0x68,     ///< 数字键盘8
-    key_num9            = 0x69,     ///< 数字键盘9
+    // Numeric keypad
+    key_num0            = 0x60,     ///< Numeric keypad 0
+    key_num1            = 0x61,     ///< Numeric keypad 1
+    key_num2            = 0x62,     ///< Numeric keypad 2
+    key_num3            = 0x63,     ///< Numeric keypad 3
+    key_num4            = 0x64,     ///< Numeric keypad 4
+    key_num5            = 0x65,     ///< Numeric keypad 5
+    key_num6            = 0x66,     ///< Numeric keypad 6
+    key_num7            = 0x67,     ///< Numeric keypad 7
+    key_num8            = 0x68,     ///< Numeric keypad 8
+    key_num9            = 0x69,     ///< Numeric keypad 9
 
-    // 数字键盘运算符
-    key_multiply        = 0x6a,     ///< 数字键盘乘号 (*)
-    key_add             = 0x6b,     ///< 数字键盘加号 (+)
-    key_separator       = 0x6c,     ///< 数字键盘分隔符
-    key_subtract        = 0x6d,     ///< 数字键盘减号 (-)
-    key_decimal         = 0x6e,     ///< 数字键盘小数点 (.)
-    key_divide          = 0x6f,     ///< 数字键盘除号 (/)
+    // Numeric keypad operators
+    key_multiply        = 0x6a,     ///< Numeric keypad multiply (*)
+    key_add             = 0x6b,     ///< Numeric keypad add (+)
+    key_separator       = 0x6c,     ///< Numeric keypad separator
+    key_subtract        = 0x6d,     ///< Numeric keypad subtract (-)
+    key_decimal         = 0x6e,     ///< Numeric keypad decimal point (.)
+    key_divide          = 0x6f,     ///< Numeric keypad divide (/)
 
-    // 功能键
-    key_f1              = 0x70,     ///< F1功能键
-    key_f2              = 0x71,     ///< F2功能键
-    key_f3              = 0x72,     ///< F3功能键
-    key_f4              = 0x73,     ///< F4功能键
-    key_f5              = 0x74,     ///< F5功能键
-    key_f6              = 0x75,     ///< F6功能键
-    key_f7              = 0x76,     ///< F7功能键
-    key_f8              = 0x77,     ///< F8功能键
-    key_f9              = 0x78,     ///< F9功能键
-    key_f10             = 0x79,     ///< F10功能键
-    key_f11             = 0x7a,     ///< F11功能键
-    key_f12             = 0x7b,     ///< F12功能键
+    // Function keys
+    key_f1              = 0x70,     ///< F1 function key
+    key_f2              = 0x71,     ///< F2 function key
+    key_f3              = 0x72,     ///< F3 function key
+    key_f4              = 0x73,     ///< F4 function key
+    key_f5              = 0x74,     ///< F5 function key
+    key_f6              = 0x75,     ///< F6 function key
+    key_f7              = 0x76,     ///< F7 function key
+    key_f8              = 0x77,     ///< F8 function key
+    key_f9              = 0x78,     ///< F9 function key
+    key_f10             = 0x79,     ///< F10 function key
+    key_f11             = 0x7a,     ///< F11 function key
+    key_f12             = 0x7b,     ///< F12 function key
 
-    // 锁定键
-    key_numlock         = 0x90,     ///< 数字锁定键 (Num Lock)
-    key_scrolllock      = 0x91,     ///< 滚动锁定键 (Scroll Lock)
+    // Lock keys
+    key_numlock         = 0x90,     ///< Num Lock key
+    key_scrolllock      = 0x91,     ///< Scroll Lock key
 
-    // 左右区分的修饰键
-    key_shift_l         = 0xa0,     ///< 左Shift键
-    key_shift_r         = 0xa1,     ///< 右Shift键
-    key_control_l       = 0xa2,     ///< 左Ctrl键
-    key_control_r       = 0xa3,     ///< 右Ctrl键
-    key_menu_l          = 0xa4,     ///< 左Alt键
-    key_menu_r          = 0xa5,     ///< 右Alt键
+    // Left/right distinguished modifier keys
+    key_shift_l         = 0xa0,     ///< Left Shift key
+    key_shift_r         = 0xa1,     ///< Right Shift key
+    key_control_l       = 0xa2,     ///< Left Ctrl key
+    key_control_r       = 0xa3,     ///< Right Ctrl key
+    key_menu_l          = 0xa4,     ///< Left Alt key
+    key_menu_r          = 0xa5,     ///< Right Alt key
 
-    // 标点符号键
-    key_semicolon       = 0xba,     ///< 分号键 (;)
-    key_plus            = 0xbb,     ///< 等号/加号键 (=)
-    key_comma           = 0xbc,     ///< 逗号键 (,)
-    key_minus           = 0xbd,     ///< 减号/下划线键 (-)
-    key_period          = 0xbe,     ///< 句号键 (.)
-    key_slash           = 0xbf,     ///< 斜杠键 (/)
-    key_tilde           = 0xc0,     ///< 波浪号键 (~)
-    key_lbrace          = 0xdb,     ///< 左方括号键 ([)
-    key_backslash       = 0xdc,     ///< 反斜杠键 (\)
-    key_rbrace          = 0xdd,     ///< 右方括号键 (])
-    key_quote           = 0xde,     ///< 引号键 (')
+    // Punctuation keys
+    key_semicolon       = 0xba,     ///< Semicolon key (;)
+    key_plus            = 0xbb,     ///< Equals/plus key (=)
+    key_comma           = 0xbc,     ///< Comma key (,)
+    key_minus           = 0xbd,     ///< Minus/underscore key (-)
+    key_period          = 0xbe,     ///< Period key (.)
+    key_slash           = 0xbf,     ///< Slash key (/)
+    key_tilde           = 0xc0,     ///< Tilde key (~)
+    key_lbrace          = 0xdb,     ///< Left bracket key ([)
+    key_backslash       = 0xdc,     ///< Backslash key (\)
+    key_rbrace          = 0xdd,     ///< Right bracket key (])
+    key_quote           = 0xde,     ///< Quote key (')
 
-    key_ime_process     = 0xe5      ///< 输入法处理键
+    key_ime_process     = 0xe5      ///< IME process key
 };
 
 /**
  * @enum key_msg_e
- * @brief 按键消息类型
+ * @brief Key message types
  * 
- * 定义了按键事件的具体类型
+ * Defines specific types of key events
  */
 enum key_msg_e
 {
-    key_msg_down        = 1,    ///< 按键按下消息
-    key_msg_up          = 2,    ///< 按键释放消息
-    key_msg_char        = 4     ///< 字符输入消息
+    key_msg_down        = 1,    ///< Key press message
+    key_msg_up          = 2,    ///< Key release message
+    key_msg_char        = 4     ///< Character input message
 };
 
 /**
  * @enum key_flag_e
- * @brief 按键状态标志
+ * @brief Key state flags
  * 
- * 定义了按键事件的修饰键状态和特殊标志
+ * Defines modifier key states and special flags for key events
  */
 enum key_flag_e
 {
-    key_flag_shift      = 0x100,    ///< Shift键被按下
-    key_flag_ctrl       = 0x200,    ///< Ctrl键被按下
-    key_flag_first_down = 0x80000   ///< 首次按下标志
+    key_flag_shift      = 0x100,    ///< Shift key is pressed
+    key_flag_ctrl       = 0x200,    ///< Ctrl key is pressed
+    key_flag_first_down = 0x80000   ///< First press flag
 };
 
 /**
  * @struct key_msg
- * @brief 按键消息结构
+ * @brief Key message structure
  * 
- * 包含完整的按键事件信息
+ * Contains complete key event information
  */
 struct key_msg
 {
-    int             key;    ///< 按键键码
-    key_msg_e       msg;    ///< 消息类型
-    unsigned int    flags;  ///< 状态标志
+    int             key;    ///< Key code
+    key_msg_e       msg;    ///< Message type
+    unsigned int    flags;  ///< State flags
 };
 
 /**
  * @enum mouse_msg_e
- * @brief 鼠标消息类型
+ * @brief Mouse message types
  * 
- * 定义了鼠标事件的具体类型
+ * Defines specific types of mouse events
  */
 enum mouse_msg_e
 {
-    mouse_msg_down      = 0x10,     ///< 鼠标按钮按下消息
-    mouse_msg_up        = 0x20,     ///< 鼠标按钮释放消息
-    mouse_msg_move      = 0x40,     ///< 鼠标移动消息
-    mouse_msg_wheel     = 0x80      ///< 鼠标滚轮消息
+    mouse_msg_down      = 0x10,     ///< Mouse button press message
+    mouse_msg_up        = 0x20,     ///< Mouse button release message
+    mouse_msg_move      = 0x40,     ///< Mouse move message
+    mouse_msg_wheel     = 0x80      ///< Mouse wheel message
 };
 
 /**
  * @enum mouse_flag_e
- * @brief 鼠标状态标志
+ * @brief Mouse state flags
  * 
- * 定义了鼠标事件中各按钮和修饰键的状态
+ * Defines the states of various mouse buttons and modifier keys in mouse events
  */
 enum mouse_flag_e
 {
-    mouse_flag_left     = 0x001,    ///< 鼠标左键被按下
-    mouse_flag_right    = 0x002,    ///< 鼠标右键被按下
-    mouse_flag_mid      = 0x004,    ///< 鼠标中键被按下
-    mouse_flag_x1       = 0x008,    ///< 鼠标X1键被按下
-    mouse_flag_x2       = 0x010,    ///< 鼠标X2键被按下
-    mouse_flag_shift    = 0x100,    ///< Shift键被按下
-    mouse_flag_ctrl     = 0x200     ///< Ctrl键被按下
+    mouse_flag_left     = 0x001,    ///< Left mouse button is pressed
+    mouse_flag_right    = 0x002,    ///< Right mouse button is pressed
+    mouse_flag_mid      = 0x004,    ///< Middle mouse button is pressed
+    mouse_flag_x1       = 0x008,    ///< Mouse X1 button is pressed
+    mouse_flag_x2       = 0x010,    ///< Mouse X2 button is pressed
+    mouse_flag_shift    = 0x100,    ///< Shift key is pressed
+    mouse_flag_ctrl     = 0x200     ///< Ctrl key is pressed
 };
 
 /**
  * @struct mouse_msg
- * @brief 鼠标消息结构
+ * @brief Mouse message structure
  * 
- * 包含完整的鼠标事件信息，提供了便捷的状态查询方法
+ * Contains complete mouse event information with convenient state query methods
  */
 struct mouse_msg
 {
-    int             x;      ///< 鼠标x坐标
-    int             y;      ///< 鼠标y坐标
-    mouse_msg_e     msg;    ///< 消息类型
-    unsigned int    flags;  ///< 状态标志
-    int             wheel;  ///< 滚轮滚动增量
+    int             x;      ///< Mouse x coordinate
+    int             y;      ///< Mouse y coordinate
+    mouse_msg_e     msg;    ///< Message type
+    unsigned int    flags;  ///< State flags
+    int             wheel;  ///< Wheel scroll delta
 
-    /// @brief 检查是否为鼠标左键事件
+    /// @brief Check if it's a left mouse button event
     bool is_left()  const {return (flags & mouse_flag_left)  != 0;}
-    /// @brief 检查是否为鼠标右键事件
+    /// @brief Check if it's a right mouse button event
     bool is_right() const {return (flags & mouse_flag_right) != 0;}
-    /// @brief 检查是否为鼠标中键事件
+    /// @brief Check if it's a middle mouse button event
     bool is_mid()   const {return (flags & mouse_flag_mid)   != 0;}
-    /// @brief 检查是否为鼠标X1键事件
+    /// @brief Check if it's a mouse X1 button event
     bool is_x1()    const {return (flags & mouse_flag_x1)    != 0;}
-    /// @brief 检查是否为鼠标X2键事件
+    /// @brief Check if it's a mouse X2 button event
     bool is_x2()    const {return (flags & mouse_flag_x2)    != 0;}
 
-    /// @brief 检查是否为按钮按下事件
+    /// @brief Check if it's a button press event
     bool is_down()  const {return msg == mouse_msg_down; }
-    /// @brief 检查是否为按钮释放事件
+    /// @brief Check if it's a button release event
     bool is_up()    const {return msg == mouse_msg_up;   }
-    /// @brief 检查是否为鼠标移动事件
+    /// @brief Check if it's a mouse move event
     bool is_move()  const {return msg == mouse_msg_move; }
-    /// @brief 检查是否为滚轮事件
+    /// @brief Check if it's a wheel event
     bool is_wheel() const {return msg == mouse_msg_wheel;}
 };
 
 /**
  * @struct MOUSEMSG
- * @brief 传统鼠标消息结构（兼容性）
+ * @brief Legacy mouse message structure (compatibility)
  * 
- * 提供与旧版本兼容的鼠标消息格式
+ * Provides mouse message format compatible with older versions
  */
 struct MOUSEMSG
 {
-    UINT  uMsg;         ///< Windows消息ID
-    bool  mkCtrl;       ///< Ctrl键状态
-    bool  mkShift;      ///< Shift键状态
-    bool  mkLButton;    ///< 左键状态
-    bool  mkMButton;    ///< 中键状态
-    bool  mkRButton;    ///< 右键状态
-    bool  mkXButton1;   ///< X1键状态
-    bool  mkXButton2;   ///< X2键状态
-    short x;            ///< x坐标
-    short y;            ///< y坐标
-    short wheel;        ///< 滚轮增量
+    UINT  uMsg;         ///< Windows message ID
+    bool  mkCtrl;       ///< Ctrl key state
+    bool  mkShift;      ///< Shift key state
+    bool  mkLButton;    ///< Left button state
+    bool  mkMButton;    ///< Middle button state
+    bool  mkRButton;    ///< Right button state
+    bool  mkXButton1;   ///< X1 button state
+    bool  mkXButton2;   ///< X2 button state
+    short x;            ///< x coordinate
+    short y;            ///< y coordinate
+    short wheel;        ///< Wheel delta
 };
 
 /**
  * @struct viewporttype
- * @brief 视口类型结构
+ * @brief Viewport type structure
  * 
- * 定义了绘图视口的边界矩形
+ * Defines the boundary rectangle of the drawing viewport
  */
 /**
  * @struct viewporttype
- * @brief 视口类型结构
+ * @brief Viewport type structure
  * 
- * 定义了绘图视口的边界矩形
+ * Defines the boundary rectangle of the drawing viewport
  */
 struct viewporttype
 {
-    int left;       ///< 左边界
-    int top;        ///< 上边界
-    int right;      ///< 右边界
-    int bottom;     ///< 下边界
-    int clipflag;   ///< 裁剪标志
+    int left;       ///< Left boundary
+    int top;        ///< Top boundary
+    int right;      ///< Right boundary
+    int bottom;     ///< Bottom boundary
+    int clipflag;   ///< Clipping flag
 };
 
 /**
  * @struct ege_transform_matrix
- * @brief 2D变换矩阵
+ * @brief 2D transformation matrix
  * 
- * 用于2D图形变换的3x2矩阵，支持平移、旋转、缩放等变换
+ * 3x2 matrix for 2D graphics transformations, supports translation, rotation, scaling, etc.
  */
 struct ege_transform_matrix
 {
-    float m11, m12;     ///< 第一行：[m11, m12]
-    float m21, m22;     ///< 第二行：[m21, m22]
-    float m31, m32;     ///< 第三行：[m31, m32] 平移分量
+    float m11, m12;     ///< First row: [m11, m12]
+    float m21, m22;     ///< Second row: [m21, m22]
+    float m31, m32;     ///< Third row: [m31, m32] translation components
 };
 
 /**
  * @struct ege_path
- * @brief 图形路径
+ * @brief Graphics path
  * 
- * 用于定义复杂的图形路径，支持直线、曲线等图形元素的组合
+ * Used to define complex graphics paths, supporting combinations of lines, curves and other graphic elements
  */
 struct ege_path
 {
 private:
-    void* m_data;       ///< 内部数据指针
+    void* m_data;       ///< Internal data pointer
 
 public:
-    /// @brief 默认构造函数
+    /// @brief Default constructor
     ege_path();
     
-    /// @brief 从点数组和类型数组构造路径
-    /// @param points 点数组
-    /// @param types 路径类型数组
-    /// @param count 点的数量
+    /// @brief Construct path from point array and type array
+    /// @param points Point array
+    /// @param types Path type array
+    /// @param count Number of points
     ege_path(const ege_point* points, const unsigned char* types, int count);
     
-    /// @brief 拷贝构造函数
-    /// @param path 要拷贝的路径
+    /// @brief Copy constructor
+    /// @param path Path to copy
     ege_path(const ege_path& path);
     
-    /// @brief 析构函数
+    /// @brief Destructor
     virtual ~ege_path();
 
-    /// @brief 获取只读数据指针
-    /// @return 常量数据指针
+    /// @brief Get read-only data pointer
+    /// @return Constant data pointer
     const void* data() const;
     
-    /// @brief 获取可写数据指针
-    /// @return 数据指针
+    /// @brief Get writable data pointer
+    /// @return Data pointer
     void* data();
     
-    /// @brief 赋值操作符
-    /// @param path 要赋值的路径
-    /// @return 路径引用
+    /// @brief Assignment operator
+    /// @param path Path to assign
+    /// @return Path reference
     ege_path& operator=(const ege_path& path);
 };
 
 /**
  * @struct msg_createwindow
- * @brief 创建窗口消息结构
+ * @brief Create window message structure
  * 
- * 用于窗口创建时传递参数的消息结构
+ * Message structure used to pass parameters when creating windows
  */
 struct msg_createwindow
 {
-    HANDLE  hEvent;         ///< 事件句柄
-    HWND    hwnd;           ///< 窗口句柄
-    const wchar_t* classname; ///< 窗口类名
-    DWORD   style;          ///< 窗口样式
-    DWORD   exstyle;        ///< 扩展窗口样式
-    size_t  id;             ///< 窗口ID
-    LPVOID  param;          ///< 参数指针
+    HANDLE  hEvent;         ///< Event handle
+    HWND    hwnd;           ///< Window handle
+    const wchar_t* classname; ///< Window class name
+    DWORD   style;          ///< Window style
+    DWORD   exstyle;        ///< Extended window style
+    size_t  id;             ///< Window ID
+    LPVOID  param;          ///< Parameter pointer
 };
 
-/// @brief 通用回调函数类型
+/// @brief Generic callback function type
 typedef void (CALLBACK_PROC)();
 
-/// @brief 键盘消息处理回调函数类型
-/// @param userdata 用户数据指针
-/// @param message 消息类型
-/// @param key 键码
-/// @return 处理结果
+/// @brief Keyboard message handler callback function type
+/// @param userdata User data pointer
+/// @param message Message type
+/// @param key Key code
+/// @return Processing result
 typedef int (__stdcall MSG_KEY_PROC  )(void*, unsigned, int);
 
-/// @brief 鼠标消息处理回调函数类型
-/// @param userdata 用户数据指针
-/// @param message 消息类型
-/// @param x x坐标
-/// @param y y坐标
-/// @param flags 标志位
-/// @return 处理结果
+/// @brief Mouse message handler callback function type
+/// @param userdata User data pointer
+/// @param message Message type
+/// @param x x coordinate
+/// @param y y coordinate
+/// @param flags Flag bits
+/// @return Processing result
 typedef int (__stdcall MSG_MOUSE_PROC)(void*, unsigned, int, int, int);
 
-/// @brief 回调函数指针类型
+/// @brief Callback function pointer type
 typedef CALLBACK_PROC       * LPCALLBACK_PROC;
-/// @brief 键盘消息处理函数指针类型
+/// @brief Keyboard message handler function pointer type
 typedef MSG_KEY_PROC        * LPMSG_KEY_PROC;
-/// @brief 鼠标消息处理函数指针类型
+/// @brief Mouse message handler function pointer type
 typedef MSG_MOUSE_PROC      * LPMSG_MOUSE_PROC;
 
 struct VECTOR3D;
 
-/// @brief 绕X轴旋转3D点
-/// @param point 要旋转的3D点指针
-/// @param rad 旋转角度（弧度）
+/// @brief Rotate 3D point around X axis
+/// @param point Pointer to 3D point to rotate
+/// @param rad Rotation angle (radians)
 void EGEAPI rotate_point3d_x(VECTOR3D* point, float rad);
 
-/// @brief 绕Y轴旋转3D点
-/// @param point 要旋转的3D点指针
-/// @param rad 旋转角度（弧度）
+/// @brief Rotate 3D point around Y axis
+/// @param point Pointer to 3D point to rotate
+/// @param rad Rotation angle (radians)
 void EGEAPI rotate_point3d_y(VECTOR3D* point, float rad);
 
-/// @brief 绕Z轴旋转3D点
-/// @param point 要旋转的3D点指针
-/// @param rad 旋转角度（弧度）
+/// @brief Rotate 3D point around Z axis
+/// @param point Pointer to 3D point to rotate
+/// @param rad Rotation angle (radians)
 void EGEAPI rotate_point3d_z(VECTOR3D* point, float rad);
 
 /**
  * @struct VECTOR3D
- * @brief 3D向量结构
+ * @brief 3D vector structure
  * 
- * 表示三维空间中的向量或点，提供了基本的3D图形运算功能
+ * Represents vectors or points in 3D space, provides basic 3D graphics computation functionality
  */
 struct VECTOR3D
 {
-    float x, y, z;      ///< 三维坐标分量
+    float x, y, z;      ///< 3D coordinate components
 
-    /// @brief 默认构造函数，初始化为原点
+    /// @brief Default constructor, initialize to origin
     VECTOR3D() : x(0.0f), y(0.0f), z(0.0f) {}
     
-    /// @brief 构造函数
-    /// @param x x坐标
-    /// @param y y坐标
-    /// @param z z坐标（默认为0）
-    VECTOR3D(float x, float y, float z = 0.0f) : x(x), y(y), z(z) {}    /// @brief 赋值操作符
-    /// @param vector 要赋值的向量
-    /// @return 向量引用
+    /// @brief Constructor
+    /// @param x x coordinate
+    /// @param y y coordinate
+    /// @param z z coordinate (default 0)
+    VECTOR3D(float x, float y, float z = 0.0f) : x(x), y(y), z(z) {}    /// @brief Assignment operator
+    /// @param vector Vector to assign
+    /// @return Vector reference
     VECTOR3D& operator=(const VECTOR3D& vector)
     {
         x = vector.x;
@@ -1123,36 +1123,36 @@ struct VECTOR3D
         return *this;
     }
 
-    /// @brief 向量加法赋值操作符
+    /// @brief Vector addition assignment operator
     VECTOR3D& operator+=(const VECTOR3D& vector);
-    /// @brief 向量减法赋值操作符
+    /// @brief Vector subtraction assignment operator
     VECTOR3D& operator-=(const VECTOR3D& vector);
-    /// @brief 向量加法操作符
+    /// @brief Vector addition operator
     VECTOR3D  operator+ (const VECTOR3D& vector) const;
-    /// @brief 向量减法操作符
+    /// @brief Vector subtraction operator
     VECTOR3D  operator- (const VECTOR3D& vector) const;
-    /// @brief 标量乘法赋值操作符
+    /// @brief Scalar multiplication assignment operator
     VECTOR3D& operator*=(float scale);
-    /// @brief 标量乘法操作符
+    /// @brief Scalar multiplication operator
     VECTOR3D  operator* (float scale) const;
-    /// @brief 向量点积操作符
+    /// @brief Vector dot product operator
     float     operator* (const VECTOR3D& vector) const;
-    /// @brief 向量叉积操作符
+    /// @brief Vector cross product operator
     VECTOR3D  operator& (const VECTOR3D& vector) const;
-    /// @brief 向量叉积赋值操作符
+    /// @brief Vector cross product assignment operator
     VECTOR3D& operator&=(const VECTOR3D& vector);
     
-    /// @brief 获取向量模长
-    /// @return 向量的模长
+    /// @brief Get vector magnitude
+    /// @return Vector magnitude
     float     GetModule() const;
 
-    /// @brief 获取向量模长的平方
-    /// @return 向量模长的平方
+    /// @brief Get squared vector magnitude
+    /// @return Squared vector magnitude
     float GetSqrModule() const { return float(x * x + y * y + z * z); }
 
-    /// @brief 设置向量模长
-    /// @param m 新的模长
-    /// @return 向量引用
+    /// @brief Set vector magnitude
+    /// @param m New magnitude
+    /// @return Vector reference
     VECTOR3D& SetModule(float m)
     {
         float t  = m / GetModule();
@@ -1160,81 +1160,81 @@ struct VECTOR3D
         return *this;
     }
 
-    /// @brief 绕指定轴旋转向量
-    /// @param rad 旋转角度（弧度）
-    /// @param vector 旋转轴向量
-    /// @return 向量引用
+    /// @brief Rotate vector around specified axis
+    /// @param rad Rotation angle (radians)
+    /// @param vector Rotation axis vector
+    /// @return Vector reference
     VECTOR3D& Rotate(float rad, const VECTOR3D& vector);
 
-    /// @brief 绕指定轴旋转向量
-    /// @param rad 旋转角度（弧度）
-    /// @param x 旋转轴x分量
-    /// @param y 旋转轴y分量
-    /// @param z 旋转轴z分量
-    /// @return 向量引用
+    /// @brief Rotate vector around specified axis
+    /// @param rad Rotation angle (radians)
+    /// @param x Rotation axis x component
+    /// @param y Rotation axis y component
+    /// @param z Rotation axis z component
+    /// @return Vector reference
     VECTOR3D& Rotate(float rad, float x, float y, float z)
     {
         VECTOR3D v(x, y, z);
         return Rotate(rad, v);
     }
 
-    /// @brief 从起始向量旋转到目标向量
-    /// @param e 目标向量
-    /// @param s 起始向量（默认为z轴正方向）
-    /// @return 向量引用
+    /// @brief Rotate from start vector to end vector
+    /// @param e End vector
+    /// @param s Start vector (default to positive z-axis)
+    /// @return Vector reference
     VECTOR3D&    Rotate  (const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
     
-    /// @brief 计算两个向量之间的夹角
-    /// @param e 第一个向量
-    /// @param s 第二个向量（默认为z轴正方向）
-    /// @return 夹角（弧度）
+    /// @brief Calculate angle between two vectors
+    /// @param e First vector
+    /// @param s Second vector (default to positive z-axis)
+    /// @return Angle (radians)
     static float GetAngle(const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
 };
 
-/// @brief 图像对象前置声明
+/// @brief Image object forward declaration
 class IMAGE;
-/// @brief 图像对象指针类型
+/// @brief Image object pointer type
 typedef IMAGE *PIMAGE;
-/// @brief 常量图像对象指针类型
+/// @brief Constant image object pointer type
 typedef const IMAGE *PCIMAGE;
 
 /**
- * @brief 设置代码页
+ * @brief Set code page
  * 
- * 设置字符编码，影响文本处理和显示
- * @param codepage 代码页，应使用 EGE_CODEPAGE_XXX 常量，默认为 EGE_CODEPAGE_ANSI
+ * Set character encoding, affects text processing and display
+ * @param codepage Code page, should use EGE_CODEPAGE_XXX constants, default is EGE_CODEPAGE_ANSI
  */
 void EGEAPI setcodepage(unsigned int codepage);
 
 /**
- * @brief 获取当前代码页
+ * @brief Get current code page
  * 
- * @return 当前设置的代码页
+ * @return Currently set code page
  */
 unsigned int EGEAPI getcodepage();
 
 /**
- * @brief 设置是否启用Unicode字符消息
+ * @brief Set whether to enable Unicode character messages
  * 
- * 控制 getkey() 函数是否使用UTF-16编码的字符消息
- * @param enable true启用UTF-16，false使用ANSI
+ * Control whether getkey() function uses UTF-16 encoded character messages
+ * @param enable true enables UTF-16, false uses ANSI
  */
 void EGEAPI setunicodecharmessage(bool enable);
 
 /**
- * @brief 获取Unicode字符消息设置状态
+ * @brief Get Unicode character message setting status
  * 
- * @return true表示启用UTF-16，false表示使用ANSI
+ * @return true indicates UTF-16 is enabled, false indicates ANSI is used
  */
 bool EGEAPI getunicodecharmessage();
 
 /**
- * @brief 设置初始化模式
+ * @brief Set initialization mode
  * 
- * 设置窗口创建时的默认参数
- * @param mode 初始化模式标志
- * @param x 窗口初始x坐标（默认为CW_USEDEFAULT）
- * @param y 窗口初始y坐标（默认为CW_USEDEFAULT）
+ * Set default parameters when creating windows
+ * @param mode Initialization mode flags
+ * @param x Initial window x coordinate (default CW_USEDEFAULT)
+ * @param y Initial window y coordinate (default CW_USEDEFAULT)
  */
 void EGEAPI setinitmode(initmode_flag mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT);
 inline void setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT)
@@ -1243,26 +1243,26 @@ inline void setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT)
 }
 
 /**
- * @brief 获取当前初始化模式
+ * @brief Get current initialization mode
  * 
- * @return 当前设置的初始化模式标志
+ * @return Currently set initialization mode flags
  */
 initmode_flag  EGEAPI getinitmode();
 
 /**
- * @brief 创建 EGE 图形化窗口，并进行环境初始化
+ * @brief Create EGE graphics window and perform environment initialization
  * 
- * 这是EGE图形库的主要初始化函数，执行后会创建并显示图形窗口
+ * This is the main initialization function of the EGE graphics library, creates and displays graphics window after execution
  * 
- * @param width 窗口宽度（像素）
- * @param height 窗口高度（像素）
- * @param mode 初始化模式标志，控制窗口的各种属性
+ * @param width Window width (pixels)
+ * @param height Window height (pixels)
+ * @param mode Initialization mode flags, controls various window attributes
  * 
  * @code
- * // 创建一个800x600的默认窗口
+ * // Create an 800x600 default window
  * initgraph(800, 600, INIT_DEFAULT);
  * 
- * // 创建一个无边框的置顶窗口
+ * // Create a borderless topmost window
  * initgraph(640, 480, INIT_NOBORDER | INIT_TOPMOST);
  * @endcode
  */
@@ -1273,13 +1273,13 @@ inline void initgraph(int width, int height, int mode)
 }
 
 /**
- * @brief 创建 EGE 图形化窗口（简化版本）
+ * @brief Create EGE graphics window (simplified version)
  * 
- * 使用当前设置的初始化模式创建图形窗口
- * 在调试版本中使用默认模式，在发布版本中显示EGE标志
+ * Create graphics window using currently set initialization mode
+ * Uses default mode in debug version, shows EGE logo in release version
  * 
- * @param width 窗口宽度（像素）
- * @param height 窗口高度（像素）
+ * @param width Window width (pixels)
+ * @param height Window height (pixels)
  */
 inline void EGEAPI initgraph(int width, int height)
 {
@@ -1291,2043 +1291,2043 @@ inline void EGEAPI initgraph(int width, int height)
 }
 
 /**
- * @brief 初始化图形系统（BGI兼容版本）
+ * @brief Initialize graphics system (BGI compatible version)
  * 
- * 提供与传统BGI图形库的兼容接口
+ * Provides compatible interface with traditional BGI graphics library
  * 
- * @param graphdriver 图形驱动类型指针，通常传入DETECT以自动检测
- * @param graphmode 图形模式指针，通常传入0以自动选择
- * @param pathtodriver BGI驱动文件路径，若驱动文件在当前目录可传空字符串""
+ * @param graphdriver Graphics driver type pointer, usually pass DETECT for auto-detection
+ * @param graphmode Graphics mode pointer, usually pass 0 for auto-selection
+ * @param pathtodriver BGI driver file path, can pass empty string "" if driver file is in current directory
  */
 void initgraph(int *graphdriver, int *graphmode, const char *pathtodriver);
 
 /**
- * @brief 关闭图形系统
+ * @brief Close graphics system
  * 
- * 逻辑上关闭图形系统
- * 执行后EGE窗口会隐藏，但资源不会被全部释放，is_run()函数仍然返回true (需注意)
- * 如果需要释放 IMAGE 对象资源，仍需调用 delimage 函数
+ * Logically close graphics system
+ * After execution, EGE window will be hidden, but resources won't be fully released, is_run() function still returns true (note this)
+ * If IMAGE object resources need to be released, delimage function still needs to be called
  */
 void EGEAPI closegraph();
 
 /**
- * @brief 检查图形环境是否正在运行
+ * @brief Check if graphics environment is running
  * 
- * @return true 当EGE图形环境存在且窗口未被关闭时
- * @return false 当EGE图形环境不存在或用户点击关闭按钮后
+ * @return true When EGE graphics environment exists and window is not closed
+ * @return false When EGE graphics environment doesn't exist or user clicks close button
  */
 bool EGEAPI is_run();
 
 /**
- * @brief 设置窗口标题
- * @param caption 窗口标题字符串
+ * @brief Set window title
+ * @param caption Window title string
  */
 void EGEAPI setcaption(const char* caption);
 
 /**
- * @brief 设置窗口标题(Unicode版本)
- * @param caption 窗口标题宽字符串
+ * @brief Set window title (Unicode version)
+ * @param caption Window title wide string
  */
 void EGEAPI setcaption(const wchar_t* caption);
 
 /**
- * @brief 设置窗口图标
- * @param icon_id 图标资源ID
+ * @brief Set window icon
+ * @param icon_id Icon resource ID
  */
 void EGEAPI seticon(int icon_id);
 
 /**
- * @brief 附加到已有的窗口句柄
- * @param hWnd 要附加的窗口句柄
- * @return 操作结果代码
+ * @brief Attach to existing window handle
+ * @param hWnd Window handle to attach to
+ * @return Operation result code
  */
 int  EGEAPI attachHWND(HWND hWnd);
 
 /**
- * @brief 显示窗口
+ * @brief Show window
  */
 void EGEAPI showwindow();
 
 /**
- * @brief 隐藏窗口
+ * @brief Hide window
  */
 void EGEAPI hidewindow();
 
 /**
- * @brief 移动窗口到指定位置
- * @param x 新的x坐标
- * @param y 新的y坐标
- * @param redraw 是否重绘窗口（默认为true）
+ * @brief Move window to specified position
+ * @param x New x coordinate
+ * @param y New y coordinate
+ * @param redraw Whether to redraw window (default true)
  */
 void EGEAPI movewindow(int x, int y, bool redraw = true);
 
 /**
- * @brief 调整窗口大小
- * @param width 新的窗口宽度
- * @param height 新的窗口高度
+ * @brief Resize window
+ * @param width New window width
+ * @param height New window height
  */
 void EGEAPI resizewindow(int width, int height);
 
 /**
- * @brief 刷新窗口显示
+ * @brief Refresh window display
  */
 void EGEAPI flushwindow();
 
 /**
- * @brief 设置渲染模式
- * @param mode 渲染模式（自动或手动）
+ * @brief Set render mode
+ * @param mode Render mode (automatic or manual)
  */
 void EGEAPI setrendermode(rendermode_e mode);
 
 /**
- * @brief 获取当前绘图目标
- * @return 当前绘图目标图像指针，NULL表示屏幕
+ * @brief Get current drawing target
+ * @return Current drawing target image pointer, NULL means screen
  */
 PIMAGE      gettarget();
 
 /**
- * @brief 设置绘图目标
- * @param pbuf 目标图像指针，NULL表示屏幕
- * @return 设置结果代码
+ * @brief Set drawing target
+ * @param pbuf Target image pointer, NULL means screen
+ * @return Setting result code
  */
 int         settarget(PIMAGE pbuf);
 
 /**
- * @brief 清空设备（清屏）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Clear device (clear screen)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI cleardevice(PIMAGE pimg = NULL);
 
 /**
- * @brief 获取视口设置
- * @param left 左边界输出指针
- * @param top 上边界输出指针
- * @param right 右边界输出指针
- * @param bottom 下边界输出指针
- * @param clip 裁剪标志输出指针（可选）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Get viewport settings
+ * @param left Left boundary output pointer
+ * @param top Top boundary output pointer
+ * @param right Right boundary output pointer
+ * @param bottom Bottom boundary output pointer
+ * @param clip Clipping flag output pointer (optional)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI getviewport(int* left, int* top, int* right, int* bottom, int* clip = 0, PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置视口
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param clip 是否启用裁剪（默认为1）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set viewport
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param clip Whether to enable clipping (default 1)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setviewport(int  left, int  top, int  right, int  bottom, int  clip = 1, PIMAGE  pimg = NULL);
 
 /**
- * @brief 清空视口区域
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Clear viewport area
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI clearviewport(PIMAGE pimg = NULL);
 
 /**
- * @deprecated 已弃用，请使用图像函数替代
- * @brief 设置活动页面
- * @param page 页面编号
+ * @deprecated Deprecated, please use image functions instead
+ * @brief Set active page
+ * @param page Page number
  */
 EGE_DEPRECATE(setactivepage, "Please use the image function instead.")
 void EGEAPI setactivepage(int page);
 
 /**
- * @deprecated 已弃用，请使用图像函数替代
- * @brief 设置可视页面
- * @param page 页面编号
+ * @deprecated Deprecated, please use image functions instead
+ * @brief Set visual page
+ * @param page Page number
  */
 EGE_DEPRECATE(setvisualpage, "Please use the image function instead.")
 void EGEAPI setvisualpage(int page);
 
 /**
- * @deprecated 已弃用，请使用图像函数替代
- * @brief 交换页面
+ * @deprecated Deprecated, please use image functions instead
+ * @brief Swap pages
  */
 EGE_DEPRECATE(swappage, "Please use the image function instead.")
 void EGEAPI swappage();
 
 /**
- * @brief 获取窗口视口设置
- * @param viewport 视口结构指针
+ * @brief Get window viewport settings
+ * @param viewport Viewport structure pointer
  */
 void EGEAPI window_getviewport(viewporttype * viewport);
 
 /**
- * @brief 获取窗口视口设置
- * @param left 左边界输出指针
- * @param top 上边界输出指针
- * @param right 右边界输出指针
- * @param bottom 下边界输出指针
+ * @brief Get window viewport settings
+ * @param left Left boundary output pointer
+ * @param top Top boundary output pointer
+ * @param right Right boundary output pointer
+ * @param bottom Bottom boundary output pointer
  */
 void EGEAPI window_getviewport(int* left, int* top, int* right, int* bottom);
 
 /**
- * @brief 设置窗口视口
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
+ * @brief Set window viewport
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
  */
 void EGEAPI window_setviewport(int  left, int  top, int  right, int  bottom);
 
 /**
- * @brief 设置线条宽度
- * @param width 线条宽度（像素）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set line width
+ * @param width Line width (pixels)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setlinewidth(float width, PIMAGE pimg = NULL);
 
 /**
- * @brief 获取线条样式
- * @param linestyle 线条样式输出指针
- * @param pattern 线条图案输出指针（可选）
- * @param thickness 线条粗细输出指针（可选）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Get line style
+ * @param linestyle Line style output pointer
+ * @param pattern Line pattern output pointer (optional)
+ * @param thickness Line thickness output pointer (optional)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI getlinestyle(int* linestyle, unsigned short* pattern = NULL, int* thickness = NULL, PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置线条样式
- * @param linestyle 线条样式
- * @param pattern 线条图案（默认为0）
- * @param thickness 线条粗细（默认为1）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set line style
+ * @param linestyle Line style
+ * @param pattern Line pattern (default 0)
+ * @param thickness Line thickness (default 1)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setlinestyle(int  linestyle, unsigned short  pattern = 0,    int  thickness = 1,    PIMAGE  pimg = NULL);
 
 /**
- * @brief 设置线条端点样式
- * @param linecap 端点样式
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set line cap style
+ * @param linecap Cap style
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setlinecap(line_cap_type linecap, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置线条端点样式（分别设置起始和结束端点）
- * @param startCap 起始端点样式
- * @param endCap 结束端点样式
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set line cap style (separately set start and end caps)
+ * @param startCap Start cap style
+ * @param endCap End cap style
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setlinecap(line_cap_type  startCap, line_cap_type  endCap, PIMAGE  pimg = NULL);
 
 /**
- * @brief 获取线条端点样式
- * @param startCap 起始端点样式输出指针
- * @param endCap 结束端点样式输出指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Get line cap style
+ * @param startCap Start cap style output pointer
+ * @param endCap End cap style output pointer
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI getlinecap(line_cap_type* startCap, line_cap_type* endCap, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取线条端点样式
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 端点样式
+ * @brief Get line cap style
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Cap style
  */
 line_cap_type EGEAPI getlinecap(PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置线条连接样式
- * @param linejoin 连接样式
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set line join style
+ * @param linejoin Join style
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setlinejoin(line_join_type  linejoin, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置线条连接样式（带斜接限制）
- * @param linejoin 连接样式
- * @param miterLimit 斜接限制值
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set line join style (with miter limit)
+ * @param linejoin Join style
+ * @param miterLimit Miter limit value
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setlinejoin(line_join_type  linejoin, float  miterLimit, PIMAGE pimg = NULL);
 
 /**
- * @brief 获取线条连接样式
- * @param linejoin 连接样式输出指针
- * @param miterLimit 斜接限制值输出指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Get line join style
+ * @param linejoin Join style output pointer
+ * @param miterLimit Miter limit value output pointer
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI getlinejoin(line_join_type* linejoin, float* miterLimit, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取线条连接样式
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 连接样式
+ * @brief Get line join style
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Join style
  */
 line_join_type EGEAPI getlinejoin(PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置填充样式
- * @param pattern 填充图案类型
- * @param color 填充颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set fill style
+ * @param pattern Fill pattern type
+ * @param color Fill color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfillstyle(int pattern, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置写入模式
- * @param mode 写入模式
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set write mode
+ * @param mode Write mode
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setwritemode(int mode, PIMAGE pimg = NULL);
 
 /**
- * @brief 获取绘图颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 当前绘图颜色
+ * @brief Get drawing color
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Current drawing color
  */
 color_t EGEAPI getcolor      (PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取线条颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 当前线条颜色
+ * @brief Get line color
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Current line color
  */
 color_t EGEAPI getlinecolor  (PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取填充颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 当前填充颜色
+ * @brief Get fill color
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Current fill color
  */
 color_t EGEAPI getfillcolor  (PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取背景颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 当前背景颜色
+ * @brief Get background color
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Current background color
  */
 color_t EGEAPI getbkcolor    (PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取文本颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 当前文本颜色
+ * @brief Get text color
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Current text color
  */
 color_t EGEAPI gettextcolor  (PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置绘图颜色
- * @param color 绘图颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set drawing color
+ * @param color Drawing color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI setcolor      (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置线条颜色
- * @param color 线条颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set line color
+ * @param color Line color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI setlinecolor  (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置填充颜色
- * @param color 填充颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set fill color
+ * @param color Fill color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI setfillcolor  (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置背景颜色, 会主动将旧背景色像素替换为新背景色像素
- * @param color 背景颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set background color, will actively replace old background color pixels with new background color pixels
+ * @param color Background color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI setbkcolor    (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置背景颜色, 但不会将旧背景色像素替换为新背景色像素
- * @param color 背景颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set background color, but will not replace old background color pixels with new background color pixels
+ * @param color Background color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI setbkcolor_f  (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置文本颜色
- * @param color 文本颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set text color
+ * @param color Text color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI settextcolor  (color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置字体背景颜色
- * @param color 字体背景颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font background color
+ * @param color Font background color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI setfontbkcolor(color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置背景混合模式
- * @param bkMode 背景模式（TRANSPARENT或OPAQUE）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set background blend mode
+ * @param bkMode Background mode (TRANSPARENT or OPAQUE)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI setbkmode(int bkMode, PIMAGE pimg = NULL);
 
-/// @defgroup ColorConversion 颜色转换宏定义
+/// @defgroup ColorConversion Color conversion macro definitions
 /// @{
-#define RGBtoGRAY   rgb2gray    ///< RGB转灰度
-#define RGBtoHSL    rgb2hsl     ///< RGB转HSL
-#define RGBtoHSV    rgb2hsv     ///< RGB转HSV
-#define HSLtoRGB    hsl2rgb     ///< HSL转RGB
-#define HSVtoRGB    hsv2rgb     ///< HSV转RGB
+#define RGBtoGRAY   rgb2gray    ///< RGB to grayscale
+#define RGBtoHSL    rgb2hsl     ///< RGB to HSL
+#define RGBtoHSV    rgb2hsv     ///< RGB to HSV
+#define HSLtoRGB    hsl2rgb     ///< HSL to RGB
+#define HSVtoRGB    hsv2rgb     ///< HSV to RGB
 /// @}
 
 /**
- * @brief RGB颜色转换为灰度
- * @param rgb RGB颜色值
- * @return 灰度颜色值
+ * @brief RGB color to grayscale conversion
+ * @param rgb RGB color value
+ * @return Grayscale color value
  */
 color_t EGEAPI rgb2gray(color_t rgb);
 
 /**
- * @brief RGB颜色转换为HSL
- * @param rgb RGB颜色值
- * @param H 色调输出指针（0-360度）
- * @param S 饱和度输出指针（0-1）
- * @param L 亮度输出指针（0-1）
+ * @brief RGB color to HSL conversion
+ * @param rgb RGB color value
+ * @param H Hue output pointer (0-360 degrees)
+ * @param S Saturation output pointer (0-1)
+ * @param L Lightness output pointer (0-1)
  */
 void    EGEAPI rgb2hsl(color_t rgb, float* H, float* S, float* L);
 
 /**
- * @brief RGB颜色转换为HSV
- * @param rgb RGB颜色值
- * @param H 色调输出指针（0-360度）
- * @param S 饱和度输出指针（0-1）
- * @param V 明度输出指针（0-1）
+ * @brief RGB color to HSV conversion
+ * @param rgb RGB color value
+ * @param H Hue output pointer (0-360 degrees)
+ * @param S Saturation output pointer (0-1)
+ * @param V Value output pointer (0-1)
  */
 void    EGEAPI rgb2hsv(color_t rgb, float* H, float* S, float* V);
 
 /**
- * @brief HSL颜色转换为RGB
- * @param H 色调（0-360度）
- * @param S 饱和度（0-1）
- * @param L 亮度（0-1）
- * @return RGB颜色值
+ * @brief HSL color to RGB conversion
+ * @param H Hue (0-360 degrees)
+ * @param S Saturation (0-1)
+ * @param L Lightness (0-1)
+ * @return RGB color value
  */
 color_t EGEAPI hsl2rgb(float H, float S, float L);
 
 /**
- * @brief HSV颜色转换为RGB
- * @param H 色调（0-360度）
- * @param S 饱和度（0-1）
- * @param V 明度（0-1）
- * @return RGB颜色值
+ * @brief HSV color to RGB conversion
+ * @param H Hue (0-360 degrees)
+ * @param S Saturation (0-1)
+ * @param V Value (0-1)
+ * @return RGB color value
  */
 color_t EGEAPI hsv2rgb(float H, float S, float V);
 
 /**
- * @brief 颜色混合
- * @param dst 目标颜色
- * @param src 源颜色
- * @param alpha Alpha透明度（0-255）
- * @return 混合后的颜色
+ * @brief Color blending
+ * @param dst Destination color
+ * @param src Source color
+ * @param alpha Alpha transparency (0-255)
+ * @return Blended color
  */
 color_t EGEAPI colorblend  (color_t dst, color_t src, unsigned char alpha);
 
 /**
- * @brief 颜色混合（fast版本, 精度较低）
- * @param dst 目标颜色
- * @param src 源颜色
- * @param alpha Alpha透明度（0-255）
- * @return 混合后的颜色
+ * @brief Color blending (fast version, lower precision)
+ * @param dst Destination color
+ * @param src Source color
+ * @param alpha Alpha transparency (0-255)
+ * @return Blended color
  */
 color_t EGEAPI colorblend_f(color_t dst, color_t src, unsigned char alpha);
 
 /**
- * @brief Alpha混合
- * @param dst 目标颜色
- * @param src 源颜色（包含Alpha通道）
- * @return 混合后的颜色
+ * @brief Alpha blending
+ * @param dst Destination color
+ * @param src Source color (including alpha channel)
+ * @return Blended color
  */
 color_t EGEAPI alphablend  (color_t dst, color_t src);
 
 /**
- * @brief Alpha混合（带透明度因子）
- * @param dst 目标颜色
- * @param src 源颜色
- * @param srcAlphaFactor 源颜色透明度因子（0-255）
- * @return 混合后的颜色
+ * @brief Alpha blending (with transparency factor)
+ * @param dst Destination color
+ * @param src Source color
+ * @param srcAlphaFactor Source color transparency factor (0-255)
+ * @return Blended color
  */
 color_t EGEAPI alphablend  (color_t dst, color_t src, unsigned char srcAlphaFactor);
 
 /**
- * @brief Alpha混合（预乘Alpha）
- * @param dst 目标颜色
- * @param src 源颜色（预乘Alpha）
- * @return 混合后的颜色
+ * @brief Alpha blending (premultiplied alpha)
+ * @param dst Destination color
+ * @param src Source color (premultiplied alpha)
+ * @return Blended color
  */
 color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src);
 
 /**
- * @brief Alpha混合（预乘Alpha，带透明度因子）
- * @param dst 目标颜色
- * @param src 源颜色（预乘Alpha）
- * @param srcAlphaFactor 源颜色透明度因子（0-255）
- * @return 混合后的颜色
+ * @brief Alpha blending (premultiplied alpha, with transparency factor)
+ * @param dst Destination color
+ * @param src Source color (premultiplied alpha)
+ * @param srcAlphaFactor Source color transparency factor (0-255)
+ * @return Blended color
  */
 color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor);
 
 /**
- * @brief 获取像素颜色
- * @param x x坐标
- * @param y y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 像素颜色值
+ * @brief Get pixel color
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Pixel color value
  */
 color_t EGEAPI getpixel   (int x, int y, PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素颜色
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel color
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel   (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 获取像素颜色（快速版本, 无边界检查，无视viewport）
- * @param x x坐标
- * @param y y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 像素颜色值
+ * @brief Get pixel color (fast version, no boundary check, ignores viewport)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Pixel color value
  */
 color_t EGEAPI getpixel_f (int x, int y, PCIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素颜色（快速版本, 无边界检查，无视viewport）
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel color (fast version, no boundary check, ignores viewport)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_f (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 批量设置像素
- * @param numOfPoints 点的数量
- * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set multiple pixels in batch
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixels  (int numOfPoints, const int* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 批量设置像素（快速版本, 无边界检查）
- * @param numOfPoints 点的数量
- * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set multiple pixels in batch (fast version, no boundary check)
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixels_f(int numOfPoints, const int* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素(RGB 通道设置为与 ARGB 颜色混合的结果，alpha 通道保持不变)
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值（包含Alpha通道）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (RGB channels are set to the result of blending with ARGB color, alpha channel remains unchanged)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value (including alpha channel)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_withalpha   (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（保留Alpha通道，快速版本, 无边界检查）
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值（包含Alpha通道）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (preserve alpha channel, fast version, no boundary check)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value (including alpha channel)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_withalpha_f (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素 (RGB 通道替换为指定的颜色值，alpha 通道保持不变)
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (RGB channels are replaced with specified color value, alpha channel remains unchanged)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_savealpha   (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（保存Alpha通道，快速版本, 无边界检查）
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (preserve alpha channel, fast version, no boundary check)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_savealpha_f (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（Alpha混合）
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (alpha blending)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_alphablend  (int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（Alpha混合，快速版本, 无边界检查）
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (alpha blending, fast version, no boundary check)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_alphablend_f(int x, int y, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（Alpha混合，带透明度因子）
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param alphaFactor 透明度因子（0-255）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (alpha blending with transparency factor)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param alphaFactor Transparency factor (0-255)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_alphablend  (int x, int y, color_t color, unsigned char alphaFactor, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置像素（Alpha混合，带透明度因子，快速版本, 无边界检查）
- * @param x x坐标
- * @param y y坐标
- * @param color 颜色值
- * @param alphaFactor 透明度因子（0-255）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set pixel (alpha blending with transparency factor, fast version, no boundary check)
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color value
+ * @param alphaFactor Transparency factor (0-255)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI putpixel_alphablend_f(int x, int y, color_t color, unsigned char alphaFactor, PIMAGE pimg = NULL);
 
 /**
- * @brief 移动当前绘图位置
- * @param x 新的x坐标
- * @param y 新的y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Move current drawing position
+ * @param x New x coordinate
+ * @param y New y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI moveto (int x,  int y,  PIMAGE pimg = NULL);
 
 /**
- * @brief 相对移动当前绘图位置
- * @param dx x方向偏移量
- * @param dy y方向偏移量
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Move current drawing position relatively
+ * @param dx X direction offset
+ * @param dy Y direction offset
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI moverel(int dx, int dy, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制直线
- * @param x1 起点x坐标
- * @param y1 起点y坐标
- * @param x2 终点x坐标
- * @param y2 终点y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw line
+ * @param x1 Start point x coordinate
+ * @param y1 Start point y coordinate
+ * @param x2 End point x coordinate
+ * @param y2 End point y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI line     (int   x1, int   y1, int   x2, int   y2, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制直线（浮点版本）
- * @param x1 起点x坐标
- * @param y1 起点y坐标
- * @param x2 终点x坐标
- * @param y2 终点y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw line (floating point version)
+ * @param x1 Start point x coordinate
+ * @param y1 Start point y coordinate
+ * @param x2 End point x coordinate
+ * @param y2 End point y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI line_f   (float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
 
 /**
- * @brief 从当前位置绘制直线到指定点
- * @param x 终点x坐标
- * @param y 终点y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw line from current position to specified point
+ * @param x End point x coordinate
+ * @param y End point y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI lineto   (int   x,  int   y,  PIMAGE pimg = NULL);
 
 /**
- * @brief 从当前位置绘制直线到指定点（浮点版本）
- * @param x 终点x坐标
- * @param y 终点y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw line from current position to specified point (floating point version)
+ * @param x End point x coordinate
+ * @param y End point y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI lineto_f (float x,  float y,  PIMAGE pimg = NULL);
 
 /**
- * @brief 从当前位置绘制相对直线
- * @param dx x方向偏移量
- * @param dy y方向偏移量
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw relative line from current position
+ * @param dx X direction offset
+ * @param dy Y direction offset
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI linerel  (int   dx, int   dy, PIMAGE pimg = NULL);
 
 /**
- * @brief 从当前位置绘制相对直线（浮点版本）
- * @param dx x方向偏移量
- * @param dy y方向偏移量
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw relative line from current position (floating point version)
+ * @param dx X direction offset
+ * @param dy Y direction offset
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void    EGEAPI linerel_f(float dx, float dy, PIMAGE pimg = NULL);
 
 //void EGEAPI getarccoords(int *px, int *py, int *pxstart, int *pystart, int *pxend, int *pyend, PIMAGE pimg = NULL);    // ###
 
 /**
- * @brief 绘制椭圆弧
- * @param x 椭圆中心x坐标
- * @param y 椭圆中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw elliptical arc
+ * @param x Ellipse center x coordinate
+ * @param y Ellipse center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ellipse      (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制椭圆弧（浮点版本）
- * @param x 椭圆中心x坐标
- * @param y 椭圆中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw elliptical arc (floating point version)
+ * @param x Ellipse center x coordinate
+ * @param y Ellipse center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ellipsef     (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制扇形（仅边框）
- * @param x 扇形中心x坐标
- * @param y 扇形中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw sector (outline only)
+ * @param x Sector center x coordinate
+ * @param y Sector center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI sector       (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制扇形（仅边框，浮点版本）
- * @param x 扇形中心x坐标
- * @param y 扇形中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw sector (outline only, floating point version)
+ * @param x Sector center x coordinate
+ * @param y Sector center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI sectorf      (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制饼图（仅边框）
- * @param x 饼图中心x坐标
- * @param y 饼图中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw pie chart (outline only)
+ * @param x Pie center x coordinate
+ * @param y Pie center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI pie          (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制饼图（仅边框，浮点版本）
- * @param x 饼图中心x坐标
- * @param y 饼图中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw pie chart (outline only, floating point version)
+ * @param x Pie center x coordinate
+ * @param y Pie center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI pief         (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充饼图
- * @param x 饼图中心x坐标
- * @param y 饼图中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled pie chart
+ * @param x Pie center x coordinate
+ * @param y Pie center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillpie      (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充饼图（浮点版本）
- * @param x 饼图中心x坐标
- * @param y 饼图中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled pie chart (floating point version)
+ * @param x Pie center x coordinate
+ * @param y Pie center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillpief     (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心饼图
- * @param x 饼图中心x坐标
- * @param y 饼图中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid pie chart
+ * @param x Pie center x coordinate
+ * @param y Pie center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidpie     (int   x, int   y, int   startAngle, int   endAngle, int   xRadius, int   yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心饼图（浮点版本）
- * @param x 饼图中心x坐标
- * @param y 饼图中心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid pie chart (floating point version)
+ * @param x Pie center x coordinate
+ * @param y Pie center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidpief    (float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆弧
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw circular arc
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI arc          (int   x, int   y, int   startAngle, int   endAngle, int   radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆弧（浮点版本）
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw circular arc (floating point version)
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI arcf         (float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆扇形
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw circular sector
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI pieslice     (int   x, int   y, int   startAngle, int   endAngle, int   radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆扇形（浮点版本）
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param startAngle 起始角度（度）
- * @param endAngle 结束角度（度）
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw circular sector (floating point version)
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param startAngle Start angle (degrees)
+ * @param endAngle End angle (degrees)
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI pieslicef    (float x, float y, float startAngle, float endAngle, float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充椭圆
- * @param x 椭圆中心x坐标
- * @param y 椭圆中心y坐标
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled ellipse
+ * @param x Ellipse center x coordinate
+ * @param y Ellipse center y coordinate
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillellipse  (int   x, int   y, int   xRadius,    int   yRadius,  PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充椭圆（浮点版本）
- * @param x 椭圆中心x坐标
- * @param y 椭圆中心y坐标
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled ellipse (floating point version)
+ * @param x Ellipse center x coordinate
+ * @param y Ellipse center y coordinate
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillellipsef (float x, float y, float xRadius,    float yRadius,  PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心椭圆
- * @param x 椭圆中心x坐标
- * @param y 椭圆中心y坐标
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid ellipse
+ * @param x Ellipse center x coordinate
+ * @param y Ellipse center y coordinate
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidellipse (int   x, int   y, int   xRadius,    int   yRadius,  PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心椭圆（浮点版本）
- * @param x 椭圆中心x坐标
- * @param y 椭圆中心y坐标
- * @param xRadius x轴半径
- * @param yRadius y轴半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid ellipse (floating point version)
+ * @param x Ellipse center x coordinate
+ * @param y Ellipse center y coordinate
+ * @param xRadius X-axis radius
+ * @param yRadius Y-axis radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidellipsef(float x, float y, float xRadius,    float yRadius,  PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆形边框
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw circle outline
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI circle       (int   x, int   y, int   radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆形边框（浮点版本）
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw circle outline (floating point version)
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI circlef      (float x, float y, float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充圆形
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled circle
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillcircle   (int   x, int   y, int   radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充圆形（浮点版本）
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled circle (floating point version)
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillcirclef  (float x, float y, float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心圆形
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid circle
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidcircle  (int   x, int   y, int   radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心圆形（浮点版本）
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid circle (floating point version)
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidcirclef (float x, float y, float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制3D柱状图
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param depth 深度
- * @param topFlag 是否绘制顶面
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw 3D bar
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param depth Depth
+ * @param topFlag Whether to draw top face
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI bar3d        (int left, int top, int right, int bottom, int depth,   int topFlag, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制柱状图（填充矩形）
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw bar (filled rectangle)
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI bar          (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制矩形边框
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw rectangle outline
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI rectangle    (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充矩形
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled rectangle
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillrect     (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心矩形
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid rectangle
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidrect    (int left, int top, int right, int bottom, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆角矩形边框
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param radius 圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw rounded rectangle outline
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param radius Corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI roundrect     (int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充圆角矩形
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param radius 圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled rounded rectangle
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param radius Corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillroundrect (int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心圆角矩形
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param radius 圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid rounded rectangle
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param radius Corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆角矩形边框（不同圆角半径）
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param xRadius x轴圆角半径
- * @param yRadius y轴圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw rounded rectangle outline (different corner radii)
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param xRadius X-axis corner radius
+ * @param yRadius Y-axis corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI roundrect     (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充圆角矩形（不同圆角半径）
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param xRadius x轴圆角半径
- * @param yRadius y轴圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled rounded rectangle (different corner radii)
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param xRadius X-axis corner radius
+ * @param yRadius Y-axis corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillroundrect (int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心圆角矩形（不同圆角半径）
- * @param left 左边界
- * @param top 上边界
- * @param right 右边界
- * @param bottom 下边界
- * @param xRadius x轴圆角半径
- * @param yRadius y轴圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid rounded rectangle (different corner radii)
+ * @param left Left boundary
+ * @param top Top boundary
+ * @param right Right boundary
+ * @param bottom Bottom boundary
+ * @param xRadius X-axis corner radius
+ * @param yRadius Y-axis corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制多边形
- * @param numOfPoints 点的数量
- * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw polygon
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI drawpoly      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制多条线段
- * @param numOfPoints 点的数量
- * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw multiple line segments
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI polyline      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制多边形边框
- * @param numOfPoints 点的数量
- * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw polygon outline
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI polygon       (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充多边形
- * @param numOfPoints 点的数量
- * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled polygon
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillpoly      (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制实心多边形
- * @param numOfPoints 点的数量
- * @param points 点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw solid polygon
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI solidpoly     (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制渐变填充多边形
- * @param numOfPoints 点的数量
- * @param points 带颜色的点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw gradient filled polygon
+ * @param numOfPoints Number of points
+ * @param points Colored point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制多条线段
- * @param numOfLines 线段数量
- * @param points 线段端点坐标数组，每两个点构成一条线段
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw multiple line segments
+ * @param numOfLines Number of line segments
+ * @param points Line segment endpoint coordinate array, every two points form one line segment
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI drawlines     (int numOfLines,  const int *points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制贝塞尔曲线
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组，格式为[x1,y1,x2,y2,...]
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw Bezier curve
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array, format: [x1,y1,x2,y2,...]
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI drawbezier    (int numOfPoints, const int *points, PIMAGE pimg = NULL);
 
 /**
- * @brief 漫水填充（根据边界颜色）
- * @param x 填充起始点x坐标
- * @param y 填充起始点y坐标
- * @param borderColor 边界颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Flood fill (based on boundary color)
+ * @param x Fill starting point x coordinate
+ * @param y Fill starting point y coordinate
+ * @param borderColor Boundary color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI floodfill     (int x, int y, int borderColor, PIMAGE pimg = NULL);
 
 /**
- * @brief 区域填充（根据区域颜色）
- * @param x 填充起始点x坐标
- * @param y 填充起始点y坐标
- * @param areaColor 要替换的区域颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Area fill (based on area color)
+ * @param x Fill starting point x coordinate
+ * @param y Fill starting point y coordinate
+ * @param areaColor Area color to be replaced
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
 #ifdef EGE_GDIPLUS
-/// @defgroup EGEGDIPlus EGE GDI+增强函数
-/// 需要定义EGE_GDIPLUS宏才能使用的增强绘图功能
+/// @defgroup EGEGDIPlus EGE GDI+ enhanced functions
+/// Enhanced drawing functions that require EGE_GDIPLUS macro to be defined
 /// @{
 
 /**
- * @brief 启用或禁用抗锯齿
- * @param enable true启用抗锯齿，false禁用
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Enable or disable anti-aliasing
+ * @param enable true to enable anti-aliasing, false to disable
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置全局Alpha透明度
- * @param alpha Alpha值（0-255，0完全透明，255完全不透明）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set global alpha transparency
+ * @param alpha Alpha value (0-255, 0 fully transparent, 255 fully opaque)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制直线（GDI+增强版本）
- * @param x1 起点x坐标
- * @param y1 起点y坐标
- * @param x2 终点x坐标
- * @param y2 终点y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw line (GDI+ enhanced version)
+ * @param x1 Start point x coordinate
+ * @param y1 Start point y coordinate
+ * @param x2 End point x coordinate
+ * @param y2 End point y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制多边形（GDI+增强版本）
- * @param numOfPoints 点的数量
- * @param points 点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw polygon (GDI+ enhanced version)
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawpoly       (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制多条线段（GDI+增强版本）
- * @param numOfPoints 点的数量
- * @param points 点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw multiple line segments (GDI+ enhanced version)
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_polyline       (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制多边形边框（GDI+增强版本）
- * @param numOfPoints 点的数量
- * @param points 点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw polygon outline (GDI+ enhanced version)
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_polygon        (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充多边形（GDI+增强版本）
- * @param numOfPoints 点的数量
- * @param points 点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled polygon (GDI+ enhanced version)
+ * @param numOfPoints Number of points
+ * @param points Point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillpoly       (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制贝塞尔曲线（GDI+增强版本）
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw Bezier curve (GDI+ enhanced version)
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_bezier         (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制贝塞尔曲线（同ege_bezier）
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw Bezier curve (same as ege_bezier)
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawbezier     (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);  // Same as ege_bezier
 
 /**
- * @brief 绘制基数样条曲线
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw cardinal spline curve
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawcurve      (int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制闭合基数样条曲线
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw closed cardinal spline curve
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawclosedcurve(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充闭合基数样条曲线
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled closed cardinal spline curve
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillclosedcurve(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制基数样条曲线（带张力参数）
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param tension 张力参数（0.0为直线，值越大曲线越弯曲）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw cardinal spline curve (with tension parameter)
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param tension Tension parameter (0.0 for straight lines, higher values make curve more curved)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawcurve      (int numOfPoints, const ege_point* points, float tension, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制闭合基数样条曲线（带张力参数）
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param tension 张力参数（0.0为直线，值越大曲线越弯曲）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw closed cardinal spline curve (with tension parameter)
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param tension Tension parameter (0.0 for straight lines, higher values make curve more curved)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawclosedcurve(int numOfPoints, const ege_point* points, float tension, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充闭合基数样条曲线（带张力参数）
- * @param numOfPoints 控制点数量
- * @param points 控制点坐标数组
- * @param tension 张力参数（0.0为直线，值越大曲线越弯曲）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled closed cardinal spline curve (with tension parameter)
+ * @param numOfPoints Number of control points
+ * @param points Control point coordinate array
+ * @param tension Tension parameter (0.0 for straight lines, higher values make curve more curved)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillclosedcurve(int numOfPoints, const ege_point* points, float tension, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制矩形边框（GDI+增强版本）
- * @param x 矩形左上角x坐标
- * @param y 矩形左上角y坐标
- * @param w 矩形宽度
- * @param h 矩形高度
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw rectangle outline (GDI+ enhanced version)
+ * @param x Rectangle top-left corner x coordinate
+ * @param y Rectangle top-left corner y coordinate
+ * @param w Rectangle width
+ * @param h Rectangle height
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_rectangle    (float x, float y, float w, float h, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充矩形（GDI+增强版本）
- * @param x 矩形左上角x坐标
- * @param y 矩形左上角y坐标
- * @param w 矩形宽度
- * @param h 矩形高度
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled rectangle (GDI+ enhanced version)
+ * @param x Rectangle top-left corner x coordinate
+ * @param y Rectangle top-left corner y coordinate
+ * @param w Rectangle width
+ * @param h Rectangle height
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillrect     (float x, float y, float w, float h, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆形边框（GDI+增强版本）
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw circle outline (GDI+ enhanced version)
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_circle       (float x, float y, float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充圆形（GDI+增强版本）
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled circle (GDI+ enhanced version)
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillcircle   (float x, float y, float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制椭圆边框（GDI+增强版本）
- * @param x 椭圆边界矩形左上角x坐标
- * @param y 椭圆边界矩形左上角y坐标
- * @param w 椭圆边界矩形宽度
- * @param h 椭圆边界矩形高度
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw ellipse outline (GDI+ enhanced version)
+ * @param x Ellipse bounding rectangle top-left corner x coordinate
+ * @param y Ellipse bounding rectangle top-left corner y coordinate
+ * @param w Ellipse bounding rectangle width
+ * @param h Ellipse bounding rectangle height
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_ellipse      (float x, float y, float w, float h, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充椭圆（GDI+增强版本）
- * @param x 椭圆边界矩形左上角x坐标
- * @param y 椭圆边界矩形左上角y坐标
- * @param w 椭圆边界矩形宽度
- * @param h 椭圆边界矩形高度
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled ellipse (GDI+ enhanced version)
+ * @param x Ellipse bounding rectangle top-left corner x coordinate
+ * @param y Ellipse bounding rectangle top-left corner y coordinate
+ * @param w Ellipse bounding rectangle width
+ * @param h Ellipse bounding rectangle height
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制椭圆弧（GDI+增强版本）
- * @param x 椭圆边界矩形左上角x坐标
- * @param y 椭圆边界矩形左上角y坐标
- * @param w 椭圆边界矩形宽度
- * @param h 椭圆边界矩形高度
- * @param startAngle 起始角度（度）
- * @param sweepAngle 扫描角度（度）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw elliptical arc (GDI+ enhanced version)
+ * @param x Ellipse bounding rectangle top-left corner x coordinate
+ * @param y Ellipse bounding rectangle top-left corner y coordinate
+ * @param w Ellipse bounding rectangle width
+ * @param h Ellipse bounding rectangle height
+ * @param startAngle Start angle (degrees)
+ * @param sweepAngle Sweep angle (degrees)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_arc          (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制饼图边框（GDI+增强版本）
- * @param x 椭圆边界矩形左上角x坐标
- * @param y 椭圆边界矩形左上角y坐标
- * @param w 椭圆边界矩形宽度
- * @param h 椭圆边界矩形高度
- * @param startAngle 起始角度（度）
- * @param sweepAngle 扫描角度（度）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw pie chart outline (GDI+ enhanced version)
+ * @param x Ellipse bounding rectangle top-left corner x coordinate
+ * @param y Ellipse bounding rectangle top-left corner y coordinate
+ * @param w Ellipse bounding rectangle width
+ * @param h Ellipse bounding rectangle height
+ * @param startAngle Start angle (degrees)
+ * @param sweepAngle Sweep angle (degrees)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_pie          (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充饼图（GDI+增强版本）
- * @param x 椭圆边界矩形左上角x坐标
- * @param y 椭圆边界矩形左上角y坐标
- * @param w 椭圆边界矩形宽度
- * @param h 椭圆边界矩形高度
- * @param startAngle 起始角度（度）
- * @param sweepAngle 扫描角度（度）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled pie chart (GDI+ enhanced version)
+ * @param x Ellipse bounding rectangle top-left corner x coordinate
+ * @param y Ellipse bounding rectangle top-left corner y coordinate
+ * @param w Ellipse bounding rectangle width
+ * @param h Ellipse bounding rectangle height
+ * @param startAngle Start angle (degrees)
+ * @param sweepAngle Sweep angle (degrees)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillpie      (float x, float y, float w, float h, float startAngle, float sweepAngle, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆角矩形边框（GDI+增强版本）
- * @param x 矩形左上角x坐标
- * @param y 矩形左上角y坐标
- * @param w 矩形宽度
- * @param h 矩形高度
- * @param radius 圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw rounded rectangle outline (GDI+ enhanced version)
+ * @param x Rectangle top-left corner x coordinate
+ * @param y Rectangle top-left corner y coordinate
+ * @param w Rectangle width
+ * @param h Rectangle height
+ * @param radius Corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充圆角矩形（GDI+增强版本）
- * @param x 矩形左上角x坐标
- * @param y 矩形左上角y坐标
- * @param w 矩形宽度
- * @param h 矩形高度
- * @param radius 圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled rounded rectangle (GDI+ enhanced version)
+ * @param x Rectangle top-left corner x coordinate
+ * @param y Rectangle top-left corner y coordinate
+ * @param w Rectangle width
+ * @param h Rectangle height
+ * @param radius Corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制圆角矩形边框（各角不同半径）
- * @param x 矩形左上角x坐标
- * @param y 矩形左上角y坐标
- * @param w 矩形宽度
- * @param h 矩形高度
- * @param radius1 左上角圆角半径
- * @param radius2 右上角圆角半径
- * @param radius3 右下角圆角半径
- * @param radius4 左下角圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw rounded rectangle outline (different radius for each corner)
+ * @param x Rectangle top-left corner x coordinate
+ * @param y Rectangle top-left corner y coordinate
+ * @param w Rectangle width
+ * @param h Rectangle height
+ * @param radius1 Top-left corner radius
+ * @param radius2 Top-right corner radius
+ * @param radius3 Bottom-right corner radius
+ * @param radius4 Bottom-left corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充圆角矩形（各角不同半径）
- * @param x 矩形左上角x坐标
- * @param y 矩形左上角y坐标
- * @param w 矩形宽度
- * @param h 矩形高度
- * @param radius1 左上角圆角半径
- * @param radius2 右上角圆角半径
- * @param radius3 右下角圆角半径
- * @param radius4 左下角圆角半径
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled rounded rectangle (different radius for each corner)
+ * @param x Rectangle top-left corner x coordinate
+ * @param y Rectangle top-left corner y coordinate
+ * @param w Rectangle width
+ * @param h Rectangle height
+ * @param radius1 Top-left corner radius
+ * @param radius2 Top-right corner radius
+ * @param radius3 Bottom-right corner radius
+ * @param radius4 Bottom-left corner radius
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
 
 /**
- * @brief 清除填充图案（设为无图案）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Clear fill pattern (set to no pattern)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_setpattern_none(PIMAGE pimg = NULL);
 
 /**
- * @brief 设置线性渐变填充图案
- * @param x1 起始点x坐标
- * @param y1 起始点y坐标
- * @param c1 起始点颜色
- * @param x2 结束点x坐标
- * @param y2 结束点y坐标
- * @param c2 结束点颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set linear gradient fill pattern
+ * @param x1 Start point x coordinate
+ * @param y1 Start point y coordinate
+ * @param c1 Start point color
+ * @param x2 End point x coordinate
+ * @param y2 End point y coordinate
+ * @param c2 End point color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, float y2, color_t c2, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置路径渐变填充图案
- * @param center 中心点
- * @param centerColor 中心颜色
- * @param count 边界点数量
- * @param points 边界点数组
- * @param colorCount 边界颜色数量
- * @param pointColors 边界颜色数组
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set path gradient fill pattern
+ * @param center Center point
+ * @param centerColor Center color
+ * @param count Number of boundary points
+ * @param points Boundary point array
+ * @param colorCount Number of boundary colors
+ * @param pointColors Boundary color array
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centerColor, int count, const ege_point* points, int colorCount, const color_t* pointColors, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置椭圆渐变填充图案
- * @param center 中心点
- * @param centerColor 中心颜色
- * @param x 椭圆左上角x坐标
- * @param y 椭圆左上角y坐标
- * @param w 椭圆宽度
- * @param h 椭圆高度
- * @param color 边界颜色
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set ellipse gradient fill pattern
+ * @param center Center point
+ * @param centerColor Center color
+ * @param x Ellipse top-left corner x coordinate
+ * @param y Ellipse top-left corner y coordinate
+ * @param w Ellipse width
+ * @param h Ellipse height
+ * @param color Boundary color
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor, float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置纹理填充图案
- * @param imgSrc 源纹理图像
- * @param x 纹理区域左上角x坐标
- * @param y 纹理区域左上角y坐标
- * @param w 纹理区域宽度
- * @param h 纹理区域高度
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set texture fill pattern
+ * @param imgSrc Source texture image
+ * @param x Texture area top-left corner x coordinate
+ * @param y Texture area top-left corner y coordinate
+ * @param w Texture area width
+ * @param h Texture area height
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制文本（GDI+增强版本）
- * @param text 要绘制的文本
- * @param x 文本左上角x坐标
- * @param y 文本左上角y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw text (GDI+ enhanced version)
+ * @param text Text to draw
+ * @param x Text top-left corner x coordinate
+ * @param y Text top-left corner y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawtext(const char*    text, float x, float y, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制文本（GDI+增强版本，Unicode）
- * @param text 要绘制的文本
- * @param x 文本左上角x坐标
- * @param y 文本左上角y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw text (GDI+ enhanced version, Unicode)
+ * @param text Text to draw
+ * @param x Text top-left corner x coordinate
+ * @param y Text top-left corner y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg = NULL);
 
 /**
- * @brief 生成纹理
- * @param generate 是否生成纹理
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Generate texture
+ * @param generate Whether to generate texture
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_gentexture(bool generate, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制纹理图像
- * @param imgSrc 源纹理图像
- * @param x 目标区域左上角x坐标
- * @param y 目标区域左上角y坐标
- * @param w 目标区域宽度
- * @param h 目标区域高度
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw texture image
+ * @param imgSrc Source texture image
+ * @param x Target area top-left corner x coordinate
+ * @param y Target area top-left corner y coordinate
+ * @param w Target area width
+ * @param h Target area height
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_puttexture(PCIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制纹理图像（指定目标矩形）
- * @param imgSrc 源纹理图像
- * @param dest 目标矩形
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw texture image (specify target rectangle)
+ * @param imgSrc Source texture image
+ * @param dest Target rectangle
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制纹理图像（指定源和目标矩形）
- * @param imgSrc 源纹理图像
- * @param dest 目标矩形
- * @param src 源矩形
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw texture image (specify source and target rectangles)
+ * @param imgSrc Source texture image
+ * @param dest Target rectangle
+ * @param src Source rectangle
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_puttexture(PCIMAGE imgSrc, ege_rect dest, ege_rect src, PIMAGE pimg = NULL);
 
 //draw image
 /**
- * @brief 绘制图像（GDI+增强版本）
- * @param imgSrc 源图像
- * @param xDest 目标x坐标
- * @param yDest 目标y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw image (GDI+ enhanced version)
+ * @param imgSrc Source image
+ * @param xDest Target x coordinate
+ * @param yDest Target y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制图像（GDI+增强版本，指定源和目标区域）
- * @param imgSrc 源图像
- * @param xDest 目标区域左上角x坐标
- * @param yDest 目标区域左上角y坐标
- * @param widthDest 目标区域宽度
- * @param heightDest 目标区域高度
- * @param xSrc 源区域左上角x坐标
- * @param ySrc 源区域左上角y坐标
- * @param widthSrc 源区域宽度
- * @param heightSrc 源区域高度
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw image (GDI+ enhanced version, specify source and target areas)
+ * @param imgSrc Source image
+ * @param xDest Target area top-left corner x coordinate
+ * @param yDest Target area top-left corner y coordinate
+ * @param widthDest Target area width
+ * @param heightDest Target area height
+ * @param xSrc Source area top-left corner x coordinate
+ * @param ySrc Source area top-left corner y coordinate
+ * @param widthSrc Source area width
+ * @param heightSrc Source area height
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制路径边框
- * @param path 路径对象指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw path outline
+ * @param path Path object pointer
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawpath(const ege_path* path, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充路径
- * @param path 路径对象指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled path
+ * @param path Path object pointer
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillpath(const ege_path* path, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制路径边框（指定偏移）
- * @param path 路径对象指针
- * @param x x方向偏移
- * @param y y方向偏移
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw path outline (with offset)
+ * @param path Path object pointer
+ * @param x X direction offset
+ * @param y Y direction offset
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_drawpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
 
 /**
- * @brief 绘制填充路径（指定偏移）
- * @param path 路径对象指针
- * @param x x方向偏移
- * @param y y方向偏移
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Draw filled path (with offset)
+ * @param path Path object pointer
+ * @param x X direction offset
+ * @param y Y direction offset
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_fillpath(const ege_path* path, float x, float y, PIMAGE pimg = NULL);
 
-/// @defgroup PathManagement 路径管理函数
+/// @defgroup PathManagement Path management functions
 /// @{
 
 /**
- * @brief 创建新的路径对象
- * @return 路径对象指针
+ * @brief Create new path object
+ * @return Path object pointer
  */
 ege_path* EGEAPI ege_path_create     ();
 
 /**
- * @brief 从点数组和类型数组创建路径
- * @param points 点坐标数组
- * @param types 点类型数组
- * @param count 点的数量
- * @return 路径对象指针
+ * @brief Create path from point array and type array
+ * @param points Point coordinate array
+ * @param types Point type array
+ * @param count Number of points
+ * @return Path object pointer
  */
 ege_path* EGEAPI ege_path_createfrom (const ege_point* points, const unsigned char* types, int count);
 
 /**
- * @brief 克隆路径
- * @param path 源路径对象指针
- * @return 新的路径对象指针
+ * @brief Clone path
+ * @param path Source path object pointer
+ * @return New path object pointer
  */
 ege_path* EGEAPI ege_path_clone      (const ege_path* path);
 
 /**
- * @brief 销毁路径对象
- * @param path 路径对象指针
+ * @brief Destroy path object
+ * @param path Path object pointer
  */
 void      EGEAPI ege_path_destroy    (const ege_path* path);
 
 /**
- * @brief 开始新的子路径
- * @param path 路径对象指针
+ * @brief Start new subpath
+ * @param path Path object pointer
  */
 void      EGEAPI ege_path_start      (ege_path* path);
 
 /**
- * @brief 关闭当前子路径
- * @param path 路径对象指针
+ * @brief Close current subpath
+ * @param path Path object pointer
  */
 void      EGEAPI ege_path_close      (ege_path* path);
 
 /**
- * @brief 关闭所有打开的子路径
- * @param path 路径对象指针
+ * @brief Close all open subpaths
+ * @param path Path object pointer
  */
 void      EGEAPI ege_path_closeall   (ege_path* path);
 
 /**
- * @brief 设置路径填充模式
- * @param path 路径对象指针
- * @param mode 填充模式
+ * @brief Set path fill mode
+ * @param path Path object pointer
+ * @param mode Fill mode
  */
 void      EGEAPI ege_path_setfillmode(ege_path* path, fill_mode mode);
 
 /**
- * @brief 重置路径（清空所有子路径）
- * @param path 路径对象指针
+ * @brief Reset path (clear all subpaths)
+ * @param path Path object pointer
  */
 void      EGEAPI ege_path_reset      (ege_path* path);
 
 /**
- * @brief 反转路径方向
- * @param path 路径对象指针
+ * @brief Reverse path direction
+ * @param path Path object pointer
  */
 void      EGEAPI ege_path_reverse    (ege_path* path);
 
 /**
- * @brief 扩展路径（生成轮廓）
- * @param path 路径对象指针
- * @param lineWidth 线条宽度
- * @param matrix 变换矩阵（可选）
+ * @brief Widen path (generate outline)
+ * @param path Path object pointer
+ * @param lineWidth Line width
+ * @param matrix Transform matrix (optional)
  */
 void      EGEAPI ege_path_widen      (ege_path* path, float lineWidth, const ege_transform_matrix* matrix = NULL);
 
 /**
- * @brief 扩展路径（生成轮廓，指定平坦度）
- * @param path 路径对象指针
- * @param lineWidth 线条宽度
- * @param matrix 变换矩阵
- * @param flatness 平坦度
+ * @brief Widen path (generate outline, specify flatness)
+ * @param path Path object pointer
+ * @param lineWidth Line width
+ * @param matrix Transform matrix
+ * @param flatness Flatness value
  */
 void      EGEAPI ege_path_widen      (ege_path* path, float lineWidth, const ege_transform_matrix* matrix,  float flatness);
 
 /**
- * @brief 平坦化路径（将曲线转换为直线段）
- * @param path 路径对象指针
- * @param matrix 变换矩阵（可选）
+ * @brief Flatten path (convert curves to line segments)
+ * @param path Path object pointer
+ * @param matrix Transform matrix (optional)
  */
 void      EGEAPI ege_path_flatten    (ege_path* path, const ege_transform_matrix* matrix = NULL);
 
 /**
- * @brief 平坦化路径（指定平坦度）
- * @param path 路径对象指针
- * @param matrix 变换矩阵
- * @param flatness 平坦度
+ * @brief Flatten path (specify flatness)
+ * @param path Path object pointer
+ * @param matrix Transform matrix
+ * @param flatness Flatness value
  */
 void      EGEAPI ege_path_flatten    (ege_path* path, const ege_transform_matrix* matrix, float flatness);
 
 /**
- * @brief 扭曲路径
- * @param path 路径对象指针
- * @param points 扭曲控制点数组
- * @param count 控制点数量
- * @param rect 扭曲矩形区域
- * @param matrix 变换矩阵（可选）
+ * @brief Warp path
+ * @param path Path object pointer
+ * @param points Warp control point array
+ * @param count Number of control points
+ * @param rect Warp rectangle area
+ * @param matrix Transform matrix (optional)
  */
 void      EGEAPI ege_path_warp       (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix = NULL);
 
 /**
- * @brief 扭曲路径（指定平坦度）
- * @param path 路径对象指针
- * @param points 扭曲控制点数组
- * @param count 控制点数量
- * @param rect 扭曲矩形区域
- * @param matrix 变换矩阵
- * @param flatness 平坦度
+ * @brief Warp path (specify flatness)
+ * @param path Path object pointer
+ * @param points Warp control point array
+ * @param count Number of control points
+ * @param rect Warp rectangle area
+ * @param matrix Transform matrix
+ * @param flatness Flatness value
  */
 void      EGEAPI ege_path_warp       (ege_path* path, const ege_point* points, int count, const ege_rect* rect, const ege_transform_matrix* matrix, float flatness);
 
 /**
- * @brief 生成路径轮廓
- * @param path 路径对象指针
- * @param matrix 变换矩阵（可选）
+ * @brief Generate path outline
+ * @param path Path object pointer
+ * @param matrix Transform matrix (optional)
  */
 void      EGEAPI ege_path_outline    (ege_path* path, const ege_transform_matrix* matrix = NULL);
 
 /**
- * @brief 生成路径轮廓（指定平坦度）
- * @param path 路径对象指针
- * @param matrix 变换矩阵
- * @param flatness 平坦度
+ * @brief Generate path outline (specify flatness)
+ * @param path Path object pointer
+ * @param matrix Transform matrix
+ * @param flatness Flatness value
  */
 void      EGEAPI ege_path_outline    (ege_path* path, const ege_transform_matrix* matrix, float flatness);
 
 /**
- * @brief 检测点是否在路径内部
- * @param path 路径对象指针
- * @param x 检测点x坐标
- * @param y 检测点y坐标
- * @return 如果点在路径内部返回true，否则返回false
+ * @brief Check if point is inside path
+ * @param path Path object pointer
+ * @param x Test point x coordinate
+ * @param y Test point y coordinate
+ * @return true if point is inside path, false otherwise
  */
 bool      EGEAPI ege_path_inpath     (const ege_path* path, float x, float y);
 
 /**
- * @brief 检测点是否在路径内部（指定图像上下文）
- * @param path 路径对象指针
- * @param x 检测点x坐标
- * @param y 检测点y坐标
- * @param pimg 图像上下文指针
- * @return 如果点在路径内部返回true，否则返回false
+ * @brief Check if point is inside path (specify image context)
+ * @param path Path object pointer
+ * @param x Test point x coordinate
+ * @param y Test point y coordinate
+ * @param pimg Image context pointer
+ * @return true if point is inside path, false otherwise
  */
 bool      EGEAPI ege_path_inpath     (const ege_path* path, float x, float y, PCIMAGE pimg);
 
 /**
- * @brief 检测点是否在路径边框上
- * @param path 路径对象指针
- * @param x 检测点x坐标
- * @param y 检测点y坐标
- * @return 如果点在路径边框上返回true，否则返回false
+ * @brief Check if point is on path outline
+ * @param path Path object pointer
+ * @param x Test point x coordinate
+ * @param y Test point y coordinate
+ * @return true if point is on path outline, false otherwise
  */
 bool      EGEAPI ege_path_instroke   (const ege_path* path, float x, float y);
 
 /**
- * @brief 检测点是否在路径边框上（指定图像上下文）
- * @param path 路径对象指针
- * @param x 检测点x坐标
- * @param y 检测点y坐标
- * @param pimg 图像上下文指针
- * @return 如果点在路径边框上返回true，否则返回false
+ * @brief Check if point is on path outline (specify image context)
+ * @param path Path object pointer
+ * @param x Test point x coordinate
+ * @param y Test point y coordinate
+ * @param pimg Image context pointer
+ * @return true if point is on path outline, false otherwise
  */
 bool      EGEAPI ege_path_instroke   (const ege_path* path, float x, float y, PCIMAGE pimg);
 
 /**
- * @brief 获取路径最后一个点的坐标
- * @param path 路径对象指针
- * @return 最后一个点的坐标
+ * @brief Get coordinates of last point in path
+ * @param path Path object pointer
+ * @return Coordinates of last point
  */
 ege_point      EGEAPI ege_path_lastpoint    (const ege_path* path);
 
 /**
- * @brief 获取路径中点的数量
- * @param path 路径对象指针
- * @return 路径中点的数量
+ * @brief Get number of points in path
+ * @param path Path object pointer
+ * @return Number of points in path
  */
 int            EGEAPI ege_path_pointcount   (const ege_path* path);
 
 /**
- * @brief 获取路径边界矩形
- * @param path 路径对象指针
- * @param matrix 变换矩阵，NULL表示不进行变换
- * @return 路径的边界矩形
+ * @brief Get path bounding rectangle
+ * @param path Path object pointer
+ * @param matrix Transform matrix, NULL means no transformation
+ * @return Path bounding rectangle
  */
 ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix = NULL);
 
 /**
- * @brief 获取路径边界矩形（指定图像上下文）
- * @param path 路径对象指针
- * @param matrix 变换矩阵
- * @param pimg 图像上下文指针
- * @return 路径的边界矩形
+ * @brief Get path bounding rectangle (specify image context)
+ * @param path Path object pointer
+ * @param matrix Transform matrix
+ * @param pimg Image context pointer
+ * @return Path bounding rectangle
  */
 ege_rect       EGEAPI ege_path_getbounds    (const ege_path* path, const ege_transform_matrix* matrix, PCIMAGE pimg);
 
 /**
- * @brief 获取路径中的所有点
- * @param path 路径对象指针
- * @param points 点数组缓冲区，NULL表示自动分配
- * @return 指向点数组的指针
- * @note 如果points为NULL，函数会分配内存，调用者需要负责释放
+ * @brief Get all points in path
+ * @param path Path object pointer
+ * @param points Point array buffer, NULL means auto-allocate
+ * @return Pointer to point array
+ * @note If points is NULL, function will allocate memory, caller is responsible for freeing it
  */
 ege_point*     EGEAPI ege_path_getpathpoints(const ege_path* path, ege_point* points = NULL);
 
 /**
- * @brief 获取路径中的所有点类型
- * @param path 路径对象指针
- * @param types 类型数组缓冲区，NULL表示自动分配
- * @return 指向类型数组的指针
- * @note 如果types为NULL，函数会分配内存，调用者需要负责释放
+ * @brief Get all point types in path
+ * @param path Path object pointer
+ * @param types Type array buffer, NULL means auto-allocate
+ * @return Pointer to type array
+ * @note If types is NULL, function will allocate memory, caller is responsible for freeing it
  */
 unsigned char* EGEAPI ege_path_getpathtypes (const ege_path* path, unsigned char* types = NULL);
 
 /**
- * @brief 变换路径
- * @param path 路径对象指针
- * @param matrix 变换矩阵
+ * @brief Transform path
+ * @param path Path object pointer
+ * @param matrix Transform matrix
  */
 void EGEAPI ege_path_transform     (ege_path* path, const ege_transform_matrix* matrix);
 
-/// @defgroup PathAdd 路径添加函数
+/// @defgroup PathAdd Path addition functions
 /// @{
 
 /**
- * @brief 向路径添加另一个路径
- * @param dstPath 目标路径对象指针
- * @param srcPath 源路径对象指针
- * @param connect 是否连接到当前路径的最后一点
+ * @brief Add another path to path
+ * @param dstPath Target path object pointer
+ * @param srcPath Source path object pointer
+ * @param connect Whether to connect to the last point of current path
  */
 void EGEAPI ege_path_addpath       (ege_path* dstPath, const ege_path* srcPath, bool connect);
 
 /**
- * @brief 向路径添加直线段
- * @param path 路径对象指针
- * @param x1 起点x坐标
- * @param y1 起点y坐标
- * @param x2 终点x坐标
- * @param y2 终点y坐标
+ * @brief Add line segment to path
+ * @param path Path object pointer
+ * @param x1 Start point x coordinate
+ * @param y1 Start point y coordinate
+ * @param x2 End point x coordinate
+ * @param y2 End point y coordinate
  */
 void EGEAPI ege_path_addline       (ege_path* path, float x1, float y1, float x2, float y2);
 
 /**
- * @brief 向路径添加弧形
- * @param path 路径对象指针
- * @param x 椭圆左上角x坐标
- * @param y 椭圆左上角y坐标
- * @param width 椭圆宽度
- * @param height 椭圆高度
- * @param startAngle 起始角度（度）
- * @param sweepAngle 扫描角度（度）
+ * @brief Add arc to path
+ * @param path Path object pointer
+ * @param x Ellipse top-left corner x coordinate
+ * @param y Ellipse top-left corner y coordinate
+ * @param width Ellipse width
+ * @param height Ellipse height
+ * @param startAngle Start angle (degrees)
+ * @param sweepAngle Sweep angle (degrees)
  */
 void EGEAPI ege_path_addarc        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
 
 /**
- * @brief 向路径添加折线
- * @param path 路径对象指针
- * @param numOfPoints 点的数量
- * @param points 点数组
+ * @brief Add polyline to path
+ * @param path Path object pointer
+ * @param numOfPoints Number of points
+ * @param points Point array
  */
 void EGEAPI ege_path_addpolyline   (ege_path* path, int numOfPoints, const ege_point* points);
 
 /**
- * @brief 向路径添加贝塞尔曲线（点数组版本）
- * @param path 路径对象指针
- * @param numOfPoints 控制点的数量
- * @param points 控制点数组
+ * @brief Add Bezier curve to path (point array version)
+ * @param path Path object pointer
+ * @param numOfPoints Number of control points
+ * @param points Control point array
  */
 void EGEAPI ege_path_addbezier     (ege_path* path, int numOfPoints, const ege_point* points);
 
 /**
- * @brief 向路径添加贝塞尔曲线（坐标版本）
- * @param path 路径对象指针
- * @param x1 起点x坐标
- * @param y1 起点y坐标
- * @param x2 第一个控制点x坐标
- * @param y2 第一个控制点y坐标
- * @param x3 第二个控制点x坐标
- * @param y3 第二个控制点y坐标
- * @param x4 终点x坐标
- * @param y4 终点y坐标
+ * @brief Add Bezier curve to path (coordinate version)
+ * @param path Path object pointer
+ * @param x1 Start point x coordinate
+ * @param y1 Start point y coordinate
+ * @param x2 First control point x coordinate
+ * @param y2 First control point y coordinate
+ * @param x3 Second control point x coordinate
+ * @param y3 Second control point y coordinate
+ * @param x4 End point x coordinate
+ * @param y4 End point y coordinate
  */
 void EGEAPI ege_path_addbezier     (ege_path* path, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 
 /**
- * @brief 向路径添加基数样条曲线
- * @param path 路径对象指针
- * @param numOfPoints 控制点的数量
- * @param points 控制点数组
+ * @brief Add cardinal spline curve to path
+ * @param path Path object pointer
+ * @param numOfPoints Number of control points
+ * @param points Control point array
  */
 void EGEAPI ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points);
 
 /**
- * @brief 向路径添加基数样条曲线（指定张力）
- * @param path 路径对象指针
- * @param numOfPoints 控制点的数量
- * @param points 控制点数组
- * @param tension 张力值（0.0-1.0）
+ * @brief Add cardinal spline curve to path (specify tension)
+ * @param path Path object pointer
+ * @param numOfPoints Number of control points
+ * @param points Control point array
+ * @param tension Tension value (0.0-1.0)
  */
 void EGEAPI ege_path_addcurve      (ege_path* path, int numOfPoints, const ege_point* points, float tension);
 
 /**
- * @brief 向路径添加圆形
- * @param path 路径对象指针
- * @param x 圆心x坐标
- * @param y 圆心y坐标
- * @param radius 半径
+ * @brief Add circle to path
+ * @param path Path object pointer
+ * @param x Circle center x coordinate
+ * @param y Circle center y coordinate
+ * @param radius Radius
  */
 void EGEAPI ege_path_addcircle     (ege_path* path, float x, float y, float radius);
 
 /**
- * @brief 向路径添加矩形
- * @param path 路径对象指针
- * @param x 矩形左上角x坐标
- * @param y 矩形左上角y坐标
- * @param width 矩形宽度
- * @param height 矩形高度
+ * @brief Add rectangle to path
+ * @param path Path object pointer
+ * @param x Rectangle top-left corner x coordinate
+ * @param y Rectangle top-left corner y coordinate
+ * @param width Rectangle width
+ * @param height Rectangle height
  */
 void EGEAPI ege_path_addrect       (ege_path* path, float x, float y, float width, float height);
 
 /**
- * @brief 向路径添加椭圆
- * @param path 路径对象指针
- * @param x 椭圆边界左上角x坐标
- * @param y 椭圆边界左上角y坐标
- * @param width 椭圆宽度
- * @param height 椭圆高度
+ * @brief Add ellipse to path
+ * @param path Path object pointer
+ * @param x Ellipse bounding top-left corner x coordinate
+ * @param y Ellipse bounding top-left corner y coordinate
+ * @param width Ellipse width
+ * @param height Ellipse height
  */
 void EGEAPI ege_path_addellipse    (ege_path* path, float x, float y, float width, float height);
 
 /**
- * @brief 向路径添加饼图
- * @param path 路径对象指针
- * @param x 椭圆边界左上角x坐标
- * @param y 椭圆边界左上角y坐标
- * @param width 椭圆宽度
- * @param height 椭圆高度
- * @param startAngle 起始角度（度）
- * @param sweepAngle 扫描角度（度）
+ * @brief Add pie chart to path
+ * @param path Path object pointer
+ * @param x X coordinate of ellipse bounding box top-left corner
+ * @param y Y coordinate of ellipse bounding box top-left corner
+ * @param width Ellipse width
+ * @param height Ellipse height
+ * @param startAngle Start angle (degrees)
+ * @param sweepAngle Sweep angle (degrees)
  */
 void EGEAPI ege_path_addpie        (ege_path* path, float x, float y, float width, float height, float startAngle, float sweepAngle);
 
 /**
- * @brief 向路径添加文本（ANSI版本）
- * @param path 路径对象指针
- * @param x 文本起始x坐标
- * @param y 文本起始y坐标
- * @param text 文本内容
- * @param height 文本高度
- * @param length 文本长度，-1表示自动计算
- * @param typeface 字体名称，NULL表示使用默认字体
- * @param fontStyle 字体样式
+ * @brief Add text to path (ANSI version)
+ * @param path Path object pointer
+ * @param x Text starting x coordinate
+ * @param y Text starting y coordinate
+ * @param text Text content
+ * @param height Text height
+ * @param length Text length, -1 means auto-calculate
+ * @param typeface Font name, NULL means use default font
+ * @param fontStyle Font style
  */
 void EGEAPI ege_path_addtext       (ege_path* path, float x, float y, const char*    text, float height, int length = -1, const char*    typeface = NULL, int fontStyle = 0);
 
 /**
- * @brief 向路径添加文本（Unicode版本）
- * @param path 路径对象指针
- * @param x 文本起始x坐标
- * @param y 文本起始y坐标
- * @param text 文本内容
- * @param height 文本高度
- * @param length 文本长度，-1表示自动计算
- * @param typeface 字体名称，NULL表示使用默认字体
- * @param fontStyle 字体样式
+ * @brief Add text to path (Unicode version)
+ * @param path Path object pointer
+ * @param x Text starting x coordinate
+ * @param y Text starting y coordinate
+ * @param text Text content
+ * @param height Text height
+ * @param length Text length, -1 means auto-calculate
+ * @param typeface Font name, NULL means use default font
+ * @param fontStyle Font style
  */
 void EGEAPI ege_path_addtext       (ege_path* path, float x, float y, const wchar_t* text, float height, int length = -1, const wchar_t* typeface = NULL, int fontStyle = 0);
 
 /**
- * @brief 向路径添加多边形
- * @param path 路径对象指针
- * @param numOfPoints 顶点数量
- * @param points 顶点数组
+ * @brief Add polygon to path
+ * @param path Path object pointer
+ * @param numOfPoints Number of vertices
+ * @param points Vertex array
  */
 void EGEAPI ege_path_addpolygon    (ege_path* path, int numOfPoints, const ege_point* points);
 
 /**
- * @brief 向路径添加闭合基数样条曲线
- * @param path 路径对象指针
- * @param numOfPoints 控制点的数量
- * @param points 控制点数组
+ * @brief Add closed cardinal spline curve to path
+ * @param path Path object pointer
+ * @param numOfPoints Number of control points
+ * @param points Control point array
  */
 void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points);
 
 /**
- * @brief 向路径添加闭合基数样条曲线（指定张力）
- * @param path 路径对象指针
- * @param numOfPoints 控制点的数量
- * @param points 控制点数组
- * @param tension 张力值（0.0-1.0）
+ * @brief Add closed cardinal spline curve to path (with specified tension)
+ * @param path Path object pointer
+ * @param numOfPoints Number of control points
+ * @param points Control point array
+ * @param tension Tension value (0.0-1.0)
  */
 void EGEAPI ege_path_addclosedcurve(ege_path* path, int numOfPoints, const ege_point* points, float tension);
 
 /// @}
 
 
-/// @defgroup Transform 变换函数
+/// @defgroup Transform Transform functions
 /// @{
 
 /**
- * @brief 旋转变换
- * @param angle 旋转角度（度）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Rotation transformation
+ * @param angle Rotation angle (degrees)
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_transform_rotate(float angle, PIMAGE pimg = NULL);
 
 /**
- * @brief 平移变换
- * @param x x方向平移量
- * @param y y方向平移量
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Translation transformation
+ * @param x Translation amount in x direction
+ * @param y Translation amount in y direction
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_transform_translate(float x, float y, PIMAGE pimg = NULL);
 
 /**
- * @brief 缩放变换
- * @param xScale x方向缩放比例
- * @param yScale y方向缩放比例
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Scaling transformation
+ * @param xScale Scaling ratio in x direction
+ * @param yScale Scaling ratio in y direction
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_transform_scale(float xScale, float yScale, PIMAGE pimg = NULL);
 
 /**
- * @brief 重置变换矩阵为单位矩阵
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Reset transformation matrix to identity matrix
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_transform_reset(PIMAGE pimg = NULL);
 
 /**
- * @brief 获取当前变换矩阵
- * @param matrix 输出变换矩阵的指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Get current transformation matrix
+ * @param matrix Pointer to output transformation matrix
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置变换矩阵
- * @param matrix 要设置的变换矩阵
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set transformation matrix
+ * @param matrix Transformation matrix to set
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg = NULL);
 
 /**
- * @brief 计算点经过变换后的坐标
- * @param p 原始点坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 变换后的点坐标
+ * @brief Calculate point coordinates after transformation
+ * @param p Original point coordinates
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Transformed point coordinates
  */
 ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL);
 
 /// @}
 
 /**
- * @brief 计算点经过变换后的坐标（坐标版本）
- * @param x 原始点x坐标
- * @param y 原始点y坐标
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 变换后的点坐标
+ * @brief Calculate point coordinates after transformation (coordinate version)
+ * @param x Original point x coordinate
+ * @param y Original point y coordinate
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Transformed point coordinates
  */
 ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);
 
@@ -3337,549 +3337,549 @@ ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);
 // It is not supported in VC 6.0.
 #ifndef EGE_COMPILERINFO_VC6
 
-/// @defgroup Console 控制台函数
+/// @defgroup Console Console functions
 /// @{
 
 /**
- * @brief 初始化控制台
- * @return 成功返回true，失败返回false
- * @note 创建一个控制台窗口，用于标准输入输出
+ * @brief Initialize console
+ * @return Returns true on success, false on failure
+ * @note Creates a console window for standard input/output
  */
 bool EGEAPI init_console();
 
 /**
- * @brief 清空控制台
- * @return 成功返回true，失败返回false
+ * @brief Clear console
+ * @return Returns true on success, false on failure
  */
 bool EGEAPI clear_console();
 
 /**
- * @brief 显示控制台窗口
- * @return 成功返回true，失败返回false
+ * @brief Show console window
+ * @return Returns true on success, false on failure
  */
 bool EGEAPI show_console();
 
 /**
- * @brief 隐藏控制台窗口
- * @return 成功返回true，失败返回false
+ * @brief Hide console window
+ * @return Returns true on success, false on failure
  */
 bool EGEAPI hide_console();
 
 /**
- * @brief 关闭控制台并恢复标准输入输出
- * @return 成功返回true，失败返回false
+ * @brief Close console and restore standard input/output
+ * @return Returns true on success, false on failure
  */
 bool EGEAPI close_console();
 #endif
 
 /**
- * @brief 从控制台获取字符（替代<conio.h>中的getch函数）
- * @return 获取到的字符码
+ * @brief Get character from console (replacement for getch function in <conio.h>)
+ * @return Character code obtained
  */
 int  EGEAPI getch_console();
 
 /**
- * @brief 检测控制台是否有按键（替代<conio.h>中的kbhit函数）
- * @return 有按键返回非零值，无按键返回0
+ * @brief Check if console has key press (replacement for kbhit function in <conio.h>)
+ * @return Returns non-zero if key pressed, 0 if no key pressed
  */
 int  EGEAPI kbhit_console();
 
 /// @}
 
-/// @defgroup Time 时间相关函数
+/// @defgroup Time Time related functions
 /// @{
 
 /**
- * @brief EGE库延时函数
- * @param ms 延时时间（毫秒）
- * @note 精确的延时函数，不会被系统调度影响
+ * @brief EGE library delay function
+ * @param ms Delay time (milliseconds)
+ * @note Precise delay function, not affected by system scheduling
  */
 void EGEAPI ege_sleep (long ms);
 
 /**
- * @brief 延时函数
- * @param ms 延时时间（毫秒）
- * @note 标准延时函数
+ * @brief Delay function
+ * @param ms Delay time (milliseconds)
+ * @note Standard delay function
  */
 void EGEAPI delay     (long ms);
 
 /**
- * @brief 毫秒延时函数
- * @param ms 延时时间（毫秒）
+ * @brief Millisecond delay function
+ * @param ms Delay time (milliseconds)
  */
 void EGEAPI delay_ms  (long ms);
 
 /**
- * @brief API延时函数
- * @param ms 延时时间（毫秒）
- * @note 使用系统API实现的延时
+ * @brief API delay function
+ * @param ms Delay time (milliseconds)
+ * @note Delay implemented using system API
  */
 void EGEAPI api_sleep (long ms);
 
 /**
- * @brief 按帧率延时（整数版本）
- * @param fps 目标帧率
- * @note 根据帧率自动计算延时时间
+ * @brief Delay by frame rate (integer version)
+ * @param fps Target frame rate
+ * @note Automatically calculates delay time based on frame rate
  */
 void EGEAPI delay_fps (int    fps);
 
 /**
- * @brief 按帧率延时（长整数版本）
- * @param fps 目标帧率
+ * @brief Delay by frame rate (long integer version)
+ * @param fps Target frame rate
  */
 void EGEAPI delay_fps (long   fps);
 
 /**
- * @brief 按帧率延时（双精度浮点版本）
- * @param fps 目标帧率
+ * @brief Delay by frame rate (double precision floating-point version)
+ * @param fps Target frame rate
  */
 void EGEAPI delay_fps (double fps);
 
 /**
- * @brief 带跳帧的按帧率延时
- * @param fps 目标帧率
- * @note 更精确的帧率控制
+ * @brief Frame rate delay with frame skipping
+ * @param fps Target frame rate
+ * @note More precise frame rate control
  */
 void EGEAPI delay_jfps(int    fps);
 
 /**
- * @brief 精确按帧率延时（长整数版本）
- * @param fps 目标帧率
+ * @brief Precise frame rate delay (long integer version)
+ * @param fps Target frame rate
  */
 void EGEAPI delay_jfps(long   fps);
 
 /**
- * @brief 精确按帧率延时（双精度浮点版本）
- * @param fps 目标帧率
+ * @brief Precise frame rate delay (double precision floating-point version)
+ * @param fps Target frame rate
  */
 void EGEAPI delay_jfps(double fps);
 
 /**
- * @brief 获取高精度时钟
- * @return 当前时间（秒，双精度浮点）
- * @note 用于高精度计时和性能测量
+ * @brief Get high-precision clock
+ * @return Current time (seconds, double precision floating-point)
+ * @note Used for high-precision timing and performance measurement
  */
 double EGEAPI fclock();
 
 /// @}
 
 /**
- * @defgroup TextOutput 文本输出
- * @brief 文本输出和显示相关函数
+ * @defgroup TextOutput Text output
+ * @brief Text output and display related functions
  * @{
  */
 
 /**
- * @brief 在当前位置输出文本字符串
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 文本输出位置由当前绘图位置决定，使用 moveto() 设置
+ * @brief Output text string at current position
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Text output position is determined by current drawing position, set using moveto()
  */
 void EGEAPI outtext(const char*    text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在当前位置输出文本字符串（Unicode版本）
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 文本输出位置由当前绘图位置决定，使用 moveto() 设置
+ * @brief Output text string at current position (Unicode version)
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Text output position is determined by current drawing position, set using moveto()
  */
 void EGEAPI outtext(const wchar_t* text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在当前位置输出单个字符
- * @param c 要输出的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 文本输出位置由当前绘图位置决定，使用 moveto() 设置
+ * @brief Output single character at current position
+ * @param c Character to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Text output position is determined by current drawing position, set using moveto()
  */
 void EGEAPI outtext(char    c, PIMAGE pimg = NULL);
 
 /**
- * @brief 在当前位置输出单个字符（Unicode版本）
- * @param c 要输出的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 文本输出位置由当前绘图位置决定，使用 moveto() 设置
+ * @brief Output single character at current position (Unicode version)
+ * @param c Character to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Text output position is determined by current drawing position, set using moveto()
  */
 void EGEAPI outtext(wchar_t c, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出文本字符串
- * @param x 输出位置的x坐标
- * @param y 输出位置的y坐标
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output text string at specified position
+ * @param x X coordinate of output position
+ * @param y Y coordinate of output position
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI outtextxy(int x, int y, const char*    text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出文本字符串（Unicode版本）
- * @param x 输出位置的x坐标
- * @param y 输出位置的y坐标
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output text string at specified position (Unicode version)
+ * @param x X coordinate of output position
+ * @param y Y coordinate of output position
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出单个字符
- * @param x 输出位置的x坐标
- * @param y 输出位置的y坐标
- * @param c 要输出的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output single character at specified position
+ * @param x X coordinate of output position
+ * @param y Y coordinate of output position
+ * @param c Character to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI outtextxy(int x, int y, char    c, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出单个字符（Unicode版本）
- * @param x 输出位置的x坐标
- * @param y 输出位置的y坐标
- * @param c 要输出的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output single character at specified position (Unicode version)
+ * @param x X coordinate of output position
+ * @param y Y coordinate of output position
+ * @param c Character to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI outtextxy(int x, int y, wchar_t c, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置格式化输出文本
- * @param x 输出位置的x坐标
- * @param y 输出位置的y坐标
- * @param format 格式化字符串（类似printf）
- * @param ... 可变参数列表
- * @note 实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Format and output text at specified position
+ * @param x X coordinate of output position
+ * @param y Y coordinate of output position
+ * @param format Format string (similar to printf)
+ * @param ... Variable argument list
+ * @note Actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI xyprintf (int x, int y, const char*    format, ...);
 
 /**
- * @brief 在指定位置格式化输出文本（Unicode版本）
- * @param x 输出位置的x坐标
- * @param y 输出位置的y坐标
- * @param format 格式化字符串（类似printf）
- * @param ... 可变参数列表
- * @note 实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Format and output text at specified position (Unicode version)
+ * @param x X coordinate of output position
+ * @param y Y coordinate of output position
+ * @param format Format string (similar to printf)
+ * @param ... Variable argument list
+ * @note Actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI xyprintf (int x, int y, const wchar_t* format, ...);
 
 /**
- * @brief 在指定矩形区域内输出文本
- * @param x 矩形区域左上角x坐标
- * @param y 矩形区域左上角y坐标
- * @param w 矩形区域宽度
- * @param h 矩形区域高度
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 文本会在指定矩形范围内自动换行，支持文本对齐设置
+ * @brief Output text within specified rectangular area
+ * @param x X coordinate of rectangle area top-left corner
+ * @param y Y coordinate of rectangle area top-left corner
+ * @param w Width of rectangle area
+ * @param h Height of rectangle area
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Text will wrap automatically within the specified rectangle area, supports text alignment settings
  */
 void EGEAPI outtextrect(int x, int y, int w, int h, const char*    text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定矩形区域内输出文本（Unicode版本）
- * @param x 矩形区域左上角x坐标
- * @param y 矩形区域左上角y坐标
- * @param w 矩形区域宽度
- * @param h 矩形区域高度
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 文本会在指定矩形范围内自动换行，支持文本对齐设置
+ * @brief Output text within specified rectangular area (Unicode version)
+ * @param x X coordinate of rectangle area top-left corner
+ * @param y Y coordinate of rectangle area top-left corner
+ * @param w Width of rectangle area
+ * @param h Height of rectangle area
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Text will wrap automatically within the specified rectangle area, supports text alignment settings
  */
 void EGEAPI outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定矩形区域内格式化输出文本
- * @param x 矩形区域左上角x坐标
- * @param y 矩形区域左上角y坐标
- * @param w 矩形区域宽度
- * @param h 矩形区域高度
- * @param format 格式化字符串（类似printf）
- * @param ... 可变参数列表
- * @note 文本会在指定矩形范围内自动换行，支持文本对齐设置
+ * @brief Format and output text within specified rectangular area
+ * @param x X coordinate of rectangle area top-left corner
+ * @param y Y coordinate of rectangle area top-left corner
+ * @param w Width of rectangle area
+ * @param h Height of rectangle area
+ * @param format Format string (similar to printf)
+ * @param ... Variable argument list
+ * @note Text will wrap automatically within the specified rectangle area, supports text alignment settings
  */
 void EGEAPI rectprintf (int x, int y, int w, int h, const char*    format, ...);
 
 /**
- * @brief 在指定矩形区域内格式化输出文本（Unicode版本）
- * @param x 矩形区域左上角x坐标
- * @param y 矩形区域左上角y坐标
- * @param w 矩形区域宽度
- * @param h 矩形区域高度
- * @param format 格式化字符串（类似printf）
- * @param ... 可变参数列表
- * @note 文本会在指定矩形范围内自动换行，支持文本对齐设置
+ * @brief Format and output text within specified rectangular area (Unicode version)
+ * @param x X coordinate of rectangle area top-left corner
+ * @param y Y coordinate of rectangle area top-left corner
+ * @param w Width of rectangle area
+ * @param h Height of rectangle area
+ * @param format Format string (similar to printf)
+ * @param ... Variable argument list
+ * @note Text will wrap automatically within the specified rectangle area, supports text alignment settings
  */
 void EGEAPI rectprintf (int x, int y, int w, int h, const wchar_t* format, ...);
 
 /**
- * @brief 获取文本字符串的显示宽度
- * @param text 要测量的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 文本显示宽度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display width of text string
+ * @param text Text string to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Text display width (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textwidth(const char*    text, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取文本字符串的显示宽度（Unicode版本）
- * @param text 要测量的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 文本显示宽度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display width of text string (Unicode version)
+ * @param text Text string to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Text display width (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textwidth(const wchar_t* text, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取单个字符的显示宽度
- * @param c 要测量的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 字符显示宽度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display width of single character
+ * @param c Character to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Character display width (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textwidth(char    c, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取单个字符的显示宽度（Unicode版本）
- * @param c 要测量的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 字符显示宽度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display width of single character (Unicode version)
+ * @param c Character to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Character display width (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textwidth(wchar_t c, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取文本字符串的显示高度
- * @param text 要测量的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 文本显示高度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display height of text string
+ * @param text Text string to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Text display height (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textheight(const char*    text, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取文本字符串的显示高度（Unicode版本）
- * @param text 要测量的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 文本显示高度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display height of text string (Unicode version)
+ * @param text Text string to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Text display height (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textheight(const wchar_t* text, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取单个字符的显示高度
- * @param c 要测量的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 字符显示高度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display height of single character
+ * @param c Character to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Character display height (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textheight(char    c, PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取单个字符的显示高度（Unicode版本）
- * @param c 要测量的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @return 字符显示高度（像素）
- * @note 返回值受当前字体设置影响
+ * @brief Get display height of single character (Unicode version)
+ * @param c Character to measure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @return Character display height (pixels)
+ * @note Return value is affected by current font settings
  */
 int  EGEAPI textheight(wchar_t c, PCIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出文本（支持浮点坐标和ARGB颜色）
- * @param x 输出位置的x坐标（浮点数）
- * @param y 输出位置的y坐标（浮点数）
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 使用GDI+渲染，支持ARGB颜色和抗锯齿，实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output text at specified position (supports floating-point coordinates and ARGB colors)
+ * @param x X coordinate of output position (floating-point)
+ * @param y Y coordinate of output position (floating-point)
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ rendering, supports ARGB colors and anti-aliasing, actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI ege_outtextxy(float x, float y, const char*    text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出文本（支持浮点坐标和ARGB颜色，Unicode版本）
- * @param x 输出位置的x坐标（浮点数）
- * @param y 输出位置的y坐标（浮点数）
- * @param text 要输出的文本字符串
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 使用GDI+渲染，支持ARGB颜色和抗锯齿，实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output text at specified position (supports floating-point coordinates and ARGB colors, Unicode version)
+ * @param x X coordinate of output position (floating-point)
+ * @param y Y coordinate of output position (floating-point)
+ * @param text Text string to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ rendering, supports ARGB colors and anti-aliasing, actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI ege_outtextxy(float x, float y, const wchar_t* text, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出单个字符（支持浮点坐标和ARGB颜色）
- * @param x 输出位置的x坐标（浮点数）
- * @param y 输出位置的y坐标（浮点数）
- * @param c 要输出的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 使用GDI+渲染，支持ARGB颜色和抗锯齿，实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output single character at specified position (supports floating-point coordinates and ARGB colors)
+ * @param x X coordinate of output position (floating-point)
+ * @param y Y coordinate of output position (floating-point)
+ * @param c Character to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ rendering, supports ARGB colors and anti-aliasing, actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI ege_outtextxy(float x, float y, char    c, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置输出单个字符（支持浮点坐标和ARGB颜色，Unicode版本）
- * @param x 输出位置的x坐标（浮点数）
- * @param y 输出位置的y坐标（浮点数）
- * @param c 要输出的字符
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 使用GDI+渲染，支持ARGB颜色和抗锯齿，实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Output single character at specified position (supports floating-point coordinates and ARGB colors, Unicode version)
+ * @param x X coordinate of output position (floating-point)
+ * @param y Y coordinate of output position (floating-point)
+ * @param c Character to output
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ rendering, supports ARGB colors and anti-aliasing, actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI ege_outtextxy(float x, float y, wchar_t c, PIMAGE pimg = NULL);
 
 /**
- * @brief 在指定位置格式化输出文本（支持浮点坐标和ARGB颜色）
- * @param x 输出位置的x坐标（浮点数）
- * @param y 输出位置的y坐标（浮点数）
- * @param format 格式化字符串（类似printf）
- * @param ... 可变参数列表
- * @note 使用GDI+渲染，支持ARGB颜色和抗锯齿，实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Format and output text at specified position (supports floating-point coordinates and ARGB colors)
+ * @param x X coordinate of output position (floating-point)
+ * @param y Y coordinate of output position (floating-point)
+ * @param format Format string (similar to printf)
+ * @param ... Variable argument list
+ * @note Uses GDI+ rendering, supports ARGB colors and anti-aliasing, actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI ege_xyprintf (float x, float y, const char*    format, ...);
 
 /**
- * @brief 在指定位置格式化输出文本（支持浮点坐标和ARGB颜色，Unicode版本）
- * @param x 输出位置的x坐标（浮点数）
- * @param y 输出位置的y坐标（浮点数）
- * @param format 格式化字符串（类似printf）
- * @param ... 可变参数列表
- * @note 使用GDI+渲染，支持ARGB颜色和抗锯齿，实际输出位置受文本对齐方式和字体倾斜角度影响
+ * @brief Format and output text at specified position (supports floating-point coordinates and ARGB colors, Unicode version)
+ * @param x X coordinate of output position (floating-point)
+ * @param y Y coordinate of output position (floating-point)
+ * @param format Format string (similar to printf)
+ * @param ... Variable argument list
+ * @note Uses GDI+ rendering, supports ARGB colors and anti-aliasing, actual output position is affected by text alignment and font tilt angle
  */
 void EGEAPI ege_xyprintf (float x, float y, const wchar_t* format, ...);
 
 /// @}
 
 /**
- * @defgroup FontSettings 字体设置
- * @brief 字体和文本对齐相关设置函数
+ * @defgroup FontSettings Font settings
+ * @brief Font and text alignment related setting functions
  * @{
  */
 
 /**
- * @brief 设置文本对齐方式
- * @param horiz 水平对齐方式（LEFT_TEXT、CENTER_TEXT、RIGHT_TEXT）
- * @param vert 垂直对齐方式（TOP_TEXT、CENTER_TEXT、BOTTOM_TEXT）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @note 影响后续所有文本输出函数的对齐效果
+ * @brief Set text alignment mode
+ * @param horiz Horizontal alignment (LEFT_TEXT, CENTER_TEXT, RIGHT_TEXT)
+ * @param vert Vertical alignment (TOP_TEXT, CENTER_TEXT, BOTTOM_TEXT)
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Affects alignment of all subsequent text output functions
  */
 void EGEAPI settextjustify(int horiz, int vert, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置字体（简化版本）
- * @param height 字体高度（像素）
- * @param width 字体宽度（像素），0表示自动
- * @param typeface 字体名称
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font (simplified version)
+ * @param height Font height (pixels)
+ * @param width Font width (pixels), 0 means automatic
+ * @param typeface Font name
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfont(int height, int width, const char* typeface,  PIMAGE pimg = NULL);
 
 /**
- * @brief 设置字体（简化版本，Unicode）
- * @param height 字体高度（像素）
- * @param width 字体宽度（像素），0表示自动
- * @param typeface 字体名称
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font (simplified version, Unicode)
+ * @param height Font height (pixels)
+ * @param width Font width (pixels), 0 means automatic
+ * @param typeface Font name
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置字体（完整版本）
- * @param height 字体高度（像素）
- * @param width 字体宽度（像素），0表示自动
- * @param typeface 字体名称
- * @param escapement 字体倾斜角度（十分之一度为单位）
- * @param orientation 字符倾斜角度（十分之一度为单位）
- * @param weight 字体粗细（100-900，400为正常，700为粗体）
- * @param italic 是否斜体
- * @param underline 是否下划线
- * @param strikeOut 是否删除线
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font (complete version)
+ * @param height Font height (pixels)
+ * @param width Font width (pixels), 0 means automatic
+ * @param typeface Font name
+ * @param escapement Font tilt angle (in tenths of a degree)
+ * @param orientation Character tilt angle (in tenths of a degree)
+ * @param weight Font thickness (100-900, 400 is normal, 700 is bold)
+ * @param italic Whether italic
+ * @param underline Whether underline
+ * @param strikeOut Whether strikethrough
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfont(int height, int width, const char* typeface,  int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置字体（完整版本，Unicode）
- * @param height 字体高度（像素）
- * @param width 字体宽度（像素），0表示自动
- * @param typeface 字体名称
- * @param escapement 字体倾斜角度（十分之一度为单位）
- * @param orientation 字符倾斜角度（十分之一度为单位）
- * @param weight 字体粗细（100-900，400为正常，700为粗体）
- * @param italic 是否斜体
- * @param underline 是否下划线
- * @param strikeOut 是否删除线
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font (complete version, Unicode)
+ * @param height Font height (pixels)
+ * @param width Font width (pixels), 0 means automatic
+ * @param typeface Font name
+ * @param escapement Font tilt angle (in tenths of a degree)
+ * @param orientation Character tilt angle (in tenths of a degree)
+ * @param weight Font thickness (100-900, 400 is normal, 700 is bold)
+ * @param italic Whether italic
+ * @param underline Whether underline
+ * @param strikeOut Whether strikethrough
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置字体（高级版本）
- * @param height 字体高度（像素）
- * @param width 字体宽度（像素），0表示自动
- * @param typeface 字体名称
- * @param escapement 字体倾斜角度（十分之一度为单位）
- * @param orientation 字符倾斜角度（十分之一度为单位）
- * @param weight 字体粗细（100-900，400为正常，700为粗体）
- * @param italic 是否斜体
- * @param underline 是否下划线
- * @param strikeOut 是否删除线
- * @param charSet 字符集
- * @param outPrecision 输出精度
- * @param clipPrecision 裁剪精度
- * @param quality 输出质量
- * @param pitchAndFamily 字体间距和族信息
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font (advanced version)
+ * @param height Font height (pixels)
+ * @param width Font width (pixels), 0 means automatic
+ * @param typeface Font name
+ * @param escapement Font tilt angle (in tenths of a degree)
+ * @param orientation Character tilt angle (in tenths of a degree)
+ * @param weight Font thickness (100-900, 400 is normal, 700 is bold)
+ * @param italic Whether italic
+ * @param underline Whether underline
+ * @param strikeOut Whether strikethrough
+ * @param charSet Character set
+ * @param outPrecision Output precision
+ * @param clipPrecision Clipping precision
+ * @param quality Output quality
+ * @param pitchAndFamily Font pitch and family information
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfont(int height, int width, const char* typeface,  int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
                     BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
 
 /**
- * @brief 设置字体（高级版本，Unicode）
- * @param height 字体高度（像素）
- * @param width 字体宽度（像素），0表示自动
- * @param typeface 字体名称
- * @param escapement 字体倾斜角度（十分之一度为单位）
- * @param orientation 字符倾斜角度（十分之一度为单位）
- * @param weight 字体粗细（100-900，400为正常，700为粗体）
- * @param italic 是否斜体
- * @param underline 是否下划线
- * @param strikeOut 是否删除线
- * @param charSet 字符集
- * @param outPrecision 输出精度
- * @param clipPrecision 裁剪精度
- * @param quality 输出质量
- * @param pitchAndFamily 字体间距和族信息
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font (advanced version, Unicode)
+ * @param height Font height (pixels)
+ * @param width Font width (pixels), 0 means automatic
+ * @param typeface Font name
+ * @param escapement Font tilt angle (in tenths of a degree)
+ * @param orientation Character tilt angle (in tenths of a degree)
+ * @param weight Font thickness (100-900, 400 is normal, 700 is bold)
+ * @param italic Whether italic
+ * @param underline Whether underline
+ * @param strikeOut Whether strikethrough
+ * @param charSet Character set
+ * @param outPrecision Output precision
+ * @param clipPrecision Clipping precision
+ * @param quality Output quality
+ * @param pitchAndFamily Font pitch and family information
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfont(int height, int width, const wchar_t* typeface, int escapement, int orientation,
                     int weight, bool italic, bool underline, bool strikeOut, BYTE charSet,
                     BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, PIMAGE pimg = NULL);
 
 /**
- * @brief 使用LOGFONTW结构设置字体
- * @param font 指向LOGFONTW结构的指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Set font using LOGFONTW structure
+ * @param font Pointer to LOGFONTW structure
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI setfont(const LOGFONTW *font, PIMAGE pimg = NULL);
 
 /**
- * @brief 获取当前字体设置
- * @param font 用于接收字体信息的LOGFONTW结构指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @brief Get current font settings
+ * @param font LOGFONTW structure pointer to receive font information
+ * @param pimg Target image pointer, NULL means current ege window
  */
 void EGEAPI getfont(LOGFONTW *font, PCIMAGE pimg = NULL);
 
 /**
- * @brief 使用LOGFONTA结构设置字体
- * @param font 指向LOGFONTA结构的指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @deprecated 建议使用带LOGFONTW参数的setfont函数
+ * @brief Set font using LOGFONTA structure
+ * @param font Pointer to LOGFONTA structure
+ * @param pimg Target image pointer, NULL means current ege window
+ * @deprecated Recommend using setfont function with LOGFONTW parameter
  */
 EGE_DEPRECATE(setfont, "Please use the 'getfont' function with the LOGFONTW* parameter instead.")
 void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
 
 /**
- * @brief 获取当前字体设置（ANSI版本）
- * @param font 用于接收字体信息的LOGFONTA结构指针
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- * @deprecated 建议使用带LOGFONTW参数的getfont函数
+ * @brief Get current font settings (ANSI version)
+ * @param font LOGFONTA structure pointer to receive font information
+ * @param pimg Target image pointer, NULL means current ege window
+ * @deprecated Recommend using getfont function with LOGFONTW parameter
  */
 EGE_DEPRECATE(getfont, "Please use the 'getfont' function with the LOGFONTW* parameter instead.")
 void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
@@ -3890,467 +3890,467 @@ void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
 #define getmaxy getheight
 
 /**
- * @brief 获取窗口或图像的宽度
- * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的宽度
- * @return 返回窗口或图像的宽度（像素），如果图像对象无效则返回0
+ * @brief Get width of window or image
+ * @param pimg Image object pointer, NULL means get width of current drawing window
+ * @return Returns width of window or image (pixels), returns 0 if image object is invalid
  * 
- * 这个函数用于获取指定图像或窗口的宽度。当pimg为NULL时，
- * 返回当前EGE绘图窗口的宽度；当pimg指向有效图像时，返回该图像的宽度。
+ * This function is used to get the width of the specified image or window. When pimg is NULL,
+ * it returns the width of the current EGE drawing window; when pimg points to a valid image, it returns the width of that image.
  * 
- * @see getheight() 获取高度
- * @see getx() 获取当前x坐标
- * @see gety() 获取当前y坐标
+ * @see getheight() Get height
+ * @see getx() Get current x coordinate
+ * @see gety() Get current y coordinate
  */
 int EGEAPI getwidth(PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取窗口或图像的高度
- * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的高度
- * @return 返回窗口或图像的高度（像素），如果图像对象无效则返回0
+ * @brief Get height of window or image
+ * @param pimg Image object pointer, NULL means get height of current drawing window
+ * @return Returns height of window or image (pixels), returns 0 if image object is invalid
  * 
- * 这个函数用于获取指定图像或窗口的高度。当pimg为NULL时，
- * 返回当前EGE绘图窗口的高度；当pimg指向有效图像时，返回该图像的高度。
+ * This function is used to get the height of the specified image or window. When pimg is NULL,
+ * it returns the height of the current EGE drawing window; when pimg points to a valid image, it returns the height of that image.
  * 
- * @see getwidth() 获取宽度
- * @see getx() 获取当前x坐标
- * @see gety() 获取当前y坐标
+ * @see getwidth() Get width
+ * @see getx() Get current x coordinate
+ * @see gety() Get current y coordinate
  */
 int EGEAPI getheight(PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取当前画笔位置的x坐标
- * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的画笔位置
- * @return 返回当前画笔位置的x坐标，如果图像对象无效则返回-1
+ * @brief Get x coordinate of current pen position
+ * @param pimg Image object pointer, NULL means get pen position of current drawing window
+ * @return Returns x coordinate of current pen position, returns -1 if image object is invalid
  * 
- * 获取当前绘图位置的x坐标。画笔位置通常由moveto()、lineto()等函数设置，
- * 或者由绘图函数（如line()）的执行而改变。
+ * Get the x coordinate of the current drawing position. The pen position is usually set by functions like moveto(), lineto(),
+ * or changed by the execution of drawing functions (like line()).
  * 
- * @see gety() 获取当前y坐标
- * @see moveto() 移动画笔到指定位置
- * @see getwidth() 获取宽度
- * @see getheight() 获取高度
+ * @see gety() Get current y coordinate
+ * @see moveto() Move pen to specified position
+ * @see getwidth() Get width
+ * @see getheight() Get height
  */
 int EGEAPI getx(PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取当前画笔位置的y坐标
- * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的画笔位置
- * @return 返回当前画笔位置的y坐标，如果图像对象无效则返回-1
+ * @brief Get y coordinate of current pen position
+ * @param pimg Image object pointer, NULL means get pen position of current drawing window
+ * @return Returns y coordinate of current pen position, returns -1 if image object is invalid
  * 
- * 获取当前绘图位置的y坐标。画笔位置通常由moveto()、lineto()等函数设置，
- * 或者由绘图函数（如line()）的执行而改变。
+ * Get the y coordinate of the current drawing position. The pen position is usually set by functions like moveto(), lineto(),
+ * or changed by the execution of drawing functions (like line()).
  * 
- * @see getx() 获取当前x坐标
- * @see moveto() 移动画笔到指定位置
- * @see getwidth() 获取宽度
- * @see getheight() 获取高度
+ * @see getx() Get current x coordinate
+ * @see moveto() Move pen to specified position
+ * @see getwidth() Get width
+ * @see getheight() Get height
  */
 int EGEAPI gety(PCIMAGE pimg = NULL);
 
 /**
- * @brief 创建一个新的图像对象（1x1像素）
- * @return 返回新创建的图像对象指针，失败时返回NULL
+ * @brief Create a new image object (1x1 pixels)
+ * @return Returns pointer to newly created image object, returns NULL on failure
  * 
- * 创建一个大小为1x1像素的图像对象，背景色为黑色。
- * 创建后的图像需要使用delimage()函数销毁以防止内存泄漏。
+ * Creates an image object with size 1x1 pixels, background color is black.
+ * The created image needs to be destroyed using delimage() function to prevent memory leaks.
  * 
- * @note 这个函数创建的是最小尺寸的图像，通常用于后续调整大小或作为占位符
- * @warning 必须使用delimage()销毁创建的图像，否则会造成内存泄漏
+ * @note This function creates the minimum size image, usually used for subsequent resizing or as placeholder
+ * @warning Must use delimage() to destroy the created image, otherwise it will cause memory leaks
  * 
- * @see newimage(int, int) 创建指定大小的图像
- * @see delimage() 销毁图像对象
- * @see resize() 调整图像大小
+ * @see newimage(int, int) Create image with specified size
+ * @see delimage() Destroy image object
+ * @see resize() Resize image
  */
 PIMAGE         EGEAPI newimage();
 
 /**
- * @brief 创建指定大小的新图像对象
- * @param width 图像宽度（像素），小于1时自动调整为1
- * @param height 图像高度（像素），小于1时自动调整为1
- * @return 返回新创建的图像对象指针，失败时返回NULL
+ * @brief Create new image object with specified size
+ * @param width Image width (pixels), automatically adjusted to 1 if less than 1
+ * @param height Image height (pixels), automatically adjusted to 1 if less than 1
+ * @return Returns pointer to newly created image object, returns NULL on failure
  * 
- * 创建一个指定大小的图像对象，背景色为黑色。
- * 如果指定的宽度或高度小于1，会自动调整为1。
- * 创建后的图像需要使用delimage()函数销毁以防止内存泄漏。
+ * Creates an image object with specified size, background color is black.
+ * If the specified width or height is less than 1, it will be automatically adjusted to 1.
+ * The created image needs to be destroyed using delimage() function to prevent memory leaks.
  * 
- * @warning 必须使用delimage()销毁创建的图像，否则会造成内存泄漏
+ * @warning Must use delimage() to destroy the created image, otherwise it will cause memory leaks
  * 
- * @see newimage() 创建1x1像素的图像
- * @see delimage() 销毁图像对象
- * @see resize() 调整图像大小
+ * @see newimage() Create 1x1 pixel image
+ * @see delimage() Destroy image object
+ * @see resize() Resize image
  */
 PIMAGE         EGEAPI newimage(int width, int height);
 
 /**
- * @brief 销毁图像对象并释放内存
- * @param pimg 要销毁的图像对象指针，如果为NULL则忽略
+ * @brief Destroy image object and free memory
+ * @param pimg Image object pointer to destroy, ignored if NULL
  * 
- * 销毁由newimage()函数创建的图像对象，释放相关的内存和系统资源。
- * 销毁后的图像指针不应再被使用。
+ * Destroys image object created by newimage() function, freeing related memory and system resources.
+ * The image pointer should not be used after destruction.
  * 
- * @note 传入NULL指针是安全的，函数会忽略NULL参数
- * @warning 销毁图像后，不要再使用该图像指针，否则可能导致程序崩溃
+ * @note Passing NULL pointer is safe, the function will ignore NULL parameter
+ * @warning Do not use the image pointer after destroying the image, otherwise it may cause program crash
  * 
- * @see newimage() 创建图像对象
- * @see newimage(int, int) 创建指定大小的图像对象
+ * @see newimage() Create image object
+ * @see newimage(int, int) Create image object with specified size
  */
 void           EGEAPI delimage(PCIMAGE pimg);
 //==================================================================================
-// 图像管理和处理函数 - EGE图形库的图像操作功能
+// Image management and processing functions - Image operation functionality of EGE graphics library
 //==================================================================================
 /**
- * @defgroup image_management 图像管理和处理函数
- * @brief EGE图形库的图像创建、加载、保存和处理功能
+ * @defgroup image_management Image management and processing functions
+ * @brief Image creation, loading, saving and processing functionality of EGE graphics library
  * 
- * 图像管理模块提供了完整的图像操作能力，包括：
- * - 图像缓冲区操作：getbuffer() 获取像素缓冲区
- * - 图像尺寸调整：resize(), resize_f() 调整图像大小
- * - 图像获取：getimage() 系列函数从不同源获取图像数据
- * - 图像保存：saveimage(), savepng(), savebmp() 保存图像到文件
+ * The image management module provides complete image operation capabilities, including:
+ * - Image buffer operations: getbuffer() get pixel buffer
+ * - Image resizing: resize(), resize_f() adjust image size
+ * - Image acquisition: getimage() series functions to get image data from different sources
+ * - Image saving: saveimage(), savepng(), savebmp() save images to files
  * 
- * 支持的图像格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
- * 支持从窗口、文件、资源、其他IMAGE对象获取图像
+ * Supported image formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * Support getting images from window, file, resource, other IMAGE objects
  * @{
  */
 
 /**
- * @brief 获取图像像素缓冲区指针
- * @param pimg 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口）
- * @return 图像缓冲区首地址，缓冲区为一维数组，大小为 图像宽度×图像高度
- * @note 坐标为(x, y)的像素对应缓冲区索引：buffer[y * width + x]
- * @note 返回的指针可以直接操作像素数据，修改后会立即生效
+ * @brief Get image pixel buffer pointer
+ * @param pimg Image object pointer to get buffer from, default is NULL (represents window)
+ * @return First address of image buffer, buffer is one-dimensional array with size = image width × image height
+ * @note Pixel at coordinate (x, y) corresponds to buffer index: buffer[y * width + x]
+ * @note Returned pointer can directly manipulate pixel data, changes take effect immediately
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
 
 /**
- * @brief 获取图像像素缓冲区指针（只读版本）
- * @param pimg 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口）
- * @return 图像缓冲区首地址（只读），缓冲区为一维数组，大小为 图像宽度×图像高度
- * @note 坐标为(x, y)的像素对应缓冲区索引：buffer[y * width + x]
- * @note 返回的指针只能读取像素数据，不能修改
+ * @brief Get image pixel buffer pointer (read-only version)
+ * @param pimg Image object pointer to get buffer from, default is NULL (represents window)
+ * @return First address of image buffer (read-only), buffer is one-dimensional array with size = image width × image height
+ * @note Pixel at coordinate (x, y) corresponds to buffer index: buffer[y * width + x]
+ * @note Returned pointer can only read pixel data, cannot modify
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 
 /**
- * @brief 调整图像尺寸（快速版本）
- * @param pimg 要调整大小的图像对象指针，不能为 NULL
- * @param width 图像新宽度
- * @param height 图像新高度
- * @return 成功返回 0，失败返回非 0 值
- * @note 调整后图像内容未定义，视口重置为初始状态
- * @note 此函数速度较快，但不保留原图像内容
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Resize image (fast version)
+ * @param pimg Image object pointer to resize, cannot be NULL
+ * @param width New width of image
+ * @param height New height of image
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Image content is undefined after resizing, viewport is reset to initial state
+ * @note This function is fast but does not preserve original image content
+ * @warning Runtime exception will occur if pimg is invalid pointer
  */
 int  EGEAPI resize_f(PIMAGE pimg, int width, int height);
 
 /**
- * @brief 调整图像尺寸（标准版本）
- * @param pimg 要调整大小的图像对象指针，不能为 NULL
- * @param width 图像新宽度
- * @param height 图像新高度
- * @return 成功返回 0，失败返回非 0 值
- * @note 调整后图像用背景色填充，视口重置为初始状态
- * @note 此函数会清空图像内容并用背景色填充
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Resize image (standard version)
+ * @param pimg Image object pointer to resize, cannot be NULL
+ * @param width New width of image
+ * @param height New height of image
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Image is filled with background color after resizing, viewport is reset to initial state
+ * @note This function clears image content and fills with background color
+ * @warning Runtime exception will occur if pimg is invalid pointer
  */
 int  EGEAPI resize  (PIMAGE pimg, int width, int height);
 
 /**
- * @brief 从窗口获取图像
- * @param imgDest 保存图像的 IMAGE 对象指针
- * @param xSrc 要获取图像的区域左上角 x 坐标
- * @param ySrc 要获取图像的区域左上角 y 坐标
- * @param widthSrc 要获取图像的区域宽度
- * @param heightSrc 要获取图像的区域高度
- * @return 成功返回 grOk(0)，失败返回相应错误码
- * @note 从当前窗口的指定区域获取图像数据
+ * @brief Get image from window
+ * @param imgDest IMAGE object pointer to save image
+ * @param xSrc X coordinate of top-left corner of region to get image from
+ * @param ySrc Y coordinate of top-left corner of region to get image from
+ * @param widthSrc Width of region to get image from
+ * @param heightSrc Height of region to get image from
+ * @return Returns grOk(0) on success, corresponding error code on failure
+ * @note Get image data from specified region of current window
  * @see getimage(PIMAGE, PCIMAGE, int, int, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, int xSrc, int ySrc, int widthSrc, int heightSrc);
 
 /**
- * @brief 从另一个 IMAGE 对象获取图像
- * @param imgDest 保存图像的 IMAGE 对象指针
- * @param imgSrc 源图像 IMAGE 对象指针
- * @param xSrc 要获取图像的区域左上角 x 坐标
- * @param ySrc 要获取图像的区域左上角 y 坐标
- * @param widthSrc 要获取图像的区域宽度
- * @param heightSrc 要获取图像的区域高度
- * @return 成功返回 grOk(0)，失败返回相应错误码
- * @note 从源 IMAGE 对象的指定区域复制图像数据到目标 IMAGE 对象
+ * @brief Get image from another IMAGE object
+ * @param imgDest IMAGE object pointer to save image
+ * @param imgSrc Source IMAGE object pointer
+ * @param xSrc X coordinate of top-left corner of region to get image from
+ * @param ySrc Y coordinate of top-left corner of region to get image from
+ * @param widthSrc Width of region to get image from
+ * @param heightSrc Height of region to get image from
+ * @return Returns grOk(0) on success, corresponding error code on failure
+ * @note Copy image data from specified region of source IMAGE object to destination IMAGE object
  * @see getimage(PIMAGE, int, int, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc);
 
 /**
- * @brief 从图片文件获取图像（char* 版本）
- * @param imgDest 保存图像的 IMAGE 对象指针
- * @param imageFile 图片文件名
- * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
- * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
- * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
- * @note 如果图像包含多帧，仅获取第一帧
+ * @brief Get image from image file (char* version)
+ * @param imgDest IMAGE object pointer to save image
+ * @param imageFile Image file name
+ * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
+ * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
+ * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
+ * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const wchar_t*, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, const char*  imageFile, int zoomWidth = 0, int zoomHeight = 0);
 
 /**
- * @brief 从图片文件获取图像（wchar_t* 版本）
- * @param imgDest 保存图像的 IMAGE 对象指针
- * @param imageFile 图片文件名（宽字符版本）
- * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
- * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
- * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
- * @note 如果图像包含多帧，仅获取第一帧
+ * @brief Get image from image file (wchar_t* version)
+ * @param imgDest IMAGE object pointer to save image
+ * @param imageFile Image file name (wide character version)
+ * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
+ * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
+ * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
+ * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const char*, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth = 0, int zoomHeight = 0);
 
 /**
- * @brief 从资源文件获取图像（char* 版本）
- * @param imgDest 保存图像的 IMAGE 对象指针
- * @param resType 资源类型
- * @param resName 资源名称
- * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
- * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
- * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
- * @note 如果图像包含多帧，仅获取第一帧
+ * @brief Get image from resource file (char* version)
+ * @param imgDest IMAGE object pointer to save image
+ * @param resType Resource type
+ * @param resName Resource name
+ * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
+ * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
+ * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
+ * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const wchar_t*, const wchar_t*, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, const char*  resType, const char*  resName, int zoomWidth = 0, int zoomHeight = 0);
 
 /**
- * @brief 从资源文件获取图像（wchar_t* 版本）
- * @param imgDest 保存图像的 IMAGE 对象指针
- * @param resType 资源类型（宽字符版本）
- * @param resName 资源名称（宽字符版本）
- * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
- * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
- * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
- * @note 如果图像包含多帧，仅获取第一帧
+ * @brief Get image from resource file (wchar_t* version)
+ * @param imgDest IMAGE object pointer to save image
+ * @param resType Resource type (wide character version)
+ * @param resName Resource name (wide character version)
+ * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
+ * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
+ * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
+ * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const char*, const char*, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* resType, const wchar_t* resName, int zoomWidth = 0, int zoomHeight = 0);
 
 /**
- * @brief 从 PNG 图片文件获取图像（char* 版本）
- * @param pimg 图像对象指针，需要先使用 newimage() 创建
- * @param filename 图像文件名
- * @return 成功返回 0，失败返回非 0 值
- * @note 获取后图像大小与原图大小一致，而不是图像原先的大小
- * @note 专门用于处理 PNG 格式图像
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Get image from PNG image file (char* version)
+ * @param pimg Image object pointer, need to create first using newimage()
+ * @param filename Image file name
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Image size after getting is consistent with original image size, not the original size of the image
+ * @note Specifically used for processing PNG format images
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see getimage_pngfile(PIMAGE, const wchar_t*)
  */
 int  EGEAPI getimage_pngfile(PIMAGE pimg, const char*  filename);
 
 /**
- * @brief 从 PNG 图片文件获取图像（wchar_t* 版本）
- * @param pimg 图像对象指针，需要先使用 newimage() 创建
- * @param filename 图像文件名（宽字符版本）
- * @return 成功返回 0，失败返回非 0 值
- * @note 获取后图像大小与原图大小一致，而不是图像原先的大小
- * @note 专门用于处理 PNG 格式图像
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Get image from PNG image file (wchar_t* version)
+ * @param pimg Image object pointer, need to create first using newimage()
+ * @param filename Image file name (wide character version)
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Image size after getting is consistent with original image size, not the original size of the image
+ * @note Specifically used for processing PNG format images
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see getimage_pngfile(PIMAGE, const char*)
  */
 int  EGEAPI getimage_pngfile(PIMAGE pimg, const wchar_t* filename);
 
 //==================================================================================
-// putimage 系列函数 - EGE图形库的核心图像绘制功能
+// putimage series functions - Core image drawing functionality of EGE graphics library
 //==================================================================================
 /**
- * @defgroup putimage_functions putimage系列函数
- * @brief EGE图形库的核心图像绘制功能
+ * @defgroup putimage_functions putimage series functions
+ * @brief Core image drawing functionality of EGE graphics library
  * 
- * putimage系列函数提供了丰富的图像绘制和处理能力，包括：
- * - 基础图像绘制：putimage() 系列重载函数
- * - 透明效果：putimage_transparent(), putimage_alphablend(), putimage_withalpha()
- * - 混合效果：putimage_alphatransparent(), putimage_alphafilter()
- * - 变换效果：putimage_rotate(), putimage_rotatezoom(), putimage_rotatetransparent()
+ * putimage series functions provide rich image drawing and processing capabilities, including:
+ * - Basic image drawing: putimage() series overloaded functions
+ * - Transparency effects: putimage_transparent(), putimage_alphablend(), putimage_withalpha()
+ * - Blending effects: putimage_alphatransparent(), putimage_alphafilter()
+ * - Transform effects: putimage_rotate(), putimage_rotatezoom(), putimage_rotatetransparent()
  * 
- * 这些函数支持多种绘制模式：
- * - 绘制到屏幕（imgDest = NULL）或另一个图像
- * - 支持区域裁剪、拉伸缩放、旋转变换
- * - 支持多种透明和混合模式
- * - 支持光栅操作码（SRCCOPY, SRCAND, SRCPAINT等）
- * - 支持平滑处理（抗锯齿）
+ * These functions support multiple drawing modes:
+ * - Draw to screen (imgDest = NULL) or another image
+ * - Support region clipping, stretch scaling, rotation transformation
+ * - Support multiple transparency and blending modes
+ * - Support raster operation codes (SRCCOPY, SRCAND, SRCPAINT, etc.)
+ * - Support smooth processing (anti-aliasing)
  * @{
  */
 
 /**
- * @brief 基础图像绘制函数 - 在指定位置绘制整个图像
- * @param x 绘制位置的 x 坐标
- * @param y 绘制位置的 y 坐标
- * @param pimg 要绘制的 IMAGE 对象指针
- * @param dwRop 三元光栅操作码，默认为 SRCCOPY（直接复制）
+ * @brief Basic image drawing function - Draw entire image at specified position
+ * @param x X coordinate of drawing position
+ * @param y Y coordinate of drawing position
+ * @param pimg IMAGE object pointer to draw
+ * @param dwRop Ternary raster operation code, default is SRCCOPY (direct copy)
  */
 void EGEAPI putimage(int x, int y, PCIMAGE pimg, DWORD dwRop = SRCCOPY);
 
 /**
- * @brief 区域图像绘制函数 - 绘制图像的指定区域
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param widthDest 绘制的宽度
- * @param heightDest 绘制的高度
- * @param imgSrc 要绘制的 IMAGE 对象指针
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param dwRop 三元光栅操作码，默认为 SRCCOPY（直接复制）
+ * @brief Region image drawing function - Draw specified region of image
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param widthDest Drawing width
+ * @param heightDest Drawing height
+ * @param imgSrc IMAGE object pointer to draw
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param dwRop Ternary raster operation code, default is SRCCOPY (direct copy)
  */
 void EGEAPI putimage(int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, DWORD dwRop = SRCCOPY);
 
 /**
- * @brief 拉伸图像绘制函数 - 将源图像区域拉伸到目标区域
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param widthDest 绘制的宽度
- * @param heightDest 绘制的高度
- * @param imgSrc 要绘制的 IMAGE 对象指针
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @param dwRop 三元光栅操作码，默认为 SRCCOPY（直接复制）
+ * @brief Stretch image drawing function - Stretch source image region to target region
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param widthDest Drawing width
+ * @param heightDest Drawing height
+ * @param imgSrc IMAGE object pointer to draw
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param widthSrc Width of drawing content in source IMAGE object
+ * @param heightSrc Height of drawing content in source IMAGE object
+ * @param dwRop Ternary raster operation code, default is SRCCOPY (direct copy)
  */
 void EGEAPI putimage(int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc, DWORD dwRop = SRCCOPY);
 
 /**
- * @brief 图像到图像绘制函数 - 在另一个图像上绘制图像
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param imgSrc 源 IMAGE 对象指针
- * @param dwRop 三元光栅操作码，默认为 SRCCOPY（直接复制）
+ * @brief Image to image drawing function - Draw image on another image
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param imgSrc Source IMAGE object pointer
+ * @param dwRop Ternary raster operation code, default is SRCCOPY (direct copy)
  */
 void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, PCIMAGE imgSrc, DWORD dwRop = SRCCOPY);
 
 /**
- * @brief 图像到图像区域绘制函数 - 在另一个图像上绘制图像的指定区域
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param widthDest 绘制的宽度
- * @param heightDest 绘制的高度
- * @param imgSrc 源 IMAGE 对象指针
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param dwRop 三元光栅操作码，默认为 SRCCOPY（直接复制）
+ * @brief Image to image region drawing function - Draw specified region of image on another image
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param widthDest Drawing width
+ * @param heightDest Drawing height
+ * @param imgSrc Source IMAGE object pointer
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param dwRop Ternary raster operation code, default is SRCCOPY (direct copy)
  */
 void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, DWORD dwRop = SRCCOPY);
 
 /**
- * @brief 图像到图像拉伸绘制函数 - 在另一个图像上拉伸绘制图像
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param widthDest 绘制的宽度
- * @param heightDest 绘制的高度
- * @param imgSrc 源 IMAGE 对象指针
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @param dwRop 三元光栅操作码，默认为 SRCCOPY（直接复制）
+ * @brief Image to image stretch drawing function - Stretch draw image on another image
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param widthDest Drawing width
+ * @param heightDest Drawing height
+ * @param imgSrc Source IMAGE object pointer
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param widthSrc Width of drawing content in source IMAGE object
+ * @param heightSrc Height of drawing content in source IMAGE object
+ * @param dwRop Ternary raster operation code, default is SRCCOPY (direct copy)
  */
 void EGEAPI putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc, DWORD dwRop = SRCCOPY);
 
 /**
- * @brief 将图像保存到文件（char* 版本）
- * @param pimg 要保存的图像对象指针
- * @param filename 保存的图像文件名
- * @param withAlphaChannel 是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false
- * @return 成功返回 grOk(0)，失败返回非 0 值
- * @note 目前支持 BMP 和 PNG 格式
- * @note 文件名以 .bmp 结尾保存为 BMP 格式，以 .png 结尾或无后缀名保存为 PNG 格式
- * @note 如果文件已存在，会覆盖原文件
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Save image to file (char* version)
+ * @param pimg Image object pointer to save
+ * @param filename Save image file name
+ * @param withAlphaChannel Whether to save image's alpha channel, true: save, false: don't save, default is false
+ * @return Returns grOk(0) on success, non-zero value on failure
+ * @note Currently supports BMP and PNG formats
+ * @note File name ending with .bmp saves as BMP format, ending with .png or no extension saves as PNG format
+ * @note If file already exists, it will overwrite the original file
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see saveimage(PCIMAGE, const wchar_t*, bool)
  */
 int  EGEAPI saveimage(PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
 
 /**
- * @brief 将图像保存到文件（wchar_t* 版本）
- * @param pimg 要保存的图像对象指针
- * @param filename 保存的图像文件名（宽字符版本）
- * @param withAlphaChannel 是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false
- * @return 成功返回 grOk(0)，失败返回非 0 值
- * @note 目前支持 BMP 和 PNG 格式
- * @note 文件名以 .bmp 结尾保存为 BMP 格式，以 .png 结尾或无后缀名保存为 PNG 格式
- * @note 如果文件已存在，会覆盖原文件
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Save image to file (wchar_t* version)
+ * @param pimg Image object pointer to save
+ * @param filename Save image file name (wide character version)
+ * @param withAlphaChannel Whether to save image's alpha channel, true: save, false: don't save, default is false
+ * @return Returns grOk(0) on success, non-zero value on failure
+ * @note Currently supports BMP and PNG formats
+ * @note File name ending with .bmp saves as BMP format, ending with .png or no extension saves as PNG format
+ * @note If file already exists, it will overwrite the original file
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see saveimage(PCIMAGE, const char*, bool)
  */
 int  EGEAPI saveimage(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
 
 /**
- * @brief 将图像以 PNG 格式保存到文件（char* 版本）
- * @param pimg 要保存的图像对象指针
- * @param filename 保存的图像文件名
- * @param withAlphaChannel 是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false
- * @return 成功返回 0，失败返回非 0 值
- * @note 强制以 PNG 格式保存，不受文件名后缀影响
- * @note 如果文件已存在，会覆盖原文件
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Save image as PNG format to file (char* version)
+ * @param pimg Image object pointer to save
+ * @param filename Save image file name
+ * @param withAlphaChannel Whether to save image's alpha channel, true: save, false: don't save, default is false
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Force save as PNG format, not affected by file name extension
+ * @note If file already exists, it will overwrite the original file
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see savepng(PCIMAGE, const wchar_t*, bool)
  */
 int  EGEAPI savepng  (PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
 
 /**
- * @brief 将图像以 PNG 格式保存到文件（wchar_t* 版本）
- * @param pimg 要保存的图像对象指针
- * @param filename 保存的图像文件名（宽字符版本）
- * @param withAlphaChannel 是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false
- * @return 成功返回 0，失败返回非 0 值
- * @note 强制以 PNG 格式保存，不受文件名后缀影响
- * @note 如果文件已存在，会覆盖原文件
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Save image as PNG format to file (wchar_t* version)
+ * @param pimg Image object pointer to save
+ * @param filename Save image file name (wide character version)
+ * @param withAlphaChannel Whether to save image's alpha channel, true: save, false: don't save, default is false
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Force save as PNG format, not affected by file name extension
+ * @note If file already exists, it will overwrite the original file
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see savepng(PCIMAGE, const char*, bool)
  */
 int  EGEAPI savepng  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
 
 /**
- * @brief 将图像以 BMP 格式保存到文件（char* 版本）
- * @param pimg 要保存的图像对象指针
- * @param filename 保存的图像文件名
- * @param withAlphaChannel 是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false
- * @return 成功返回 0，失败返回非 0 值
- * @note 强制以 BMP 格式保存，不受文件名后缀影响
- * @note 如果文件已存在，会覆盖原文件
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Save image as BMP format to file (char* version)
+ * @param pimg Image object pointer to save
+ * @param filename Save image file name
+ * @param withAlphaChannel Whether to save image's alpha channel, true: save, false: don't save, default is false
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Force save as BMP format, not affected by file name extension
+ * @note If file already exists, it will overwrite the original file
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see savebmp(PCIMAGE, const wchar_t*, bool)
  */
 int  EGEAPI savebmp  (PCIMAGE pimg, const char*  filename, bool withAlphaChannel = false);
 
 /**
- * @brief 将图像以 BMP 格式保存到文件（wchar_t* 版本）
- * @param pimg 要保存的图像对象指针
- * @param filename 保存的图像文件名（宽字符版本）
- * @param withAlphaChannel 是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false
- * @return 成功返回 0，失败返回非 0 值
- * @note 强制以 BMP 格式保存，不受文件名后缀影响
- * @note 如果文件已存在，会覆盖原文件
- * @warning 如果 pimg 为无效指针，会引发运行时异常
+ * @brief Save image as BMP format to file (wchar_t* version)
+ * @param pimg Image object pointer to save
+ * @param filename Save image file name (wide character version)
+ * @param withAlphaChannel Whether to save image's alpha channel, true: save, false: don't save, default is false
+ * @return Returns 0 on success, non-zero value on failure
+ * @note Force save as BMP format, not affected by file name extension
+ * @note If file already exists, it will overwrite the original file
+ * @warning Runtime exception will occur if pimg is invalid pointer
  * @see savebmp(PCIMAGE, const char*, bool)
  */
 int  EGEAPI savebmp  (PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel = false);
 
 /**
- * @brief 透明色绘制函数 - 指定颜色变为透明的图像绘制
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param transparentColor 要变为透明的像素颜色
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度）
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度）
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Transparent color drawing function - Image drawing with specified color becoming transparent
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param transparentColor Pixel color to become transparent
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object, default is 0
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object, default is 0
+ * @param widthSrc Width of drawing content in source IMAGE object, default is 0 (use entire image width)
+ * @param heightSrc Height of drawing content in source IMAGE object, default is 0 (use entire image height)
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_transparent(
     PIMAGE  imgDest,            // handle to dest
@@ -4365,14 +4365,14 @@ int EGEAPI putimage_transparent(
 );
 
 /**
- * @brief Alpha混合绘制函数 - 基础版本，指定整体透明度
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha blending drawing function - Basic version with specified overall transparency
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param alpha Overall image transparency (0-255), 0 is completely transparent, 255 is completely opaque
+ * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
     PIMAGE  imgDest,
@@ -4384,16 +4384,16 @@ int EGEAPI putimage_alphablend(
 );
 
 /**
- * @brief Alpha混合绘制函数 - 指定源图像起始位置
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha blending drawing function - Specify source image starting position
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param alpha Overall image transparency (0-255), 0 is completely transparent, 255 is completely opaque
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
     PIMAGE  imgDest,
@@ -4407,18 +4407,18 @@ int EGEAPI putimage_alphablend(
 );
 
 /**
- * @brief Alpha混合绘制函数 - 指定源图像区域
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha blending drawing function - Specify source image region
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param alpha Overall image transparency (0-255), 0 is completely transparent, 255 is completely opaque
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param widthSrc Width of drawing content in source IMAGE object
+ * @param heightSrc Height of drawing content in source IMAGE object
+ * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
     PIMAGE  imgDest,
@@ -4434,21 +4434,21 @@ int EGEAPI putimage_alphablend(
 );
 
 /**
- * @brief Alpha混合绘制函数 - 完整版本，支持拉伸和平滑处理
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param widthDest 绘制的宽度
- * @param heightDest 绘制的高度
- * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @param smooth 是否使用平滑处理（抗锯齿），默认为 false
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha blending drawing function - Complete version, supports stretching and smooth processing
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param widthDest Drawing width
+ * @param heightDest Drawing height
+ * @param alpha Overall image transparency (0-255), 0 is completely transparent, 255 is completely opaque
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param widthSrc Width of drawing content in source IMAGE object
+ * @param heightSrc Height of drawing content in source IMAGE object
+ * @param smooth Whether to use smooth processing (anti-aliasing), default is false
+ * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
     PIMAGE  imgDest,
@@ -4467,18 +4467,18 @@ int EGEAPI putimage_alphablend(
 );
 
 /**
- * @brief Alpha透明色混合绘制函数 - 结合透明色和Alpha混合
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param transparentColor 要变为透明的像素颜色
- * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度）
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度）
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha transparent color blending drawing function - Combine transparent color and Alpha blending
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param transparentColor Pixel color to become transparent
+ * @param alpha Overall image transparency (0-255), 0 is completely transparent, 255 is completely opaque
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object, default is 0
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object, default is 0
+ * @param widthSrc Width of drawing content in source IMAGE object, default is 0 (use entire image width)
+ * @param heightSrc Height of drawing content in source IMAGE object, default is 0 (use entire image height)
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphatransparent(
     PIMAGE  imgDest,            // handle to dest
@@ -4494,16 +4494,16 @@ int EGEAPI putimage_alphatransparent(
 );
 
 /**
- * @brief Alpha通道绘制函数 - 使用图像自身的Alpha通道，基础版本
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针（必须包含Alpha通道数据）
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度）
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度）
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha channel drawing function - Use image's own Alpha channel, basic version
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer (must contain Alpha channel data)
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object, default is 0
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object, default is 0
+ * @param widthSrc Width of drawing content in source IMAGE object, default is 0 (use entire image width)
+ * @param heightSrc Height of drawing content in source IMAGE object, default is 0 (use entire image height)
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_withalpha(
     PIMAGE  imgDest,            // handle to dest
@@ -4517,19 +4517,19 @@ int EGEAPI putimage_withalpha(
 );
 
 /**
- * @brief Alpha通道绘制函数 - 使用图像自身的Alpha通道，支持拉伸和平滑处理
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针（必须包含Alpha通道数据）
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param widthDest 绘制的宽度
- * @param heightDest 绘制的高度
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @param smooth 是否使用平滑处理（抗锯齿），默认为 false
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha channel drawing function - Use image's own Alpha channel, supports stretching and smooth processing
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer (must contain Alpha channel data)
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param widthDest Drawing width
+ * @param heightDest Drawing height
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param widthSrc Width of drawing content in source IMAGE object
+ * @param heightSrc Height of drawing content in source IMAGE object
+ * @param smooth Whether to use smooth processing (anti-aliasing), default is false
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_withalpha(
     PIMAGE  imgDest,            // handle to dest
@@ -4546,17 +4546,17 @@ int EGEAPI putimage_withalpha(
 );
 
 /**
- * @brief Alpha滤镜绘制函数 - 使用另一图像作为Alpha遮罩
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param imgAlpha 用作Alpha遮罩的 IMAGE 对象指针
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Alpha filter drawing function - Use another image as Alpha mask
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param imgAlpha IMAGE object pointer used as Alpha mask
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param widthSrc Width of drawing content in source IMAGE object
+ * @param heightSrc Height of drawing content in source IMAGE object
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphafilter(
     PIMAGE  imgDest,            // handle to dest
@@ -4571,15 +4571,15 @@ int EGEAPI putimage_alphafilter(
 );
 
 /**
- * @brief 图像模糊滤镜函数 - 对图像进行模糊处理
- * @param imgDest 目标 IMAGE 对象指针，要进行模糊处理的图像
- * @param intensity 模糊强度，值越大模糊效果越强
- * @param alpha 图像整体透明度 (0-255)，255为完全不透明
- * @param xDest 处理区域的左上角 x 坐标，默认为 0
- * @param yDest 处理区域的左上角 y 坐标，默认为 0
- * @param widthDest 处理区域的宽度，默认为 0（使用整个图像宽度）
- * @param heightDest 处理区域的高度，默认为 0（使用整个图像高度）
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Image blur filter function - Apply blur processing to image
+ * @param imgDest Target IMAGE object pointer, image to be blurred
+ * @param intensity Blur intensity, higher value means stronger blur effect
+ * @param alpha Overall image transparency (0-255), 255 is completely opaque
+ * @param xDest X coordinate of top-left corner of processing region, default is 0
+ * @param yDest Y coordinate of top-left corner of processing region, default is 0
+ * @param widthDest Width of processing region, default is 0 (use entire image width)
+ * @param heightDest Height of processing region, default is 0 (use entire image height)
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI imagefilter_blurring (
     PIMAGE imgDest,
@@ -4592,18 +4592,18 @@ int EGEAPI imagefilter_blurring (
 );
 
 /**
- * @brief 旋转绘制函数 - 围绕中心点旋转图像
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgTexture 源纹理 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param xCenter 旋转中心点的 x 坐标（相对于源图像）
- * @param yCenter 旋转中心点的 y 坐标（相对于源图像）
- * @param radian 旋转角度（弧度制，顺时针方向）
- * @param transparent 是否使用图像的透明通道，默认为 false
- * @param alpha 图像整体透明度 (0-256)，-1表示不使用alpha，默认为 -1
- * @param smooth 是否使用平滑处理（抗锯齿），默认为 false
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Rotation drawing function - Rotate image around center point
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgTexture Source texture IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param xCenter X coordinate of rotation center point (relative to source image)
+ * @param yCenter Y coordinate of rotation center point (relative to source image)
+ * @param radian Rotation angle (in radians, clockwise direction)
+ * @param transparent Whether to use image's transparent channel, default is false
+ * @param alpha Overall image transparency (0-256), -1 means no alpha, default is -1
+ * @param smooth Whether to use smooth processing (anti-aliasing), default is false
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_rotate(
     PIMAGE  imgDest,
@@ -4619,19 +4619,19 @@ int EGEAPI putimage_rotate(
 );
 
 /**
- * @brief 旋转缩放绘制函数 - 同时进行旋转和缩放
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgTexture 源纹理 IMAGE 对象指针
- * @param xDest 绘制位置的 x 坐标
- * @param yDest 绘制位置的 y 坐标
- * @param xCenter 旋转中心点的 x 坐标（相对于源图像）
- * @param yCenter 旋转中心点的 y 坐标（相对于源图像）
- * @param radian 旋转角度（弧度制，顺时针方向）
- * @param zoom 缩放比例，1.0为原始大小
- * @param transparent 是否使用图像的透明通道，默认为 false
- * @param alpha 图像整体透明度 (0-256)，-1表示不使用alpha，默认为 -1
- * @param smooth 是否使用平滑处理（抗锯齿），默认为 false
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Rotation and zoom drawing function - Perform rotation and scaling simultaneously
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgTexture Source texture IMAGE object pointer
+ * @param xDest X coordinate of drawing position
+ * @param yDest Y coordinate of drawing position
+ * @param xCenter X coordinate of rotation center point (relative to source image)
+ * @param yCenter Y coordinate of rotation center point (relative to source image)
+ * @param radian Rotation angle (in radians, clockwise direction)
+ * @param zoom Scaling ratio, 1.0 is original size
+ * @param transparent Whether to use image's transparent channel, default is false
+ * @param alpha Overall image transparency (0-256), -1 means no alpha, default is -1
+ * @param smooth Whether to use smooth processing (anti-aliasing), default is false
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_rotatezoom(
     PIMAGE imgDest,
@@ -4648,17 +4648,17 @@ int EGEAPI putimage_rotatezoom(
 );
 
 /**
- * @brief 旋转透明绘制函数 - 旋转时指定透明色，基础版本
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xCenterDest 旋转中心点在目标图像中的 x 坐标
- * @param yCenterDest 旋转中心点在目标图像中的 y 坐标
- * @param xCenterSrc 旋转中心点在源图像中的 x 坐标
- * @param yCenterSrc 旋转中心点在源图像中的 y 坐标
- * @param transparentColor 要变为透明的像素颜色
- * @param radian 旋转角度（弧度制，顺时针方向）
- * @param zoom 缩放比例，1.0为原始大小，默认为 1.0f
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Rotation transparent drawing function - Specify transparent color when rotating, basic version
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xCenterDest X coordinate of rotation center point in target image
+ * @param yCenterDest Y coordinate of rotation center point in target image
+ * @param xCenterSrc X coordinate of rotation center point in source image
+ * @param yCenterSrc Y coordinate of rotation center point in source image
+ * @param transparentColor Pixel color to become transparent
+ * @param radian Rotation angle (in radians, clockwise direction)
+ * @param zoom Scaling ratio, 1.0 is original size, default is 1.0f
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_rotatetransparent(
     PIMAGE imgDest,             /* handle to dest, NULL means the SCREEN  */
@@ -4673,21 +4673,21 @@ int EGEAPI putimage_rotatetransparent(
 );
 
 /**
- * @brief 旋转透明绘制函数 - 旋转时指定透明色，完整版本
- * @param imgDest 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕
- * @param imgSrc 源 IMAGE 对象指针
- * @param xCenterDest 旋转中心点在目标图像中的 x 坐标
- * @param yCenterDest 旋转中心点在目标图像中的 y 坐标
- * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
- * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
- * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @param xCenterSrc 旋转中心点在源图像中的 x 坐标
- * @param yCenterSrc 旋转中心点在源图像中的 y 坐标
- * @param transparentColor 要变为透明的像素颜色
- * @param radian 旋转角度（弧度制，顺时针方向）
- * @param zoom 缩放比例，1.0为原始大小，默认为 1.0f
- * @return 成功返回 grOk，失败返回相应错误码
+ * @brief Rotation transparent drawing function - Specify transparent color when rotating, complete version
+ * @param imgDest Target IMAGE object pointer, if NULL then draw to screen
+ * @param imgSrc Source IMAGE object pointer
+ * @param xCenterDest X coordinate of rotation center point in target image
+ * @param yCenterDest Y coordinate of rotation center point in target image
+ * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
+ * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
+ * @param widthSrc Width of drawing content in source IMAGE object
+ * @param heightSrc Height of drawing content in source IMAGE object
+ * @param xCenterSrc X coordinate of rotation center point in source image
+ * @param yCenterSrc Y coordinate of rotation center point in source image
+ * @param transparentColor Pixel color to become transparent
+ * @param radian Rotation angle (in radians, clockwise direction)
+ * @param zoom Scaling ratio, 1.0 is original size, default is 1.0f
+ * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_rotatetransparent(
     PIMAGE imgDest,             /* handle to dest, NULL means the SCREEN */
@@ -4705,198 +4705,198 @@ int EGEAPI putimage_rotatetransparent(
     float zoom = 1.0f           /* zoom factor */
 );
 
-/** @} */ // 结束 putimage_functions 组
+/** @} */ // End putimage_functions group
 
 /**
- * @brief 获取绘图窗口的窗口句柄
- * @return 绘图窗口的窗口句柄(HWND)
- * @note 返回的是 Windows 系统的窗口句柄，可用于 Windows API 调用
+ * @brief Get drawing window handle
+ * @return Drawing window handle (HWND)
+ * @note Returns Windows system window handle, can be used for Windows API calls
  * @see getHInstance(), getHDC()
  */
 HWND        EGEAPI getHWnd();
 
 /**
- * @brief 获取绘图窗口的实例句柄
- * @return 应用程序实例句柄(HINSTANCE)
- * @note 返回的是 Windows 系统的应用程序实例句柄，可用于 Windows API 调用
+ * @brief Get drawing window instance handle
+ * @return Application instance handle (HINSTANCE)
+ * @note Returns Windows system application instance handle, can be used for Windows API calls
  * @see getHWnd(), getHDC()
  */
 HINSTANCE   EGEAPI getHInstance();
 
 /**
- * @brief 获取绘图设备上下文
- * @param pimg 图像对象指针，如果为 NULL 则获取绘图窗口的设备上下文
- * @return 设备上下文句柄(HDC)
- * @note 返回的是 Windows 系统的设备上下文句柄，可用于 GDI 绘图操作
- * @warning 不要手动释放返回的 HDC，由 EGE 库自动管理
+ * @brief Get drawing device context
+ * @param pimg Image object pointer, if NULL then get drawing window's device context
+ * @return Device context handle (HDC)
+ * @note Returns Windows system device context handle, can be used for GDI drawing operations
+ * @warning Do not manually release returned HDC, managed automatically by EGE library
  * @see getHWnd(), getHInstance()
  */
 HDC         EGEAPI getHDC(PCIMAGE pimg = NULL);
 
 /**
- * @brief 获取过程函数指针
- * @return 过程函数指针
- * @note 内部使用函数，用于获取窗口过程函数指针
+ * @brief Get process function pointer
+ * @return Process function pointer
+ * @note Internal use function, used to get window procedure function pointer
  */
 PVOID       EGEAPI getProcfunc();
 
 /**
- * @brief 获取 EGE 图形库版本号
- * @return EGE 图形库的版本号
- * @note 版本号格式为数字形式，可用于兼容性检查
+ * @brief Get EGE graphics library version number
+ * @return EGE graphics library version number
+ * @note Version number is in numeric format, can be used for compatibility checks
  */
 long        EGEAPI getGraphicsVer();
 
 /**
- * @brief 获取当前帧率
- * @return 当前的帧率(fps)
- * @note 返回每秒帧数，用于性能监控和调试
+ * @brief Get current frame rate
+ * @return Current frame rate (fps)
+ * @note Returns frames per second, used for performance monitoring and debugging
  * @see delay_fps()
  */
 float       EGEAPI getfps();
 
 /**
- * @brief 初始化随机数生成器（使用当前时间作为种子）
- * @return 使用的随机数种子值
- * @note 使用当前时间戳作为种子初始化 Mersenne Twister 随机数生成器
+ * @brief Initialize random number generator (using current time as seed)
+ * @return Random number seed value used
+ * @note Uses current timestamp as seed to initialize Mersenne Twister random number generator
  * @see randomize(unsigned int seed), random(), randomf()
  */
 unsigned int    EGEAPI randomize();
 
 /**
- * @brief 初始化随机数生成器（使用指定种子）
- * @param seed 随机数种子
- * @return 使用的随机数种子值
- * @note 使用指定种子初始化 Mersenne Twister 随机数生成器，相同种子产生相同序列
+ * @brief Initialize random number generator (using specified seed)
+ * @param seed Random number seed
+ * @return Random number seed value used
+ * @note Uses specified seed to initialize Mersenne Twister random number generator, same seed produces same sequence
  * @see randomize(), random(), randomf()
  */
 unsigned int    EGEAPI randomize(unsigned int seed);
 
 /**
- * @brief 生成随机整数
- * @param n 随机数范围的上限，如果为 0 则生成完整范围的随机数
- * @return 生成的随机整数，范围为 [0, n) 或 [0, UINT_MAX]
- * @note 使用 Mersenne Twister 算法生成高质量随机数
+ * @brief Generate random integer
+ * @param n Upper limit of random number range, if 0 then generate full range random number
+ * @return Generated random integer, range is [0, n) or [0, UINT_MAX]
+ * @note Uses Mersenne Twister algorithm to generate high-quality random numbers
  * @see randomize(), randomf()
  */
 unsigned int    EGEAPI random(unsigned int n = 0);
 
 /**
- * @brief 生成随机浮点数
- * @return 生成的随机浮点数，范围为 [0.0, 1.0)
- * @note 使用 Mersenne Twister 算法生成高质量随机浮点数
+ * @brief Generate random floating point number
+ * @return Generated random floating point number, range is [0.0, 1.0)
+ * @note Uses Mersenne Twister algorithm to generate high-quality random floating point numbers
  * @see randomize(), random()
  */
 double          EGEAPI randomf();
 
 /**
- * @brief 显示输入对话框获取单行文本（ASCII 版本）
- * @param title 对话框标题
- * @param text 提示文本
- * @param buf 用于存储输入文本的缓冲区
- * @param len 缓冲区长度
- * @return 成功返回非零值，失败或取消返回 0
- * @note 显示一个模态对话框让用户输入单行文本
- * @warning 确保缓冲区足够大以避免溢出
+ * @brief Show input dialog to get single line text (ASCII version)
+ * @param title Dialog title
+ * @param text Prompt text
+ * @param buf Buffer to store input text
+ * @param len Buffer length
+ * @return Returns non-zero value on success, 0 on failure or cancel
+ * @note Shows a modal dialog for user to input single line text
+ * @warning Ensure buffer is large enough to avoid overflow
  * @see inputbox_getline(const wchar_t*, const wchar_t*, LPWSTR, int)
  */
 int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, int len);
 
 /**
- * @brief 显示输入对话框获取单行文本（Unicode 版本）
- * @param title 对话框标题
- * @param text 提示文本
- * @param buf 用于存储输入文本的缓冲区
- * @param len 缓冲区长度
- * @return 成功返回非零值，失败或取消返回 0
- * @note 显示一个模态对话框让用户输入单行文本，支持 Unicode 字符
- * @warning 确保缓冲区足够大以避免溢出
+ * @brief Show input dialog to get single line text (Unicode version)
+ * @param title Dialog title
+ * @param text Prompt text
+ * @param buf Buffer to store input text
+ * @param len Buffer length
+ * @return Returns non-zero value on success, 0 on failure or cancel
+ * @note Shows a modal dialog for user to input single line text, supports Unicode characters
+ * @warning Ensure buffer is large enough to avoid overflow
  * @see inputbox_getline(const char*, const char*, LPSTR, int)
  */
 int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len);
 
 
 
-/// @defgroup InputHandling 输入处理
-/// 键盘和鼠标输入处理相关函数
+/// @defgroup InputHandling Input handling
+/// Keyboard and mouse input handling related functions
 /// @{
 
-/// @defgroup KeyboardInput 键盘输入
-/// 键盘输入检测和消息处理函数
+/// @defgroup KeyboardInput Keyboard input
+/// Keyboard input detection and message processing functions
 /// @{
 
 /**
- * @brief 检测当前是否有键盘消息
- * @return 非零值表示有键盘消息，0表示没有，一般与getkey搭配使用
- * @note 用于非阻塞检测键盘输入，通常在主循环中与getkey()一起使用
+ * @brief Check if there are currently keyboard messages
+ * @return Non-zero value indicates there are keyboard messages, 0 indicates none, usually used with getkey
+ * @note Used for non-blocking detection of keyboard input, typically used with getkey() in main loop
  * @see getkey()
  */
 int     EGEAPI kbmsg();
 
 /**
- * @brief 获取键盘消息
- * @return 键盘消息结构体，包含按键代码、消息类型和标志位
- * @note 如果当前没有键盘消息则等待，支持按键按下、释放和字符消息
+ * @brief Get keyboard message
+ * @return Keyboard message structure containing key code, message type and flag bits
+ * @note If there are no keyboard messages currently, it waits; supports key press, release and character messages
  * @see kbmsg(), key_msg, key_msg_e, key_flag_e
  */
 key_msg EGEAPI getkey();
 
 /**
- * @brief 获取键盘字符输入（扩展版本）
- * @param flag 消息标志位，控制接收的消息类型
- * @return 按键代码和消息类型组合
- * @deprecated 请使用getch()函数代替
- * @note 支持按键按下和释放事件的获取
+ * @brief Get keyboard character input (extended version)
+ * @param flag Message flag bits, controls the type of messages to receive
+ * @return Combination of key code and message type
+ * @deprecated Please use getch() function instead
+ * @note Supports getting key press and release events
  * @see getch()
  */
 EGE_DEPRECATE(getchEx, "Please use the 'getch' function instead.")
 int     EGEAPI getchEx(int flag);
 
 /**
- * @brief 检测当前是否有键盘字符输入（扩展版本）
- * @param flag 消息标志位，控制检测的消息类型
- * @return 非零值表示有输入，0表示没有
- * @deprecated 请使用kbhit()函数代替
- * @note 支持按键按下和释放事件的检测
+ * @brief Check if there are currently keyboard character inputs (extended version)
+ * @param flag Message flag bits, controls the type of messages to detect
+ * @return Non-zero value indicates there is input, 0 indicates none
+ * @deprecated Please use kbhit() function instead
+ * @note Supports detection of key press and release events
  * @see kbhit()
  */
 EGE_DEPRECATE(kbhitEx, "Please use the 'kbhit' function instead.")
 int     EGEAPI kbhitEx(int flag);
 
 /**
- * @brief 判断键盘或鼠标上的某按键是否处于按下状态
- * @param key 要检测的按键代码，参见key_code_e枚举
- * @return 非零值表示按键按下，0表示未按下，-1表示参数错误
- * @note 实时检测按键状态，不消耗消息队列；支持键盘和鼠标按键
+ * @brief Determine if a certain key on keyboard or mouse is in pressed state
+ * @param key Key code to detect, see key_code_e enumeration
+ * @return Non-zero value indicates key is pressed, 0 indicates not pressed, -1 indicates parameter error
+ * @note Real-time key state detection, does not consume message queue; supports keyboard and mouse keys
  * @see key_code_e
  */
 int     EGEAPI keystate(int key);
 
 /**
- * @brief 清空按键消息缓存区
- * @note 清除所有未处理的键盘消息，常用于忽略缓存的按键输入
+ * @brief Clear key message buffer
+ * @note Clears all unprocessed keyboard messages, commonly used to ignore cached key inputs
  * @see flushmouse()
  */
 void    EGEAPI flushkey();
 
 /// @} // KeyboardInput
 
-/// @defgroup CharacterInput 字符输入
-/// 字符级键盘输入处理函数
+/// @defgroup CharacterInput Character input
+/// Character-level keyboard input processing functions
 /// @{
 
 /**
- * @brief 获取键盘字符输入（EGE内部版本）
- * @return 字符的ASCII码，特殊键返回扩展码
- * @note EGE内部实现，用于避免与conio.h库冲突
+ * @brief Get keyboard character input (EGE internal version)
+ * @return ASCII code of character, special keys return extended codes
+ * @note EGE internal implementation, used to avoid conflicts with conio.h library
  * @see getch()
  */
 int     EGEAPI ege_getch();
 
 /**
- * @brief 检测当前是否有键盘字符输入（EGE内部版本）
- * @return 非零值表示有字符输入，0表示没有
- * @note EGE内部实现，用于避免与conio.h库冲突
+ * @brief Check if there are currently keyboard character inputs (EGE internal version)
+ * @return Non-zero value indicates there is character input, 0 indicates none
+ * @note EGE internal implementation, used to avoid conflicts with conio.h library
  * @see kbhit()
  */
 int     EGEAPI ege_kbhit();
@@ -4906,17 +4906,17 @@ int     EGEAPI ege_kbhit();
 #define _CONIO_H_
 
 /**
- * @brief 获取键盘字符输入
- * @return 字符的ASCII码，特殊键返回扩展码
- * @note 如果当前没有字符输入则等待；等同于ege_getch()
+ * @brief Get keyboard character input
+ * @return ASCII code of character, special keys return extended codes
+ * @note If there is no character input currently, it waits; equivalent to ege_getch()
  * @see ege_getch(), kbhit()
  */
 int EGEAPI getch();  // Same as ege_getch()
 
 /**
- * @brief 检测当前是否有键盘字符输入
- * @return 非零值表示有字符输入，0表示没有
- * @note 用于非阻塞检测字符输入，一般与getch搭配使用；等同于ege_kbhit()
+ * @brief Check if there are currently keyboard character inputs
+ * @return Non-zero value indicates there is character input, 0 indicates none
+ * @note Used for non-blocking detection of character input, usually used with getch; equivalent to ege_kbhit()
  * @see ege_kbhit(), getch()
  */
 int EGEAPI kbhit();  // Same as ege_kbhit()
@@ -4927,57 +4927,57 @@ int EGEAPI kbhit();  // Same as ege_kbhit()
 
 /// @} // CharacterInput
 
-/// @defgroup MouseInput 鼠标输入
-/// 鼠标输入检测和消息处理函数
+/// @defgroup MouseInput Mouse input
+/// Mouse input detection and message processing functions
 /// @{
 
 /**
- * @brief 检测当前是否有鼠标消息
- * @return 非零值表示有鼠标消息，0表示没有
- * @note 用于非阻塞检测鼠标输入，一般与getmouse搭配使用
+ * @brief Check if there are currently mouse messages
+ * @return Non-zero value indicates there are mouse messages, 0 indicates none
+ * @note Used for non-blocking detection of mouse input, usually used with getmouse
  * @see getmouse()
  */
 int         EGEAPI mousemsg();
 
 /**
- * @brief 获取一个鼠标消息
- * @return 鼠标消息结构体，包含坐标、按键状态和消息类型
- * @note 如果当前鼠标消息队列为空则等待，直到有新消息产生
+ * @brief Get a mouse message
+ * @return Mouse message structure containing coordinates, button state and message type
+ * @note If current mouse message queue is empty, it waits until new message is generated
  * @see mousemsg(), mouse_msg, mouse_msg_e, mouse_flag_e
  */
 mouse_msg   EGEAPI getmouse();
 
 /**
- * @brief 获取一个鼠标消息（过时函数）
- * @return MOUSEMSG结构体，包含鼠标状态信息
- * @deprecated 请使用getmouse()函数代替
- * @note 兼容旧版本API，建议使用更现代的getmouse()函数
+ * @brief Get a mouse message (deprecated function)
+ * @return MOUSEMSG structure containing mouse state information
+ * @deprecated Please use getmouse() function instead
+ * @note Compatible with old version API, recommend using more modern getmouse() function
  * @see getmouse()
  */
 EGE_DEPRECATE(GetMouseMsg, "Please use the 'getmouse' function instead.")
 MOUSEMSG    EGEAPI GetMouseMsg();
 
 /**
- * @brief 清空鼠标消息缓冲区
- * @note 清除所有未处理的鼠标消息，常用于忽略缓存的鼠标输入
+ * @brief Clear mouse message buffer
+ * @note Clears all unprocessed mouse messages, commonly used to ignore cached mouse inputs
  * @see flushkey()
  */
 void        EGEAPI flushmouse();
 
 /**
- * @brief 设置鼠标指针是否显示
- * @param bShow 非零值显示鼠标指针，0隐藏鼠标指针
- * @return 之前的显示状态
- * @note 用于控制鼠标光标在图形窗口中的可见性
+ * @brief Set whether mouse pointer is displayed
+ * @param bShow Non-zero value shows mouse pointer, 0 hides mouse pointer
+ * @return Previous display state
+ * @note Used to control mouse cursor visibility in graphics window
  */
 int         EGEAPI showmouse(int bShow);
 
 /**
- * @brief 获取当前鼠标位置坐标
- * @param x 接收鼠标x坐标的指针
- * @param y 接收鼠标y坐标的指针
- * @return 函数执行状态
- * @note 获取鼠标在图形窗口中的实时坐标位置
+ * @brief Get current mouse position coordinates
+ * @param x Pointer to receive mouse x coordinate
+ * @param y Pointer to receive mouse y coordinate
+ * @return Function execution status
+ * @note Gets real-time mouse coordinate position in graphics window
  * @see keystate()
  */
 int         EGEAPI mousepos(int *x, int *y);
@@ -5005,162 +5005,162 @@ return zero means process this message, otherwise means pass it and then process
 int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 
 /**
- * @brief 音乐播放类
+ * @brief Music playback class
  * 
- * MUSIC 类提供了基于 Windows Media Control Interface (MCI) 的音乐播放功能，
- * 支持播放 WAV、MP3、MIDI 等多种音频格式。
+ * MUSIC class provides music playback functionality based on Windows Media Control Interface (MCI),
+ * supports playing various audio formats such as WAV, MP3, MIDI, etc.
  * 
- * @note 该类基于 Windows MCI 实现，仅支持 Windows 平台
- * @note 支持的音频格式包括：WAV, MP3, MIDI 等
+ * @note This class is based on Windows MCI implementation, only supports Windows platform
+ * @note Supported audio formats include: WAV, MP3, MIDI, etc.
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC
 {
 public:
     /**
-     * @brief 构造函数
-     * @note 初始化音乐播放器，设置初始状态为未打开
+     * @brief Constructor
+     * @note Initializes music player, sets initial state to not opened
      */
     MUSIC();
     
     /**
-     * @brief 析构函数
-     * @note 自动关闭已打开的音乐文件并清理资源
+     * @brief Destructor
+     * @note Automatically closes opened music file and cleans up resources
      */
     virtual ~MUSIC();
 
     /**
-     * @brief 类型转换操作符
-     * @return 返回窗口句柄(HWND)
-     * @note 用于与 Windows API 交互
+     * @brief Type conversion operator
+     * @return Returns window handle (HWND)
+     * @note Used for interaction with Windows API
      */
     operator HWND() const { return (HWND)m_dwCallBack; }
 
 public:
     /**
-     * @brief 检查是否已打开音乐文件
-     * @return 1 表示已打开，0 表示未打开
-     * @note 用于判断是否成功打开了音乐文件
+     * @brief Check if music file is opened
+     * @return 1 indicates opened, 0 indicates not opened
+     * @note Used to determine if music file is successfully opened
      */
     int IsOpen() { return (m_DID != MUSIC_ERROR) ? 1 : 0; }
 
     /**
-     * @brief 打开音乐文件（ASCII 版本）
-     * @param filepath 音乐文件路径（包含文件名）
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 支持 WAV、MP3、MIDI 等格式，成功打开后播放状态为 MUSIC_MODE_STOP
-     * @note 如果已经打开了其他文件，会自动关闭原文件
+     * @brief Open music file (ASCII version)
+     * @param filepath Music file path (including filename)
+     * @return Returns 0 on success, non-zero on failure
+     * @note Supports WAV, MP3, MIDI and other formats, playback state becomes MUSIC_MODE_STOP after successful opening
+     * @note If another file is already opened, it will be automatically closed
      * @see OpenFile(const wchar_t*), Close()
      */
     DWORD OpenFile(const char* filepath);
     
     /**
-     * @brief 打开音乐文件（Unicode 版本）
-     * @param filepath 音乐文件路径（包含文件名）
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 支持 WAV、MP3、MIDI 等格式，成功打开后播放状态为 MUSIC_MODE_STOP
-     * @note 如果已经打开了其他文件，会自动关闭原文件
+     * @brief Open music file (Unicode version)
+     * @param filepath Music file path (including filename)
+     * @return Returns 0 on success, non-zero on failure
+     * @note Supports WAV, MP3, MIDI and other formats, playback state becomes MUSIC_MODE_STOP after successful opening
+     * @note If another file is already opened, it will be automatically closed
      * @see OpenFile(const char*), Close()
      */
     DWORD OpenFile(const wchar_t* filepath);
     
     /**
-     * @brief 播放音乐
-     * @param dwFrom 播放开始位置（毫秒），默认为 MUSIC_ERROR（继续播放）
-     * @param dwTo 播放结束位置（毫秒），默认为 MUSIC_ERROR（播放到末尾）
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note Play() 为继续播放，Play(0) 为从头开始播放
-     * @note 播放状态变为 MUSIC_MODE_PLAY
+     * @brief Play music
+     * @param dwFrom Start position for playback (milliseconds), default is MUSIC_ERROR (continue playing)
+     * @param dwTo End position for playback (milliseconds), default is MUSIC_ERROR (play to end)
+     * @return Returns 0 on success, non-zero on failure
+     * @note Play() continues playback, Play(0) starts from beginning
+     * @note Playback state becomes MUSIC_MODE_PLAY
      * @see Pause(), Stop(), RepeatPlay()
      */
     DWORD Play(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
     
     /**
-     * @brief 循环播放音乐
-     * @param dwFrom 播放开始位置（毫秒），默认为 MUSIC_ERROR
-     * @param dwTo 播放结束位置（毫秒），默认为 MUSIC_ERROR
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 在指定的时间段内循环播放音乐
+     * @brief Loop play music
+     * @param dwFrom Start position for playback (milliseconds), default is MUSIC_ERROR
+     * @param dwTo End position for playback (milliseconds), default is MUSIC_ERROR
+     * @return Returns 0 on success, non-zero on failure
+     * @note Loop play music within specified time range
      * @see Play(), Pause(), Stop()
      */
     DWORD RepeatPlay(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
     
     /**
-     * @brief 暂停播放
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 播放状态变为 MUSIC_MODE_PAUSE，播放进度保持不变
+     * @brief Pause playback
+     * @return Returns 0 on success, non-zero on failure
+     * @note Playback state becomes MUSIC_MODE_PAUSE, playback progress remains unchanged
      * @see Play(), Stop()
      */
     DWORD Pause();
     
     /**
-     * @brief 定位播放位置
-     * @param dwTo 目标播放位置（毫秒）
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 目前此函数无效，建议使用 Play(dwTo) 代替
-     * @deprecated 推荐使用 Play(dwTo) 实现定位播放
+     * @brief Seek to playback position
+     * @param dwTo Target playback position (milliseconds)
+     * @return Returns 0 on success, non-zero on failure
+     * @note Currently this function is invalid, recommend using Play(dwTo) instead
+     * @deprecated Recommend using Play(dwTo) to achieve seeking
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);
     
     /**
-     * @brief 设置播放音量
-     * @param value 音量大小，范围 0.0~1.0
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 0.0 为静音，1.0 为最大音量
+     * @brief Set playback volume
+     * @param value Volume level, range 0.0~1.0
+     * @return Returns 0 on success, non-zero on failure
+     * @note 0.0 is mute, 1.0 is maximum volume
      */
     DWORD SetVolume(float value);
     
     /**
-     * @brief 关闭音乐文件
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 关闭当前打开的音乐文件并释放相关资源
+     * @brief Close music file
+     * @return Returns 0 on success, non-zero on failure
+     * @note Closes currently opened music file and releases related resources
      * @see OpenFile()
      */
     DWORD Close();
     
     /**
-     * @brief 停止播放
-     * @return 操作成功返回 0，操作失败返回非 0
-     * @note 播放状态变为 MUSIC_MODE_STOP，播放进度保持不变
+     * @brief Stop playback
+     * @return Returns 0 on success, non-zero on failure
+     * @note Playback state becomes MUSIC_MODE_STOP, playback progress remains unchanged
      * @see Play(), Pause()
      */
     DWORD Stop();
     
     /**
-     * @brief 获取当前播放位置
-     * @return 当前播放位置（毫秒）
-     * @note 返回当前播放进度，单位为毫秒
+     * @brief Get current playback position
+     * @return Current playback position (milliseconds)
+     * @note Returns current playback progress in milliseconds
      * @see GetLength(), GetPlayStatus()
      */
     DWORD GetPosition();
     
     /**
-     * @brief 获取音乐总时长
-     * @return 音乐总时长（毫秒）
-     * @note 返回音乐文件的总长度，单位为毫秒
+     * @brief Get total music duration
+     * @return Total music duration (milliseconds)
+     * @note Returns total length of music file in milliseconds
      * @see GetPosition(), GetPlayStatus()
      */
     DWORD GetLength();
 
     /**
-     * @brief 获取播放状态
-     * @return 当前播放状态，参见 music_state_flag 枚举
-     * @note 返回值可能为：
-     *       - MUSIC_MODE_NOT_OPEN: 未打开
-     *       - MUSIC_MODE_NOT_READY: 设备未就绪
-     *       - MUSIC_MODE_PAUSE: 暂停中
-     *       - MUSIC_MODE_PLAY: 正在播放
-     *       - MUSIC_MODE_STOP: 停止状态
-     *       - MUSIC_MODE_OPEN: 打开中
-     *       - MUSIC_MODE_SEEK: 定位中
+     * @brief Get playback status
+     * @return Current playback status, see music_state_flag enumeration
+     * @note Return value can be:
+     *       - MUSIC_MODE_NOT_OPEN: Not opened
+     *       - MUSIC_MODE_NOT_READY: Device not ready
+     *       - MUSIC_MODE_PAUSE: Paused
+     *       - MUSIC_MODE_PLAY: Playing
+     *       - MUSIC_MODE_STOP: Stopped
+     *       - MUSIC_MODE_OPEN: Opening
+     *       - MUSIC_MODE_SEEK: Seeking
      * @see music_state_flag, GetPosition(), GetLength()
      */
     DWORD GetPlayStatus();
 
 private:
-    DWORD m_DID;        ///< MCI 设备 ID
-    PVOID m_dwCallBack; ///< 回调句柄
+    DWORD m_DID;        ///< MCI device ID
+    PVOID m_dwCallBack; ///< Callback handle
 };
 
 int           EGEAPI ege_compress  (void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen);
