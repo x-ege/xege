@@ -11,5 +11,6 @@
         "*.pch": "objective-cpp",
         "utility": "cpp",
         "random": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled",
 }

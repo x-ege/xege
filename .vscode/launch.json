@@ -16,7 +16,7 @@
         },
         {
             "name": "Debug putimage_withalpha (isolated)",
-            "type": "cppvsdbg", 
+            "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/Debug/putimage_performance_test.exe",
             "args": [],
@@ -30,7 +30,7 @@
         {
             "name": "Debug putimage_transparent_test",
             "type": "cppvsdbg",
-            "request": "launch", 
+            "request": "launch",
             "program": "${workspaceFolder}/build/bin/Debug/putimage_transparent_test.exe",
             "args": [],
             "stopAtEntry": false,
@@ -44,7 +44,7 @@
             "name": "Debug putimage_rotate_test",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/Debug/putimage_rotate_test.exe", 
+            "program": "${workspaceFolder}/build/bin/Debug/putimage_rotate_test.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/bin/Debug",
@@ -60,7 +60,7 @@
             "program": "${workspaceFolder}/build/bin/Debug/putimage_alphablend_test.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/bin/Debug", 
+            "cwd": "${workspaceFolder}/build/bin/Debug",
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
@@ -75,7 +75,20 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/bin/Debug",
             "environment": [],
-            "console": "integratedTerminal", 
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "Build All"
+        },
+        {
+            "name": "Debug ege_gomoku",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/demo/Debug/egegomoku.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/demo/Debug",
+            "environment": [],
+            "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": "Build All"
         }

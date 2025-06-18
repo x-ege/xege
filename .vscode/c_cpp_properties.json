@@ -3,15 +3,17 @@
     "configurations": [
         {
             "name": "default",
-            "cStandard": "c89",
-            "cppStandard": "c++98",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
             "defines": [
                 "_FORTIFY_SOURCE=0"
             ],
             "includePath": [
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/3rdparty/libpng",
-                "${workspaceFolder}/build/**"
+                "${workspaceFolder}/3rdparty/libpng"
+            ],
+            "compilerArgs": [
+                "/Zc:__cplusplus"
             ]
         }
     ]
