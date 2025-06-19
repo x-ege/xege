@@ -8,13 +8,17 @@
  */
 
 #include "graphics.h"
-#include <algorithm>
 #include <vector>
 
+/// 是否禁用音效. 如果存在编译问题， 可以把下面这行的值改成 0
+#define ENABLE_SOUNDS 1
+
+#if ENABLE_SOUNDS
 #include <windows.h>
 #include <mmsystem.h>
 
 #pragma comment(lib, "winmm.lib")
+#endif
 
 // 文本本地化宏定义
 #ifdef _MSC_VER
@@ -89,8 +93,10 @@ public:
     Gomoku()
     {
         initGame();
+#if ENABLE_SOUNDS
         // 打开音频设备
         midiOutOpen(&device, deviceID, 0, 0, CALLBACK_NULL);
+#endif
     }
 
     // 初始化游戏
@@ -102,6 +108,10 @@ public:
                 m_board[i][j] = EMPTY;
             }
         }
+
+        // 重置最后落子位置
+        m_lastRow = -1;
+        m_lastCol = -1;
 
         // 在AI模式下，如果需要轮换先手
         if (m_vsAI && toggleFirst) {
@@ -169,6 +179,9 @@ public:
                     int x = BOARD_OFFSET_X + j * CELL_SIZE;
                     int y = BOARD_OFFSET_Y + i * CELL_SIZE;
 
+                    // 判断是否为最后一颗落子
+                    bool isLastPiece = (i == m_lastRow && j == m_lastCol);
+
                     if (m_board[i][j] == BLACK_PIECE) {
                         setfillcolor(ege::BLACK);
                         setcolor(EGERGB(64, 64, 64));
@@ -180,6 +193,15 @@ public:
                     // 使用抗锯齿的EGE绘制函数，提供更平滑的圆形效果
                     ege_fillcircle(x, y, CELL_SIZE / 2 - 2);
                     ege_circle(x, y, CELL_SIZE / 2 - 2);
+
+                    // 如果是最后一颗落子，绘制高亮标记
+                    if (isLastPiece) {
+                        // 绘制红色小十字
+                        setcolor(EGERGB(255, 0, 0));
+                        setlinewidth(2);
+                        line(x - CELL_SIZE / 6, y, x + CELL_SIZE / 6, y);
+                        line(x, y - CELL_SIZE / 6, x, y + CELL_SIZE / 6);
+                    }
                 }
             }
         }
@@ -329,6 +351,11 @@ public:
         }
 
         m_board[row][col] = piece;
+
+        // 更新最后落子位置
+        m_lastRow = row;
+        m_lastCol = col;
+
         return true;
     }
 
@@ -568,20 +595,21 @@ public:
         }
     }
 
-    enum
+    enum // MIDI音符编号定义
     {
-        MIDI_G4 = 67, // MIDI音符编号，代表钢琴的G4音符 (较低沉的音)
-        MIDI_C5 = 72, // MIDI音符编号，代表钢琴的C5音符 (较清脆的音)
+        MIDI_BLACK = 45,
+        MIDI_WHITE = 57,
     };
 
     // 播放声音
     void playPieceSound(PieceType piece)
     {
+#if ENABLE_SOUNDS
         // 设置音色为木琴(Xylophone)，音色编号13，更符合棋子落盘的感觉
         DWORD msg = 0xC000 | 13; // 0xC0 是更改乐器的控制命令，13 是木琴的乐器号
         midiOutShortMsg(device, msg);
 
-        if(m_lastSound != 0) {
+        if (m_lastSound != 0) {
             // 如果上一个音符还在播放，先停止它
             midiOutShortMsg(device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
         }
@@ -589,18 +617,20 @@ public:
         // 播放黑子下棋音效 - 使用较低沉的G4音符
         if (piece == BLACK_PIECE) {
             // 0x90是音符开启命令，80是适中的音量(比127更柔和)
-            midiOutShortMsg(device, 0x90 | (MIDI_G4 << 8) | (80 << 16));
-            m_lastSound = MIDI_G4; // 记录上一个音符
+            midiOutShortMsg(device, 0x90 | (MIDI_BLACK << 8) | (80 << 16));
+            m_lastSound = MIDI_BLACK; // 记录上一个音符
         } else if (piece == WHITE_PIECE) {
             // 播放白子下棋音效 - 使用较清脆的C5音符，与G4形成完美四度音程
-            midiOutShortMsg(device, 0x90 | (MIDI_C5 << 8) | (80 << 16));
-            m_lastSound = MIDI_C5; // 记录上一个音符
+            midiOutShortMsg(device, 0x90 | (MIDI_WHITE << 8) | (80 << 16));
+            m_lastSound = MIDI_WHITE; // 记录上一个音符
         }
         m_soundTimer = 20; // 音效持续20帧
+#endif
     }
 
     void updatePieceSound()
     {
+#if ENABLE_SOUNDS
         if (m_soundTimer <= 0) {
             return;
         }
@@ -608,8 +638,9 @@ public:
         if (m_soundTimer == 0 && m_lastSound != 0) {
             // 停止上一个音符
             midiOutShortMsg(device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
-            m_lastSound = 0; // 重置上一个音符
+            m_lastSound = 0;                                    // 重置上一个音符
         }
+#endif
     }
 
 private:
@@ -621,11 +652,17 @@ private:
     bool      m_vsAI       = true;             // 是否对战AI
     bool      m_humanFirst = true;             // AI模式下是否玩家先手
 
+    // 最后落子位置记录
+    int m_lastRow = -1; // 最后落子的行位置
+    int m_lastCol = -1; // 最后落子的列位置
+
+#if ENABLE_SOUNDS
     /// 音频相关
     HMIDIOUT device{};         // MIDI输出设备句柄
     UINT     deviceID     = 0; // 使用默认设备
     int      m_soundTimer = 0; // 音效倒计时, 到0时停止
     DWORD    m_lastSound{};    // 上一个音符
+#endif
 };
 
 int main()
@@ -674,7 +711,7 @@ int main()
                 setcolor(EGERGB(255, 0, 0));
                 setfont(50, 0, TEXT_FONT_NAME);
                 xyprintf(50, WINDOW_HEIGHT / 2, "游戏重新初始化...");
-                Sleep(500); // 稍等一会, 让玩家感知到游戏重新开始了.
+                Sleep(500); // 稍等一会, 让玩家感知到游戏重开了.
                 game.restartGame();
             } else if (key == 'm' || key == 'M') { // M键切换模式
                 game.toggleMode();
