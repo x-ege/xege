@@ -11,6 +11,11 @@
 #include <algorithm>
 #include <vector>
 
+#include <windows.h>
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
+
 // 文本本地化宏定义
 #ifdef _MSC_VER
 // MSVC编译器使用中文文案
@@ -81,7 +86,12 @@ enum GameState
 class Gomoku
 {
 public:
-    Gomoku() { initGame(); }
+    Gomoku()
+    {
+        initGame();
+        // 打开音频设备
+        midiOutOpen(&device, deviceID, 0, 0, CALLBACK_NULL);
+    }
 
     // 初始化游戏
     void initGame(bool toggleFirst = false)
@@ -505,6 +515,8 @@ public:
                 m_currentPlayer = (m_currentPlayer == BLACK_PIECE) ? WHITE_PIECE : BLACK_PIECE;
             }
         }
+
+        playPieceSound(m_currentPlayer); // 播放下棋音效
     }
 
     // 处理鼠标点击
@@ -556,6 +568,50 @@ public:
         }
     }
 
+    enum
+    {
+        MIDI_G4 = 67, // MIDI音符编号，代表钢琴的G4音符 (较低沉的音)
+        MIDI_C5 = 72, // MIDI音符编号，代表钢琴的C5音符 (较清脆的音)
+    };
+
+    // 播放声音
+    void playPieceSound(PieceType piece)
+    {
+        // 设置音色为木琴(Xylophone)，音色编号13，更符合棋子落盘的感觉
+        DWORD msg = 0xC000 | 13; // 0xC0 是更改乐器的控制命令，13 是木琴的乐器号
+        midiOutShortMsg(device, msg);
+
+        if(m_lastSound != 0) {
+            // 如果上一个音符还在播放，先停止它
+            midiOutShortMsg(device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
+        }
+
+        // 播放黑子下棋音效 - 使用较低沉的G4音符
+        if (piece == BLACK_PIECE) {
+            // 0x90是音符开启命令，80是适中的音量(比127更柔和)
+            midiOutShortMsg(device, 0x90 | (MIDI_G4 << 8) | (80 << 16));
+            m_lastSound = MIDI_G4; // 记录上一个音符
+        } else if (piece == WHITE_PIECE) {
+            // 播放白子下棋音效 - 使用较清脆的C5音符，与G4形成完美四度音程
+            midiOutShortMsg(device, 0x90 | (MIDI_C5 << 8) | (80 << 16));
+            m_lastSound = MIDI_C5; // 记录上一个音符
+        }
+        m_soundTimer = 20; // 音效持续20帧
+    }
+
+    void updatePieceSound()
+    {
+        if (m_soundTimer <= 0) {
+            return;
+        }
+        --m_soundTimer;
+        if (m_soundTimer == 0 && m_lastSound != 0) {
+            // 停止上一个音符
+            midiOutShortMsg(device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
+            m_lastSound = 0; // 重置上一个音符
+        }
+    }
+
 private:
     int       m_board[BOARD_SIZE][BOARD_SIZE]; // 棋盘数组
     PIMAGE    m_gameEndImage{};                // 用于临时缓存绘制
@@ -564,6 +620,12 @@ private:
     GameState m_gameState{};                   // 游戏状态
     bool      m_vsAI       = true;             // 是否对战AI
     bool      m_humanFirst = true;             // AI模式下是否玩家先手
+
+    /// 音频相关
+    HMIDIOUT device{};         // MIDI输出设备句柄
+    UINT     deviceID     = 0; // 使用默认设备
+    int      m_soundTimer = 0; // 音效倒计时, 到0时停止
+    DWORD    m_lastSound{};    // 上一个音符
 };
 
 int main()
@@ -581,6 +643,7 @@ int main()
         game.drawBoard();
         game.drawPieces();
         game.drawInfo();
+        game.updatePieceSound(); // 更新音效状态
 
         GameState state = game.getGameState();
         if (state == PLAYING) {
