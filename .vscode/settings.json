@@ -10,7 +10,8 @@
         "params.txt": "json",
         "*.pch": "objective-cpp",
         "utility": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "cstdlib": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled",
 }
