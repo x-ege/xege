@@ -40,6 +40,7 @@
 #define TEXT_PLAYER_HUMAN   "玩家"
 #define TEXT_PLAYER_AI      "AI"
 #define TEXT_FONT_NAME      "宋体"
+#define TEXT_RESTART_MSG    "游戏重新初始化..."
 #else
 // 非MSVC编译器使用英文文案
 #define TEXT_WINDOW_TITLE   "Gomoku Game - EGE Demo"
@@ -59,6 +60,7 @@
 #define TEXT_PLAYER_HUMAN   "Human"
 #define TEXT_PLAYER_AI      "AI"
 #define TEXT_FONT_NAME      "Arial"
+#define TEXT_RESTART_MSG    "Game Restarting..."
 #endif
 
 // 游戏常量
@@ -707,10 +709,10 @@ int main()
                 break;
             } else if (key == 'r' || key == 'R') { // R键重新开始
                 cleardevice(0);
-                /// 打印 "游戏重新初始化...", 提醒玩家游戏重开了
+                /// 打印重新初始化消息，提醒玩家游戏重开了
                 setcolor(EGERGB(255, 0, 0));
                 setfont(50, 0, TEXT_FONT_NAME);
-                xyprintf(50, WINDOW_HEIGHT / 2, "游戏重新初始化...");
+                xyprintf(50, WINDOW_HEIGHT / 2, TEXT_RESTART_MSG);
                 Sleep(500); // 稍等一会, 让玩家感知到游戏重开了.
                 game.restartGame();
             } else if (key == 'm' || key == 'M') { // M键切换模式
