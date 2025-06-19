@@ -97,7 +97,7 @@ public:
         initGame();
 #if ENABLE_SOUNDS
         // 打开音频设备
-        midiOutOpen(&device, deviceID, 0, 0, CALLBACK_NULL);
+        midiOutOpen(&m_device, m_deviceID, 0, 0, CALLBACK_NULL);
 #endif
     }
 
@@ -607,23 +607,26 @@ public:
     void playPieceSound(PieceType piece)
     {
 #if ENABLE_SOUNDS
+        if (m_device == nullptr) {
+            return;
+        }
         // 设置音色为木琴(Xylophone)，音色编号13，更符合棋子落盘的感觉
         DWORD msg = 0xC000 | 13; // 0xC0 是更改乐器的控制命令，13 是木琴的乐器号
-        midiOutShortMsg(device, msg);
+        midiOutShortMsg(m_device, msg);
 
         if (m_lastSound != 0) {
             // 如果上一个音符还在播放，先停止它
-            midiOutShortMsg(device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
+            midiOutShortMsg(m_device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
         }
 
         // 播放黑子下棋音效 - 使用较低沉的G4音符
         if (piece == BLACK_PIECE) {
             // 0x90是音符开启命令，80是适中的音量(比127更柔和)
-            midiOutShortMsg(device, 0x90 | (MIDI_BLACK << 8) | (80 << 16));
+            midiOutShortMsg(m_device, 0x90 | (MIDI_BLACK << 8) | (80 << 16));
             m_lastSound = MIDI_BLACK; // 记录上一个音符
         } else if (piece == WHITE_PIECE) {
             // 播放白子下棋音效 - 使用较清脆的C5音符，与G4形成完美四度音程
-            midiOutShortMsg(device, 0x90 | (MIDI_WHITE << 8) | (80 << 16));
+            midiOutShortMsg(m_device, 0x90 | (MIDI_WHITE << 8) | (80 << 16));
             m_lastSound = MIDI_WHITE; // 记录上一个音符
         }
         m_soundTimer = 20; // 音效持续20帧
@@ -633,14 +636,14 @@ public:
     void updatePieceSound()
     {
 #if ENABLE_SOUNDS
-        if (m_soundTimer <= 0) {
+        if (m_soundTimer <= 0 || m_device == nullptr) {
             return;
         }
         --m_soundTimer;
         if (m_soundTimer == 0 && m_lastSound != 0) {
             // 停止上一个音符
-            midiOutShortMsg(device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
-            m_lastSound = 0;                                    // 重置上一个音符
+            midiOutShortMsg(m_device, 0x80 | (m_lastSound << 8)); // 0x80是音符关闭命令
+            m_lastSound = 0;                                      // 重置上一个音符
         }
 #endif
     }
@@ -660,8 +663,8 @@ private:
 
 #if ENABLE_SOUNDS
     /// 音频相关
-    HMIDIOUT device{};         // MIDI输出设备句柄
-    UINT     deviceID     = 0; // 使用默认设备
+    HMIDIOUT m_device{};       // MIDI输出设备句柄
+    UINT     m_deviceID   = 0; // 使用默认设备
     int      m_soundTimer = 0; // 音效倒计时, 到0时停止
     DWORD    m_lastSound{};    // 上一个音符
 #endif
