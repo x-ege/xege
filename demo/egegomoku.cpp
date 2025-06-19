@@ -152,6 +152,7 @@ public:
     // 绘制棋子
     void drawPieces()
     {
+        ege_enable_aa(true);
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
                 if (m_board[i][j] != EMPTY) {
@@ -166,11 +167,13 @@ public:
                         setcolor(EGERGB(192, 192, 192));
                     }
 
-                    fillcircle(x, y, CELL_SIZE / 2 - 2);
-                    circle(x, y, CELL_SIZE / 2 - 2);
+                    // 使用抗锯齿的EGE绘制函数，提供更平滑的圆形效果
+                    ege_fillcircle(x, y, CELL_SIZE / 2 - 2);
+                    ege_circle(x, y, CELL_SIZE / 2 - 2);
                 }
             }
         }
+        ege_enable_aa(false);
     }
 
     // 绘制游戏信息
