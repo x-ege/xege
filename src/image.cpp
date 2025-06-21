@@ -249,7 +249,7 @@ void IMAGE::initimage(HDC refDC, int width, int height)
     m_height  = height;
     m_pBuffer = bmp_buf;
 
-    setviewport(0, 0, m_width, m_height, 1, this);
+    setviewport(0, 0, m_width, m_height, false, this);
 }
 
 void IMAGE::setdefaultattribute()
