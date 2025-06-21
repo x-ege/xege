@@ -79,10 +79,6 @@ int getflush()
     EGEMSG                 msg;
     int                    lastkey = 0;
 
-    if (pg->msgkey_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
-
     if (!pg->msgkey_queue->empty()) {
         while (pg->msgkey_queue->pop(msg)) {
             if (msg.message == WM_CHAR) {
