@@ -11,7 +11,13 @@
 #include <vector>
 
 /// 是否禁用音效. 如果存在编译问题， 可以把下面这行的值改成 0
+#ifdef _MSC_VER
 #define ENABLE_SOUNDS 1
+#else
+// 如果使用非MSVC编译器, 需要手动链接 winmm.lib
+// 这里默认禁用音效, 避免非MSVC编译器编译时出错
+#define ENABLE_SOUNDS 0
+#endif
 
 #if ENABLE_SOUNDS
 #include <windows.h>
