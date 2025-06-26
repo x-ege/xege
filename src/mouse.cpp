@@ -24,9 +24,6 @@ static EGEMSG peekmouse(_graph_setting* pg)
 {
     EGEMSG msg = {0};
 
-    if (pg->msgmouse_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
     while (pg->msgmouse_queue->pop(msg)) {
         pg->msgmouse_queue->unpop();
         return msg;
