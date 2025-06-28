@@ -261,6 +261,8 @@ enum graphics_errors
     grOutOfMemory        = 0x13,        ///< Out of memory
     grNullPointer        = 0x14,        ///< Null pointer
     grAllocError         = 0x15,        ///< Allocation error
+    grInvalidFileFormat  = 0x16,        ///< Invalid file format
+    grUnsupportedFormat  = 0x17,        ///< Unsupported format
     grInvalidMemory      = 0xCDCDCDCD   ///< Invalid memory
 };
 
