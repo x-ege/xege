@@ -8,6 +8,26 @@
 namespace ege
 {
 
+enum ImageDecodeFormat
+{
+    ImageDecodeFormat_NULL = 0,
+    ImageDecodeFormat_PNG,
+    ImageDecodeFormat_BMP,
+    ImageDecodeFormat_JPEG,
+    ImageDecodeFormat_GIF,
+    ImageDecodeFormat_TIFF,
+    ImageDecodeFormat_EXIF,
+    ImageDecodeFormat_WMF,
+    ImageDecodeFormat_EMF
+};
+
+enum ImageEncodeFormat
+{
+    ImageEncodeFormat_NULL = 0,
+    ImageEncodeFormat_PNG,
+    ImageEncodeFormat_BMP
+};
+
 // 定义图像对象
 class IMAGE
 {
@@ -242,11 +262,12 @@ public:
         int                        alpha        = -1, // in range[0, 256], alpha== -1 means no alpha
         int                        smooth       = 0);
 
-    friend void getimage_from_png_struct(PIMAGE, void*, void*);
+    friend graphics_errors getimage_from_png_struct(PIMAGE, void*, void*);
 };
 
-int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
+graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
 
 int savebmp(PCIMAGE pimg, FILE* file, bool alpha = false);
 
+ImageDecodeFormat checkImageDecodeFormatByFileName(const WCHAR* fileName);
 } // namespace ege
