@@ -896,13 +896,14 @@ enum mouse_msg_e
  */
 enum mouse_flag_e
 {
-    mouse_flag_left     = 0x001,    ///< Left mouse button is pressed
-    mouse_flag_right    = 0x002,    ///< Right mouse button is pressed
-    mouse_flag_mid      = 0x004,    ///< Middle mouse button is pressed
-    mouse_flag_x1       = 0x008,    ///< Mouse X1 button is pressed
-    mouse_flag_x2       = 0x010,    ///< Mouse X2 button is pressed
-    mouse_flag_shift    = 0x100,    ///< Shift key is pressed
-    mouse_flag_ctrl     = 0x200     ///< Ctrl key is pressed
+    mouse_flag_left         = 0x0001,   ///< Left mouse button is pressed
+    mouse_flag_right        = 0x0002,   ///< Right mouse button is pressed
+    mouse_flag_mid          = 0x0004,   ///< Middle mouse button is pressed
+    mouse_flag_x1           = 0x0008,   ///< Mouse X1 button is pressed
+    mouse_flag_x2           = 0x0010,   ///< Mouse X2 button is pressed
+    mouse_flag_shift        = 0x0100,   ///< Shift key is pressed
+    mouse_flag_ctrl         = 0x0200,   ///< Ctrl key is pressed
+    mouse_flag_doubleclick  = 0x1000    ///< Double click.
 };
 
 /**
@@ -938,6 +939,9 @@ struct mouse_msg
     bool is_move()  const {return msg == mouse_msg_move; }
     /// @brief Check if it's a wheel event
     bool is_wheel() const {return msg == mouse_msg_wheel;}
+
+    /// @brief Check if it's a double-click event
+    bool is_doubleclick() const {return (flags & mouse_flag_doubleclick) != 0;}
 };
 
 /**
