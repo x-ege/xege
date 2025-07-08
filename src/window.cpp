@@ -191,7 +191,7 @@ ATOM register_classW(struct _graph_setting* pg, HINSTANCE hInstance)
 
     wcex.cbSize = sizeof(wcex);
 
-    wcex.style         = CS_HREDRAW | CS_VREDRAW;
+    wcex.style         = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wcex.lpfnWndProc   = (WNDPROC)getProcfunc();
     wcex.cbClsExtra    = 0;
     wcex.cbWndExtra    = 0;

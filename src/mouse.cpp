@@ -59,23 +59,54 @@ mouse_msg mouseMessageConvert(UINT message, WPARAM wParam, LPARAM lParam, int* k
         switch (message) {
             case WM_XBUTTONDOWN:   msg.msg = mouse_msg_down;  break;
             case WM_XBUTTONUP:     msg.msg = mouse_msg_up;    break;
-            //case WM_XBUTTONDBLCLK: msg.msg = mouse_msg_down;  break;
+            case WM_XBUTTONDBLCLK: msg.msg = mouse_msg_down;  msg.flags |= mouse_flag_doubleclick; break;
             default:break;
         }
     } else {
         switch(message) {
-            case WM_LBUTTONDOWN:   msg.flags |= mouse_flag_left;  msg.msg = mouse_msg_down;  vkCode = key_mouse_l; break;
-            case WM_LBUTTONUP:     msg.flags |= mouse_flag_left;  msg.msg = mouse_msg_up;    vkCode = key_mouse_l; break;
-            //case WM_LBUTTONDBLCLK:  msg.flags |= mouse_flag_left; break;
+        case WM_LBUTTONDBLCLK:
+            msg.flags |= mouse_flag_doubleclick;
+            // No break
+        case WM_LBUTTONDOWN:
+            msg.flags |= mouse_flag_left;
+            msg.msg = mouse_msg_down;
+            vkCode = key_mouse_l;
+            break;
+        case WM_LBUTTONUP:
+            msg.flags |= mouse_flag_left;
+            msg.msg = mouse_msg_up;
+            vkCode = key_mouse_l;
+            break;
 
-            case WM_RBUTTONDOWN:   msg.flags |= mouse_flag_right; msg.msg = mouse_msg_down;  vkCode = key_mouse_r; break;
-            case WM_RBUTTONUP:     msg.flags |= mouse_flag_right; msg.msg = mouse_msg_up;    vkCode = key_mouse_r; break;
-            //case WM_RBUTTONDBLCLK: msg.flags |= mouse_flag_right; break;
+        case WM_RBUTTONDBLCLK:
+            msg.flags |= mouse_flag_doubleclick;
+            // No break
+        case WM_RBUTTONDOWN:
+            msg.flags |= mouse_flag_right;
+            msg.msg = mouse_msg_down;
+            vkCode = key_mouse_r;
+            break;
+        case WM_RBUTTONUP:
+            msg.flags |= mouse_flag_right;
+            msg.msg = mouse_msg_up;
+            vkCode = key_mouse_r;
+            break;
 
-            case WM_MBUTTONDOWN:   msg.flags |= mouse_flag_mid;   msg.msg = mouse_msg_down;  vkCode = key_mouse_m; break;
-            case WM_MBUTTONUP:     msg.flags |= mouse_flag_mid;   msg.msg = mouse_msg_up;    vkCode = key_mouse_m; break;
-            //case WM_MBUTTONDBLCLK: msg.flags |= mouse_flag_mid; break;
-            default: break;
+        case WM_MBUTTONDBLCLK:
+            msg.flags |= mouse_flag_doubleclick;
+            // No break
+        case WM_MBUTTONDOWN:
+            msg.flags |= mouse_flag_mid;
+            msg.msg = mouse_msg_down;
+            vkCode = key_mouse_m;
+            break;
+        case WM_MBUTTONUP:
+            msg.flags |= mouse_flag_mid;
+            msg.msg = mouse_msg_up;
+            vkCode = key_mouse_m;
+            break;
+
+        default: break;
         }
     }
 
