@@ -2963,8 +2963,10 @@ int SetCloseHandler(LPCALLBACK_PROC func)
 static void draw_frame(PIMAGE img, int l, int t, int r, int b, color_t lc, color_t dc)
 {
     setcolor(lc, img);
-    line(l, b, l, t, img);
+    moveto(l, b, img);
+    lineto(l, t, img);
     lineto(r, t, img);
+
     setcolor(dc, img);
     lineto(r, b, img);
     lineto(l, b, img);
