@@ -30,13 +30,7 @@ PROJECT_DIR=$(pwd)
 
 CMAKE_VS_DIR="$PROJECT_DIR/build"
 
-# 如果是在 vscode 里面调用, 那么不给错误码, 否则会导致 vscode tasks 无法正常执行任务并显示错误.
-
-if [[ "$TERM_PROGRAM" =~ vscode ]]; then
-    export EXIT_WHEN_FAILED=false
-else
-    export EXIT_WHEN_FAILED=true
-fi
+set -e
 
 export BUILD_TARGET="" # 默认只构建 xege 静态库
 
@@ -69,7 +63,7 @@ function loadCMakeProject() {
         cd "$CMAKE_VS_DIR" &&
         cmake $(MY_CMAKE_BUILD_DEFINE) ..; then
         echo "CMake Project Loaded: MY_CMAKE_BUILD_DEFINE=$(MY_CMAKE_BUILD_DEFINE)"
-    elif $EXIT_WHEN_FAILED; then
+    else
         echo "CMake Project Load Failed!"
         exit 1
     fi
@@ -100,16 +94,14 @@ function cmakeBuildAll() {
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
         fi
 
-        echo start: cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m
+        set -x
         # ref: https://stackoverflow.com/questions/11865085/out-of-a-git-console-how-do-i-execute-a-batch-file-and-then-return-to-git-conso
-        if ! cmd "/C cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m" && $EXIT_WHEN_FAILED; then
-            exit 1
-        fi
-        echo end: cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m
+        cmd "/C cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m"
+        set +x
     else
-        if ! cmake --build . $TARGET_RULE $(test -n "$CMAKE_BUILD_TYPE" && echo --config $CMAKE_BUILD_TYPE) -- -j $(nproc) && $EXIT_WHEN_FAILED; then
-            exit 1
-        fi
+        set -x
+        cmake --build . $TARGET_RULE $(test -n "$CMAKE_BUILD_TYPE" && echo --config $CMAKE_BUILD_TYPE) -- -j $(nproc)
+        set +x
     fi
     popd
 }
@@ -196,9 +188,7 @@ while [[ $# > 0 ]]; do
         ;;
     *)
         echo "unknown option $PARSE_KEY..."
-        if $EXIT_WHEN_FAILED; then
-            exit 1
-        fi
+        exit 1
         ;;
     esac
 done
