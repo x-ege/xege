@@ -17,7 +17,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Reload CMake Project",
@@ -33,7 +33,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Cleanup CMake Project",
@@ -48,7 +48,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Build XEGE Library",
@@ -66,7 +66,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Build Demos",
@@ -84,7 +84,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Build All",
@@ -135,7 +135,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Load And Build Demos",
@@ -154,7 +154,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Run Demo - XEGE Test",
@@ -234,7 +234,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         }
     ]
 }
