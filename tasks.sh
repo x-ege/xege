@@ -46,7 +46,7 @@ if [[ -z "$CMAKE_CONFIG_DEFINE" ]]; then
 fi
 
 function MY_CMAKE_BUILD_DEFINE() {
-    echo "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ${CMAKE_CONFIG_DEFINE}"
+    echo "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ${CMAKE_CONFIG_DEFINE} -DCMAKE_POLICY_VERSION_MINIMUM=3.13"
 }
 
 if ! command -v grealpath && command -v realpath; then

@@ -3,15 +3,17 @@
     "configurations": [
         {
             "name": "default",
-            "cStandard": "c11",
-            "cppStandard": "c++11",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
             "defines": [
                 "_FORTIFY_SOURCE=0"
             ],
             "includePath": [
                 "${workspaceFolder}/include",
+                "${workspaceFolder}/include/ege",
                 "${workspaceFolder}/3rdparty/libpng"
             ],
+            "configurationProvider": "ms-vscode.cmake-tools",
             "compilerArgs": [
                 "/Zc:__cplusplus"
             ]

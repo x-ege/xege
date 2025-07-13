@@ -53,6 +53,43 @@ endif()
 
 project(XEGE)
 
+if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
+elseif(NOT MSVC)
+    message(STATUS "CMAKE_BUILD_TYPE is set to ${CMAKE_BUILD_TYPE}")
+endif()
+
+# 检查编译器是否支持 C++17, 支持的话， 启用相机模块.
+include(CheckCXXSourceCompiles)
+
+if(MSVC)
+    set(CMAKE_REQUIRED_FLAGS "/std:c++17")
+else()
+    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+endif()
+
+check_cxx_source_compiles("
+    #include <optional>
+    int main() { std::optional<int> o; return 0; }
+" COMPILER_SUPPORTS_CXX17)
+unset(CMAKE_REQUIRED_FLAGS)
+
+if(COMPILER_SUPPORTS_CXX17)
+    option(EGE_ENABLE_CPP17 "Enable C++ 17" ON)
+else()
+    set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++ 17" FORCE)
+endif()
+
+message(STATUS "EGE enable C++ 17: ${EGE_ENABLE_CPP17}")
+
+if(EGE_ENABLE_CPP17)
+    # 将编译标准设置为 C++17, 仓库对外标准保持不变, 未引入额外的依赖.
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
+
 add_library(xege STATIC)
 
 target_include_directories(xege PUBLIC include)
@@ -145,6 +182,10 @@ if(USE_LIBPNG_AND_ZLIB)
     endif()
 else()
     message(FATAL_ERROR "EGE MUST BE COMPILED WITH LIBPNG AND ZLIB!")
+endif()
+
+if(EGE_ENABLE_CPP17)
+    target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
 endif()
 
 # 设置库文件名
