@@ -11,7 +11,7 @@ namespace ege
 template <typename T> class thread_queue
 {
 public:
-    thread_queue(void) : _begin{0}, _end{0}, _unoccupied(0) {}
+    thread_queue(void) : _begin{0}, _end{0}, _unoccupied(0), _head_locked{false}, _last{nullptr} {}
 
     ~thread_queue(void) {}
 
