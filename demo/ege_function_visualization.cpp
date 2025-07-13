@@ -24,56 +24,56 @@
 // 文本本地化宏定义
 #ifdef _MSC_VER
 // MSVC编译器使用中文文案
-#define TEXT_WINDOW_TITLE           "EGE - 2D 函数图像绘制器 (蒙特卡洛法)"
-#define TEXT_CONTROLS_TITLE         "控制说明:"
-#define TEXT_CONTROLS_SPACE         "空格 - 切换到下一个函数"
-#define TEXT_CONTROLS_SAMPLES       "+/= - 增加采样点数量 (+10000)"
-#define TEXT_CONTROLS_SAMPLES_DOWN  "-/_ - 减少采样点数量 (-10000)"
-#define TEXT_CONTROLS_TOLERANCE_UP  "W - 增加容差值 (+0.01) - 使函数线条更粗"
-#define TEXT_CONTROLS_TOLERANCE_DOWN "S - 减少容差值 (-0.01) - 使函数线条更细"
+#define TEXT_WINDOW_TITLE             "EGE - 2D 函数图像绘制器 (蒙特卡洛法)"
+#define TEXT_CONTROLS_TITLE           "控制说明:"
+#define TEXT_CONTROLS_SPACE           "空格 - 切换到下一个函数"
+#define TEXT_CONTROLS_SAMPLES         "+/= - 增加采样点数量 (+10000)"
+#define TEXT_CONTROLS_SAMPLES_DOWN    "-/_ - 减少采样点数量 (-10000)"
+#define TEXT_CONTROLS_TOLERANCE_UP    "W - 增加容差值 (+0.01) - 使函数线条更粗"
+#define TEXT_CONTROLS_TOLERANCE_DOWN  "S - 减少容差值 (-0.01) - 使函数线条更细"
 #define TEXT_CONTROLS_POINT_SIZE_DOWN "[ - 减少点大小"
-#define TEXT_CONTROLS_POINT_SIZE_UP "] - 增大点大小"
-#define TEXT_CONTROLS_REDRAW        "R - 重新绘制当前函数"
-#define TEXT_CONTROLS_EXIT          "ESC - 退出"
-#define TEXT_CURRENT_FUNCTION       "当前函数: %s"
-#define TEXT_COORD_RANGE            "坐标范围: X:[%.2f, %.2f]  Y:[%.2f, %.2f]"
-#define TEXT_PARAMS_INFO            "采样点数: %d  容差: %.4f"
-#define TEXT_POINT_SIZE_INFO        "点大小: %d"
-#define TEXT_FUNCTION_CIRCLE        "圆形 (r=2)"
-#define TEXT_FUNCTION_ELLIPSE       "椭圆 (a=3, b=2)"
-#define TEXT_FUNCTION_PARABOLA      "抛物线 (y=x^2)"
-#define TEXT_FUNCTION_HYPERBOLA     "双曲线"
-#define TEXT_FUNCTION_SINE          "正弦波"
-#define TEXT_FUNCTION_ROSE          "玫瑰花 (n=3)"
-#define TEXT_FUNCTION_HEART         "心形"
-#define TEXT_FUNCTION_LOTUS         "莲花"
-#define TEXT_FONT_NAME              "宋体"
+#define TEXT_CONTROLS_POINT_SIZE_UP   "] - 增大点大小"
+#define TEXT_CONTROLS_REDRAW          "R - 重新绘制当前函数"
+#define TEXT_CONTROLS_EXIT            "ESC - 退出"
+#define TEXT_CURRENT_FUNCTION         "当前函数: %s"
+#define TEXT_COORD_RANGE              "坐标范围: X:[%.2f, %.2f]  Y:[%.2f, %.2f]"
+#define TEXT_PARAMS_INFO              "采样点数: %d  容差: %.4f"
+#define TEXT_POINT_SIZE_INFO          "点大小: %d"
+#define TEXT_FUNCTION_CIRCLE          "圆形 (r=2)"
+#define TEXT_FUNCTION_ELLIPSE         "椭圆 (a=3, b=2)"
+#define TEXT_FUNCTION_PARABOLA        "抛物线 (y=x^2)"
+#define TEXT_FUNCTION_HYPERBOLA       "双曲线"
+#define TEXT_FUNCTION_SINE            "正弦波"
+#define TEXT_FUNCTION_ROSE            "玫瑰花 (n=3)"
+#define TEXT_FUNCTION_HEART           "心形"
+#define TEXT_FUNCTION_LOTUS           "莲花"
+#define TEXT_FONT_NAME                "宋体"
 #else
 // 非MSVC编译器使用英文文案
-#define TEXT_WINDOW_TITLE           "EGE - 2D Function Graph Renderer (Monte Carlo Method)"
-#define TEXT_CONTROLS_TITLE         "Controls:"
-#define TEXT_CONTROLS_SPACE         "SPACE - Next function"
-#define TEXT_CONTROLS_SAMPLES       "+/= - Increase samples (+10000)"
-#define TEXT_CONTROLS_SAMPLES_DOWN  "-/_ - Decrease samples (-10000)"
-#define TEXT_CONTROLS_TOLERANCE_UP  "W - Increase tolerance (+0.01)"
-#define TEXT_CONTROLS_TOLERANCE_DOWN "S - Decrease tolerance (-0.01)"
+#define TEXT_WINDOW_TITLE             "EGE - 2D Function Graph Renderer (Monte Carlo Method)"
+#define TEXT_CONTROLS_TITLE           "Controls:"
+#define TEXT_CONTROLS_SPACE           "SPACE - Next function"
+#define TEXT_CONTROLS_SAMPLES         "+/= - Increase samples (+10000)"
+#define TEXT_CONTROLS_SAMPLES_DOWN    "-/_ - Decrease samples (-10000)"
+#define TEXT_CONTROLS_TOLERANCE_UP    "W - Increase tolerance (+0.01)"
+#define TEXT_CONTROLS_TOLERANCE_DOWN  "S - Decrease tolerance (-0.01)"
 #define TEXT_CONTROLS_POINT_SIZE_DOWN "[ - Decrease point size"
-#define TEXT_CONTROLS_POINT_SIZE_UP "] - Increase point size"
-#define TEXT_CONTROLS_REDRAW        "R - Redraw current function"
-#define TEXT_CONTROLS_EXIT          "ESC - Exit"
-#define TEXT_CURRENT_FUNCTION       "Current: %s"
-#define TEXT_COORD_RANGE            "X: [%.2f, %.2f]  Y: [%.2f, %.2f]"
-#define TEXT_PARAMS_INFO            "Samples: %d  Tolerance: %.4f"
-#define TEXT_POINT_SIZE_INFO        "Point Size: %d"
-#define TEXT_FUNCTION_CIRCLE        "Circle (r=2)"
-#define TEXT_FUNCTION_ELLIPSE       "Ellipse (a=3, b=2)"
-#define TEXT_FUNCTION_PARABOLA      "Parabola (y=x^2)"
-#define TEXT_FUNCTION_HYPERBOLA     "Hyperbola"
-#define TEXT_FUNCTION_SINE          "Sine Wave"
-#define TEXT_FUNCTION_ROSE          "Rose (n=3)"
-#define TEXT_FUNCTION_HEART         "Heart"
-#define TEXT_FUNCTION_LOTUS         "Lotus"
-#define TEXT_FONT_NAME              "Arial"
+#define TEXT_CONTROLS_POINT_SIZE_UP   "] - Increase point size"
+#define TEXT_CONTROLS_REDRAW          "R - Redraw current function"
+#define TEXT_CONTROLS_EXIT            "ESC - Exit"
+#define TEXT_CURRENT_FUNCTION         "Current: %s"
+#define TEXT_COORD_RANGE              "X: [%.2f, %.2f]  Y: [%.2f, %.2f]"
+#define TEXT_PARAMS_INFO              "Samples: %d  Tolerance: %.4f"
+#define TEXT_POINT_SIZE_INFO          "Point Size: %d"
+#define TEXT_FUNCTION_CIRCLE          "Circle (r=2)"
+#define TEXT_FUNCTION_ELLIPSE         "Ellipse (a=3, b=2)"
+#define TEXT_FUNCTION_PARABOLA        "Parabola (y=x^2)"
+#define TEXT_FUNCTION_HYPERBOLA       "Hyperbola"
+#define TEXT_FUNCTION_SINE            "Sine Wave"
+#define TEXT_FUNCTION_ROSE            "Rose (n=3)"
+#define TEXT_FUNCTION_HEART           "Heart"
+#define TEXT_FUNCTION_LOTUS           "Lotus"
+#define TEXT_FONT_NAME                "Arial"
 #endif
 
 /**
@@ -616,7 +616,7 @@ int main()
             outtextxy(10, 190, TEXT_CONTROLS_POINT_SIZE_UP, NULL);
             outtextxy(10, 210, TEXT_CONTROLS_REDRAW, NULL);
             outtextxy(10, 230, TEXT_CONTROLS_EXIT, NULL);
-            
+
             // 显示当前函数名称
             xyprintf(10, 250, TEXT_CURRENT_FUNCTION, functionNames[currentFunction].c_str());
 
@@ -632,6 +632,7 @@ int main()
     }
 
     // 清理资源
+    delimage(imgCache);
     closegraph();
 
     return 0;
