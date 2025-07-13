@@ -16,4 +16,4 @@ std::string w2mb(const wchar_t wStr[]);
 // convert multibyte string to wide char string, using ege::getcodepage
 std::wstring mb2w(const char mbStr[]);
 
-}
+} // namespace ege

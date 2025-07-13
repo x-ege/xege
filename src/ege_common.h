@@ -25,5 +25,3 @@
 #include "window.h"
 #include "image.h"
 #include "console.h"
-
-

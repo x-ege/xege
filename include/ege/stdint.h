@@ -26,10 +26,10 @@
 #ifndef _STDINT_HEADER_NOT_SUPPORT
 #if defined(_MSC_VER) && (_MSC_VER < 1600)
 #define _STDINT_HEADER_NOT_SUPPORT
-#elif  defined(__GNUC__) && ((__GNUC__ < 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ < 5)))
+#elif defined(__GNUC__) && ((__GNUC__ < 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ < 5)))
 #define _STDINT_HEADER_NOT_SUPPORT
 #else
-  /* Other compilers always assume support for <stdint.h>. */
+/* Other compilers always assume support for <stdint.h>. */
 #endif
 #endif
 
@@ -48,7 +48,7 @@
 #else
 
 /* Avoid duplication with definitions in other stdint.h header files */
-#if !definded(_STDINT) && !defined(_GCC_STDINT_H)
+#if !defined(_STDINT) && !defined(_GCC_STDINT_H)
 #if defined(_MSC_VER)
 #define _STDINT
 #elif defined(__GNUC__)
@@ -69,7 +69,7 @@
 
 #ifndef __GNUC_EXTENSION__
 #if defined(__GNUC__)
-#define __GNUC_EXTENSION__  __extension__
+#define __GNUC_EXTENSION__ __extension__
 #else
 #define __GNUC_EXTENSION__
 #endif
@@ -81,22 +81,22 @@
 #endif
 
 /* 7.18.1.1  Exact-width integer types */
-typedef signed char        int8_t;
-typedef unsigned char      uint8_t;
-typedef short              int16_t;
-typedef unsigned short     uint16_t;
-typedef int                int32_t;
-typedef unsigned           uint32_t;
+typedef signed char                           int8_t;
+typedef unsigned char                         uint8_t;
+typedef short                                 int16_t;
+typedef unsigned short                        uint16_t;
+typedef int                                   int32_t;
+typedef unsigned                              uint32_t;
 __GNUC_EXTENSION__ typedef _LONGLONG          int64_t;
 __GNUC_EXTENSION__ typedef unsigned _LONGLONG uint64_t;
 
 /* 7.18.1.2  Minimum-width integer types */
-typedef signed char        int_least8_t;
-typedef unsigned char      uint_least8_t;
-typedef short              int_least16_t;
-typedef unsigned short     uint_least16_t;
-typedef int                int_least32_t;
-typedef unsigned           uint_least32_t;
+typedef signed char                           int_least8_t;
+typedef unsigned char                         uint_least8_t;
+typedef short                                 int_least16_t;
+typedef unsigned short                        uint_least16_t;
+typedef int                                   int_least32_t;
+typedef unsigned                              uint_least32_t;
 __GNUC_EXTENSION__ typedef _LONGLONG          int_least64_t;
 __GNUC_EXTENSION__ typedef unsigned _LONGLONG uint_least64_t;
 
@@ -104,12 +104,12 @@ __GNUC_EXTENSION__ typedef unsigned _LONGLONG uint_least64_t;
  *  Not actually guaranteed to be fastest for all purposes
  *  Here we use the exact-width types for 8 and 16-bit ints.
  */
-typedef char               int_fast8_t;
-typedef unsigned char      uint_fast8_t;
-typedef short              int_fast16_t;
-typedef unsigned short     uint_fast16_t;
-typedef int                int_fast32_t;
-typedef unsigned int       uint_fast32_t;
+typedef char                                  int_fast8_t;
+typedef unsigned char                         uint_fast8_t;
+typedef short                                 int_fast16_t;
+typedef unsigned short                        uint_fast16_t;
+typedef int                                   int_fast32_t;
+typedef unsigned int                          uint_fast32_t;
 __GNUC_EXTENSION__ typedef _LONGLONG          int_fast64_t;
 __GNUC_EXTENSION__ typedef unsigned _LONGLONG uint_fast64_t;
 
@@ -154,10 +154,10 @@ __GNUC_EXTENSION__ typedef unsigned _LONGLONG uintmax_t;
 #define INT32_MAX 2147483647
 #define INT64_MAX 9223372036854775807LL
 
-#define UINT8_MAX  0xff                  /* 255U */
-#define UINT16_MAX 0xffff                /* 65535U */
-#define UINT32_MAX 0xffffffff            /* 4294967295U */
-#define UINT64_MAX 0xffffffffffffffffULL /* 18446744073709551615ULL */
+#define UINT8_MAX       0xff                  /* 255U */
+#define UINT16_MAX      0xffff                /* 65535U */
+#define UINT32_MAX      0xffffffff            /* 4294967295U */
+#define UINT64_MAX      0xffffffffffffffffULL /* 18446744073709551615ULL */
 
 /* 7.18.2.2  Limits of minimum-width integer types */
 #define INT_LEAST8_MIN  INT8_MIN
@@ -176,10 +176,10 @@ __GNUC_EXTENSION__ typedef unsigned _LONGLONG uintmax_t;
 #define UINT_LEAST64_MAX UINT64_MAX
 
 /* 7.18.2.3  Limits of fastest minimum-width integer types */
-#define INT_FAST8_MIN  INT8_MIN
-#define INT_FAST16_MIN INT16_MIN
-#define INT_FAST32_MIN INT32_MIN
-#define INT_FAST64_MIN INT64_MIN
+#define INT_FAST8_MIN    INT8_MIN
+#define INT_FAST16_MIN   INT16_MIN
+#define INT_FAST32_MIN   INT32_MIN
+#define INT_FAST64_MIN   INT64_MIN
 
 #define INT_FAST8_MAX  INT8_MAX
 #define INT_FAST16_MAX INT16_MAX
@@ -203,7 +203,7 @@ __GNUC_EXTENSION__ typedef unsigned _LONGLONG uintmax_t;
 #define UINTPTR_MAX UINT32_MAX
 #endif
 
-    /* 7.18.2.5  Limits of greatest-width integer types */
+/* 7.18.2.5  Limits of greatest-width integer types */
 #define INTMAX_MIN  INT64_MIN
 #define INTMAX_MAX  INT64_MAX
 #define UINTMAX_MAX UINT64_MAX
@@ -230,7 +230,7 @@ __GNUC_EXTENSION__ typedef unsigned _LONGLONG uintmax_t;
 
 #endif /* !defined ( __cplusplus) || defined __STDC_LIMIT_MACROS */
 
- /* 7.18.4  Macros for integer constants */
+/* 7.18.4  Macros for integer constants */
 #if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
 
 /* 7.18.4.1  Macros for minimum-width integer constants
@@ -246,15 +246,15 @@ __GNUC_EXTENSION__ typedef unsigned _LONGLONG uintmax_t;
     *expression* with *promoted* type."
 */
 
-#define INT8_C(val)   ((int8_t) + (val))
-#define UINT8_C(val)  ((uint8_t) + (val##U))
-#define INT16_C(val)  ((int16_t) + (val))
-#define UINT16_C(val) ((uint16_t) + (val##U))
+#define INT8_C(val)   ((int8_t)+(val))
+#define UINT8_C(val)  ((uint8_t)+(val##U))
+#define INT16_C(val)  ((int16_t)+(val))
+#define UINT16_C(val) ((uint16_t)+(val##U))
 
-#define INT32_C(val)  val##L
-#define UINT32_C(val) val##UL
-#define INT64_C(val)  val##LL
-#define UINT64_C(val) val##ULL
+#define INT32_C(val)   val##L
+#define UINT32_C(val)  val##UL
+#define INT64_C(val)   val##LL
+#define UINT64_C(val)  val##ULL
 
 /* 7.18.4.2  Macros for greatest-width integer constants */
 #define INTMAX_C(val)  INT64_C(val)
