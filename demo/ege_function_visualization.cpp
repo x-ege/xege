@@ -31,11 +31,14 @@
 #define TEXT_CONTROLS_SAMPLES_DOWN  "-/_ - 减少采样点数量 (-10000)"
 #define TEXT_CONTROLS_TOLERANCE_UP  "W - 增加容差值 (+0.01) - 使函数线条更粗"
 #define TEXT_CONTROLS_TOLERANCE_DOWN "S - 减少容差值 (-0.01) - 使函数线条更细"
+#define TEXT_CONTROLS_POINT_SIZE_DOWN "[ - 减少点大小"
+#define TEXT_CONTROLS_POINT_SIZE_UP "] - 增大点大小"
 #define TEXT_CONTROLS_REDRAW        "R - 重新绘制当前函数"
 #define TEXT_CONTROLS_EXIT          "ESC - 退出"
 #define TEXT_CURRENT_FUNCTION       "当前函数: %s"
 #define TEXT_COORD_RANGE            "坐标范围: X:[%.2f, %.2f]  Y:[%.2f, %.2f]"
 #define TEXT_PARAMS_INFO            "采样点数: %d  容差: %.4f"
+#define TEXT_POINT_SIZE_INFO        "点大小: %d"
 #define TEXT_FUNCTION_CIRCLE        "圆形 (r=2)"
 #define TEXT_FUNCTION_ELLIPSE       "椭圆 (a=3, b=2)"
 #define TEXT_FUNCTION_PARABOLA      "抛物线 (y=x^2)"
@@ -54,11 +57,14 @@
 #define TEXT_CONTROLS_SAMPLES_DOWN  "-/_ - Decrease samples (-10000)"
 #define TEXT_CONTROLS_TOLERANCE_UP  "W - Increase tolerance (+0.01)"
 #define TEXT_CONTROLS_TOLERANCE_DOWN "S - Decrease tolerance (-0.01)"
+#define TEXT_CONTROLS_POINT_SIZE_DOWN "[ - Decrease point size"
+#define TEXT_CONTROLS_POINT_SIZE_UP "] - Increase point size"
 #define TEXT_CONTROLS_REDRAW        "R - Redraw current function"
 #define TEXT_CONTROLS_EXIT          "ESC - Exit"
 #define TEXT_CURRENT_FUNCTION       "Current: %s"
 #define TEXT_COORD_RANGE            "X: [%.2f, %.2f]  Y: [%.2f, %.2f]"
 #define TEXT_PARAMS_INFO            "Samples: %d  Tolerance: %.4f"
+#define TEXT_POINT_SIZE_INFO        "Point Size: %d"
 #define TEXT_FUNCTION_CIRCLE        "Circle (r=2)"
 #define TEXT_FUNCTION_ELLIPSE       "Ellipse (a=3, b=2)"
 #define TEXT_FUNCTION_PARABOLA      "Parabola (y=x^2)"
@@ -164,6 +170,14 @@ public:
      * @param showGrid 是否显示网格
      */
     void setShowGrid(bool showGrid) { m_showGrid = showGrid; }
+
+    /**
+     * @brief 设置点大小
+     * @param size 点的大小（像素）
+     */
+    void setPointSize(int size) { m_pointSize = std::max(1, std::min(10, size)); }
+
+    int pointSize() const { return m_pointSize; }
 
     /**
      * @brief 绘制函数图像
@@ -348,11 +362,13 @@ private:
             settarget(pimg);
             xyprintf(10, 10, TEXT_COORD_RANGE, m_xMin, m_xMax, m_yMin, m_yMax);
             xyprintf(10, 30, TEXT_PARAMS_INFO, m_sampleCount, m_tolerance);
+            xyprintf(10, 50, TEXT_POINT_SIZE_INFO, m_pointSize);
             settarget(oldTarget);
         } else {
             // 直接输出到当前窗口
             xyprintf(10, 10, TEXT_COORD_RANGE, m_xMin, m_xMax, m_yMin, m_yMax);
             xyprintf(10, 30, TEXT_PARAMS_INFO, m_sampleCount, m_tolerance);
+            xyprintf(10, 50, TEXT_POINT_SIZE_INFO, m_pointSize);
         }
     }
 
@@ -563,6 +579,14 @@ int main()
                 renderer.setTolerance(std::max(0.01, renderer.tolerance() - 0.01));
                 drawFunction = true;
                 break;
+            case '[': // 减少点大小
+                renderer.setPointSize(renderer.pointSize() - 1);
+                drawFunction = true;
+                break;
+            case ']': // 增大点大小
+                renderer.setPointSize(renderer.pointSize() + 1);
+                drawFunction = true;
+                break;
             case 32: // 空格键 - 切换到下一个函数
                 if (!functionNames.empty()) {
                     currentFunction = (currentFunction + 1) % functionNames.size();
@@ -588,11 +612,13 @@ int main()
             outtextxy(10, 110, TEXT_CONTROLS_SAMPLES_DOWN, NULL);
             outtextxy(10, 130, TEXT_CONTROLS_TOLERANCE_UP, NULL);
             outtextxy(10, 150, TEXT_CONTROLS_TOLERANCE_DOWN, NULL);
-            outtextxy(10, 170, TEXT_CONTROLS_REDRAW, NULL);
-            outtextxy(10, 190, TEXT_CONTROLS_EXIT, NULL);
+            outtextxy(10, 170, TEXT_CONTROLS_POINT_SIZE_DOWN, NULL);
+            outtextxy(10, 190, TEXT_CONTROLS_POINT_SIZE_UP, NULL);
+            outtextxy(10, 210, TEXT_CONTROLS_REDRAW, NULL);
+            outtextxy(10, 230, TEXT_CONTROLS_EXIT, NULL);
             
             // 显示当前函数名称
-            xyprintf(10, 210, TEXT_CURRENT_FUNCTION, functionNames[currentFunction].c_str());
+            xyprintf(10, 250, TEXT_CURRENT_FUNCTION, functionNames[currentFunction].c_str());
 
             renderer.renderFunction(functionNames[currentFunction], imgCache);
             settarget(nullptr);
