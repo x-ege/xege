@@ -175,7 +175,7 @@ public:
      * @brief 设置点大小
      * @param size 点的大小（像素）
      */
-    void setPointSize(int size) { m_pointSize = std::max(1, std::min(10, size)); }
+    void setPointSize(int size) { m_pointSize = std::max(1, std::min(20, size)); }
 
     int pointSize() const { return m_pointSize; }
 
