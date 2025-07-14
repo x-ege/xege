@@ -80,17 +80,17 @@
             "preLaunchTask": "Build All"
         },
         {
-            "name": "Debug ege_gomoku",
+            "name": "Debug Game Gomoku",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/demo/Debug/egegomoku.exe",
+            "program": "${workspaceFolder}/build/demo/Debug/game_gomoku.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/demo/Debug",
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All"
+            "preLaunchTask": "Build All",
         }
     ]
 }

@@ -31,7 +31,7 @@ foreach (DEMO_SRC ${DEMO_SRCS})
   get_filename_component(DEMO_NAME ${DEMO_SRC} NAME_WE)
   ege_add_executable_demo(${DEMO_NAME} ${DEMO_SRC})
 endforeach ()
-target_sources(egerotateimage PRIVATE egelogo.rc)
+target_sources(graph_rotateimage PRIVATE egelogo.rc)
 
 message(CHECK_START "Finding GMP Library")
 find_library(gmp gmp)

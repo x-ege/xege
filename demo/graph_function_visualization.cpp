@@ -1,5 +1,5 @@
 /**
- * @file ege_function_visualization.cpp
+ * @file graph_function_visualization.cpp
  * @author wysaid (this@xege.org)
  * @brief 基于蒙特卡洛法的 2D 函数图像绘制
  * @version 0.1
