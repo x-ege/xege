@@ -30,6 +30,8 @@
 namespace ege
 {
 
+using std::swap;
+
 void IMAGE::reset()
 {
     m_initflag  = IMAGE_INIT_FLAG;

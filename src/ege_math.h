@@ -39,24 +39,24 @@ using std::round;
 #endif
 
 // 快除 255，有效范围：[0, 65790)
-template <typename T> EGE_FORCEINLINE constexpr T DIVIDE_255_FAST(T x)
+template <typename T> EGE_FORCEINLINE EGE_CONSTEXPR T DIVIDE_255_FAST(T x)
 {
     return ((x + ((x + 257) >> 8)) >> 8);
 }
 
-template <typename T> constexpr T clamp(T value, T min, T max)
+template <typename T> EGE_CONSTEXPR T clamp(T value, T min, T max)
 {
     return (value < min) ? min : ((value > max) ? max : value);
 }
 
 // Overflow 判断
-inline constexpr bool sumIsOverflow(int a, int b)
+inline EGE_CONSTEXPR bool sumIsOverflow(int a, int b)
 {
     return (a > 0) && (b > 0) && (b > (INT_MAX - a));
 }
 
 // Underflow 判断
-inline constexpr bool sumIsUnderflow(int a, int b)
+inline EGE_CONSTEXPR bool sumIsUnderflow(int a, int b)
 {
     return (a < 0) && (b < 0) && (b < (INT_MIN - a));
 }

@@ -29,6 +29,8 @@
 namespace ege
 {
 
+using std::swap;
+
 bool is_run()
 {
     struct _graph_setting* pg = &graph_setting;
