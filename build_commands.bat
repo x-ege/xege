@@ -1,9 +1,10 @@
 :: 以下命令用于将各版本库文件方便地输出到 build\lib 中
 
-
 :: MinGW
-cmake -G "MinGW Makefiles" -S . -B build\MinGW -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="%CD%\build\lib\MinGW" -DCMAKE_BUILD_TYPE=Release
+cmake -G "MinGW Makefiles" -S . -B build\MinGW -DCMAKE_BUILD_TYPE=Release
 cmake --build build\MinGW -j
+mkdir build\lib\MinGW
+copy /Y build\MinGW\libgraphics.a build\lib\MinGW\libgraphics.a
 
 :: Visual Studio 2008 32bit
 :: FIXME: UNTESTED
