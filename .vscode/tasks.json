@@ -165,10 +165,10 @@
                 "tasks.sh",
                 "--debug",
                 "--target",
-                "maintest",
+                "test_main",
                 "--build",
                 "--run",
-                "maintest.exe"
+                "test_main.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -185,10 +185,10 @@
                 "tasks.sh",
                 "--debug",
                 "--target",
-                "egegomoku",
+                "game_gomoku",
                 "--build",
                 "--run",
-                "egegomoku.exe"
+                "game_gomoku.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -205,10 +205,10 @@
                 "tasks.sh",
                 "--debug",
                 "--target",
-                "ege_sort_visualization",
+                "graph_sort_visualization",
                 "--build",
                 "--run",
-                "ege_sort_visualization.exe"
+                "graph_sort_visualization.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -225,10 +225,10 @@
                 "tasks.sh",
                 "--debug",
                 "--target",
-                "ege_function_visualization",
+                "graph_function_visualization",
                 "--build",
                 "--run",
-                "ege_function_visualization.exe"
+                "graph_function_visualization.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

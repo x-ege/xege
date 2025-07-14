@@ -1,5 +1,5 @@
 /**
- * @file egegomoku.cpp
+ * @file game_gomoku.cpp
  * @author wysaid (this@xege.org)
  * @brief 传统规则下的五子棋游戏, 附带简单的AI对手
  * @version 0.1
