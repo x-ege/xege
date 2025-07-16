@@ -257,7 +257,7 @@ void CameraCapture::setFrameRate(double fps)
 #endif
 }
 
-bool CameraCapture::open(const char* deviceName)
+bool CameraCapture::open(const char* deviceName, bool autoStart)
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 
@@ -276,11 +276,11 @@ bool CameraCapture::open(const char* deviceName)
     m_provider->set(PropertyName::PixelFormatOutput, ccap::PixelFormat::BGRA32);
     m_provider->set(PropertyName::FrameOrientation, ccap::FrameOrientation::TopToBottom);
 
-    return m_provider->open(deviceName);
+    return m_provider->open(deviceName, autoStart);
 #endif
 }
 
-bool CameraCapture::open(int index)
+bool CameraCapture::open(int index, bool autoStart)
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 
@@ -298,7 +298,7 @@ bool CameraCapture::open(int index)
     if (index >= deviceNames.size()) {
         index = static_cast<int>(deviceNames.size()) - 1;
     }
-    return open(deviceNames[index].c_str());
+    return open(deviceNames[index].c_str(), autoStart);
 #endif
 }
 

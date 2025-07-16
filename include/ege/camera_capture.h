@@ -82,7 +82,7 @@ public:
     virtual int getHeight() const = 0;
 
 protected:
-    CameraCapture*           m_camera;
+    CameraCapture*    m_camera;
     ccap::VideoFrame* m_frame;
 };
 
@@ -149,30 +149,54 @@ public:
      *
      * @param deviceName 相机设备名称, 可以通过 `findDeviceNames` 获取.
      *      传入空字符串表示自动选择.
+     * @param autoStart open 成功后是否自动调用 start() 方法开始捕获图像.
      * @note 注意, 自动选择的设备不一定是 `findDeviceNames` 中的第一个设备.
      * @return 如果设备打开成功, 返回 true, 否则返回 false.
      */
-    bool open(const char* deviceName);
+    bool open(const char* deviceName, bool autoStart = true);
 
     /**
-     * @brief 传入 -1 表示自动选择, 传入自然数表示 `findDeviceNames` 找到的对应设备.
+     * @brief 通过相机设备索引打开相机设备
+     *
+     * @param deviceIndex 相机设备索引, 可以通过 `findDeviceNames` 获取.
+     *      传入 -1 表示自动选择, 传入自然数表示 `findDeviceNames` 找到的对应设备.
+     *      如果传入的数超过了设备数量, 会选择最后一个设备.
+     * @param autoStart open 成功后是否自动调用 start() 方法开始捕获图像.
+     * @note 注意, 自动选择的设备不一定是 `findDeviceNames` 中的第一个设备.
      * 如果传入的数超过了设备数量, 会选择最后一个设备.
      * @return 如果设备打开成功, 返回 true, 否则返回 false.
      */
-    bool open(int deviceIndex);
+    bool open(int deviceIndex, bool autoStart = true);
 
+    /**
+     * @brief 关闭相机设备, 释放资源.
+     * @note 调用这个方法后, CameraCapture 对象不应该再被使用.
+     *       这个方法会在 CameraCapture 对象被销毁时自动调用.
+     */
     void close();
 
+    /**
+     * @brief 检查相机设备是否已经打开.
+     * @return 如果相机设备已经打开, 返回 true, 否则返回 false.
+     */
     bool isOpened() const;
 
     /**
      * @brief 启动相机, 开始捕获图像.
-     *
-     * @return true
-     * @return false
+     * @return 如果启动成功, 返回 true, 否则返回 false.
      */
     bool start();
+
+    /**
+     * @brief 检查相机是否正在捕获图像.
+     * @return 如果相机正在捕获图像, 返回 true, 否则返回 false.
+     */
     bool isStarted() const;
+
+    /**
+     * @brief 停止相机捕获图像.
+     * @note 可以在调用 start() 后调用此方法来停止捕获图像.
+     */
     void stop();
 
     /**
@@ -196,7 +220,6 @@ private:
 };
 
 /// @brief  logLevel 0: 不输出日志, 1: 输出警告日志, 2: 输出常规信息, 3: 输出调试信息, 超过 3 等同于 3.
-
 void enableCameraModuleLog(unsigned int logLevel);
 
 } // namespace ege
