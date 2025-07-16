@@ -1,8 +1,14 @@
+#if __cplusplus >= 201103L
+
 #include "ege/camera_capture.h"
 
-#if EGE_ENABLE_CAMERA_CAPTURE
-#include <ccap.h>
+#include <cstdio>
 #include <cassert>
+#include <vector>
+
+#if EGE_ENABLE_CAMERA_CAPTURE
+
+#include <ccap.h>
 #include <cstdint>
 #include <memory>
 #include <algorithm>
@@ -220,7 +226,7 @@ CameraCapture::DeviceList::~DeviceList()
 
 CameraCapture::DeviceList CameraCapture::findDeviceNames()
 {
-    CHECK_AND_PRINT_ERROR_MSG(std::vector<std::string>());
+    CHECK_AND_PRINT_ERROR_MSG({});
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_provider) {
         if (auto names = m_provider->findDeviceNames(); !names.empty()) {
@@ -410,3 +416,6 @@ void enableCameraModuleLog(unsigned int logLevel)
 }
 
 } // namespace ege
+
+
+#endif
