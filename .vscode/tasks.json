@@ -237,11 +237,21 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "Run Camera Demo",
+            "label": "Run Demo - Camera Wave",
             "type": "shell",
-            "command": "./ege_camera_wave.exe",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "camera_wave",
+                "--build",
+                "--run",
+                "camera_wave.exe"
+            ],
             "options": {
-                "cwd": "${workspaceFolder}/build/demo/Debug"
+                "cwd": "${workspaceFolder}"
             },
             "group": "build",
             "problemMatcher": "$msCompile",

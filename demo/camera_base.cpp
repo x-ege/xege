@@ -1,5 +1,5 @@
 /**
- * @file ege_camera.cpp
+ * @file camera_base.cpp
  * @author wysaid (this@xege.org)
  * @brief 一个使用 ege 内置的相机模块打开相机的例子
  * @date 2025-05-18
@@ -16,13 +16,38 @@
 #include <vector>
 #include <string>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_WINDOW_TITLE       "EGE 相机演示"
+#define TEXT_ERROR_NO_CAMERA    "此演示需要相机设备才能运行。\n请连接相机设备后重试。"
+#define TEXT_ERROR_EXIT_HINT    "按任意键退出。"
+#define TEXT_ERROR_NO_DEVICE    "未找到相机设备！"
+#define TEXT_ERROR_OPEN_FAILED  "打开相机设备失败！"
+#define TEXT_ERROR_GRAB_FAILED  "获取帧数据失败！"
+#define TEXT_CAMERA_CLOSED      "相机设备已关闭！"
+#define TEXT_CAMERA_DEVICE      "相机设备: %s"
+#define TEXT_CPP11_REQUIRED     "需要 C++11 或更高版本。"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_WINDOW_TITLE       "EGE Camera Demo"
+#define TEXT_ERROR_NO_CAMERA    "This demo requires a camera device to run.\nPlease connect a camera and try again."
+#define TEXT_ERROR_EXIT_HINT    "Press any key to exit."
+#define TEXT_ERROR_NO_DEVICE    "No camera device found!!"
+#define TEXT_ERROR_OPEN_FAILED  "Failed to open camera device!!"
+#define TEXT_ERROR_GRAB_FAILED  "Failed to grab frame!!"
+#define TEXT_CAMERA_CLOSED      "Camera device closed!!"
+#define TEXT_CAMERA_DEVICE      "Camera device: %s"
+#define TEXT_CPP11_REQUIRED     "C++11 or higher is required."
+#endif
+
 // 判断一下 C++ 版本, 低于 C++11 的编译器不支持
 #if __cplusplus < 201103L
 #pragma message("C++11 or higher is required.")
 
 int main()
 {
-    fputs("C++11 or higher is required.", stderr);
+    fputs(TEXT_CPP11_REQUIRED, stderr);
     return 0;
 }
 #else
@@ -30,11 +55,23 @@ int main()
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
 
+void showErrorWindow()
+{
+    settarget(nullptr);
+    setbkcolor(BLACK);
+    cleardevice();
+    setcolor(RED);
+    outtextrect(0, 0, getwidth(), getheight(), TEXT_ERROR_NO_CAMERA);
+    outtextxy(10, 30, TEXT_ERROR_EXIT_HINT);
+    getch();
+    closegraph();
+}
+
 int main()
 {
     /// 在相机的高吞吐场景下, 不设置 RENDERMANUAL 会出现闪屏.
     initgraph(1280, 720, INIT_RENDERMANUAL);
-    setcaption("EGE Camera Demo");
+    setcaption(TEXT_WINDOW_TITLE);
 
     ege::Camera camera;
 
@@ -45,12 +82,14 @@ int main()
         std::vector<std::string> cameraNames = camera.findDeviceNames();
 
         if (cameraNames.empty()) {
-            fputs("No camera device found!!", stderr);
+            fputs(TEXT_ERROR_NO_DEVICE, stderr);
+            showErrorWindow();
             return -1;
         }
 
         for (const auto& name : cameraNames) {
-            printf("Camera device: %s\n", name.c_str());
+            printf(TEXT_CAMERA_DEVICE, name.c_str());
+            printf("\n");
         }
     }
 
@@ -61,7 +100,7 @@ int main()
 
     // 这里打开第一个相机设备
     if (!camera.open(0)) {
-        fputs("Failed to open camera device!!", stderr);
+        fputs(TEXT_ERROR_OPEN_FAILED, stderr);
         return -1;
     }
 
@@ -85,12 +124,12 @@ int main()
                 newFrame->release(); // 释放帧数据
             }
         } else {
-            fputs("Failed to grab frame!!", stderr);
+            fputs(TEXT_ERROR_GRAB_FAILED, stderr);
             break;
         }
     }
 
-    fputs("Camera device closed!!", stderr);
+    fputs(TEXT_CAMERA_CLOSED, stderr);
     camera.close();
 
     return 0;
