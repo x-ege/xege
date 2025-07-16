@@ -15,8 +15,6 @@
 
 #endif
 
-#include <vector>
-#include <string>
 #include "ege.h"
 
 /// 强制相机输出格式为 BGRA, 适配 ege::Image.
@@ -84,7 +82,7 @@ public:
     virtual int getHeight() const = 0;
 
 protected:
-    Camera*      m_camera;
+    Camera*           m_camera;
     ccap::VideoFrame* m_frame;
 };
 
@@ -94,7 +92,43 @@ public:
     Camera();
     ~Camera();
 
-    std::vector<std::string> findDeviceNames();
+    struct DeviceInfo
+    {
+        char name[128] = {}; ///< 设备名称
+        // ... 后面也许会添加更多信息, 比如相机支持的分辨率, 像素格式等.
+    };
+
+    struct DeviceList
+    {
+        DeviceList() = default;
+
+        DeviceList(DeviceInfo* _info, int _count) : info(_info), count(_count) {}
+
+        DeviceList(const DeviceList&) = delete;
+
+        DeviceList(DeviceList&& d)
+        {
+            (DeviceInfo*&)(info) = (DeviceInfo*)d.info;
+            (int&)count          = (int)d.count;
+            (DeviceInfo*&)d.info = nullptr; // 避免析构时重复释放
+            (int&)d.count        = (int)0;
+        }
+
+        DeviceList& operator=(const DeviceList&) = delete;
+        ~DeviceList();
+        const DeviceInfo* info  = nullptr; ///< 设备信息(数组)
+        const int         count = 0;       ///< 设备数量
+    };
+
+    /**
+     * @brief 查找所有可用的相机设备名称.
+     * @note 这个函数会扫描所有可用的相机设备, 并返回一个 DeviceList 对象.
+     *       这个 DeviceList 对象包含了所有设备的名称和数量.
+     *       这里原本应该返回 `std::vector<std::string>`,
+     *       但是 EGE 内部在 MSVC 下使用 `/MT` 编译来避免引入动态库依赖, 所以避免此类接口, 下同.
+     * @return DeviceList 对象, 包含所有可用的相机设备名称. 注意, 目前只有名称.
+     */
+    DeviceList findDeviceNames();
 
     /**
      * @brief 设置期望的相机分辨率. 相机不一定支持这个物理分辨率, 只是会尽可能找一个跟这个分辨率接近的.
@@ -118,7 +152,7 @@ public:
      * @note 注意, 自动选择的设备不一定是 `findDeviceNames` 中的第一个设备.
      * @return 如果设备打开成功, 返回 true, 否则返回 false.
      */
-    bool open(const std::string& deviceName);
+    bool open(const char* deviceName);
 
     /**
      * @brief 传入 -1 表示自动选择, 传入自然数表示 `findDeviceNames` 找到的对应设备.

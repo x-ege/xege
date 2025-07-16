@@ -178,7 +178,7 @@ public:
 
 private:
     std::shared_ptr<ccap::VideoFrame> m_realFrame;
-    std::shared_ptr<ege::IMAGE>  m_realImage;
+    std::shared_ptr<ege::IMAGE>       m_realImage;
 };
 
 #endif
@@ -210,12 +210,27 @@ Camera::~Camera()
 #endif
 }
 
-std::vector<std::string> Camera::findDeviceNames()
+Camera::DeviceList::~DeviceList()
+{
+    if (info != nullptr) {
+        delete[] (DeviceInfo*)info;
+        info = nullptr;
+    }
+}
+
+Camera::DeviceList Camera::findDeviceNames()
 {
     CHECK_AND_PRINT_ERROR_MSG(std::vector<std::string>());
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_provider) {
-        return m_provider->findDeviceNames();
+        if (auto names = m_provider->findDeviceNames(); !names.empty()) {
+            DeviceInfo* deviceInfos = new DeviceInfo[names.size()];
+            for (size_t i = 0; i < names.size(); ++i) {
+                strncpy(deviceInfos[i].name, names[i].c_str(), sizeof(deviceInfos[i].name) - 1);
+                deviceInfos[i].name[sizeof(deviceInfos[i].name) - 1] = '\0'; // 确保字符串以 null 结尾
+            }
+            return DeviceList(deviceInfos, static_cast<int>(names.size()));
+        }
     }
     return {};
 #endif
@@ -242,7 +257,7 @@ void Camera::setFrameRate(double fps)
 #endif
 }
 
-bool Camera::open(const std::string& deviceName)
+bool Camera::open(const char* deviceName)
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 
@@ -267,11 +282,15 @@ bool Camera::open(const std::string& deviceName)
 
 bool Camera::open(int index)
 {
+    CHECK_AND_PRINT_ERROR_MSG(false);
+
+#if EGE_ENABLE_CAMERA_CAPTURE
+
     if (index < 0) {
         return open("");
     }
 
-    auto deviceNames = findDeviceNames();
+    auto deviceNames = m_provider ? m_provider->findDeviceNames() : std::vector<std::string>();
     if (deviceNames.empty()) {
         return false;
     }
@@ -279,7 +298,8 @@ bool Camera::open(int index)
     if (index >= deviceNames.size()) {
         index = static_cast<int>(deviceNames.size()) - 1;
     }
-    return open(deviceNames[index]);
+    return open(deviceNames[index].c_str());
+#endif
 }
 
 void Camera::close()

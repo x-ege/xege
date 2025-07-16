@@ -19,26 +19,26 @@
 // 文本本地化宏定义
 #ifdef _MSC_VER
 // MSVC编译器使用中文文案
-#define TEXT_WINDOW_TITLE       "EGE 相机演示"
-#define TEXT_ERROR_NO_CAMERA    "此演示需要相机设备才能运行。\n请连接相机设备后重试。"
-#define TEXT_ERROR_EXIT_HINT    "按任意键退出。"
-#define TEXT_ERROR_NO_DEVICE    "未找到相机设备！"
-#define TEXT_ERROR_OPEN_FAILED  "打开相机设备失败！"
-#define TEXT_ERROR_GRAB_FAILED  "获取帧数据失败！"
-#define TEXT_CAMERA_CLOSED      "相机设备已关闭！"
-#define TEXT_CAMERA_DEVICE      "相机设备: %s"
-#define TEXT_CPP11_REQUIRED     "需要 C++11 或更高版本。"
+#define TEXT_WINDOW_TITLE      "EGE 相机演示"
+#define TEXT_ERROR_NO_CAMERA   "此演示需要相机设备才能运行。\n请连接相机设备后重试。"
+#define TEXT_ERROR_EXIT_HINT   "按任意键退出。"
+#define TEXT_ERROR_NO_DEVICE   "未找到相机设备！"
+#define TEXT_ERROR_OPEN_FAILED "打开相机设备失败！"
+#define TEXT_ERROR_GRAB_FAILED "获取帧数据失败！"
+#define TEXT_CAMERA_CLOSED     "相机设备已关闭！"
+#define TEXT_CAMERA_DEVICE     "相机设备: %s"
+#define TEXT_CPP11_REQUIRED    "需要 C++11 或更高版本。"
 #else
 // 非MSVC编译器使用英文文案
-#define TEXT_WINDOW_TITLE       "EGE Camera Demo"
-#define TEXT_ERROR_NO_CAMERA    "This demo requires a camera device to run.\nPlease connect a camera and try again."
-#define TEXT_ERROR_EXIT_HINT    "Press any key to exit."
-#define TEXT_ERROR_NO_DEVICE    "No camera device found!!"
-#define TEXT_ERROR_OPEN_FAILED  "Failed to open camera device!!"
-#define TEXT_ERROR_GRAB_FAILED  "Failed to grab frame!!"
-#define TEXT_CAMERA_CLOSED      "Camera device closed!!"
-#define TEXT_CAMERA_DEVICE      "Camera device: %s"
-#define TEXT_CPP11_REQUIRED     "C++11 or higher is required."
+#define TEXT_WINDOW_TITLE      "EGE Camera Demo"
+#define TEXT_ERROR_NO_CAMERA   "This demo requires a camera device to run.\nPlease connect a camera and try again."
+#define TEXT_ERROR_EXIT_HINT   "Press any key to exit."
+#define TEXT_ERROR_NO_DEVICE   "No camera device found!!"
+#define TEXT_ERROR_OPEN_FAILED "Failed to open camera device!!"
+#define TEXT_ERROR_GRAB_FAILED "Failed to grab frame!!"
+#define TEXT_CAMERA_CLOSED     "Camera device closed!!"
+#define TEXT_CAMERA_DEVICE     "Camera device: %s"
+#define TEXT_CPP11_REQUIRED    "C++11 or higher is required."
 #endif
 
 // 判断一下 C++ 版本, 低于 C++11 的编译器不支持
@@ -79,16 +79,16 @@ int main()
     ege::enableCameraModuleLog(2);
 
     { /// 打印一下所有相机设备的名称
-        std::vector<std::string> cameraNames = camera.findDeviceNames();
+        auto devices = camera.findDeviceNames();
 
-        if (cameraNames.empty()) {
+        if (devices.count == 0) {
             fputs(TEXT_ERROR_NO_DEVICE, stderr);
             showErrorWindow();
             return -1;
         }
 
-        for (const auto& name : cameraNames) {
-            printf(TEXT_CAMERA_DEVICE, name.c_str());
+        for (int i = 0; i < devices.count; ++i) {
+            printf(TEXT_CAMERA_DEVICE, devices.info[i].name);
             printf("\n");
         }
     }
