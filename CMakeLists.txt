@@ -305,6 +305,14 @@ if(MSVC)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 
+    if (DEFINED EGE_CRT_COMPAT_DEVCPP)
+        message(STATUS "Using Dev-C++ compatibility mode.")
+        target_compile_definitions(xege PRIVATE
+            _GLIBCXX_USE_CXX11_ABI=0
+            EGE_CRT_COMPAT_DEVCPP=1
+        )
+    endif()
+
     if(CMAKE_HOST_UNIX)
         target_compile_definitions(xege PRIVATE _FORTIFY_SOURCE=0)
     endif()
