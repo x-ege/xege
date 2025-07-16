@@ -1,4 +1,4 @@
-#include "ege/camera.h"
+#include "ege/camera_capture.h"
 
 #if EGE_ENABLE_CAMERA_CAPTURE
 #include <ccap.h>
@@ -57,7 +57,7 @@ CameraFrame::~CameraFrame()
 class CameraFrameImp : public CameraFrame, public std::enable_shared_from_this<CameraFrameImp>
 {
 public:
-    CameraFrameImp(Camera* cam) { m_camera = cam; }
+    CameraFrameImp(CameraCapture* cam) { m_camera = cam; }
 
     ~CameraFrameImp() = default;
 
@@ -185,7 +185,7 @@ private:
 
 /////////////////
 
-Camera::Camera()
+CameraCapture::CameraCapture()
 {
     CHECK_AND_PRINT_ERROR_MSG();
 
@@ -195,12 +195,12 @@ Camera::Camera()
 #endif
 }
 
-Camera::~Camera()
+CameraCapture::~CameraCapture()
 {
     CHECK_AND_PRINT_ERROR_MSG();
 
 #if EGE_ENABLE_CAMERA_CAPTURE
-    Camera::close();
+    CameraCapture::close();
     if (m_provider != nullptr) {
         delete m_provider;
     }
@@ -210,7 +210,7 @@ Camera::~Camera()
 #endif
 }
 
-Camera::DeviceList::~DeviceList()
+CameraCapture::DeviceList::~DeviceList()
 {
     if (info != nullptr) {
         delete[] (DeviceInfo*)info;
@@ -218,7 +218,7 @@ Camera::DeviceList::~DeviceList()
     }
 }
 
-Camera::DeviceList Camera::findDeviceNames()
+CameraCapture::DeviceList CameraCapture::findDeviceNames()
 {
     CHECK_AND_PRINT_ERROR_MSG(std::vector<std::string>());
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -236,7 +236,7 @@ Camera::DeviceList Camera::findDeviceNames()
 #endif
 }
 
-void Camera::setFrameSize(int width, int height)
+void CameraCapture::setFrameSize(int width, int height)
 {
     CHECK_AND_PRINT_ERROR_MSG();
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -247,7 +247,7 @@ void Camera::setFrameSize(int width, int height)
 #endif
 }
 
-void Camera::setFrameRate(double fps)
+void CameraCapture::setFrameRate(double fps)
 {
     CHECK_AND_PRINT_ERROR_MSG();
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -257,7 +257,7 @@ void Camera::setFrameRate(double fps)
 #endif
 }
 
-bool Camera::open(const char* deviceName)
+bool CameraCapture::open(const char* deviceName)
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 
@@ -280,7 +280,7 @@ bool Camera::open(const char* deviceName)
 #endif
 }
 
-bool Camera::open(int index)
+bool CameraCapture::open(int index)
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 
@@ -302,7 +302,7 @@ bool Camera::open(int index)
 #endif
 }
 
-void Camera::close()
+void CameraCapture::close()
 {
     CHECK_AND_PRINT_ERROR_MSG();
 
@@ -317,7 +317,7 @@ void Camera::close()
 #endif
 }
 
-bool Camera::isOpened() const
+bool CameraCapture::isOpened() const
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -325,7 +325,7 @@ bool Camera::isOpened() const
 #endif
 }
 
-bool Camera::start()
+bool CameraCapture::start()
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -333,7 +333,7 @@ bool Camera::start()
 #endif
 }
 
-bool Camera::isStarted() const
+bool CameraCapture::isStarted() const
 {
     CHECK_AND_PRINT_ERROR_MSG(false);
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -341,7 +341,7 @@ bool Camera::isStarted() const
 #endif
 }
 
-void Camera::stop()
+void CameraCapture::stop()
 {
     CHECK_AND_PRINT_ERROR_MSG();
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -351,7 +351,7 @@ void Camera::stop()
 #endif
 }
 
-CameraFrame* Camera::grabFrame(unsigned int timeoutInMs)
+CameraFrame* CameraCapture::grabFrame(unsigned int timeoutInMs)
 {
     CHECK_AND_PRINT_ERROR_MSG(NULL);
 #if EGE_ENABLE_CAMERA_CAPTURE
@@ -381,7 +381,7 @@ CameraFrame* Camera::grabFrame(unsigned int timeoutInMs)
 #endif
 }
 
-FrameContainer* Camera::getFrameContainer() const
+FrameContainer* CameraCapture::getFrameContainer() const
 {
     return m_frameContainer;
 }

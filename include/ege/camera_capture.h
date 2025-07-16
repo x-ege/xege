@@ -31,7 +31,7 @@ struct VideoFrame;
 
 namespace ege
 {
-class Camera;
+class CameraCapture;
 struct FrameContainer;
 
 /// 一个帧数据的容器, 做一些数据回收相关的工作, 防止反复分配内存.
@@ -82,15 +82,15 @@ public:
     virtual int getHeight() const = 0;
 
 protected:
-    Camera*           m_camera;
+    CameraCapture*           m_camera;
     ccap::VideoFrame* m_frame;
 };
 
-class Camera
+class CameraCapture
 {
 public:
-    Camera();
-    ~Camera();
+    CameraCapture();
+    ~CameraCapture();
 
     struct DeviceInfo
     {

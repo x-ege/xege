@@ -11,7 +11,7 @@
 #include <cstdio>
 
 #include <graphics.h>
-#include <ege/camera.h>
+#include <ege/camera_capture.h>
 
 #include <vector>
 #include <string>
@@ -73,7 +73,7 @@ int main()
     initgraph(1280, 720, INIT_RENDERMANUAL);
     setcaption(TEXT_WINDOW_TITLE);
 
-    ege::Camera camera;
+    ege::CameraCapture camera;
 
     // 0: 不输出日志, 1: 输出警告日志, 2: 输出常规信息, 3: 输出调试信息, 超过 3 等同于 3.
     ege::enableCameraModuleLog(2);

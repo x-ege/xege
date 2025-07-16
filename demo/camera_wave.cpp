@@ -15,7 +15,7 @@
 #include <cstdio>
 
 #include <graphics.h>
-#include <ege/camera.h>
+#include <ege/camera_capture.h>
 
 #include <vector>
 #include <string>
@@ -197,8 +197,8 @@ public:
 
                 m_vec[m_index][h].dx += dx * m_intensity;
                 m_vec[m_index][h].dy += dy * m_intensity;
-                m_vec[index][h].dx   = m_vec[m_index][h].dx;
-                m_vec[index][h].dy   = m_vec[m_index][h].dy;
+                m_vec[index][h].dx    = m_vec[m_index][h].dx;
+                m_vec[index][h].dy    = m_vec[m_index][h].dy;
 
                 m_vec[index][h].x = m_vec[m_index][h].x + m_vec[index][h].dx;
                 m_vec[index][h].y = m_vec[m_index][h].y + m_vec[index][h].dy;
@@ -503,7 +503,7 @@ int main()
     setcaption(TEXT_WINDOW_TITLE);
 
     Net         net;
-    ege::Camera camera;
+    ege::CameraCapture camera;
     PIMAGE      target = newimage(getwidth(), getheight());
     char        msgBuffer[1024];
 
