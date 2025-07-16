@@ -681,6 +681,35 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
             return TRUE;
         }
         break;
+    case WM_SIZE:
+        if (pg == pg_w && (g_initoption & INIT_RESIZABLE) && wParam != SIZE_MINIMIZED) {
+            int width = LOWORD(lParam);
+            int height = HIWORD(lParam);
+            if (width > 0 && height > 0 && (width != getwidth() || height != getheight())) {
+                // 更新内部图像缓冲区大小，但不触发Windows窗口大小变化
+                setmode(TRUECOLORSIZE, width | (height << 16));
+                for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
+                    if (pg->img_page[i] != NULL) {
+                        resize(pg->img_page[i], width, height);
+                    }
+                }
+                // 更新基础窗口大小参数
+                pg->base_w = width;
+                pg->base_h = height;
+                // 重置视口到新的窗口大小
+                window_setviewport(0, 0, width, height);
+            }
+        }
+        break;
+    case WM_GETMINMAXINFO:
+        if (pg == pg_w && (g_initoption & INIT_RESIZABLE)) {
+            MINMAXINFO* pMinMaxInfo = (MINMAXINFO*)lParam;
+            // 设置最小窗口大小为 200x150
+            pMinMaxInfo->ptMinTrackSize.x = 200;
+            pMinMaxInfo->ptMinTrackSize.y = 150;
+            return 0;
+        }
+        break;
     case WM_IME_CONTROL:
         on_ime_control(pg, hWnd, message, wParam, lParam);
         break;
@@ -1074,7 +1103,11 @@ void setinitmode(initmode_flag mode, int x, int y)
         }
         g_windowexstyle = WS_EX_LEFT | WS_EX_LTRREADING;
     } else {
-        g_windowstyle   = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
+        if (mode & INIT_RESIZABLE) {
+            g_windowstyle = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_VISIBLE;
+        } else {
+            g_windowstyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
+        }
         g_windowexstyle = WS_EX_LEFT | WS_EX_LTRREADING;
     }
     if (mode & INIT_TOPMOST) {

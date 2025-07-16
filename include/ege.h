@@ -216,6 +216,7 @@ enum initmode_flag
     INIT_NOFORCEEXIT     = 0x10,  ///< Don't force exit program when closing window, only set internal flag, is_run() can get the flag
     INIT_UNICODE         = 0x20,  ///< Unicode character messages (equivalent to setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< Hidden window
+    INIT_RESIZABLE       = 0x80,  ///< Resizable window
     INIT_WITHLOGO        = 0x100, ///< Show EGE Logo animation on startup (not shown by default in Debug version)
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< Animation mode
 };
