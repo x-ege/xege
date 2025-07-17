@@ -223,7 +223,7 @@ endif()
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
     target_compile_options(xege PRIVATE
-        /utf-8
+        /source-charset:utf-8
         /MP
         /MT
         /Zl
@@ -245,6 +245,12 @@ if(MSVC)
     endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
+
+    if(CMAKE_HOST_UNIX)
+        target_link_options(xege INTERFACE PRIVATE -D_FORTIFY_SOURCE=0 -mwindows -static)
+    else()
+        target_link_options(xege INTERFACE -mwindows)
+    endif()
 else()
     if(CMAKE_CXX_COMPILER_ID)
         message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")

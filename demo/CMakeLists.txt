@@ -2,13 +2,6 @@ cmake_minimum_required(VERSION 3.13)
 
 project(ege-demos)
 
-if(EGE_ENABLE_CPP17)
-  # 将编译标准设置为 C++17, 仓库对外标准保持不变, 未引入额外的依赖.
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-
 file(
   GLOB DEMO_SRCS
   LIST_DIRECTORIES false
@@ -29,15 +22,6 @@ macro(ege_add_executable name source)
       /D__STDC_LIMIT_MACROS
       /MP
     )
-  endif()
-
-  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    if(CMAKE_HOST_UNIX)
-      target_link_options(${name}
-        PRIVATE -D_FORTIFY_SOURCE=0 -mwindows -static)
-    else()
-      target_link_options(${name} PRIVATE -mwindows)
-    endif()
   endif()
 endmacro()
 
