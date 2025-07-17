@@ -235,6 +235,29 @@
             },
             "group": "build",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Demo - Camera Wave",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "camera_wave",
+                "--build",
+                "--run",
+                "camera_wave.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$msCompile",
+            "dependsOn": [
+                "Build Demos"
+            ]
         }
     ]
 }

@@ -6,12 +6,14 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "defines": [
-                "_FORTIFY_SOURCE=0"
+                "_FORTIFY_SOURCE=0",
+                "EGE_ENABLE_CAMERA_CAPTURE=1"
             ],
             "includePath": [
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/include/ege",
-                "${workspaceFolder}/3rdparty/libpng"
+                "${workspaceFolder}/3rdparty/libpng",
+                "${workspaceFolder}/3rdparty/ccap/include"
             ],
             "configurationProvider": "ms-vscode.cmake-tools",
             "compilerArgs": [

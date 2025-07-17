@@ -5,12 +5,12 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     set(EGE_IS_ROOT_PROJECT ON)
 endif()
 
-# Clear Cmake cache
-if(DEFINED EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
-    unset(EGE_CLEAR_OPTIONS_CACHE CACHE)
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.13)
 endif()
 
-option(EGE_CLEAR_OPTIONS_CACHE "Clear caches before setting options" ON)
+# Clear CMake cache
+option(EGE_CLEAR_OPTIONS_CACHE "Clear caches before setting options" OFF)
 
 if(EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
     unset(EGE_BUILD_DEMO CACHE)
@@ -49,6 +49,9 @@ if(CMAKE_HOST_UNIX)
     set(PKG_CONFIG_EXECUTABLE ${TOOLCHAIN_PREFIX}-pkg-config)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=0")
+
+    # EGE 交叉编译的时候, 实际上是 WINE 环境, 这里标记一下, 一些代码需要额外处理.
+    set(EGE_NON_WINDOWS ON CACHE BOOL "EGE is not compiled on Windows" FORCE)
 endif()
 
 project(XEGE)
@@ -77,8 +80,10 @@ unset(CMAKE_REQUIRED_FLAGS)
 
 if(COMPILER_SUPPORTS_CXX17)
     option(EGE_ENABLE_CPP17 "Enable C++ 17" ON)
+    option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ON)
 else()
     set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++ 17" FORCE)
+    set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
 endif()
 
 message(STATUS "EGE enable C++ 17: ${EGE_ENABLE_CPP17}")
@@ -90,7 +95,8 @@ if(EGE_ENABLE_CPP17)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-add_library(xege STATIC)
+file(GLOB EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+add_library(xege STATIC ${EGE_CPP_SRC})
 
 target_include_directories(xege PUBLIC include)
 
@@ -185,24 +191,66 @@ else()
 endif()
 
 if(EGE_ENABLE_CPP17)
+    # 启用 C++17 特性
+    target_compile_features(xege PRIVATE cxx_std_17)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
+endif()
+
+if(EGE_ENABLE_CAMERA_CAPTURE)
+    # 启用相机相关功能
+    # 不用 submodule, 直接引入源码, 对齐 ege 的编译条件
+    target_include_directories(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/include)
+    file(GLOB CCAP_SOURCE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/*.cpp)
+    target_sources(xege PRIVATE ${CCAP_SOURCE})
+    target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
+    target_link_libraries(xege PRIVATE strmiids)
+else()
+    message(WARNING "Camera capture is disabled because your compiler does not support C++17.")
 endif()
 
 # 设置库文件名
 set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
+if(EGE_NON_WINDOWS)
+    target_compile_definitions(xege PUBLIC EGE_NON_WINDOWS=1)
+
+    if(EGE_ENABLE_CAMERA_CAPTURE)
+        # 交叉编译的情况下, 无法使用 AVX2, 先禁用
+        target_compile_definitions(xege PUBLIC ENABLE_AVX2_IMP=0)
+    endif()
+endif()
+
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
     target_compile_options(xege PRIVATE
-        /utf-8
+        /source-charset:utf-8
         /MP
         /MT
-        /Zl)
+        /Zl
+    )
+
     target_compile_options(xege PUBLIC
+        /DNOMINMAX=1
+        /D_CRT_SECURE_NO_WARNINGS=1
         /Zc:__cplusplus
     )
+
+    if(MSVC_VERSION EQUAL 1200)
+        # VC6 默认编译单线程版本（/ML(d)），无法找到 `_imp__xxx` 的定义
+        # 而 CMake 生成的则使用 /MD，在此覆盖设置。
+        # 编译时会有 D4025 警告，不用在意。
+        target_compile_options(xege
+            PRIVATE $<$<CONFIG:Debug>:/MLd> $<$<CONFIG:Release>:/ML>
+        )
+    endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
+
+    if(CMAKE_HOST_UNIX)
+        target_link_options(xege INTERFACE PRIVATE -D_FORTIFY_SOURCE=0 -mwindows -static)
+    else()
+        target_link_options(xege INTERFACE -mwindows)
+    endif()
 else()
     if(CMAKE_CXX_COMPILER_ID)
         message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
@@ -211,40 +259,32 @@ else()
     endif()
 endif()
 
-# 增加链接 ege 的可执行目标
-macro(ege_add_executable name source)
-    add_executable(${name} ${source})
-    target_link_libraries(${name} xege)
-
-    if(MSVC)
-        target_compile_options(${name} PRIVATE
-            /source-charset:utf-8
-            /D_USE_MATH_DEFINES
-            /D__STDC_LIMIT_MACROS
-            /MP
-        )
-    endif()
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        if(CMAKE_HOST_UNIX)
-            target_link_options(${name}
-                PRIVATE -D_FORTIFY_SOURCE=0 -mwindows -static)
-        else()
-            target_link_options(${name} PRIVATE -mwindows)
-        endif()
-    endif()
-endmacro()
-
-add_subdirectory(src)
+target_link_libraries(xege INTERFACE
+    gdiplus
+    gdi32
+)
 
 if(EGE_BUILD_DEMO)
-    add_subdirectory(demo)
-endif()
-
-if(EGE_BUILD_TEMP AND EXISTS "${PROJECT_SOURCE_DIR}/temp/CMakeLists.txt")
-    add_subdirectory(temp)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/demo/CMakeLists.txt")
+        message(STATUS "Building EGE demo")
+        add_subdirectory(demo)
+    else()
+        message(WARNING "EGE demo not found, skipping")
+    endif()
 endif()
 
 if(EGE_BUILD_TEST)
-    add_subdirectory(tests)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+        add_subdirectory(tests)
+    else()
+        message(WARNING "EGE test not found, skipping")
+    endif()
+endif()
+
+if(EGE_BUILD_TEMP)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/temp/CMakeLists.txt")
+        add_subdirectory(temp)
+    else()
+        message(WARNING "EGE temp not found, skipping")
+    endif()
 endif()
