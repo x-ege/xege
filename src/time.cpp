@@ -72,6 +72,10 @@ void delay_ms(long ms)
 
     const double targetTime = get_highfeq_time_ls(pg) * 1000.0 + ms;
 
+    if (pg->init_option & INIT_EVENTLOOP) {
+        messageHandle();
+    }
+
     /* 处理 UI 事件，更新 UI 控件数据 */
     guiupdate(pg, root);
 
@@ -129,6 +133,10 @@ void delay_fps(double fps)
         dw = pg->delay_fps_dwLast;
     }
 
+    if (pg->init_option & INIT_EVENTLOOP) {
+        messageHandle();
+    }
+
     root->draw(NULL);
 
     for (; nloop >= 0; --nloop) {
@@ -180,6 +188,11 @@ void delay_jfps(double fps)
 
     if (pg->delay_fps_dwLast + delay_time + avg_max_time > dw) {
         dw = pg->delay_fps_dwLast;
+    }
+
+
+    if (pg->init_option & INIT_EVENTLOOP) {
+        messageHandle();
     }
 
     root->draw(NULL);
