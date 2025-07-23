@@ -79,7 +79,7 @@ msvcBuild "vs2017" "v141" "$BUILD_MSVC2017"
 msvcBuild "vs2015" "v140" "$BUILD_MSVC2015"
 
 if [[ "$BUILD_MSVC2010" == "true" ]]; then
-    echo "Building vs2010 x64 (handling UTF-8 encoding for old MSVC)..."
+    echo "Building vs2010 (x64 and x86, handling UTF-8 encoding for old MSVC)..."
     ./utils/handle_utf8_encoding.sh v100 add_bom
     msvcBuild "vs2010" "v100" "$BUILD_MSVC2010"
     ./utils/handle_utf8_encoding.sh v100 remove_bom

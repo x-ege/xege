@@ -10,7 +10,7 @@ set -x
 
 function findMingw64Path() {
     # 找几个默认的路径
-    if [[ -d "/c//Program Files/RedPanda-Cpp/mingw64" ]]; then
+    if [[ -d "/c/Program Files/RedPanda-Cpp/mingw64" ]]; then
         echo "/c/Program Files/RedPanda-Cpp/mingw64"
     elif [[ -d "/c/Program Files (x86)/Dev-Cpp/MinGW64" ]]; then
         echo "/c/Program Files (x86)/Dev-Cpp/MinGW64"
@@ -98,7 +98,7 @@ if ./tasks.sh --release \
     echo "Generated files:"
     find build -name "*.a" -o -name "*.exe" -o -name "*.dll" | head -10
     mkdir -p Release/lib/mingw64
-    cp build/*.a Release/lib/mingw64/.
+    find build -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
 else
     echo "CMake configuration failed!"
     exit 1
