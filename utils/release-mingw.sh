@@ -91,14 +91,14 @@ if ./tasks.sh --release \
     -DCMAKE_CXX_COMPILER="$CXX" \
     -DCMAKE_RC_COMPILER="$RC" \
     -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)"; then
+
     echo "Build successful!"
-    echo "Build artifacts are in: $BUILD_DIR"
 
     # 显示生成的文件
     echo "Generated files:"
-    find build -name "*.a" -o -name "*.exe" -o -name "*.dll" | head -10
     mkdir -p Release/lib/mingw64
     find build -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
+    ls -l Release/lib/mingw64
 else
     echo "CMake configuration failed!"
     exit 1
