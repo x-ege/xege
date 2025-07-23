@@ -222,12 +222,22 @@ endif()
 
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
-    target_compile_options(xege PRIVATE
-        /source-charset:utf-8
-        /MP
-        /MT
-        /Zl
-    )
+
+    # MSVC 2015 (v140) 及以上版本支持 /utf-8 选项
+    # MSVC 2010 (v100) 到 MSVC 2013 (v120) 不支持 /utf-8
+    if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上
+        target_compile_options(xege PRIVATE
+            /utf-8
+            /MP
+            /MT
+            /Zl)
+    else() # MSVC 2010-2013
+        # 对于老版本 MSVC，脚本单独处理源码文件(加BOM)
+        target_compile_options(xege PRIVATE
+            /MP
+            /MT
+            /Zl)
+    endif()
 
     target_compile_options(xege PUBLIC
         /DNOMINMAX=1
@@ -263,6 +273,39 @@ target_link_libraries(xege INTERFACE
     gdiplus
     gdi32
 )
+
+# 增加链接 ege 的可执行目标
+macro(ege_add_executable name source)
+    add_executable(${name} ${source})
+    target_link_libraries(${name} xege)
+
+    if(MSVC)
+        # MSVC 2015 (v140) 及以上版本支持 /source-charset:utf-8 选项
+        if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上
+            target_compile_options(${name} PRIVATE
+                /source-charset:utf-8
+                /D_USE_MATH_DEFINES
+                /D__STDC_LIMIT_MACROS
+                /MP
+            )
+        else() # MSVC 2010-2013
+            target_compile_options(${name} PRIVATE
+                /D_USE_MATH_DEFINES
+                /D__STDC_LIMIT_MACROS
+                /MP
+            )
+        endif()
+    endif()
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        if(CMAKE_HOST_UNIX)
+            target_link_options(${name}
+                PRIVATE -D_FORTIFY_SOURCE=0 -mwindows -static)
+        else()
+            target_link_options(${name} PRIVATE -mwindows)
+        endif()
+    endif()
+endmacro()
 
 if(EGE_BUILD_DEMO)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/demo/CMakeLists.txt")

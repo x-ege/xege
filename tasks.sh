@@ -28,7 +28,7 @@ fi
 cd "$(dirname "$0")"
 PROJECT_DIR=$(pwd)
 
-CMAKE_VS_DIR="$PROJECT_DIR/build"
+CMAKE_BUILD_DIR="$PROJECT_DIR/build"
 
 set -e
 
@@ -42,11 +42,16 @@ if [[ -z "$WIN_CMAKE_BUILD_DEFINE" ]]; then
 fi
 
 if [[ -z "$CMAKE_CONFIG_DEFINE" ]]; then
-    export CMAKE_CONFIG_DEFINE="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+    declare -a CMAKE_CONFIG_DEFINE=(
+        "-DCMAKE_POLICY_VERSION_MINIMUM=3.13"
+    )
 fi
 
 function MY_CMAKE_BUILD_DEFINE() {
-    echo "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ${CMAKE_CONFIG_DEFINE} -DCMAKE_POLICY_VERSION_MINIMUM=3.13"
+    # 使用带引号的数组展开来保持参数中的空格
+    local args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+    args+=("${CMAKE_CONFIG_DEFINE[@]}")
+    printf '%q ' "${args[@]}"
 }
 
 if ! command -v grealpath && command -v realpath; then
@@ -56,17 +61,23 @@ if ! command -v grealpath && command -v realpath; then
 fi
 
 function loadCMakeProject() {
+    # 构建 cmake 参数数组
+    local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+    cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
+    cmake_args+=("..")
 
-    echo "Run cmake command: cmake "$(MY_CMAKE_BUILD_DEFINE)" .."
+    set -x
 
-    if mkdir -p "$CMAKE_VS_DIR" &&
-        cd "$CMAKE_VS_DIR" &&
-        cmake $(MY_CMAKE_BUILD_DEFINE) ..; then
-        echo "CMake Project Loaded: MY_CMAKE_BUILD_DEFINE=$(MY_CMAKE_BUILD_DEFINE)"
+    if mkdir -p "$CMAKE_BUILD_DIR" &&
+        cd "$CMAKE_BUILD_DIR" &&
+        cmake "${cmake_args[@]}"; then
+        echo "CMake Project Loaded: CMAKE_CONFIG_DEFINE=(${CMAKE_CONFIG_DEFINE[*]})"
     else
         echo "CMake Project Load Failed!"
         exit 1
     fi
+
+    set +x
 }
 
 function cmakeCleanAll() {
@@ -80,7 +91,7 @@ function reloadCMakeProject() {
 }
 
 function cmakeBuildAll() {
-    pushd "$CMAKE_VS_DIR"
+    pushd "$CMAKE_BUILD_DIR"
 
     if [[ -n "$BUILD_TARGET" ]]; then
         TARGET_RULE="--target $BUILD_TARGET"
@@ -88,21 +99,23 @@ function cmakeBuildAll() {
         TARGET_RULE=""
     fi
 
-    if isWindows; then
+    set -x
 
+    if isWindows && [[ -f XEGE.sln ]]; then
+        # MSVC 专属逻辑
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
         fi
 
-        set -x
         # ref: https://stackoverflow.com/questions/11865085/out-of-a-git-console-how-do-i-execute-a-batch-file-and-then-return-to-git-conso
-        cmd "/C cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE -- /m"
-        set +x
+        cmd "/C cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE --parallel $(nproc)"
+
     else
-        set -x
+
         cmake --build . $TARGET_RULE $(test -n "$CMAKE_BUILD_TYPE" && echo --config $CMAKE_BUILD_TYPE) -- -j $(nproc)
-        set +x
     fi
+
+    set +x
     popd
 }
 
@@ -110,32 +123,33 @@ if [[ $# -eq 0 ]]; then
     echo "usage: [--load] [--reload] [--clean] [--build]"
 fi
 
-while [[ $# > 0 ]]; do
+# 定义操作标志
+DO_LOAD=false
+DO_RELOAD=false
+DO_CLEAN=false
+DO_BUILD=false
+RUN_EXECUTABLE=""
+
+# 第一遍：解析所有参数并设置配置
+while [[ $# -gt 0 ]]; do
 
     PARSE_KEY="$1"
 
     case "$PARSE_KEY" in
     --load)
-        echo "loadCMakeProject"
-        loadCMakeProject
+        export DO_LOAD=true
         shift # past argument
         ;;
     --reload)
-        echo "reloadCMakeProject"
-        reloadCMakeProject
+        export DO_RELOAD=true
         shift # past argument
         ;;
     --clean)
-        echo "clean"
-        cmakeCleanAll
+        export DO_CLEAN=true
         shift # past argument
         ;;
     --build)
-        echo "build"
-        if [[ ! -f "$CMAKE_VS_DIR/CMakeCache.txt" ]]; then
-            loadCMakeProject
-        fi
-        cmakeBuildAll
+        export DO_BUILD=true
         shift # past argument
         ;;
     --debug)
@@ -152,37 +166,40 @@ while [[ $# > 0 ]]; do
         echo "set build target to $2"
         export BUILD_TARGET="$2"
         if [[ $BUILD_TARGET == "demos" ]]; then
-            export CMAKE_CONFIG_DEFINE="$CMAKE_CONFIG_DEFINE -DEGE_BUILD_DEMO=ON"
+            CMAKE_CONFIG_DEFINE+=("-DEGE_BUILD_DEMO=ON")
         fi
         shift
         shift
         ;;
     --toolset)
         echo "set toolset to $2"
-        export CMAKE_CONFIG_DEFINE="$CMAKE_CONFIG_DEFINE -T $2"
+        CMAKE_CONFIG_DEFINE+=("-T" "$2")
         shift
         shift
         ;;
     --arch)
         echo "set arch to $2"
-        export CMAKE_CONFIG_DEFINE="$CMAKE_CONFIG_DEFINE -A $2"
+        CMAKE_CONFIG_DEFINE+=("-A" "$2")
         shift
         shift
         ;;
-    --run)
-        if isWindows; then
-            echo "run $CMAKE_VS_DIR/demo/$CMAKE_BUILD_TYPE/$2"
-            "$CMAKE_VS_DIR/demo/$CMAKE_BUILD_TYPE/$2"
-        else
-            echo run "$CMAKE_VS_DIR/demo/$2"
-            if command -v wine64 &>/dev/null; then
-                wine64 "$CMAKE_VS_DIR/demo/$2"
-            elif command -v wine &>/dev/null; then
-                wine "$CMAKE_VS_DIR/demo/$2"
-            else
-                echo "Command 'wine64' not found, please install wine first."
-            fi
+    -G | --generator)
+        echo "set generator to $2"
+        CMAKE_CONFIG_DEFINE+=("-G" "$2")
+        shift
+        shift
+        ;;
+    --)
+        shift
+        echo "-- 后面的参数全都透传给 CMake"
+        if [[ $# -gt 0 ]]; then
+            CMAKE_CONFIG_DEFINE+=("$@")
+            shift $#
         fi
+        break
+        ;;
+    --run)
+        RUN_EXECUTABLE="$2"
         shift
         shift
         ;;
@@ -192,3 +209,44 @@ while [[ $# > 0 ]]; do
         ;;
     esac
 done
+
+# 第二遍：按正确顺序执行操作
+
+if [[ "$DO_CLEAN" == true ]]; then
+    echo "DO_CLEAN is true, start cleaning..."
+    cmakeCleanAll
+fi
+
+if [[ "$DO_RELOAD" == true ]]; then
+    echo "DO_RELOAD is true, start reloading CMake project..."
+    reloadCMakeProject
+fi
+
+if [[ "$DO_LOAD" == true ]]; then
+    echo "DO_LOAD is true, start loading CMake project..."
+    loadCMakeProject
+fi
+
+if [[ "$DO_BUILD" == true ]]; then
+    echo "DO_BUILD is true, start building..."
+    if [[ ! -f "$CMAKE_BUILD_DIR/CMakeCache.txt" ]]; then
+        loadCMakeProject
+    fi
+    cmakeBuildAll
+fi
+
+if [[ -n "$RUN_EXECUTABLE" ]]; then
+    if isWindows; then
+        echo "run $CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
+        "$CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
+    else
+        echo run "$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
+        if command -v wine64 &>/dev/null; then
+            wine64 "$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
+        elif command -v wine &>/dev/null; then
+            wine "$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
+        else
+            echo "Command 'wine64' not found, please install wine first."
+        fi
+    fi
+fi
