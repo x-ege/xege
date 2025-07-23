@@ -197,6 +197,28 @@ if(EGE_ENABLE_CPP17)
 endif()
 
 if(EGE_ENABLE_CAMERA_CAPTURE)
+    include(CheckCXXCompilerFlag)
+
+    # 检查是否支持AVX2
+    if(MSVC)
+        check_cxx_compiler_flag("/arch:AVX2" CCAP_SUPPORTS_AVX2)
+    else()
+        check_cxx_compiler_flag("-mavx2" CCAP_SUPPORTS_AVX2)
+    endif()
+
+    if(CCAP_SUPPORTS_AVX2)
+        set(CCAP_CONVERT_AVX2_SRC ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/ccap_convert_avx2.cpp)
+
+        if(MSVC)
+            set_source_files_properties(${CCAP_CONVERT_AVX2_SRC} PROPERTIES COMPILE_OPTIONS "/arch:AVX2")
+        else()
+            # GCC/Clang/MinGW need these options to enable AVX2
+            set_source_files_properties(${CCAP_CONVERT_AVX2_SRC} PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
+        endif()
+    else()
+        target_compile_definitions(xege PRIVATE ENABLE_AVX2_IMP=0)
+    endif()
+
     # 启用相机相关功能
     # 不用 submodule, 直接引入源码, 对齐 ege 的编译条件
     target_include_directories(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/include)
@@ -219,6 +241,14 @@ if(EGE_NON_WINDOWS)
         target_compile_definitions(xege PUBLIC ENABLE_AVX2_IMP=0)
     endif()
 endif()
+
+target_compile_definitions(xege PUBLIC
+    $<$<NOT:$<CONFIG:Debug>>:NDEBUG=1>
+    $<$<CONFIG:Debug>:DEBUG=1>
+    $<$<CONFIG:Release>:NDEBUG=1>
+    $<$<CONFIG:RelWithDebInfo>:NDEBUG=1>
+    $<$<CONFIG:MinSizeRel>:NDEBUG=1>
+)
 
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
