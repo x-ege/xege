@@ -131,7 +131,7 @@ DO_BUILD=false
 RUN_EXECUTABLE=""
 
 # 第一遍：解析所有参数并设置配置
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
 
     PARSE_KEY="$1"
 
@@ -173,19 +173,19 @@ while [[ $# > 0 ]]; do
         ;;
     --toolset)
         echo "set toolset to $2"
-        CMAKE_CONFIG_DEFINE+=(-T $2)
+        CMAKE_CONFIG_DEFINE+=("-T" "$2")
         shift
         shift
         ;;
     --arch)
         echo "set arch to $2"
-        CMAKE_CONFIG_DEFINE+=(-A $2)
+        CMAKE_CONFIG_DEFINE+=("-A" "$2")
         shift
         shift
         ;;
     -G | --generator)
         echo "set generator to $2"
-        CMAKE_CONFIG_DEFINE+=(-G "$2")
+        CMAKE_CONFIG_DEFINE+=("-G" "$2")
         shift
         shift
         ;;

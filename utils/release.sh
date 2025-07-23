@@ -31,4 +31,6 @@ else
     }
 fi
 
-echo "All tasks completed successfully."
+if [[ $? -eq 0 ]]; then
+    echo "All tasks completed successfully."
+fi
