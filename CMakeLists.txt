@@ -193,11 +193,23 @@ set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
-    target_compile_options(xege PRIVATE
-        /utf-8
-        /MP
-        /MT
-        /Zl)
+    
+    # MSVC 2015 (v140) 及以上版本支持 /utf-8 选项
+    # MSVC 2010 (v100) 到 MSVC 2013 (v120) 不支持 /utf-8
+    if(MSVC_VERSION GREATER_EQUAL 1900)  # MSVC 2015 及以上
+        target_compile_options(xege PRIVATE
+            /utf-8
+            /MP
+            /MT
+            /Zl)
+    else()  # MSVC 2010-2013
+        # 对于老版本 MSVC，脚本单独处理源码文件(加BOM)
+        target_compile_options(xege PRIVATE
+            /MP
+            /MT
+            /Zl)
+    endif()
+    
     target_compile_options(xege PUBLIC
         /Zc:__cplusplus
     )
@@ -217,12 +229,21 @@ macro(ege_add_executable name source)
     target_link_libraries(${name} xege)
 
     if(MSVC)
-        target_compile_options(${name} PRIVATE
-            /source-charset:utf-8
-            /D_USE_MATH_DEFINES
-            /D__STDC_LIMIT_MACROS
-            /MP
-        )
+        # MSVC 2015 (v140) 及以上版本支持 /source-charset:utf-8 选项
+        if(MSVC_VERSION GREATER_EQUAL 1900)  # MSVC 2015 及以上
+            target_compile_options(${name} PRIVATE
+                /source-charset:utf-8
+                /D_USE_MATH_DEFINES
+                /D__STDC_LIMIT_MACROS
+                /MP
+            )
+        else()  # MSVC 2010-2013
+            target_compile_options(${name} PRIVATE
+                /D_USE_MATH_DEFINES
+                /D__STDC_LIMIT_MACROS
+                /MP
+            )
+        endif()
     endif()
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
