@@ -51,7 +51,6 @@ function MY_CMAKE_BUILD_DEFINE() {
     # 使用带引号的数组展开来保持参数中的空格
     local args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     args+=("${CMAKE_CONFIG_DEFINE[@]}")
-    args+=("-DCMAKE_POLICY_VERSION_MINIMUM=3.13")
     printf '%q ' "${args[@]}"
 }
 
@@ -65,7 +64,6 @@ function loadCMakeProject() {
     # 构建 cmake 参数数组
     local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
-    cmake_args+=("-DCMAKE_POLICY_VERSION_MINIMUM=3.13")
     cmake_args+=("..")
 
     set -x
