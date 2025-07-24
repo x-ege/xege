@@ -196,7 +196,8 @@ if(EGE_ENABLE_CPP17)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
 endif()
 
-if(EGE_ENABLE_CAMERA_CAPTURE)
+if(EGE_ENABLE_CAMERA_CAPTURE AND NOT EGE_NON_WINDOWS)
+    # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
     include(CheckCXXCompilerFlag)
 
     # 检查是否支持AVX2
