@@ -235,11 +235,6 @@ set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
 if(EGE_NON_WINDOWS)
     target_compile_definitions(xege PUBLIC EGE_NON_WINDOWS=1)
-
-    if(EGE_ENABLE_CAMERA_CAPTURE)
-        # 交叉编译的情况下, 无法使用 AVX2, 先禁用
-        target_compile_definitions(xege PUBLIC ENABLE_AVX2_IMP=0)
-    endif()
 endif()
 
 target_compile_definitions(xege PUBLIC
@@ -342,7 +337,7 @@ if(EGE_BUILD_DEMO)
         message(STATUS "Building EGE demo")
         add_subdirectory(demo)
     else()
-        message(WARNING "EGE demo not found, skipping")
+        message("EGE demo not found, skipping")
     endif()
 endif()
 
@@ -350,7 +345,7 @@ if(EGE_BUILD_TEST)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)
     else()
-        message(WARNING "EGE test not found, skipping")
+        message("EGE test not found, skipping")
     endif()
 endif()
 
@@ -358,6 +353,6 @@ if(EGE_BUILD_TEMP)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/temp/CMakeLists.txt")
         add_subdirectory(temp)
     else()
-        message(WARNING "EGE temp not found, skipping")
+        message("EGE temp not found, skipping")
     endif()
 endif()
