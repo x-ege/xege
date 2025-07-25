@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 cd "$(dirname "$0")"
 PROJECT_DIR=$(pwd)
 
@@ -8,7 +10,12 @@ function isWsl() {
 }
 
 function isWindows() {
-    [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || (isWsl && [[ "$PROJECT_DIR" =~ ^/mnt/ ]]) || [[ -n "$WINDIR" ]]
+    if isWsl; then
+        # 定义 BUILD_EGE_NON_WINDOWS 环境变量后, 在 WSL 中运行时, 认为是非 Windows 环境
+        [[ "$PROJECT_DIR" =~ ^/mnt/ ]] && [[ -z "$BUILD_EGE_NON_WINDOWS" ]]
+    else
+        [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]
+    fi
 }
 
 if isWsl && isWindows; then
@@ -29,8 +36,6 @@ if isWsl && isWindows; then
 fi
 
 CMAKE_BUILD_DIR="$PROJECT_DIR/build"
-
-set -e
 
 export BUILD_TARGET="" # 默认只构建 xege 静态库
 
@@ -68,15 +73,10 @@ function loadCMakeProject() {
 
     set -x
 
-    if mkdir -p "$CMAKE_BUILD_DIR" &&
+    mkdir -p "$CMAKE_BUILD_DIR" &&
         cd "$CMAKE_BUILD_DIR" &&
-        cmake "${cmake_args[@]}"; then
-        echo "CMake Project Loaded: CMAKE_CONFIG_DEFINE=(${CMAKE_CONFIG_DEFINE[*]})"
-    else
-        echo "CMake Project Load Failed!"
-        exit 1
-    fi
-
+        cmake "${cmake_args[@]}"
+    echo "CMake Project Loaded: CMAKE_CONFIG_DEFINE=(${CMAKE_CONFIG_DEFINE[*]})"
     set +x
 }
 
