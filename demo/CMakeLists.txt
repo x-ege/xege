@@ -73,23 +73,27 @@ endforeach()
 
 target_sources(graph_rotateimage PRIVATE egelogo.rc)
 
-message(CHECK_START "Finding GMP Library")
-find_library(gmp gmp)
+if(NOT CMAKE_HOST_UNIX)
+  # GMP demos are excluded on Unix hosts due to compatibility issues or specific requirements.
+  # If the exclusion is intended for specific Unix-like environments, refine the condition below.
+  message(CHECK_START "Finding GMP Library")
+  find_library(gmp gmp)
 
-if(gmp AND NOT CMAKE_HOST_UNIX)
-  message(CHECK_PASS "found")
-  file(
-    GLOB GMP_DEMO_SRCS
-    LIST_DIRECTORIES false
-    CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/gmp-demo/*.cpp"
-  )
+  if(gmp AND)
+    message(CHECK_PASS "found")
+    file(
+      GLOB GMP_DEMO_SRCS
+      LIST_DIRECTORIES false
+      CONFIGURE_DEPENDS
+      "${CMAKE_CURRENT_SOURCE_DIR}/gmp-demo/*.cpp"
+    )
 
-  foreach(GMP_DEMO_SRC ${GMP_DEMO_SRCS})
-    get_filename_component(DEMO_NAME ${GMP_DEMO_SRC} NAME_WE)
-    ege_add_executable_demo(${DEMO_NAME} ${GMP_DEMO_SRC})
-    target_link_libraries(${DEMO_NAME} gmp)
-  endforeach()
-else()
-  message(CHECK_PASS "not found")
+    foreach(GMP_DEMO_SRC ${GMP_DEMO_SRCS})
+      get_filename_component(DEMO_NAME ${GMP_DEMO_SRC} NAME_WE)
+      ege_add_executable_demo(${DEMO_NAME} ${GMP_DEMO_SRC})
+      target_link_libraries(${DEMO_NAME} gmp)
+    endforeach()
+  else()
+    message(CHECK_PASS "not found")
+  endif()
 endif()
