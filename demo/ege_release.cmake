@@ -33,9 +33,9 @@ if(MSVC)
     elseif(MSVC_VERSION GREATER_EQUAL 1900)
         # vs2015
         if(CMAKE_CL_64)
-            set(osLibDir "vs2015/amd64")
+            set(osLibDir "vs2015/x64")
         else()
-            set(osLibDir "vs2015")
+            set(osLibDir "vs2015/x86")
         endif()
 
         # 设置 MSVC 编译选项, 当版本为 vs2015 时, 使用 c++14 标准.
@@ -47,9 +47,9 @@ if(MSVC)
 
         # vs2010
         if(CMAKE_CL_64)
-            set(osLibDir "vs2010/amd64")
+            set(osLibDir "vs2010/x64")
         else()
-            set(osLibDir "vs2010")
+            set(osLibDir "vs2010/x86")
         endif()
 
     else()

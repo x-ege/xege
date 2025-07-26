@@ -11,6 +11,6 @@ else
 
     git clean -ffdx build-demo* || echo "git clean skipped, maybe no build directory exists."
 
-    ./tasks.sh --test-release-libs --debug $@
-    ./tasks.sh --test-release-libs --release $@
+    ./tasks.sh --test-release-libs --debug "$@"
+    ./tasks.sh --test-release-libs --release "$@"
 fi
