@@ -20,6 +20,7 @@
 #include <chrono>
 #include <iterator>
 #include <cstdint>
+#include <stdexcept>
 
 // 文本本地化宏定义
 #ifdef _MSC_VER
