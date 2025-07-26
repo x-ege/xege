@@ -322,7 +322,7 @@ protected:
     void logout(const char* msg)
     {
         if (_logger) {
-            _logger->setcaption(msg);
+            _logger->caption(msg);
         }
     }
 #endif

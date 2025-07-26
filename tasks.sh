@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
 
+set -e
+
+cd "$(dirname "$0")"
+PROJECT_DIR=$(pwd)
+
 function isWsl() {
     [[ -d "/mnt/c" ]] || command -v wslpath &>/dev/null
 }
 
 function isWindows() {
-    [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || isWsl || [[ -n "$WINDIR" ]]
+    if isWsl; then
+        # 定义 BUILD_EGE_NON_WINDOWS 环境变量后, 在 WSL 中运行时, 认为是非 Windows 环境
+        [[ "$PROJECT_DIR" =~ ^/mnt/ ]] && [[ -z "$BUILD_EGE_NON_WINDOWS" ]]
+    else
+        [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]
+    fi
 }
 
-if isWsl; then
-    # Switch to Git Bash when running in WSL
-    echo "You're using WSL, but WSL linux is not supported! Tring to run with Git Bash!" >&2
+if isWsl && isWindows; then
+    # Switch to Git Bash when running in WSL and in a Windows directory
+    echo "Detected WSL environment in Windows directory, switching to Git Bash..."
     GIT_BASH_PATH_WIN=$(/mnt/c/Windows/system32/cmd.exe /C "where bash.exe" | grep -i Git | head -n 1 | tr -d '\n\r')
     GIT_BASH_PATH_WSL=$(wslpath -u "$GIT_BASH_PATH_WIN")
     echo "== GIT_BASH_PATH_WIN=$GIT_BASH_PATH_WIN"
@@ -25,12 +35,7 @@ if isWsl; then
     fi
 fi
 
-cd "$(dirname "$0")"
-PROJECT_DIR=$(pwd)
-
 CMAKE_BUILD_DIR="$PROJECT_DIR/build"
-
-set -e
 
 export BUILD_TARGET="" # 默认只构建 xege 静态库
 
@@ -68,15 +73,10 @@ function loadCMakeProject() {
 
     set -x
 
-    if mkdir -p "$CMAKE_BUILD_DIR" &&
+    mkdir -p "$CMAKE_BUILD_DIR" &&
         cd "$CMAKE_BUILD_DIR" &&
-        cmake "${cmake_args[@]}"; then
-        echo "CMake Project Loaded: CMAKE_CONFIG_DEFINE=(${CMAKE_CONFIG_DEFINE[*]})"
-    else
-        echo "CMake Project Load Failed!"
-        exit 1
-    fi
-
+        cmake "${cmake_args[@]}"
+    echo "CMake Project Loaded: CMAKE_CONFIG_DEFINE=(${CMAKE_CONFIG_DEFINE[*]})"
     set +x
 }
 

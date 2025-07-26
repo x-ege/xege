@@ -24,3 +24,4 @@
 *.rc           text=auto
 *.bat          text=auto
 *.filters      text=auto
+*.sh           text eol=lf
