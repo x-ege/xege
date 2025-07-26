@@ -10,11 +10,10 @@ function isWsl() {
 }
 
 function isWindows() {
-    if isWsl; then
-        # 定义 BUILD_EGE_NON_WINDOWS 环境变量后, 在 WSL 中运行时, 认为是非 Windows 环境
-        [[ "$PROJECT_DIR" =~ ^/mnt/ ]] && [[ -z "$BUILD_EGE_NON_WINDOWS" ]]
-    else
+    if ! isWsl; then
         [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]
+    else
+        [[ "$PROJECT_DIR" =~ ^/mnt/ ]] && [[ -z "$BUILD_EGE_NON_WINDOWS" ]]
     fi
 }
 
@@ -86,7 +85,7 @@ function loadCMakeProject() {
 
 function cmakeCleanAll() {
     pushd $PROJECT_DIR
-    git clean -ffdx build* 2>/dev/null || echo "git clean skipped, maybe no build directory exists."
+    git clean -ffdx build
     popd
 }
 
@@ -105,7 +104,7 @@ function cmakeBuildAll() {
 
     set -x
 
-    if isWindows && [[ -f XEGE.sln ]]; then
+    if [[ -f XEGE.sln ]]; then
         # MSVC 专属逻辑
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
