@@ -79,7 +79,7 @@ if(NOT CMAKE_HOST_UNIX)
   message(CHECK_START "Finding GMP Library")
   find_library(gmp gmp)
 
-  if(gmp AND)
+  if(gmp)
     message(CHECK_PASS "found")
     file(
       GLOB GMP_DEMO_SRCS

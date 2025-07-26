@@ -269,7 +269,7 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
     # 添加预编译库选项
     CMAKE_CONFIG_DEFINE+=("-DEGE_BUILD_DEMO_WITH_PREBUILT_LIBS=ON")
     mkdir -p "$CMAKE_BUILD_DIR" && cd "$CMAKE_BUILD_DIR"
-    if [[ ! -f "$CMAKE_BUILD_DIR/CMakeCache.txt" ]]; then
+    if [[ ! -f "CMakeCache.txt" ]]; then
         export EGE_SOURCE_PATH="../demo"
         loadCMakeProject
     fi
