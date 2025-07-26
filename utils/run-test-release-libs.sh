@@ -3,4 +3,4 @@
 set -e
 cd "$(dirname "$0")"
 export TEST_RELEASE_LIBS=true
-./release.sh
+bash -e -x ./release.sh

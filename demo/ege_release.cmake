@@ -57,7 +57,7 @@ if(MSVC)
     endif()
 
     add_library(xege STATIC IMPORTED)
-    set_target_properties(xege PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../Release/${osLibDir}/graphics.lib)
+    set_target_properties(xege PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../Release/lib/${osLibDir}/graphics.lib)
 
     target_compile_options(xege INTERFACE
         /source-charset:utf-8
