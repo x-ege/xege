@@ -55,14 +55,14 @@ int showmouse(int bShow)
 int mousepos(int* x, int* y)
 {
     struct _graph_setting* pg = &graph_setting;
-    *x = pg->mouse_last_x;
-    *y = pg->mouse_last_y;
+    *x = pg->mouse_pos.x;
+    *y = pg->mouse_pos.y;
     return 0;
 }
 
 void setwritemode(int mode, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     SetROP2(img->m_hDC, mode);
     CONVERT_IMAGE_END;
 }
@@ -114,9 +114,9 @@ void putpixels(int numOfPoints, const int* points, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void putpixels_f(int numOfPoints, const int* points, PCIMAGE pimg)
+void putpixels_f(int numOfPoints, const int* points, PIMAGE pimg)
 {
-    PCIMAGE img = CONVERT_IMAGE(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     int x, y, c;
     int tw = img->m_width;
     int th = img->m_height;
@@ -129,9 +129,9 @@ void putpixels_f(int numOfPoints, const int* points, PCIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-color_t getpixel_f(int x, int y, PIMAGE pimg)
+color_t getpixel_f(int x, int y, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_F_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_F_CONST(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
         return img->m_pBuffer[y * img->m_width + x];
     }
@@ -518,7 +518,7 @@ color_t getlinecolor(PCIMAGE pimg)
         return img->m_linecolor;
     }
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+    return IMAGE::initial_line_color;
 }
 
 // 将描述线形的位模式转换为 style 数组
@@ -631,7 +631,7 @@ void setcolor(color_t color, PIMAGE pimg)
 
 void setlinecolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
         img->m_linecolor = color;
         update_pen(img);
@@ -641,7 +641,7 @@ void setlinecolor(color_t color, PIMAGE pimg)
 
 void setfillcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
     HBRUSH hbr = CreateSolidBrush(ARGBTOZBGR(color));
     if (hbr) {
@@ -662,7 +662,7 @@ color_t getfillcolor(PCIMAGE pimg)
         return img->m_fillcolor;
     }
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+    return IMAGE::initial_fill_color;
 }
 
 color_t getbkcolor(PCIMAGE pimg)
@@ -670,56 +670,61 @@ color_t getbkcolor(PCIMAGE pimg)
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img) {
-        return img->m_bk_color;
+        if (img->m_hDC) {
+            return img->m_bk_color;
+        }
+    } else {
+        _graph_setting* pg = &graph_setting;
+        if (!pg->has_init) {
+            return pg->window_initial_color;
+        }
     }
+
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+
+    return IMAGE::initial_bk_color;
 }
 
 color_t gettextcolor(PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
-    if (img) {
+    if (img && img->m_hDC) {
         return img->m_textcolor;
     }
     CONVERT_IMAGE_END;
-    return 0xFFFFFFFF;
+    return IMAGE::initial_text_color;
 }
 
 void setbkcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-
-    if (img && img->m_hDC) {
-        PDWORD p = img->m_pBuffer;
-        int size = img->m_width * img->m_height;
-        color_t col = img->m_bk_color;
-        img->m_bk_color = color;
-        SetBkColor(img->m_hDC, ARGBTOZBGR(color));
-        for (int n = 0; n < size; n++, p++) {
-            if (*p == col) {
-                *p = color;
-            }
-        }
-    }
-    CONVERT_IMAGE_END;
+    color_t oldBkColor = getbkcolor(pimg);
+    setbkcolor_f(color, pimg);
+    replacePixels(pimg, oldBkColor, color);
 }
 
 void setbkcolor_f(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img && img->m_hDC) {
-        img->m_bk_color = color;
-        SetBkColor(img->m_hDC, ARGBTOZBGR(color));
+    if (img) {
+        if (img->m_hDC) {
+            img->m_bk_color = color;
+            SetBkColor(img->m_hDC, ARGBTOZBGR(color));
+        }
+    } else {
+        _graph_setting* pg = &graph_setting;
+        if (!pg->has_init) {
+            pg->window_initial_color = color;
+        }
     }
+
     CONVERT_IMAGE_END;
 }
 
 void settextcolor(color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_textcolor = color;
@@ -740,7 +745,7 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 
 void setbkmode(int bkMode, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
         SetBkMode(img->m_hDC, bkMode);
     }
@@ -857,7 +862,7 @@ void sectorf(float x, float y, float startAngle, float endAngle, float xRadius, 
 
 void pie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
     fillpie(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldBrush);
@@ -866,7 +871,7 @@ void pie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, P
 
 void pief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
     fillpief(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldBrush);
@@ -911,7 +916,7 @@ void fillpief(float x, float y, float startAngle, float endAngle, float xRadius,
 
 void solidpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillpie(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -920,7 +925,7 @@ void solidpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadi
 
 void solidpief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillpief(x, y, startAngle, endAngle, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -947,7 +952,7 @@ void fillellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 
 void solidellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillellipse(x, y, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -956,7 +961,7 @@ void solidellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 
 void solidellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillellipsef(x, y, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -975,7 +980,7 @@ void fillcirclef(float x, float y, float radius, PIMAGE pimg)
 
 void solidcircle(int x, int y, int radius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillcircle(x, y, radius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -984,7 +989,7 @@ void solidcircle(int x, int y, int radius, PIMAGE pimg)
 
 void solidcirclef(float x, float y, float radius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillcirclef(x, y, radius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1026,7 +1031,7 @@ void fillroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE
 
 void solidroundrect(int left, int top, int right, int bottom, int radius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillroundrect(left, top, right, bottom, radius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1044,7 +1049,7 @@ void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yR
 
 void solidroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillroundrect(left, top, right, bottom, xRadius, yRadius, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1062,7 +1067,7 @@ void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
 
 void solidrect(int left, int top, int right, int bottom, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillrect(left, top, right, bottom, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1127,7 +1132,7 @@ void fillpoly(int numOfPoints, const int* points, PIMAGE pimg)
 
 void solidpoly(int numOfPoints, const int *points, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
     fillpoly(numOfPoints, points, pimg);
     SelectObject(img->m_hDC, oldPen);
@@ -1251,7 +1256,7 @@ void getlinestyle(int* linestyle, unsigned short* pattern, int* thickness, PCIMA
 
 void setlinestyle(int linestyle, unsigned short pattern, int thickness, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (!(img && img->m_hDC)) {
         CONVERT_IMAGE_END;
@@ -1270,7 +1275,7 @@ void setlinestyle(int linestyle, unsigned short pattern, int thickness, PIMAGE p
 
 void setlinewidth(float width, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_linestyle.thickness = (int)width;
@@ -1307,7 +1312,7 @@ Gdiplus::LineJoin convertToGdiplusLineJoin(line_join_type linejoin)
 
 void setlinecap(line_cap_type linecap, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_linestartcap = linecap;
@@ -1320,7 +1325,7 @@ void setlinecap(line_cap_type linecap, PIMAGE pimg)
 
 void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         img->m_linestartcap = startCap;
@@ -1331,9 +1336,9 @@ void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg)
+void getlinecap(line_cap_type* startCap, line_cap_type* endCap, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
         if (startCap != NULL) {
             *startCap = img->m_linestartcap;
@@ -1346,9 +1351,9 @@ void getlinecap(line_cap_type* startCap, line_cap_type* endCap, PIMAGE pimg)
     CONVERT_IMAGE_END
 }
 
-line_cap_type getlinecap(PIMAGE pimg)
+line_cap_type getlinecap(PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img && img->m_hDC) {
         return img->m_linestartcap;
@@ -1366,7 +1371,7 @@ void setlinejoin(line_join_type linejoin, PIMAGE pimg)
 
 void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img && img->m_hDC) {
         miterLimit = MAX(1.0f, miterLimit);
@@ -1377,9 +1382,9 @@ void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-void getlinejoin(line_join_type *linejoin, float *miterLimit, PIMAGE pimg)
+void getlinejoin(line_join_type *linejoin, float *miterLimit, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && img->m_hDC) {
         if (linejoin != NULL) {
             *linejoin = img->m_linejoin;
@@ -1392,9 +1397,9 @@ void getlinejoin(line_join_type *linejoin, float *miterLimit, PIMAGE pimg)
     CONVERT_IMAGE_END
 }
 
-line_join_type getlinejoin(PIMAGE pimg)
+line_join_type getlinejoin(PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img && img->m_hDC) {
         return img->m_linejoin;
@@ -1405,7 +1410,7 @@ line_join_type getlinejoin(PIMAGE pimg)
 
 void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     LOGBRUSH lbr = {0};
     img->m_fillcolor = color;
     lbr.lbColor = ARGBTOZBGR(color);
@@ -1473,8 +1478,10 @@ void setactivepage(int page)
     if (0 <= page && page < BITMAP_PAGE_SIZE) {
         pg->active_page = page;
 
+        /* 为未创建的绘图页分配图像 */
         if (pg->img_page[page] == NULL) {
-            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h);
+            color_t bkColor = (page == 0) ? pg->window_initial_color : BLACK;
+            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h, bkColor);
         }
 
         pg->imgtarget = pg->img_page[page];
@@ -1488,7 +1495,7 @@ void setvisualpage(int page)
     if (0 <= page && page < BITMAP_PAGE_SIZE) {
         pg->visual_page = page;
         if (pg->img_page[page] == NULL) {
-            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h);
+            pg->img_page[page] = new IMAGE(pg->dc_w, pg->dc_h, BLACK);
         }
         pg->update_mark_count = 0;
     }
@@ -1584,60 +1591,53 @@ void getviewport(int* left, int* top, int* right, int* bottom, int* clip, PCIMAG
         *bottom = img->m_vpt.bottom;
     }
     if (clip) {
-        *clip = img->m_vpt.clipflag;
+        *clip = img->m_enableclip;
     }
     CONVERT_IMAGE_END;
 }
 
 void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg)
 {
-    // struct _graph_setting * pg = &graph_setting;
-
     PIMAGE img = CONVERT_IMAGE(pimg);
 
+    Bound viewport(left, top, right, bottom, false);
+
+    if (!viewport.isNormalized()) {
+        return;
+    }
+
+    Point oldOrigin(img->m_vpt.left, img->m_vpt.top);
     SetViewportOrgEx(img->m_hDC, 0, 0, NULL);
 
-    img->m_vpt.left = left;
-    img->m_vpt.top = top;
-    img->m_vpt.right = right;
-    img->m_vpt.bottom = bottom;
-    img->m_vpt.clipflag = clip;
+    img->m_vpt = viewport;
+    img->m_enableclip = clip;
 
-    if (img->m_vpt.left < 0) {
-        img->m_vpt.left = 0;
-    }
-    if (img->m_vpt.top < 0) {
-        img->m_vpt.top = 0;
-    }
-    if (img->m_vpt.right > img->m_width) {
-        img->m_vpt.right = img->m_width;
-    }
-    if (img->m_vpt.bottom > img->m_height) {
-        img->m_vpt.bottom = img->m_height;
-    }
-
-    HRGN rgn = NULL;
-    if (img->m_vpt.clipflag) {
-        rgn = CreateRectRgn(img->m_vpt.left, img->m_vpt.top, img->m_vpt.right, img->m_vpt.bottom);
+    if (clip) {
+        HRGN rgn = CreateRectRgn(viewport.left, viewport.top, viewport.right, viewport.bottom);
+        SelectClipRgn(img->m_hDC, rgn);
+        DeleteObject(rgn);
     } else {
-        rgn = CreateRectRgn(0, 0, img->m_width, img->m_height);
+        SelectClipRgn(img->m_hDC, NULL); /* 清除裁剪区域，不做裁剪*/
     }
-    SelectClipRgn(img->m_hDC, rgn);
-    DeleteObject(rgn);
 
+    /* GDI+ 设置裁剪区域时受当前坐标系影响，确保在设备坐标系下进行 */
     Gdiplus::Graphics* graphics = img->getGraphics();
-    if (img->m_vpt.clipflag) {
-        const viewporttype& viewport = img->m_vpt;
-        Gdiplus::Rect clipRect(viewport.left, viewport.top, viewport.right - viewport.left, viewport.bottom - viewport.top);
-        graphics->SetClip(clipRect);
+    Gdiplus::Matrix matrix;
+    graphics->GetTransform(&matrix);
+    graphics->ResetTransform();
+
+    if (clip) {
+        graphics->SetClip(Gdiplus::Rect(viewport.x(), viewport.y(), viewport.width(), viewport.height()));
     } else {
         graphics->ResetClip();
     }
 
-    graphics->ResetTransform();
-    graphics->TranslateTransform(img->m_vpt.left, img->m_vpt.top);
+    /* 恢复 GDI+ 坐标系，同时将原点调整至视口区域左上角 */
+    graphics->SetTransform(&matrix);
+    graphics->TranslateTransform(left - oldOrigin.x, top - oldOrigin.y, Gdiplus::MatrixOrderAppend);
+    SetViewportOrgEx(img->m_hDC, left, top, NULL);
 
-    SetViewportOrgEx(img->m_hDC, img->m_vpt.left, img->m_vpt.top, NULL);
+    /* 改变视口区域后将当前位置重置为 (0, 0)*/
     MoveToEx(img->m_hDC, 0, 0, NULL);
 
     CONVERT_IMAGE_END;
@@ -2026,7 +2026,7 @@ void ege_roundrect(float x, float y, float w, float h,  float radius, PIMAGE pim
 }
 void ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg)
 {
-    ege_fillroundrect(x, y, w, h, radius,  radius,  radius,  radius);
+    ege_fillroundrect(x, y, w, h, radius,  radius,  radius,  radius, pimg);
 }
 void ege_roundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg)
 {
@@ -2108,7 +2108,7 @@ void ege_puttexture(PCIMAGE srcimg, float x, float y, float w, float h, PIMAGE p
 void ege_puttexture(PCIMAGE srcimg, ege_rect dest, PIMAGE pimg)
 {
     ege_rect src;
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         src.x = 0;
         src.y = 0;
@@ -2963,8 +2963,10 @@ int SetCloseHandler(LPCALLBACK_PROC func)
 static void draw_frame(PIMAGE img, int l, int t, int r, int b, color_t lc, color_t dc)
 {
     setcolor(lc, img);
-    line(l, b, l, t, img);
+    moveto(l, b, img);
+    lineto(l, t, img);
     lineto(r, t, img);
+
     setcolor(dc, img);
     lineto(r, b, img);
     lineto(l, b, img);
@@ -2984,7 +2986,6 @@ int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
 
 int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len)
 {
-    struct _graph_setting* pg = &graph_setting;
     IMAGE bg;
     IMAGE window;
     int w = 400, h = 300, x = (getwidth() - w) / 2, y = (getheight() - h) / 2;
@@ -3051,42 +3052,56 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     return ret;
 }
 
-float EGE_PRIVATE_GetFPS(int add) // 获取帧数
+static double static_frameRate = 0.0;         /* 帧率 */
+static int    static_frameCount = 0;          /* 帧数 */
+static double static_totalFrameTime = 0.0;    /* 累计时间 */
+static double static_lastFrameTime = 0.0;     /* 上一帧更新时间 */
+
+/**
+ * 更新帧率
+ * @param addFrameCount 是否增加帧数。{true: 帧数计数加一，同时更新帧率; false: 仅更新帧率}
+ * @details 帧率通过统计每个固定周期(0.5秒)内的帧数获得。在每个统计周期中，帧率仅在累计时长满一个周期后才会更新。
+ */
+void updateFrameRate(bool addFrameCount)
 {
-    static int fps = 0;
-    static int fps_inv = 0;
-    static double time = 0;
-    static float flret = 0;
-    static float fret = 0;
-    static float fret_inv = 0;
-
     struct _graph_setting* pg = &graph_setting;
-    double cur = get_highfeq_time_ls(pg);
+    double currentTime = get_highfeq_time_ls(pg);
 
-    if (add == 0x100) {
-        fps += 1;
-    } else if (add == -0x100) {
-        fps += 1;
-        fps_inv += 1;
+    if (static_lastFrameTime == 0.0) {
+        static_lastFrameTime = currentTime;
+        return;
     }
 
-    if (cur - time >= 0.5) {
-        flret = fret;
-        fret = (float)(fps / (cur - time));
-        fret_inv = (float)((fps - fps_inv) / (cur - time));
-        fps = 0;
-        fps_inv = 0;
-        time = cur;
+    double elapsedTime = static_totalFrameTime + (currentTime - static_lastFrameTime);
+
+    if (addFrameCount) {
+        static_frameCount++;
+        static_totalFrameTime = elapsedTime;
+        static_lastFrameTime  = currentTime;
     }
 
-    if (add > 0) {
-        return (fret + flret) / 2;
-    } else {
-        return fret_inv;
+    /* 以 0.5 秒为一个统计周期，统计时间不足时不更新帧率 */
+    if (elapsedTime >= 0.5) {
+        static_frameRate = static_frameCount / elapsedTime;
+
+        static_frameCount = 0;
+        static_totalFrameTime = 0.0;
+        static_lastFrameTime = currentTime;
     }
 }
 
-float getfps() { return EGE_PRIVATE_GetFPS(0); }
+void resetFrameRate()
+{
+    static_frameRate = 0.0;
+    static_frameCount = 0;
+    static_totalFrameTime = 0.0;
+    static_lastFrameTime = 0.0;
+}
+
+float getfps()
+{
+    return (float)static_frameRate;
+}
 
 double fclock()
 {

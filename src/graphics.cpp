@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <windowsx.h>
+
 #include "ege_head.h"
 #include "ege_common.h"
 #include "ege_extension.h"
@@ -81,7 +83,7 @@ namespace ege
 // 静态分配，零初始化
 struct _graph_setting graph_setting;
 
-static int   g_initoption    = INIT_DEFAULT;
+static initmode_flag   g_initoption    = INIT_DEFAULT;
 static DWORD g_windowstyle   = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
 static DWORD g_windowexstyle = WS_EX_LEFT | WS_EX_LTRREADING;
 static int   g_windowpos_x   = CW_USEDEFAULT;
@@ -98,6 +100,12 @@ unsigned long getlogodatasize();
 #endif
 
 DWORD WINAPI messageloopthread(LPVOID lpParameter);
+
+_graph_setting::_graph_setting()
+{
+    window_caption = EGE_TITLE_W;
+    window_initial_color = IMAGE::initial_bk_color;
+}
 
 /*private function*/
 static void ui_msg_process(EGEMSG& qmsg)
@@ -154,6 +162,48 @@ static int redraw_window(_graph_setting* pg, HDC dc)
 }
 */
 
+/**
+ * @brief 将后台帧缓冲中指定区域的内容复制到前台帧缓冲指定区域
+ * @param frontDC     前台帧缓冲设备句柄
+ * @param frontPoint  前台帧缓冲指定区域的左上角坐标(设备坐标)
+ * @param backDC      后台帧缓冲设备句柄
+ * @param rect        后台帧缓冲中要复制内容的区域(设备坐标)
+ * @return 错误码
+ * @warning 内部使用 BitBlt 进行复制，会受 GDI 坐标变换和视口原点影响，旋转和剪切变换会发生错误。
+ */
+int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect& rect)
+{
+    /* Note: BitBlt 参数指定的位置受 GDI 坐标变换和视口原点影响 */
+
+    /* 保存影响 BitBlt 的设置 */
+    POINT oldViewportOrigin, oldWindowOrigin;
+    SetViewportOrgEx(backDC, 0, 0, &oldViewportOrigin);
+    SetWindowOrgEx(backDC, 0, 0, &oldWindowOrigin);
+    int oldMapMode = SetMapMode(backDC, MM_TEXT);
+
+    XFORM xform;
+    int oldGraphicsMode = GetGraphicsMode(backDC);
+    if (oldGraphicsMode == GM_ADVANCED) {
+        GetWorldTransform(backDC, &xform);
+        ModifyWorldTransform(backDC, NULL, MWT_IDENTITY);
+        SetGraphicsMode(backDC, GM_COMPATIBLE);
+    }
+
+    bool copyResult = BitBlt(frontDC, frontPoint.x, frontPoint.y, rect.width, rect.height, backDC, rect.x, rect.y, SRCCOPY);
+
+    /* 恢复之前的设置 */
+    SetViewportOrgEx(backDC, oldViewportOrigin.x, oldViewportOrigin.y, NULL);
+    SetWindowOrgEx(backDC, oldWindowOrigin.x, oldWindowOrigin.y, NULL);
+    SetMapMode(backDC, oldMapMode);
+
+    if (oldGraphicsMode == GM_ADVANCED) {
+        SetGraphicsMode(backDC, oldGraphicsMode);
+        SetWorldTransform(backDC, &xform);
+    }
+
+    return copyResult ? grOk : grError;
+}
+
 int swapbuffers()
 {
     if (!isinitialized())
@@ -164,18 +214,20 @@ int swapbuffers()
     PIMAGE backFrameBuffer = pg->img_page[pg->visual_page];
     HDC backFrameBufferDC = backFrameBuffer->getdc();
 
-    int left = backFrameBuffer->m_vpt.left;
-    int top  = backFrameBuffer->m_vpt.top;
-
     HDC frontFrameBufferDC = GetDC(getHWnd());
-    BitBlt(frontFrameBufferDC, 0, 0, pg->base_w, pg->base_h, backFrameBufferDC, pg->base_x - left, pg->base_y - top, SRCCOPY);
+    Rect backRect(0, 0, pg->base_w, pg->base_h);
+    frameBufferCopy(frontFrameBufferDC, Point(0, 0), backFrameBufferDC, backRect);
     ReleaseDC(getHWnd(), frontFrameBufferDC);
 
     return grOk;
 }
 
-/*private function*/
-static int graphupdate(_graph_setting* pg)
+bool needToUpdate(_graph_setting* pg)
+{
+    return (pg != NULL) && (pg->update_mark_count < UPDATE_MAX_CALL);
+}
+
+int graphupdate(_graph_setting* pg)
 {
     if (pg->exit_window) {
         return grNoInitGraph;
@@ -183,11 +235,12 @@ static int graphupdate(_graph_setting* pg)
 
     if (IsWindowVisible(pg->hwnd)) {
         swapbuffers();
+        updateFrameRate();
+    } else {
+        updateFrameRate(false);
     }
 
     pg->update_mark_count = UPDATE_MAX_CALL;
-
-    EGE_PRIVATE_GetFPS(0x100);
 
     RECT rect, crect;
     HWND hwnd;
@@ -214,12 +267,11 @@ static int graphupdate(_graph_setting* pg)
     }
 
     return grOk;
-
 }
 
 int dealmessage(_graph_setting* pg, bool force_update)
 {
-    if (force_update || pg->update_mark_count <= 0) {
+    if (force_update || pg->update_mark_count < UPDATE_MAX_CALL) {
         graphupdate(pg);
     }
     return !pg->exit_window;
@@ -303,9 +355,9 @@ static void on_repaint(struct _graph_setting* pg, HWND hwnd, HDC dc)
         dc      = GetDC(hwnd);
         release = true;
     }
-    int left = pg->img_timer_update->m_vpt.left, top = pg->img_timer_update->m_vpt.top;
 
-    BitBlt(dc, 0, 0, pg->base_w, pg->base_h, pg->img_timer_update->m_hDC, pg->base_x - left, pg->base_y - top, SRCCOPY);
+    frameBufferCopy(dc, Point(0, 0), pg->img_timer_update->m_hDC, Rect(0, 0, pg->base_w, pg->base_h));
+
     if (release) {
         ReleaseDC(hwnd, dc);
     }
@@ -405,13 +457,33 @@ static void windowmanager(ege::_graph_setting* pg, bool create, struct msg_creat
 /*private function*/
 static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycode, LPARAM keyflag)
 {
+    /* https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keydown */
     unsigned msg = 0;
     if (message == WM_KEYDOWN && keycode < MAX_KEY_VCODE) {
         msg                      = 1;
-        pg->keystatemap[keycode] = 1;
+        pg->keystatemap[keycode] = true;
+
+        /* 按键按下计数，LPARAM 参数第 30 位为 0 代表消息发送前按键状态为 UP */
+        if ((keyflag & 0x40000000) == 0) {
+            /* 按键按下时初次发送的消息*/
+            if (pg->key_press_count[keycode] < UINT16_MAX) {
+                pg->key_press_count[keycode]++;
+            }
+        } else {
+            /* 按键长按时重复发送的消息 */
+            if (pg->key_repeat_count[keycode] < UINT16_MAX) {
+                int repeatCount = keyflag & 0xFFFF; /* 重复次数 */
+                pg->key_repeat_count[keycode] += repeatCount;
+            }
+        }
+
     }
     if (message == WM_KEYUP && keycode < MAX_KEY_VCODE) {
-        pg->keystatemap[keycode] = 0;
+        pg->keystatemap[keycode] = false;
+
+        if (pg->key_release_count[keycode] < UINT16_MAX) {
+            pg->key_release_count[keycode]++;
+        }
     }
     if (pg->callback_key) {
         int ret;
@@ -435,16 +507,84 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
 }
 
 /*private function*/
-static void push_mouse_msg(struct _graph_setting* pg, UINT message, WPARAM wparam, LPARAM lparam)
+static void push_mouse_msg(struct _graph_setting* pg, UINT message, WPARAM wparam, LPARAM lparam, int time)
 {
     EGEMSG msg   = {0};
     msg.hwnd     = pg->hwnd;
     msg.message  = message;
     msg.wParam   = wparam;
     msg.lParam   = lparam;
-    msg.mousekey = (pg->mouse_state_m << 2) | (pg->mouse_state_r << 1) | (pg->mouse_state_l << 0);
-    msg.time     = ::GetTickCount();
+
+    msg.mousekey |= pg->keystatemap[VK_LBUTTON]  ? mouse_flag_left  : 0;
+    msg.mousekey |= pg->keystatemap[VK_RBUTTON]  ? mouse_flag_right : 0;
+    msg.mousekey |= pg->keystatemap[VK_MBUTTON]  ? mouse_flag_mid   : 0;
+    msg.mousekey |= pg->keystatemap[VK_XBUTTON1] ? mouse_flag_x1    : 0;
+    msg.mousekey |= pg->keystatemap[VK_XBUTTON2] ? mouse_flag_x2    : 0;
+
+    msg.time     = time;
     pg->msgmouse_queue->push(msg);
+}
+
+static void mouseProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    /* up 消息会后紧跟一条 move 消息，标记并将其忽略 */
+    static bool skipNextMoveMessage = false;
+    if ((message < WM_MOUSEFIRST) || (message > WM_MOUSELAST))
+        return;
+
+    _graph_setting* pg = &graph_setting;
+
+    bool curMsgIsNeedToPush = true;
+
+    int key = 0;
+
+    /* WINAPI bug: WM_MOUSEWHEEL 提供的是屏幕坐标，DPI 不等于 100% 时 ScreenToClient 的计算
+     * 结果与其它鼠标消息提供的坐标不一致，故忽略 lParam 提供的值，直接使用之前记录的客户区坐标
+     */
+    if (message == WM_MOUSEWHEEL) {
+        lParam = MAKELPARAM(pg->mouse_pos.x, pg->mouse_pos.y);
+    }
+
+    mouse_msg msg = mouseMessageConvert(message, wParam, lParam, &key);
+    Point curPos(msg.x, msg.y);
+
+    if (msg.is_up()) {
+        skipNextMoveMessage = true;
+    } else if (msg.is_move()) {
+        /* 忽略 up 消息后伴随的同位置 move 消息 */
+        if (skipNextMoveMessage && (curPos == pg->mouse_pos)) {
+            curMsgIsNeedToPush = false;
+            skipNextMoveMessage = false;
+        }
+    }
+
+    /* 鼠标按键动作 */
+    if (key != 0) {
+        /* 鼠标按键状态更新*/
+        pg->keystatemap[key] = msg.is_down();
+
+        /* 鼠标按键计数 */
+        uint16_t* keyCountArray = msg.is_down() ? pg->key_press_count : pg->key_release_count;
+        if (keyCountArray[key] < UINT16_MAX) {
+            keyCountArray[key]++;
+        }
+
+        /* 设置鼠标消息捕获 */
+        if (msg.is_down()) {
+            SetCapture(hWnd);
+        } else {
+            const int keyStateMask = MK_LBUTTON | MK_RBUTTON | MK_MBUTTON | MK_XBUTTON1 | MK_XBUTTON2;
+            if ((wParam & keyStateMask) == 0) {
+                ReleaseCapture();
+            }
+        }
+    }
+
+    if (curMsgIsNeedToPush && (hWnd == pg->hwnd)) {
+        push_mouse_msg(pg, message, wParam, lParam, GetMessageTime());
+    }
+
+    pg->mouse_pos = curPos;
 }
 
 /*private function*/
@@ -526,95 +666,15 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
             }
         }
         break;
-    case WM_LBUTTONDOWN:
-    case WM_LBUTTONDBLCLK:
-        pg->mouse_lastclick_x       = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastclick_y       = (short int)((UINT)lParam >> 16);
-        pg->keystatemap[VK_LBUTTON] = 1;
-        SetCapture(hWnd);
-        pg->mouse_state_l = 1;
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
+
+    case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDOWN: case WM_MBUTTONUP: case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK:
+    case WM_XBUTTONDOWN: case WM_XBUTTONUP: case WM_XBUTTONDBLCLK:
+    case WM_MOUSEMOVE:   case WM_MOUSEWHEEL:
+        mouseProc(hWnd, message, wParam, lParam);
         break;
-    case WM_MBUTTONDOWN:
-    case WM_MBUTTONDBLCLK:
-        pg->mouse_lastclick_x       = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastclick_y       = (short int)((UINT)lParam >> 16);
-        pg->keystatemap[VK_MBUTTON] = 1;
-        SetCapture(hWnd);
-        pg->mouse_state_m = 1;
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_RBUTTONDOWN:
-    case WM_RBUTTONDBLCLK:
-        pg->mouse_lastclick_x       = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastclick_y       = (short int)((UINT)lParam >> 16);
-        pg->keystatemap[VK_RBUTTON] = 1;
-        SetCapture(hWnd);
-        pg->mouse_state_r = 1;
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_LBUTTONUP:
-        pg->mouse_lastup_x          = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
-        pg->mouse_state_l           = 0;
-        pg->keystatemap[VK_LBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
-            ReleaseCapture();
-        }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_MBUTTONUP:
-        pg->mouse_lastup_x          = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
-        pg->mouse_state_m           = 0;
-        pg->keystatemap[VK_MBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
-            ReleaseCapture();
-        }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_RBUTTONUP:
-        pg->mouse_lastup_x          = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_lastup_y          = (short int)((UINT)lParam >> 16);
-        pg->mouse_state_r           = 0;
-        pg->keystatemap[VK_RBUTTON] = 0;
-        if (pg->mouse_state_l == 0 && pg->mouse_state_m == 0 && pg->mouse_state_r == 0) {
-            ReleaseCapture();
-        }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_MOUSEMOVE:
-        pg->mouse_last_x = (short int)((UINT)lParam & 0xFFFF);
-        pg->mouse_last_y = (short int)((UINT)lParam >> 16);
-        if (hWnd == pg->hwnd && (pg->mouse_lastup_x != pg->mouse_last_x || pg->mouse_lastup_y != pg->mouse_last_y)) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
-    case WM_MOUSEWHEEL: {
-        POINT pt;
-        pt.x = (short int)((UINT)lParam & 0xFFFF);
-        pt.y = (short int)((UINT)lParam >> 16);
-        ScreenToClient(pg->hwnd, &pt);
-        pg->mouse_last_x = pt.x;
-        pg->mouse_last_y = pt.y;
-        lParam = ((unsigned short)(short int)pg->mouse_last_y << 16) | (unsigned short)(short int)pg->mouse_last_x;
-    }
-        if (hWnd == pg->hwnd) {
-            push_mouse_msg(pg, message, wParam, lParam);
-        }
-        break;
+
     case WM_SETCURSOR:
         if (pg == pg_w) {
             on_setcursor(pg, hWnd);
@@ -850,8 +910,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     POINT pt;
     GetCursorPos(&pt);
     ScreenToClient(pg->hwnd, &pt);
-    pg->mouse_last_x = pt.x;
-    pg->mouse_last_y = pt.y;
+    pg->mouse_pos = Point(pt.x, pt.y);
 
     static egeControlBase _egeControlBase;
 
@@ -867,7 +926,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->mouse_show = true;
 }
 
-void initgraph(int width, int height, int mode)
+void initgraph(int width, int height, initmode_flag mode)
 {
     int g = TRUECOLORSIZE, m = (width) | (height << 16);
     setinitmode(mode, g_windowpos_x, g_windowpos_y);
@@ -891,31 +950,29 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
 {
     _graph_setting* pg = (_graph_setting*)lpParameter;
     MSG             msg;
-    {
-        /* 执行应用程序初始化: */
-        if (!init_instance(pg->instance)) {
-            return 0xFFFFFFFF;
-        }
 
-        // 图形初始化
-        if (pg->dc == 0) {
-            graph_init(pg);
-        }
-
-        {
-            pg->mouse_show     = 0;
-            pg->exit_flag      = 0;
-            pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT ? false : true);
-            if (g_initoption & INIT_NOFORCEEXIT) {
-                SetCloseHandler(DefCloseHandler);
-            }
-            pg->close_manually = true;
-        }
-        {
-            pg->skip_timer_mark = false;
-            SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
-        }
+    /* 执行应用程序初始化: */
+    if (!init_instance(pg->instance)) {
+        return 0xFFFFFFFF;
     }
+
+    // 图形初始化
+    if (pg->dc == 0) {
+        graph_init(pg);
+    }
+
+    pg->mouse_show     = 0;
+    pg->exit_flag      = 0;
+    pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT ? false : true);
+
+    if (g_initoption & INIT_NOFORCEEXIT) {
+        SetCloseHandler(DefCloseHandler);
+    }
+
+    pg->close_manually = true;
+    pg->skip_timer_mark = false;
+    SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
+
     pg->has_init = true;
 
     while (!pg->exit_window) {
@@ -1005,10 +1062,10 @@ BOOL init_instance(HINSTANCE hInstance)
     return TRUE;
 }
 
-void setinitmode(int mode, int x, int y)
+void setinitmode(initmode_flag mode, int x, int y)
 {
     g_initoption              = mode;
-    struct _graph_setting* pg = &graph_setting;
+
     if (mode & INIT_NOBORDER) {
         if (mode & INIT_CHILD) {
             g_windowstyle = WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_VISIBLE;
@@ -1030,7 +1087,7 @@ void setinitmode(int mode, int x, int y)
     g_windowpos_y = y;
 }
 
-int getinitmode()
+initmode_flag getinitmode()
 {
     return g_initoption;
 }
@@ -1058,10 +1115,24 @@ void gdiplusinit()
  */
 Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics)
 {
+    /* 重置视口原点(如果不重置会影响到 GDI+ Graphics 对象坐标系原点) */
+    POINT origin;
+    SetViewportOrgEx(hdc, 0, 0, &origin);
+
+    /* 清除 GDI 裁剪区域，不清除则会对 GDI+ 的裁剪区域造成莫名影响 */
+    HRGN oldClipRgn = CreateRectRgn(0, 0, 0, 0);
+    int result = GetClipRgn(hdc, oldClipRgn);
+    SelectClipRgn(hdc, NULL);
+
     Gdiplus::Graphics* newGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
     /* 保持与原来相同的设置 */
     if (oldGraphics != NULL) {
+        /* 裁剪区域设置 */
+        Gdiplus::Region clipRegion;
+        oldGraphics->GetClip(&clipRegion);
+        newGraphics->SetClip(&clipRegion);
+
         /* 坐标变换设置 */
         Gdiplus::Matrix transform;
         oldGraphics->GetTransform(&transform);
@@ -1075,25 +1146,53 @@ Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* old
         newGraphics->SetCompositingQuality(oldGraphics->GetCompositingQuality());
         newGraphics->SetTextContrast(oldGraphics->GetTextContrast());
 
-        /* 组合模式设置*/
+        /* 组合模式设置 */
         newGraphics->SetCompositingMode(oldGraphics->GetCompositingMode());
-
-        /* 裁剪区域设置 */
-        Gdiplus::Region clipRegion;
-        oldGraphics->GetClip(&clipRegion);
-        newGraphics->SetClip(&clipRegion);
 
         /* 页面单位和比例设置 */
         newGraphics->SetPageUnit(oldGraphics->GetPageUnit());
         newGraphics->SetPageScale(oldGraphics->GetPageScale());
 
-        /* 渲染原点 */
+        /* 渲染原点设置 */
         INT x, y;
         oldGraphics->GetRenderingOrigin(&x, &y);
         newGraphics->SetRenderingOrigin(x, y);
     }
 
+    /* 恢复 GDI 坐标原点和裁剪区域 */
+    SetViewportOrgEx(hdc, origin.x, origin.y, NULL);
+    if (result == 1) {
+        SelectClipRgn(hdc, oldClipRgn);
+    }
+
+    DeleteObject(oldClipRgn);
+
     return newGraphics;
+}
+
+void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_hDC) {
+        color_t* bufferBegin = img->getbuffer();
+        const color_t* bufferEnd =  bufferBegin + img->m_width * img->m_height;
+
+        if (ignoreAlpha) {
+            for (color_t* itor = bufferBegin; itor != bufferEnd; ++itor) {
+                if ((*itor & 0x00FFFFFF) == (src & 0x00FFFFFF)) {
+                    *itor = dst;
+                }
+            }
+        } else {
+            for (color_t* itor = bufferBegin; itor != bufferEnd; ++itor) {
+                if (*itor == src) {
+                    *itor = dst;
+                }
+            }
+        }
+    }
+
+    CONVERT_IMAGE_END
 }
 
 } // namespace ege

@@ -1,3 +1,13 @@
+cmake_minimum_required(VERSION 3.13)
+
+project(ege-demos)
+
+if(EGE_ENABLE_CPP17)
+    # 将编译标准设置为 C++17, 仓库对外标准保持不变, 未引入额外的依赖.
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
 file(
   GLOB DEMO_SRCS
@@ -21,7 +31,7 @@ foreach (DEMO_SRC ${DEMO_SRCS})
   get_filename_component(DEMO_NAME ${DEMO_SRC} NAME_WE)
   ege_add_executable_demo(${DEMO_NAME} ${DEMO_SRC})
 endforeach ()
-target_sources(egerotateimage PRIVATE egelogo.rc)
+target_sources(graph_rotateimage PRIVATE egelogo.rc)
 
 message(CHECK_START "Finding GMP Library")
 find_library(gmp gmp)

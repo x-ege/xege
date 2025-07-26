@@ -16,11 +16,15 @@ namespace ege
 extern struct _graph_setting graph_setting;
 class egeControlBase;   // 前置声明
 
-int getinitmode();
+initmode_flag getinitmode();
 
 void logoscene();
 
 int dealmessage(_graph_setting* pg, bool force_update);
+
+bool needToUpdate(_graph_setting* pg);
+
+int graphupdate(_graph_setting* pg);
 
 void guiupdate(_graph_setting* pg, egeControlBase* root);
 
@@ -39,8 +43,13 @@ Gdiplus::LineCap convertToGdiplusLineCap(line_cap_type linecap);
 
 Gdiplus::LineJoin convertToGdiplusLineJoin(line_join_type linejoin);
 
+int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect& rect);
+
 int  swapbuffers();
 
 bool isinitialized();
+
+void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha = false);
+
 
 }

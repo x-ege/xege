@@ -28,8 +28,8 @@ static int peekkey(_graph_setting* pg)
     while (pg->msgkey_queue->pop(msg)) {
         if (msg.message == WM_CHAR || msg.message == WM_KEYDOWN) {
             if (msg.message == WM_KEYDOWN) {
-                if (msg.wParam <= key_space || msg.wParam >= key_0 && msg.wParam < key_f1 ||
-                    msg.wParam >= key_semicolon && msg.wParam <= key_quote)
+                if (msg.wParam <= key_space || (msg.wParam >= key_0 && msg.wParam < key_f1) ||
+                    (msg.wParam >= key_semicolon && msg.wParam <= key_quote))
                 {
                     continue;
                 }
@@ -79,10 +79,6 @@ int getflush()
     EGEMSG                 msg;
     int                    lastkey = 0;
 
-    if (pg->msgkey_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
-
     if (!pg->msgkey_queue->empty()) {
         while (pg->msgkey_queue->pop(msg)) {
             if (msg.message == WM_CHAR) {
@@ -99,7 +95,7 @@ int kbmsg()
 {
     struct _graph_setting* pg = &graph_setting;
     if (pg->exit_window) {
-        return grNoInitGraph;
+        return 0;
     }
     return peekallkey(pg, 3);
 }
@@ -108,7 +104,7 @@ int kbhitEx(int flag)
 {
     struct _graph_setting* pg = &graph_setting;
     if (pg->exit_window) {
-        return grNoInitGraph;
+        return 0;
     }
     if (flag == 0) {
         return peekkey(pg);
@@ -121,7 +117,7 @@ int getchEx(int flag)
 {
     struct _graph_setting* pg = &graph_setting;
     if (pg->exit_window) {
-        return grNoInitGraph;
+        return -1;
     }
 
     {
@@ -146,7 +142,7 @@ int getchEx(int flag)
                             ret = ogn_key;
                         } else {
                             if ((ogn_key & KEYMSG_DOWN) &&
-                                (msg.wParam >= 0x70 && msg.wParam < 0x80 || msg.wParam > ' ' && msg.wParam < '0'))
+                                ((msg.wParam >= 0x70 && msg.wParam < 0x80) || (msg.wParam > ' ' && msg.wParam < '0')))
                             {
                                 ret |= 0x100;
                             }
@@ -222,25 +218,64 @@ void flushkey()
 {
     struct _graph_setting* pg = &graph_setting;
     EGEMSG                 msg;
-    if (pg->msgkey_queue->empty()) {
-        dealmessage(pg, NORMAL_UPDATE);
-    }
+
     if (!pg->msgkey_queue->empty()) {
         while (pg->msgkey_queue->pop(msg)) {
             ;
         }
     }
-    return;
 }
 
-int keystate(int key)
+bool keystate(int key)
 {
     struct _graph_setting* pg = &graph_setting;
-    if (key < 0 || key >= MAX_KEY_VCODE) {
-        return -1;
+    if (key <= 0 || key >= MAX_KEY_VCODE) {
+        return false;
     }
 
     return pg->keystatemap[key];
 }
 
+int keypress(int key)
+{
+    struct _graph_setting* pg = &graph_setting;
+
+    int keyCount = 0;
+
+    if (key > 0 && key < MAX_KEY_VCODE) {
+        keyCount = pg->key_press_count[key];
+        pg->key_press_count[key] = 0;           /* 计数清零*/
+    }
+
+    return keyCount;
 }
+
+int keyrelease(int key)
+{
+    struct _graph_setting* pg = &graph_setting;
+
+    int keyCount = 0;
+
+    if (key > 0 && key < MAX_KEY_VCODE) {
+        keyCount                   = pg->key_release_count[key];
+        pg->key_release_count[key] = 0; /* 计数清零*/
+    }
+
+    return keyCount;
+}
+
+int keyrepeat(int key)
+{
+    struct _graph_setting* pg = &graph_setting;
+
+    int keyCount = 0;
+
+    if (key > 0 && key < MAX_KEY_VCODE) {
+        keyCount = pg->key_repeat_count[key];
+        pg->key_repeat_count[key] = 0; /* 计数清零*/
+    }
+
+    return keyCount;
+}
+
+} // namespace ege

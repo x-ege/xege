@@ -15,5 +15,13 @@
 #   endif
 #endif
 
+#if !defined(EGE_W64)
+#if !defined(__midl) && (defined(_X86_) || defined(_M_IX86)) && _MSC_VER >= 1300
+#define EGE_W64 __w64
+#else
+#define EGE_W64
+#endif
+#endif
+
 
 

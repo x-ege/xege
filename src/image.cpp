@@ -60,6 +60,12 @@ void IMAGE::reset()
 #endif
 }
 
+/**
+ * 构造宽高为 width x height 的图像。
+ * @param width
+ * @param height
+ * @note: 创建的图像内容未定义，但经检测像素值均为 0。
+ */
 void IMAGE::construct(int width, int height)
 {
     HDC refDC = NULL;
@@ -79,9 +85,22 @@ void IMAGE::construct(int width, int height)
     }
 }
 
+/**
+ * 构造宽高为 width x height 的图像，将 color 设为背景色并以 color 填充整个图像。
+ * @param width
+ * @param height
+ * @param color
+ */
+void IMAGE::construct(int width, int height, color_t color)
+{
+    construct(width, height);
+    setbkcolor_f(color, this);
+    cleardevice(this);
+}
+
 IMAGE::IMAGE()
 {
-    construct(1, 1);
+    construct(1, 1, BLACK);
 }
 
 IMAGE::IMAGE(int width, int height)
@@ -94,6 +113,18 @@ IMAGE::IMAGE(int width, int height)
         height = 0;
     }
     construct(width, height);
+}
+
+IMAGE::IMAGE(int width, int height, color_t color)
+{
+    // 截止到 0
+    if (width < 0) {
+        width = 0;
+    }
+    if (height < 0) {
+        height = 0;
+    }
+    construct(width, height, color);
 }
 
 IMAGE::IMAGE(const IMAGE& img)
@@ -193,7 +224,7 @@ HBITMAP newbitmap(int width, int height, PDWORD* p_bmp_buf)
 
     bitmap = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (VOID**)&bmp_buf, NULL, 0);
 
-    if (p_bmp_buf) {
+    if ((bitmap != NULL) && (p_bmp_buf)) {
         *p_bmp_buf = bmp_buf;
     }
 
@@ -218,15 +249,16 @@ void IMAGE::initimage(HDC refDC, int width, int height)
     m_height  = height;
     m_pBuffer = bmp_buf;
 
-    setviewport(0, 0, m_width, m_height, 1, this);
+    setviewport(0, 0, m_width, m_height, false, this);
 }
 
 void IMAGE::setdefaultattribute()
 {
-    setcolor(LIGHTGRAY, this);
-    setbkcolor(BLACK, this);
-    SetBkMode(m_hDC, OPAQUE); // TRANSPARENT);
-    setfillstyle(SOLID_FILL, 0, this);
+    setlinecolor(initial_line_color, this);
+    settextcolor(initial_text_color, this);
+    setbkcolor_f(initial_bk_color, this);
+    SetBkMode(m_hDC, OPAQUE);
+    setfillstyle(SOLID_FILL, initial_fill_color, this);
     setlinestyle(PS_SOLID, 0, 1, this);
     settextjustify(LEFT_TEXT, TOP_TEXT, this);
     setfont(16, 0, "SimSun", this);
@@ -238,7 +270,20 @@ void IMAGE::setdefaultattribute()
 Gdiplus::Graphics* IMAGE::getGraphics()
 {
     if (NULL == m_graphics) {
+        POINT origin;
+        SetViewportOrgEx(m_hDC, 0, 0, &origin);
+        HRGN clipRgn = CreateRectRgn(0, 0, 0, 0);
+        int result = GetClipRgn(m_hDC, clipRgn);
+
         m_graphics = new Gdiplus::Graphics(m_hDC);
+
+        SetViewportOrgEx(m_hDC, origin.x, origin.y, NULL);
+        if (result == 1) {
+            SelectClipRgn(m_hDC, clipRgn);
+        }
+
+        DeleteObject(clipRgn);
+
         m_graphics->SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
         m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);
         m_graphics->SetTextRenderingHint(
@@ -298,12 +343,17 @@ int IMAGE::resize_f(int width, int height)
     }
 
     if (width == m_width && height == m_height) {
-        setviewport(0, 0, m_width, m_height, 1, this);
-        return 0;
+        return grOk;
     }
+
+    Size oldWindowSize(m_width, m_height);
 
     PDWORD  bmp_buf;
     HBITMAP bitmap     = newbitmap(width, height, &bmp_buf);
+    if (bitmap == NULL) {
+        return grAllocError;
+    }
+
     HBITMAP old_bitmap = (HBITMAP)SelectObject(this->m_hDC, bitmap);
     DeleteObject(old_bitmap);
 
@@ -312,8 +362,6 @@ int IMAGE::resize_f(int width, int height)
     m_height  = height;
     m_pBuffer = bmp_buf;
 
-    SelectClipRgn(this->m_hDC, NULL);
-
     // BITMAP 更换后需重新创建 Graphics 对象(否则会在已销毁的 old_bitmap 上绘制，引发异常)
     if (m_graphics != NULL) {
         Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
@@ -321,9 +369,16 @@ int IMAGE::resize_f(int width, int height)
         m_graphics = newGraphics;
     }
 
-    setviewport(0, 0, m_width, m_height, 1, this);
+    Bound viewport = m_vpt;
 
-    return 0;
+    /* 当原视口区域设置为和窗口一致且不裁剪时，自动调整 */
+    if (!m_enableclip && viewport == Bound(0, 0, oldWindowSize.width, oldWindowSize.height)) {
+        viewport.set(0, 0, width, height);
+    }
+
+    setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
+
+    return grOk;
 }
 
 int IMAGE::resize(int width, int height)
@@ -401,16 +456,18 @@ int IMAGE::getimage(const char* filename, int zoomWidth, int zoomHeight)
     return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
 }
 
-int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
+graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
 {
-    Gdiplus::PixelFormat srcPixelFormat = bitmap.GetPixelFormat();
-
-    // 将图像尺寸调整至和 bitmap 一致
+    /* 将图像尺寸调整至和 bitmap 一致 */
     int width  = bitmap.GetWidth();
     int height = bitmap.GetHeight();
-    resize_f(pimg, width, height);
 
-    // 设置外部缓冲区属性，指向图像缓冲区首地址
+    graphics_errors error = (graphics_errors)resize_f(pimg, width, height);
+    if (error != grOk) {
+        return error;
+    }
+
+    /* 设置外部缓冲区属性，指向图像缓冲区首地址 */
     Gdiplus::BitmapData bitmapData;
     bitmapData.Width       = width;
     bitmapData.Height      = height;
@@ -418,61 +475,47 @@ int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     bitmapData.PixelFormat = PixelFormat32bppARGB;       // 像素颜色格式: 32 位 ARGB
     bitmapData.Scan0       = getbuffer(pimg);            // 图像首行像素的首地址
 
-    // 读取区域设置为整个图像
+    /* 读取区域设置为整个图像 */
     Gdiplus::Rect rect(0, 0, width, height);
 
-    // 模式: 仅读取图像数据, 缓冲区由用户分配
+    /* 模式: 仅读取图像数据, 缓冲区由用户分配 */
     int imageLockMode = Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeUserInputBuf;
 
-    //读取 Bitmap 图像内容，以 32 位 ARGB 的像素格式写入缓冲区
+    /* 重置 Bitmap 错误状态为 Ok */
+    (void)bitmap.GetLastStatus();
+
+    /* 读取 Bitmap 图像内容，以 32 位 ARGB 的像素格式写入缓冲区 */
     bitmap.LockBits(&rect, imageLockMode, PixelFormat32bppARGB, &bitmapData);
 
-    // 解除锁定(如果设置了 ImageLockModeWrite 模式，还会将缓冲区内容复制到 Bitmap)
+    /* 解除锁定(如果设置了 ImageLockModeWrite 模式，还会将缓冲区内容复制到 Bitmap) */
     bitmap.UnlockBits(&bitmapData);
 
-    return grOk;
+    return (bitmap.GetLastStatus() == Gdiplus::Ok) ? grOk : grError;
 }
 
 int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
 {
     (void)zoomWidth, (void)zoomHeight; // ignore
     inittest(L"IMAGE::getimage");
-    {
-        int ret = getimage_pngfile(this, filename);
-        // grIOerror means it's not a png file
-        if (ret != grIOerror) {
-            return ret;
+
+    int error = getimage_pngfile(this, filename);
+
+    /* grInvalidFileFormat 说明文件实际非 PNG 格式，继续以其它格式检测读取 */
+    if (error == grInvalidFileFormat) {
+        /* GDI+ 支持图片文件格式：BMP, GIF, JPEG, PNG, TIFF, Exif, WMF 和 EMF */
+        Gdiplus::Bitmap bitmap(filename);
+
+        if (bitmap.GetLastStatus() != Gdiplus::Ok) {
+            /* GDI+ Bitmap 仅报 InvalidParameter 错误，无法进一步区分是不支持的格式还是格式错误 */
+            /* 通过文件扩展名判断文件是否在支持的格式中，支持为 grInvalidFileFormat，不支持则为 grUnsupportedFormat */
+            ImageDecodeFormat imageFormat = checkImageDecodeFormatByFileName(filename);
+            return (imageFormat == ImageDecodeFormat_NULL) ? grUnsupportedFormat : grInvalidFileFormat ;
         }
+
+        return getimage_from_bitmap(this, bitmap);
     }
 
-    OLECHAR          wszPath[MAX_PATH * 2 + 1];
-    WCHAR            szPath[MAX_PATH * 2 + 1] = L"";
-
-    if (wcsstr(filename, L"http://")) {
-        lstrcpyW(szPath, filename);
-    } else if (filename[1] == ':') {
-        lstrcpyW(szPath, filename);
-    } else {
-        GetCurrentDirectoryW(MAX_PATH * 2, szPath);
-        lstrcatW(szPath, L"\\");
-        lstrcatW(szPath, filename);
-    }
-
-    lstrcpyW(wszPath, szPath);
-
-    Gdiplus::Bitmap bitmap(wszPath);
-
-    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
-        return grIOerror;
-    }
-
-    getimage_from_bitmap(this, bitmap);
-
-    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
-        return grError;
-    }
-
-    return grOk;
+    return error;
 }
 
 int IMAGE::saveimage(const char* filename, bool withAlphaChannel) const
@@ -485,7 +528,7 @@ int IMAGE::saveimage(const wchar_t* filename, bool withAlphaChannel) const
     return ege::saveimage(this, filename, withAlphaChannel);
 }
 
-void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
+graphics_errors getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
 {
     png_structp png_ptr  = (png_structp)vpng_ptr;
     png_infop   info_ptr = (png_infop)vinfo_ptr;
@@ -536,11 +579,17 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
     const png_uint_32 width  = png_get_image_width(png_ptr, info_ptr);
     const png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
 
-    // 将图像宽高调整至与 PNG 图片一致
-    self->resize_f((int)width, (int)height);
+    // 将图像宽高调整至和 PNG 图片大小一致
+    if (self->resize_f((int)width, (int)height) != grOk) {
+        return grAllocError;
+    }
 
     // 创建 png_bytep 数组，指向图像缓冲区中每一行像素的首地址
     const png_bytepp row_pointers = new png_bytep[height];
+    if (row_pointers == NULL) {
+        return grOutOfMemory;
+    }
+
     color_t* buffer = (color_t*)self->m_pBuffer;
 
     for (png_uint_32 i = 0; i < height; i++) {
@@ -551,40 +600,40 @@ void getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
     png_read_image(png_ptr, row_pointers);
 
     delete[] row_pointers;
+    return grOk;
 }
 
 int IMAGE::getpngimg(FILE* fp)
 {
-    png_structp png_ptr;
-    png_infop   info_ptr;
-
     {
         char   header[16];
-        uint32 number = 8;
-        fread(header, 1, number, fp);
-        int isn_png = png_sig_cmp((png_const_bytep)header, 0, number);
+        const uint32_t number = 8;
 
-        if (isn_png) {
+        if (fread(header, 1, number, fp) != number) {
             return grIOerror;
+        }
+
+        if (png_sig_cmp((png_const_bytep)header, 0, number) != 0) {
+            return grInvalidFileFormat;
         }
         fseek(fp, 0, SEEK_SET);
     }
 
-    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (png_ptr == NULL) {
         return grAllocError;
     }
-    info_ptr = png_create_info_struct(png_ptr);
+    png_infop info_ptr = png_create_info_struct(png_ptr);
     if (info_ptr == NULL) {
         png_destroy_read_struct(&png_ptr, NULL, NULL);
         return grAllocError;
     }
 
     png_init_io(png_ptr, fp);
-    getimage_from_png_struct(this, png_ptr, info_ptr);
+    graphics_errors error = getimage_from_png_struct(this, png_ptr, info_ptr);
 
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return grOk;
+    return error;
 }
 
 int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
@@ -597,16 +646,16 @@ int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
     png_bytep*    row_pointers;
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-    uint32 pixelsize = withAlphaChannel ? 4 : 3;
-    uint32 width = m_width, height = m_height;
+    uint32_t pixelsize = withAlphaChannel ? 4 : 3;
+    uint32_t width = m_width, height = m_height;
 
     if (png_ptr == NULL) {
-        return -1;
+        return grAllocError;
     }
     info_ptr = png_create_info_struct(png_ptr);
     if (info_ptr == NULL) {
         png_destroy_write_struct(&png_ptr, NULL);
-        return -1;
+        return grAllocError;
     }
 
     /*if (setjmp(png_jmpbuf(png_ptr)))
@@ -630,7 +679,7 @@ int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
     image = (png_byte*)malloc(width * height * pixelsize * sizeof(png_byte) + 4);
     if (image == NULL) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
-        return -1;
+        return grOutOfMemory;
     }
 
     row_pointers = (png_bytep*)malloc(height * sizeof(png_bytep));
@@ -638,7 +687,7 @@ int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
         png_destroy_write_struct(&png_ptr, &info_ptr);
         free(image);
         image = NULL;
-        return -1;
+        return grOutOfMemory;
     }
 
     for (i = 0; i < height; i++) {
@@ -663,7 +712,7 @@ int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
     free(image);
     image = NULL;
 
-    return 0;
+    return grOk;
 }
 
 struct MemCursor
@@ -812,7 +861,7 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
 static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDest,
         int* xSrc, int* ySrc, int* width, int* height)
 {
-    viewporttype vpt  = imgDest->m_vpt;
+    Bound vpt  = imgDest->m_vpt;
     Point srcPos(*xSrc, *ySrc);
     Point dstPos(*xDest + vpt.left, *yDest + vpt.top);
 
@@ -839,7 +888,7 @@ static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDe
     /* 由视口区域计算绘制目标裁剪区域 */
     Bound srcClip(0, 0, imgSrc->m_width,  imgSrc->m_height);
     Bound dstClip(0, 0, imgDest->m_width, imgDest->m_height);
-    dstClip.intersect(Bound(vpt.left, vpt.top, vpt.right, vpt.bottom));
+    dstClip.intersect(vpt);
 
     srcBound.intersect(srcClip);
     dstBound.intersect(dstClip);
@@ -1010,8 +1059,8 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, imgSrc->m_hDC, xSrc, ySrc, widthSrc,
                 heightSrc, bf);
         } else {
-            const viewporttype& vptDest = img->m_vpt;
-            const viewporttype& vptSrc  = imgSrc->m_vpt;
+            const Bound& vptDest = img->m_vpt;
+            const Bound& vptSrc  = imgSrc->m_vpt;
             Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
             Rect drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
 
@@ -1207,13 +1256,13 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         if (widthDest  <= 0) widthDest  = widthSrc;
         if (heightDest <= 0) heightDest = heightSrc;
 
-        const viewporttype& vptDest = imgDest->m_vpt;
-        const viewporttype& vptSrc  = imgSrc->m_vpt;
+        const Bound& vptDest = imgDest->m_vpt;
+        const Bound& vptSrc  = imgSrc->m_vpt;
         Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
         Rect drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
         Rect clipDest(0, 0, imgDest->m_width, imgDest->m_height);
 
-        if (vptDest.clipflag) {
+        if (imgDest->m_enableclip) {
             clipDest = Rect(vptDest.left, vptDest.top, vptDest.right - vptDest.left, vptDest.bottom - vptDest.top);
         }
         Gdiplus::GraphicsPath path;
@@ -2107,7 +2156,7 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         int   s = float2int((float)t2d.p[0].y), e = float2int((float)t2d.p[2].y), h, m = float2int((float)t2d.p[1].y);
         int   rs, re;
         int   i, lh, rh;
-        float dm = t2d.p[1].y, dh;
+
         struct point2d pl, pr, pt;
         struct point2d spl, spr;
 
@@ -2119,7 +2168,7 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         spr.x = t3d.p[2].x - t3d.p[0].x;
         spl.y = t3d.p[1].y - t3d.p[0].y;
         spr.y = t3d.p[2].y - t3d.p[0].y;
-        dh    = dm - s;
+
         h     = m - s;
         rs    = s;
         if (s < y1) {
@@ -2236,7 +2285,6 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         spl.y = t3d.p[0].y - t3d.p[2].y;
         spr.y = t3d.p[1].y - t3d.p[2].y;
 
-        dh = e - dm;
         h  = e - m;
         re = e;
         if (m < y1) {
@@ -2345,7 +2393,7 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         int   s = float2int((float)t2d.p[0].y), e = float2int((float)t2d.p[2].y), h, m = float2int((float)t2d.p[1].y);
         int   rs, re;
         int   i, lh, rh;
-        float dm = t2d.p[1].y, dh;
+
         struct point2d pl, pr, pt;
         struct point2d spl, spr;
 
@@ -2357,7 +2405,7 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         spr.x = t3d.p[2].x - t3d.p[0].x;
         spl.y = t3d.p[1].y - t3d.p[0].y;
         spr.y = t3d.p[2].y - t3d.p[0].y;
-        dh    = dm - s;
+
         h     = m - s;
         rs    = s;
         if (s < y1) {
@@ -2475,7 +2523,6 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         spl.y = t3d.p[0].y - t3d.p[2].y;
         spr.y = t3d.p[1].y - t3d.p[2].y;
 
-        dh = e - dm;
         h  = e - m;
         re = e;
         if (m < y1) {
@@ -2678,10 +2725,10 @@ int putimage_rotatetransparent(PIMAGE imgDest, PCIMAGE imgSrc, int xCenterDest, 
     float zoom)
 {
     const PIMAGE img             = CONVERT_IMAGE(imgDest);
-    int          zoomed_width    = widthSrc * zoom;
-    int          zoomed_height   = heightSrc * zoom;
-    int          zoomed_center_x = (xCenterSrc - xOriginSrc) * zoom;
-    int          zoomed_center_y = (yCenterSrc - yOriginSrc) * zoom;
+    int          zoomed_width    = (int)round(widthSrc * zoom);
+    int          zoomed_height   = (int)round(heightSrc * zoom);
+    int          zoomed_center_x = (int)round((xCenterSrc - xOriginSrc) * zoom);
+    int          zoomed_center_y = (int)round((yCenterSrc - yOriginSrc) * zoom);
     /* zoom */
     PIMAGE zoomed_img = newimage(zoomed_width, zoomed_height);
     putimage(
@@ -2699,10 +2746,10 @@ int putimage_rotatetransparent(PIMAGE imgDest, PCIMAGE imgSrc, int xCenterDest, 
                 see:
                 https://stackoverflow.com/questions/36201381/how-to-rotate-image-canvas-pixel-manipulation
                 */
-                putpixel_savealpha(src_x, src_y, color, img);
-                putpixel_savealpha(src_x + 0.5, src_y, color, img);
-                putpixel_savealpha(src_x, src_y + 0.5, color, img);
-                putpixel_savealpha(src_x + 0.5, src_y + 0.5, color, img);
+                putpixel_savealpha((int)src_x, (int)src_y, color, img);
+                putpixel_savealpha((int)(src_x + 0.5), (int)src_y, color, img);
+                putpixel_savealpha((int)src_x, (int)(src_y + 0.5), color, img);
+                putpixel_savealpha((int)(src_x + 0.5), (int)(src_y + 0.5), color, img);
             }
         }
     }
@@ -2774,7 +2821,7 @@ int gety(PCIMAGE pimg)
 
 PIMAGE newimage()
 {
-    return new IMAGE(1, 1);
+    return new IMAGE(1, 1, BLACK);
 }
 
 PIMAGE newimage(int width, int height)
@@ -2785,7 +2832,7 @@ PIMAGE newimage(int width, int height)
     if (height < 1) {
         height = 1;
     }
-    return new IMAGE(width, height);
+    return new IMAGE(width, height, BLACK);
 }
 
 void delimage(PCIMAGE pImg)
@@ -3120,15 +3167,16 @@ int getimage_pngfile(PIMAGE pimg, const char* filename)
 
 int getimage_pngfile(PIMAGE pimg, const wchar_t* filename)
 {
-    FILE* fp = NULL;
-    int   ret;
-    fp = _wfopen(filename, L"rb");
+    if ((filename == NULL) || (filename[0] == '\0'))
+        return grParamError;
+
+    FILE* fp = _wfopen(filename, L"rb");
 
     if (fp == NULL) {
         return grFileNotFound;
     }
 
-    ret = pimg->getpngimg(fp);
+    int ret = pimg->getpngimg(fp);
     fclose(fp);
     return ret;
 }
@@ -3141,16 +3189,17 @@ int savepng(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 
 int savepng(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
-    FILE* fp = NULL;
-    int   ret;
+    if ((filename == NULL) || (filename[0] == '\0'))
+        return grParamError;
+
     pimg = CONVERT_IMAGE_CONST(pimg);
-    fp   = _wfopen(filename, L"wb");
+    FILE* fp = _wfopen(filename, L"wb");
 
     if (fp == NULL) {
-        return grFileNotFound;
+        return grIOerror;
     }
 
-    ret = pimg->savepngimg(fp, withAlphaChannel);
+    int ret = pimg->savepngimg(fp, withAlphaChannel);
     fclose(fp);
     return ret;
 }
@@ -3180,6 +3229,10 @@ int savebmp(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
  */
 int savebmp(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
+    if ((filename == NULL) || (filename[0] == '\0')) {
+        return grParamError;
+    }
+
     FILE* file = _wfopen(filename, L"wb");
     if (file == NULL) {
         return grIOerror;
@@ -3245,11 +3298,11 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
     bitmapInfoHeader.bV4ClrImportant  = 0;                              // 颜色表中所有颜色都重要
 
     // --------------- BITMAPV4HEADER 特有参数 ------------------
-    bitmapInfoHeader.bV4RedMask       = 0x00FF0000;
-    bitmapInfoHeader.bV4GreenMask     = 0x0000FF00;
-    bitmapInfoHeader.bV4BlueMask      = 0x000000FF;
-    bitmapInfoHeader.bV4AlphaMask     = 0xFF000000;
-    bitmapInfoHeader.bV4CSType        = LCS_sRGB;                       // 使用标准 RGB 颜色空间
+    bitmapInfoHeader.bV4RedMask       = 0x00FF0000U;
+    bitmapInfoHeader.bV4GreenMask     = 0x0000FF00U;
+    bitmapInfoHeader.bV4BlueMask      = 0x000000FFU;
+    bitmapInfoHeader.bV4AlphaMask     = 0xFF000000U;
+    bitmapInfoHeader.bV4CSType        = 0x73524742U;                    // 使用标准 RGB 颜色空间(LCS_sRGB宏: 'sRGB' 的值)
     // 当 bV4CSType 为 'sRGB' 或 'Win ' 时忽略以下参数
     //bitmapInfoHeader.bV4Endpoints
     //bitmapInfoHeader.bV4GammaRed
@@ -3312,6 +3365,52 @@ void ege_enable_aa(bool enable, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->enable_anti_alias(enable);
     CONVERT_IMAGE_END;
+}
+
+ImageDecodeFormat checkImageDecodeFormatByFileName(const wchar_t* fileName)
+{
+    if (fileName == NULL)
+        return ImageDecodeFormat_NULL;
+
+    const wchar_t* fileExtension =  wcsrchr(fileName, L'.');
+    if (fileExtension == NULL) {
+        return ImageDecodeFormat_NULL;
+    }
+
+    fileExtension++; // skip '.'
+
+    const struct {
+        const wchar_t* ext;
+        ImageDecodeFormat format;
+    } formatMap[] = {
+        {L"png",  ImageDecodeFormat_PNG },
+        {L"bmp",  ImageDecodeFormat_BMP },
+        {L"dib",  ImageDecodeFormat_BMP },
+        {L"jpg",  ImageDecodeFormat_JPEG},
+        {L"jpeg", ImageDecodeFormat_JPEG},
+        {L"jpe",  ImageDecodeFormat_JPEG},
+        {L"jfif", ImageDecodeFormat_JPEG},
+        {L"gif",  ImageDecodeFormat_GIF },
+        {L"tif",  ImageDecodeFormat_TIFF},
+        {L"tiff", ImageDecodeFormat_TIFF},
+        {L"exif", ImageDecodeFormat_EXIF},
+        {L"wmf",  ImageDecodeFormat_WMF },
+        {L"emf",  ImageDecodeFormat_EMF },
+    };
+
+    const int formatMapLength = sizeof(formatMap) / sizeof(formatMap[0]);
+
+    ImageDecodeFormat imageDecodeFormat = ImageDecodeFormat_NULL;
+
+    /* 忽略大小写查找匹配项 */
+    for (int i = 0; i < formatMapLength; i++) {
+        if (_wcsicmp(fileExtension, formatMap[i].ext) == 0) {
+            imageDecodeFormat = formatMap[i].format;
+            break;
+        }
+    }
+
+    return imageDecodeFormat;
 }
 
 } // namespace ege

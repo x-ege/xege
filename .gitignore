@@ -9,7 +9,8 @@
 *.o
 .idea/
 *-build-*
+build-*
 
-/build
+build/
 /temp
 /out

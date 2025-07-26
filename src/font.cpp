@@ -118,7 +118,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
         if (img->m_texttype.vert != TOP_TEXT) {
             // 测量实际输出时的文本区域
             RECT measureRect = rect;
-            int textHeight = DrawTextW(img->m_hDC, text, -1, &measureRect, format | DT_CALCRECT);
+            DrawTextW(img->m_hDC, text, -1, &measureRect, format | DT_CALCRECT);
 
             int heightDiff = rect.bottom - measureRect.bottom;
 
@@ -155,7 +155,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                 SelectClipRgn(img->m_hDC, oldClicRgn);
             } else {
                 HRGN rgn = NULL;
-                if (img->m_vpt.clipflag) {
+                if (img->m_enableclip) {
                     rgn = CreateRectRgn(img->m_vpt.left, img->m_vpt.top, img->m_vpt.right, img->m_vpt.bottom);
                 } else {
                     rgn = CreateRectRgn(0, 0, img->m_width, img->m_height);
@@ -184,7 +184,12 @@ void xyprintf(int x, int y, const char* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         char* buff = (char*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff);
+        vsprintf_s(buff, bufferCount, format, v);
+#else
         vsprintf(buff, format, v);
+#endif
         outtextxy(x, y, buff);
     }
     va_end(v);
@@ -197,7 +202,13 @@ void xyprintf(int x, int y, const wchar_t* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
+        vswprintf_s(buff, bufferCount, format, v);
+#else
         vswprintf(buff, format, v);
+#endif
         outtextxy(x, y, buff);
     }
     va_end(v);
@@ -210,7 +221,12 @@ void rectprintf(int x, int y, int w, int h, const char* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         char* buff = (char*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff);
+        vsprintf_s(buff, bufferCount, format, v);
+#else
         vsprintf(buff, format, v);
+#endif
         outtextrect(x, y, w, h, buff);
     }
     va_end(v);
@@ -223,21 +239,26 @@ void rectprintf(int x, int y, int w, int h, const wchar_t* format, ...)
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
+        vswprintf_s(buff, bufferCount, format, v);
+#else
         vswprintf(buff, format, v);
+#endif
         outtextrect(x, y, w, h, buff);
     }
     va_end(v);
 }
 
-int textwidth(const char* text, PIMAGE pimg)
+int textwidth(const char* text, PCIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     return textwidth(textstring_w.c_str(), pimg);
 }
 
-int textwidth(const wchar_t* text, PIMAGE pimg)
+int textwidth(const wchar_t* text, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
@@ -248,27 +269,27 @@ int textwidth(const wchar_t* text, PIMAGE pimg)
     return 0;
 }
 
-int textwidth(char c, PIMAGE pimg)
+int textwidth(char c, PCIMAGE pimg)
 {
     char str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textwidth(wchar_t c, PIMAGE pimg)
+int textwidth(wchar_t c, PCIMAGE pimg)
 {
     wchar_t str[2] = {c};
     return textwidth(str, pimg);
 }
 
-int textheight(const char* text, PIMAGE pimg)
+int textheight(const char* text, PCIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     return textheight(textstring_w.c_str(), pimg);
 }
 
-int textheight(const wchar_t* text, PIMAGE pimg)
+int textheight(const wchar_t* text, PCIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
@@ -279,62 +300,73 @@ int textheight(const wchar_t* text, PIMAGE pimg)
     return 0;
 }
 
-int textheight(CHAR c, PIMAGE pimg)
+int textheight(CHAR c, PCIMAGE pimg)
 {
     CHAR str[2] = {c};
     return textheight(str, pimg);
 }
 
-int textheight(wchar_t c, PIMAGE pimg)
+int textheight(wchar_t c, PCIMAGE pimg)
 {
     wchar_t str[2] = {c};
     return textheight(str, pimg);
 }
 
-void ege_outtextxy(int x, int y, const char* text, PIMAGE pimg)
+void ege_outtextxy(float x, float y, const char* text, PIMAGE pimg)
 {
     ege_drawtext(text, x, y, pimg);
 }
 
-void ege_outtextxy(int x, int y, const wchar_t* text, PIMAGE pimg)
+void ege_outtextxy(float x, float y, const wchar_t* text, PIMAGE pimg)
 {
     ege_drawtext(text, x, y, pimg);
 }
 
-void ege_outtextxy(int x, int y, char c, PIMAGE pimg)
+void ege_outtextxy(float x, float y, char c, PIMAGE pimg)
 {
     char str[2] = {c, '\0'};
     ege_drawtext(str, x, y, pimg);
 }
 
-void ege_outtextxy(int x, int y, wchar_t c, PIMAGE pimg)
+void ege_outtextxy(float x, float y, wchar_t c, PIMAGE pimg)
 {
     wchar_t str[2] = {c, L'\0'};
     ege_drawtext(str, x, y, pimg);
 }
 
-void ege_xyprintf(int x, int y, const char* format, ...)
+void ege_xyprintf(float x, float y, const char* format, ...)
 {
     va_list v;
     va_start(v, format);
     {
         struct _graph_setting* pg = &graph_setting;
         // 由于 ege_drawtext 同样使用这块缓冲区, 从中间开始写入以避免区域重叠造成转换失败
-        char* buff = (char*)(pg->g_t_buff + 4096);
+        const int bufferLength = sizeof(pg->g_t_buff) / sizeof(pg->g_t_buff[0]);
+        char* buff = (char*)(pg->g_t_buff + bufferLength / 2);
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / 2;
+        vsprintf_s(buff, bufferCount, format, v);
+#else
         vsprintf(buff, format, v);
+#endif
         ege_outtextxy(x, y, buff);
     }
     va_end(v);
 }
 
-void ege_xyprintf(int x, int y, const wchar_t* format, ...)
+void ege_xyprintf(float x, float y, const wchar_t* format, ...)
 {
     va_list v;
     va_start(v, format);
     {
         struct _graph_setting* pg = &graph_setting;
         wchar_t* buff = (wchar_t*)pg->g_t_buff;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
+        vswprintf_s(buff, bufferCount, format, v);
+#else
         vswprintf(buff, format, v);
+#endif
         ege_outtextxy(x, y, buff);
     }
     va_end(v);
@@ -342,7 +374,7 @@ void ege_xyprintf(int x, int y, const wchar_t* format, ...)
 
 void settextjustify(int horiz, int vert, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         img->m_texttype.horiz = horiz;
         img->m_texttype.vert = vert;
@@ -521,7 +553,7 @@ void setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg)
 
 void setfont(const LOGFONTA* font, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         HFONT hfont = CreateFontIndirectA(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));
@@ -531,7 +563,7 @@ void setfont(const LOGFONTA* font, PIMAGE pimg)
 
 void setfont(const LOGFONTW* font, PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         HFONT hfont = CreateFontIndirectW(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));

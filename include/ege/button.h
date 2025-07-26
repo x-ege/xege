@@ -113,7 +113,12 @@ public:
         CTL_INIT; // must be the first line
         size(64, 32);
         _font_height = 12;
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(_face, sizeof(_face), "SimSun");
+#else
         strcpy(_face, "SimSun");
+#endif
+
         _line_color   = BLACK;
         _bg_color     = EGERGB(100, 100, 100);
         _text_color   = BLACK;
@@ -141,7 +146,7 @@ public:
         setcolor(RED);
         cleardevice();
         setbkmode(TRANSPARENT);
-        setfillstyle(_bg_color, SOLID_FILL);
+        setfillstyle(SOLID_FILL, _bg_color);
         bar(0, 0, getw() - 1, geth() - 1);
         setfont(_font_height, 0, _face);
         setcolor(_text_color);
@@ -156,7 +161,7 @@ public:
         setbkcolor(_line_color);
         rectangle(0, 0, getw(), geth());
         rectangle(_side_width, _side_width, getw() - _side_width, geth() - _side_width);
-        setfillstyle(_shadow_color, SOLID_FILL);
+        setfillstyle(SOLID_FILL, _shadow_color);
 
         if (_pushed) {
             int points[12] = {
@@ -218,13 +223,13 @@ public:
 
     int alpha() const { return _alpha; }
 
-    void bgcolor(COLORREF color)
+    void bgcolor(color_t color)
     {
         _bg_color = color;
         redraw();
     }
 
-    COLORREF bgcolor() const { return _bg_color; }
+    color_t bgcolor() const { return _bg_color; }
 
 
     void callback(int (*fun)(void*), void* param)
@@ -238,7 +243,11 @@ public:
 
     void caption(const char* text)
     {
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(_caption, sizeof(_caption), text);
+#else
         strcpy(_caption, text);
+#endif
         redraw();
     }
 
@@ -250,7 +259,11 @@ public:
 
     void font(const char* fontface)
     {
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+        strcpy_s(_face, sizeof(_face), fontface);
+#else
         strcpy(_face, fontface);
+#endif
         redraw();
     }
 
@@ -268,13 +281,13 @@ public:
 
     int fontsize() const { return _font_height; }
 
-    void linecolor(COLORREF color)
+    void linecolor(color_t color)
     {
         _line_color = color;
         redraw();
     }
 
-    COLORREF linecolor() const { return _line_color; }
+    color_t linecolor() const { return _line_color; }
 #ifdef DEBUG
 
     void logger(label* logger) { _logger = logger; }
@@ -282,27 +295,27 @@ public:
     label* logger() const { return _logger; }
 #endif
 
-    void shadowcolor(COLORREF color)
+    void shadowcolor(color_t color)
     {
         _shadow_color = color;
         redraw();
     }
 
 
-    COLORREF shadowcolor() const { return _shadow_color; }
+    color_t shadowcolor() const { return _shadow_color; }
 
-    void textcolor(COLORREF color)
+    void textcolor(color_t color)
     {
         _text_color = color;
         redraw();
     }
 
-    COLORREF textcolor() const { return _text_color; }
+    color_t textcolor() const { return _text_color; }
 
 protected:
     void updatesidewidth()
     {
-        _side_width = ((geth() < getw()) ? geth() : getw()) * 0.2;
+        _side_width = (int)(((geth() < getw()) ? geth() : getw()) * 0.2);
     }
 
 #ifdef DEBUG
@@ -313,20 +326,20 @@ protected:
         }
     }
 #endif
-    bool _pushed;
-    int (*_on_click)(void*);
-    char     _caption[1024];
-    char     _face[32];
-    COLORREF _line_color;
-    COLORREF _bg_color;
-    COLORREF _text_color;
-    COLORREF _shadow_color;
-    int      _side_width;
-    int      _font_height;
-    int      _alpha;
-    void*    callback_param;
+    bool    _pushed;
+    int     (*_on_click)(void*);
+    char    _caption[1024];
+    char    _face[32];
+    color_t _line_color;
+    color_t _bg_color;
+    color_t _text_color;
+    color_t _shadow_color;
+    int     _side_width;
+    int     _font_height;
+    int     _alpha;
+    void*   callback_param;
 #ifdef DEBUG
-    label* _logger;
+    label*  _logger;
 #endif
 };
 

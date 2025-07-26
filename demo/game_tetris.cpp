@@ -256,7 +256,8 @@ public:
     }
     void drawedge(int x, int y, int w, int h, int color, int bdark = 1) {
         setcolor(getchangcolor(color, 1.5f));
-        line(x, y+h, x, y);
+        moveto(x, y+h);
+        lineto(x, y);
         lineto(x+w, y);
         if ( bdark )
             setcolor(getchangcolor(color, 0.7f));
@@ -299,12 +300,11 @@ public:
         int x, y, c, bx, by;
         /* 画背景框 */
         cleardevice();
-        drawframe(  m_base_x + 5 * m_base_w,
-                    m_base_y,
-                    m_gamepool_w * m_base_w,
-                    m_gamepool_h * m_base_h);
+
+        drawframe(m_base_x + 5 * m_base_w, m_base_y, m_gamepool_w * m_base_w, m_gamepool_h * m_base_h);
         drawframe(m_base_x, m_base_y,              4*m_base_w, 4*m_base_h);
         drawframe(m_base_x, m_base_y + 5*m_base_h, 4*m_base_w, 4*m_base_h);
+
         /* 画主游戏池 */
         bx = m_base_x + 4 * m_base_w;
         by = m_base_y - 1 * m_base_h;

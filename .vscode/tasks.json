@@ -17,7 +17,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Reload CMake Project",
@@ -33,7 +33,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Cleanup CMake Project",
@@ -48,7 +48,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Build XEGE Library",
@@ -58,13 +58,15 @@
                 "-l",
                 "tasks.sh",
                 "--debug",
+                "--target",
+                "xege",
                 "--build"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Build Demos",
@@ -82,6 +84,38 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build All",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Build All (Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--release",
+                "--build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
             "problemMatcher": "$gcc"
         },
         {
@@ -91,6 +125,8 @@
             "args": [
                 "-l",
                 "tasks.sh",
+                "--target",
+                "xege",
                 "--debug",
                 "--load",
                 "--build"
@@ -99,7 +135,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Load And Build Demos",
@@ -118,10 +154,10 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$msCompile"
         },
         {
-            "label": "Run Demo - GraphicsTest",
+            "label": "Run Demo - XEGE Test",
             "type": "shell",
             "command": "bash",
             "args": [
@@ -129,16 +165,76 @@
                 "tasks.sh",
                 "--debug",
                 "--target",
-                "graphicstest",
+                "test_main",
                 "--build",
                 "--run",
-                "graphicstest.exe",
+                "test_main.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
             "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - Gomoku",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "game_gomoku",
+                "--build",
+                "--run",
+                "game_gomoku.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - SortVisualization",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "graph_sort_visualization",
+                "--build",
+                "--run",
+                "graph_sort_visualization.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - FunctionVisualization",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "graph_function_visualization",
+                "--build",
+                "--run",
+                "graph_function_visualization.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$msCompile"
         }
     ]
 }

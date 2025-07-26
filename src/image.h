@@ -1,15 +1,43 @@
 #pragma once
 
 #include "ege_head.h"
+
 #include <windows.h>
 
 
 namespace ege
 {
 
+enum ImageDecodeFormat
+{
+    ImageDecodeFormat_NULL = 0,
+    ImageDecodeFormat_PNG,
+    ImageDecodeFormat_BMP,
+    ImageDecodeFormat_JPEG,
+    ImageDecodeFormat_GIF,
+    ImageDecodeFormat_TIFF,
+    ImageDecodeFormat_EXIF,
+    ImageDecodeFormat_WMF,
+    ImageDecodeFormat_EMF
+};
+
+enum ImageEncodeFormat
+{
+    ImageEncodeFormat_NULL = 0,
+    ImageEncodeFormat_PNG,
+    ImageEncodeFormat_BMP
+};
+
 // 定义图像对象
 class IMAGE
 {
+public:
+    /* 初始颜色配置 */
+    static const color_t initial_line_color = LIGHTGRAY;
+    static const color_t initial_text_color = LIGHTGRAY;
+    static const color_t initial_fill_color = BLACK;
+    static const color_t initial_bk_color   = BLACK;
+private:
     int m_initflag;
 
 public:
@@ -32,12 +60,14 @@ private:
     bool m_aa;
     void initimage(HDC refDC, int width, int height);
     void construct(int width, int height);
+    void construct(int width, int height, color_t color);
     void setdefaultattribute();
     int  deleteimage();
     void reset();
 
 public:
-    viewporttype     m_vpt;
+    Bound            m_vpt;
+    bool             m_enableclip;
     textsettingstype m_texttype;
     line_style_type  m_linestyle;
     float            m_linewidth;
@@ -53,12 +83,13 @@ private:
 public:
     IMAGE();
     IMAGE(int width, int height);
-    IMAGE(const IMAGE& img);            // 拷贝构造函数
-    IMAGE& operator=(const IMAGE& img); // 赋值运算符重载函数
+    IMAGE(int width, int height, color_t color);
+    IMAGE(const IMAGE& img);
+    IMAGE& operator=(const IMAGE& img);
     ~IMAGE();
+
     void gentexture(bool gen);
 
-public:
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
@@ -231,11 +262,12 @@ public:
         int                        alpha        = -1, // in range[0, 256], alpha== -1 means no alpha
         int                        smooth       = 0);
 
-    friend void getimage_from_png_struct(PIMAGE, void*, void*);
+    friend graphics_errors getimage_from_png_struct(PIMAGE, void*, void*);
 };
 
-int getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
+graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
 
 int savebmp(PCIMAGE pimg, FILE* file, bool alpha = false);
 
+ImageDecodeFormat checkImageDecodeFormatByFileName(const WCHAR* fileName);
 } // namespace ege

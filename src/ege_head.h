@@ -15,10 +15,17 @@
 #define _ALLOW_RUNTIME_LIBRARY_MISMATCH
 #endif
 
-#define EGE_GRAPH_LIB_BUILD
-#define EGE_DEPRECATE(function, msg)
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
-#include "../include/ege.h"
+#define EGE_GRAPH_LIB_BUILD
+#ifndef EGE_DEPRECATE
+#define EGE_DEPRECATE(function, msg)
+#endif
+
+#include "ege.h"
+#include "ege/types.h"
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -185,6 +192,7 @@ struct _graph_setting
     HWND         hwnd;
     std::wstring window_caption;
     HICON        window_hicon;
+    color_t      window_initial_color;
     int          exit_flag;
     int          exit_window;
     int          update_mark_count; // 更新标记
@@ -200,10 +208,7 @@ struct _graph_setting
     HANDLE threadui_handle;
 
     /* 鼠标状态记录 */
-    int mouse_state_l, mouse_state_m, mouse_state_r;
-    int mouse_last_x, mouse_last_y;
-    int mouse_lastclick_x, mouse_lastclick_y;
-    int mouse_lastup_x, mouse_lastup_y;
+    Point mouse_pos;
     int mouse_show;
 
     LPMSG_KEY_PROC   callback_key;
@@ -212,8 +217,11 @@ struct _graph_setting
     void*            callback_mouse_param;
     LPCALLBACK_PROC  callback_close;
 
-    /* 键盘状态记录 */
-    int keystatemap[MAX_KEY_VCODE];
+    /* 按键状态记录 */
+    bool keystatemap[MAX_KEY_VCODE];
+    uint16_t key_press_count[MAX_KEY_VCODE];
+    uint16_t key_release_count[MAX_KEY_VCODE];
+    uint16_t key_repeat_count[MAX_KEY_VCODE];
 
     /* egeControlBase */
     egeControlBase* egectrl_root;
@@ -237,7 +245,8 @@ struct _graph_setting
     /* 函数用临时缓冲区 */
     DWORD g_t_buff[1024 * 8];
 
-    _graph_setting() { window_caption = EGE_TITLE_W; }
+public:
+    _graph_setting();
 };
 
 template <typename T> struct count_ptr
