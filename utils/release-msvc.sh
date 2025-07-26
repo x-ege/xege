@@ -49,7 +49,7 @@ function msvcBuild() {
             git clean -ffdx build/Release
             echo "Copy $vs_version x64 libs done: $(pwd)/Release/lib/$vs_version/x64"
 
-            ./test-release-libs.sh --toolset "$toolset" --arch x64
+            ./utils/test-release-libs.sh --toolset "$toolset" --arch x64 --build-dir "build-${vs_version/vs/msvc}"
         else
             echo "Error: Failed to build $vs_version x64"
             FAILED_TASKS+=("$vs_version-x64")
@@ -68,7 +68,7 @@ function msvcBuild() {
             git clean -ffdx build/Release
             echo "Copy $vs_version x86 libs done: $(pwd)/Release/lib/$vs_version/x86"
 
-            ./test-release-libs.sh --toolset "$toolset" --arch Win32
+            ./utils/test-release-libs.sh --toolset "$toolset" --arch Win32 --build-dir "build-${vs_version/vs/msvc}"
         else
             echo "Error: Failed to build $vs_version x86"
             FAILED_TASKS+=("$vs_version-x86")

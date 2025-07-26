@@ -161,6 +161,16 @@ while [[ $# -gt 0 ]]; do
         export DO_TEST_RELEASE_LIBS=true
         shift # past argument
         ;;
+    --build-dir)
+        echo "set build dir to $2"
+        if [[ "$2" == /* ]]; then
+            export CMAKE_BUILD_DIR="$2"
+        else
+            export CMAKE_BUILD_DIR="$PROJECT_DIR/$2"
+        fi
+        shift
+        shift
+        ;;
     --debug)
         echo "enable debug mode"
         export CMAKE_BUILD_TYPE="Debug"
@@ -246,10 +256,13 @@ fi
 
 if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
     echo "DO_TEST_RELEASE_LIBS is true, start testing release libs..."
-    if [[ "$CMAKE_BUILD_TYPE" == "Release" ]]; then
-        export CMAKE_BUILD_DIR="$PROJECT_DIR/build-demo-release"
-    else
-        export CMAKE_BUILD_DIR="$PROJECT_DIR/build-demo-debug"
+
+    if [[ "$(basename "$CMAKE_BUILD_DIR")" != *"msvc"* ]]; then
+        if [[ "$CMAKE_BUILD_TYPE" == "Release" ]]; then
+            export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-release"
+        else
+            export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-debug"
+        fi
     fi
 
     export BUILD_TARGET="demos"

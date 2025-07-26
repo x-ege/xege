@@ -100,7 +100,9 @@ if ./tasks.sh --release \
     find build -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
     ls -l Release/lib/mingw64
 
-    ./test-release-libs.sh -- \
+    ./utils/test-release-libs.sh \
+        --build-dir "build-mingw-windows" \
+        -- \
         -G "MinGW Makefiles" \
         -DCMAKE_C_COMPILER="$CC" \
         -DCMAKE_CXX_COMPILER="$CXX" \

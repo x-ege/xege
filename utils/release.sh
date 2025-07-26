@@ -13,7 +13,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
         cp -rf build/*.a Release/lib/macOS
         echo "Copy macOS libs done: $(pwd)/Release/lib/macOS"
 
-        ./utils/test-release-libs.sh
+        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-macos"
     else
         echo "Build macOS failed!" >&2
     fi
@@ -23,7 +23,7 @@ elif [[ $(uname -s) == "Linux" ]]; then
         mkdir -p Release/lib/mingw-w64-debian
         cp -rf build/*.a Release/lib/mingw-w64-debian
         echo "Copy mingw-w64-debian libs done: $(pwd)/Release/lib/mingw-w64-debian"
-        ./test-release-libs.sh
+        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-debian"
     else
         echo "Build mingw-w64-debian failed!" >&2
     fi
