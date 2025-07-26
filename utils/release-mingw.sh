@@ -99,6 +99,13 @@ if ./tasks.sh --release \
     mkdir -p Release/lib/mingw64
     find build -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
     ls -l Release/lib/mingw64
+
+    ./test-release-libs.sh -- \
+        -G "MinGW Makefiles" \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        -DCMAKE_RC_COMPILER="$RC" \
+        -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)"
 else
     echo "CMake configuration failed!"
     exit 1

@@ -69,7 +69,11 @@ function loadCMakeProject() {
     # 构建 cmake 参数数组
     local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
-    cmake_args+=("..")
+    if [[ -z "$EGE_SOURCE_PATH" ]]; then
+        cmake_args+=("..")
+    else
+        cmake_args+=("$EGE_SOURCE_PATH")
+    fi
 
     set -x
 
@@ -82,7 +86,7 @@ function loadCMakeProject() {
 
 function cmakeCleanAll() {
     pushd $PROJECT_DIR
-    git clean -ffdx build
+    git clean -ffdx build* 2>/dev/null || echo "git clean skipped, maybe no build directory exists."
     popd
 }
 
@@ -150,6 +154,11 @@ while [[ $# -gt 0 ]]; do
         ;;
     --build)
         export DO_BUILD=true
+        shift # past argument
+        ;;
+    --test-release-libs)
+        echo "使用 ege 预编译包来编译所有 Demo..."
+        export DO_TEST_RELEASE_LIBS=true
         shift # past argument
         ;;
     --debug)
@@ -233,6 +242,26 @@ if [[ "$DO_BUILD" == true ]]; then
         loadCMakeProject
     fi
     cmakeBuildAll
+fi
+
+if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
+    echo "DO_TEST_RELEASE_LIBS is true, start testing release libs..."
+    if [[ "$CMAKE_BUILD_TYPE" == "Release" ]]; then
+        export CMAKE_BUILD_DIR="$PROJECT_DIR/build-demo-release"
+    else
+        export CMAKE_BUILD_DIR="$PROJECT_DIR/build-demo-debug"
+    fi
+
+    export BUILD_TARGET="demos"
+    # 添加预编译库选项
+    CMAKE_CONFIG_DEFINE+=("-DEGE_BUILD_DEMO_WITH_PREBUILT_LIBS=ON")
+    mkdir -p "$CMAKE_BUILD_DIR" && cd "$CMAKE_BUILD_DIR"
+    if [[ ! -f "$CMAKE_BUILD_DIR/CMakeCache.txt" ]]; then
+        export EGE_SOURCE_PATH="../demo"
+        loadCMakeProject
+    fi
+    cmakeBuildAll
+    echo "Build demo with release libs done."
 fi
 
 if [[ -n "$RUN_EXECUTABLE" ]]; then
