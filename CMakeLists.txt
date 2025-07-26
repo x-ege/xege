@@ -55,6 +55,18 @@ endif()
 
 project(XEGE)
 
+# 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 MSVC 时）
+if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
+    find_program(CCACHE_FOUND ccache)
+    if(CCACHE_FOUND)
+        set(CMAKE_C_COMPILER_LAUNCHER ccache)
+        set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+        message(STATUS "ccache found and enabled")
+    else()
+        message(STATUS "ccache not found")
+    endif()
+endif()
+
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")

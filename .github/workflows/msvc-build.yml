@@ -31,6 +31,7 @@ jobs:
   vs2019-build:
     name: MSVC 2019 Build (Release)
     runs-on: windows-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -51,6 +52,7 @@ jobs:
   vs2017-build:
     name: MSVC 2017 Build (Release)
     runs-on: windows-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
