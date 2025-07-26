@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 
 EGE_DIR=$(pwd)
 
-git clean -ffdx
+git clean -ffdx build Release
 
 if [[ $(uname -s) == "Darwin" ]]; then
     # macos/linux

@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.." || exit 1
 
 EGE_DIR=$(pwd)
 
-git clean -ffdx
+git clean -ffdx build Release
 declare -a FAILED_TASKS=()
 
 # 环境变量默认值

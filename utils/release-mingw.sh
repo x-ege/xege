@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.." || exit 1
 
 EGE_DIR=$(pwd)
 
-git clean -ffdx
+git clean -ffdx build Release
 set -e
 set -x
 
