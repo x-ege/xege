@@ -104,7 +104,7 @@ function cmakeBuildAll() {
 
     set -x
 
-    if [[ -f XEGE.sln ]]; then
+    if ls *.sln >/dev/null 2>&1; then
         # MSVC 专属逻辑
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
