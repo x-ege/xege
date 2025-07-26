@@ -11,6 +11,11 @@ else
 
     git clean -ffdx build-demo* || echo "git clean skipped, maybe no build directory exists."
 
-    ./tasks.sh --test-release-libs --debug "$@"
-    ./tasks.sh --test-release-libs --release "$@"
+    if [[ "$*" == *"msvc2015"* || "$*" == *"msvc2010"* ]]; then
+        echo "Skipping tests for msvc2015 or msvc2010 because they do not support C++17 required by the demo."
+    else
+        set -x
+        ./tasks.sh --test-release-libs --debug "$@"
+        ./tasks.sh --test-release-libs --release "$@"
+    fi
 fi
