@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.." || exit 1
 
 EGE_DIR=$(pwd)
 
-git clean -ffdx
+git clean -ffdx build Release
 set -e
 set -x
 
@@ -99,6 +99,15 @@ if ./tasks.sh --release \
     mkdir -p Release/lib/mingw64
     find build -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
     ls -l Release/lib/mingw64
+
+    ./utils/test-release-libs.sh \
+        --build-dir "build-mingw-windows" \
+        -- \
+        -G "MinGW Makefiles" \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        -DCMAKE_RC_COMPILER="$RC" \
+        -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)"
 else
     echo "CMake configuration failed!"
     exit 1
