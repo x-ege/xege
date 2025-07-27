@@ -4,14 +4,16 @@
 
 #include <cstdio>
 #include <cassert>
-#include <vector>
 
 #if EGE_ENABLE_CAMERA_CAPTURE
+
+#error "EGE_ENABLE_CAMERA_CAPTURE is not supported in this build."
 
 #include <ccap.h>
 #include <cstdint>
 #include <memory>
 #include <algorithm>
+#include <vector>
 
 #include "image.h"
 
@@ -34,6 +36,15 @@ static const char* ERROR_MSG =
 namespace ege
 {
 class CameraFrameImp;
+
+bool hasCameraCaptureModule()
+{
+#if EGE_ENABLE_CAMERA_CAPTURE
+    return true;
+#else
+    return false;
+#endif
+}
 
 // 仅仅是套壳, 避免把 std::shared_ptr 暴露出去.
 struct FrameContainer
@@ -416,6 +427,5 @@ void enableCameraModuleLog(unsigned int logLevel)
 }
 
 } // namespace ege
-
 
 #endif

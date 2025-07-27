@@ -21,7 +21,7 @@
 
 #endif
 
-#include "ege.h"
+#include "graphics.h"
 
 /// 强制相机输出格式为 BGRA, 适配 ege::Image.
 /// FrameOrientation 限制为 TopToBottom, 适配 ege::Image.
@@ -39,6 +39,11 @@ namespace ege
 {
 class CameraCapture;
 struct FrameContainer;
+
+/// @brief 检查是否启用了相机捕获模块. 这通常是编译时确定的。
+/// 目前支持的版本为: 1. MSVC2022+, 2. 支持 C++17 的 MinGW 等.
+/// @return 如果启用了相机捕获模块, 返回 true; 否则返回 false.
+bool hasCameraCaptureModule();
 
 /// 一个帧数据的容器, 做一些数据回收相关的工作, 防止反复分配内存.
 /// 为了契合 ege::IMAGE 的设计, 这里的像素格式永远是 BGRA.

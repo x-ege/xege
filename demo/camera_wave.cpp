@@ -27,6 +27,8 @@
 // MSVC编译器使用中文文案
 #define TEXT_WINDOW_TITLE      "EGE 相机水波特效演示 - 作者: wysaid - 2025"
 #define TEXT_ERROR_NO_CAMERA   "此演示需要相机设备才能运行。\n请连接相机设备后重试。"
+#define TEXT_ERROR_NO_CAMERA_FEATURE \
+    "当前 ege 版本不支持相机功能，请使用支持 C++17 的编译器。 如果是 MSVC 编译器，请使用 MSVC 2022 或更高版本。"
 #define TEXT_ERROR_EXIT_HINT   "按任意键退出。"
 #define TEXT_ERROR_NO_DEVICE   "未找到相机设备！"
 #define TEXT_ERROR_OPEN_FAILED "打开相机设备失败！"
@@ -40,6 +42,8 @@
 // 非MSVC编译器使用英文文案
 #define TEXT_WINDOW_TITLE      "EGE camera wave By wysaid - 2025"
 #define TEXT_ERROR_NO_CAMERA   "This demo requires a camera device to run.\nPlease connect a camera and try again."
+#define TEXT_ERROR_NO_CAMERA_FEATURE \
+    "The current version of EGE does not support camera features. Please use a compiler that supports C++17. If using MSVC, please use MSVC 2022 or later."
 #define TEXT_ERROR_EXIT_HINT   "Press any key to exit."
 #define TEXT_ERROR_NO_DEVICE   "No camera device found!!"
 #define TEXT_ERROR_OPEN_FAILED "Failed to open camera device!!"
@@ -490,7 +494,11 @@ void showErrorWindow()
     setbkcolor(BLACK);
     cleardevice();
     setcolor(RED);
-    outtextrect(0, 0, getwidth(), getheight(), TEXT_ERROR_NO_CAMERA);
+    if (hasCameraCaptureModule()) {
+        outtextrect(0, 0, getwidth(), getheight(), TEXT_ERROR_NO_CAMERA);
+    } else {
+        outtextrect(0, 0, getwidth(), getheight(), TEXT_ERROR_NO_CAMERA_FEATURE);
+    }
     outtextxy(10, 30, TEXT_ERROR_EXIT_HINT);
     getch();
     closegraph();
@@ -502,10 +510,10 @@ int main()
     initgraph(WINDOW_WIDTH, WINDOW_HEIGHT, INIT_RENDERMANUAL);
     setcaption(TEXT_WINDOW_TITLE);
 
-    Net         net;
+    Net                net;
     ege::CameraCapture camera;
-    PIMAGE      target = newimage(getwidth(), getheight());
-    char        msgBuffer[1024];
+    PIMAGE             target = newimage(getwidth(), getheight());
+    char               msgBuffer[1024];
 
     setbkmode(TRANSPARENT);
     setcolor(YELLOW, target);
@@ -604,6 +612,7 @@ int main()
         setcolor(0x00ff0000);
         outtextxy(10, 10, TEXT_INFO_MSG);
         outtextxy(10, 30, msgBuffer);
+        printf("XXX\n");
     }
 
     fputs(TEXT_CAMERA_CLOSED, stderr);
