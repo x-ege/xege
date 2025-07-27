@@ -200,7 +200,7 @@ private:
 
 /////////////////
 
-CameraCapture::CameraCapture()
+CameraCapture::CameraCapture() : m_provider(nullptr), m_frameContainer(nullptr)
 {
     CHECK_AND_PRINT_ERROR_MSG();
 
@@ -388,7 +388,7 @@ CameraFrame* CameraCapture::grabFrame(unsigned int timeoutInMs)
                 m_frameContainer->allFrames.push_back(frameImp);
                 m_frameContainer->frameInUse.push_back(frameImp);
                 fputs("ege: new frame created!!\n", stderr);
-                if(m_frameContainer->frameInUse.size() > 100) {
+                if (m_frameContainer->frameInUse.size() > 100) {
                     fputs("ege: too many frames in use, consider releasing unused frames!!\n", stderr);
                 }
                 return frameImp.get();
