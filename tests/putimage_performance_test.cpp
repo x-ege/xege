@@ -7,9 +7,9 @@
 
 #define SHOW_CONSOLE 1
 #include "ege.h"
-#include "../image_generator.h"
-#include "../performance_timer.h"
-#include "../test_framework.h"
+#include "image_generator.h"
+#include "performance_timer.h"
+#include "test_framework.h"
 
 #include <iomanip>
 #include <iostream>

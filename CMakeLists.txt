@@ -92,7 +92,7 @@ endif()
 
 add_library(xege STATIC)
 
-target_include_directories(xege PUBLIC include)
+target_include_directories(xege PUBLIC ${PROJECT_SOURCE_DIR}/export)
 
 # 是否使用 libpng 和 zlib 处理 PNG 图片。
 # 目前只能为 ON，未来或允许选择使用 WIC。
@@ -259,7 +259,7 @@ endmacro()
 add_subdirectory(src)
 
 if(EGE_BUILD_DEMO)
-    add_subdirectory(demo)
+    add_subdirectory(examples)
 endif()
 
 if(EGE_BUILD_TEMP AND EXISTS "${PROJECT_SOURCE_DIR}/temp/CMakeLists.txt")

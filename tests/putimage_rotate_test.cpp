@@ -3,9 +3,9 @@
  */
 
 #define SHOW_CONSOLE 1
-#include "../test_framework.h"
-#include "../performance_timer.h"
-#include "../image_generator.h"
+#include "test_framework.h"
+#include "performance_timer.h"
+#include "image_generator.h"
 #include "ege.h"
 
 #include <iostream>

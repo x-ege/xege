@@ -5,6 +5,10 @@ target_sources(xege
 )
 
 target_include_directories(xege
+    PRIVATE ${PROJECT_SOURCE_DIR}/include
+)
+
+target_include_directories(xege
     PRIVATE lpng
 )
 
