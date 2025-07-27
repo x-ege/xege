@@ -29,11 +29,9 @@ endif()
 
 project(ege-demos)
 
-
 if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
   include(./ege_release.cmake)
 endif()
-
 
 file(
   GLOB DEMO_SRCS
@@ -56,6 +54,14 @@ macro(ege_add_executable name source)
       /D__STDC_LIMIT_MACROS
       /MP
     )
+  endif()
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    if(CMAKE_HOST_UNIX)
+      target_compile_definitions(${name} PRIVATE _FORTIFY_SOURCE=0)
+      target_link_options(${name}
+        PRIVATE -static)
+    endif()
   endif()
 endmacro()
 
