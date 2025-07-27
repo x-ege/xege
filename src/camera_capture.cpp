@@ -7,8 +7,6 @@
 
 #if EGE_ENABLE_CAMERA_CAPTURE
 
-#error "EGE_ENABLE_CAMERA_CAPTURE is not supported in this build."
-
 #include <ccap.h>
 #include <cstdint>
 #include <memory>
