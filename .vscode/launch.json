@@ -104,6 +104,45 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": "Build All",
+        },
+        {
+            "name": "Debug Camera Wave - MINGW",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/demo/camera_wave.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/demo",
+            "environment": [],
+            "windows": {
+                "environment": [
+                    {
+                        "name": "PATH",
+                        "value": "C:\\Program Files\\RedPanda-Cpp\\mingw64\\bin;${env:PATH}"
+                    }
+                ],
+                "miDebuggerPath": "gdb.exe",
+            },
+            "osx": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "winedbg"
+            },
+            "externalConsole": false,
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "Build All",
+            "MIMode": "gdb",            
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }
