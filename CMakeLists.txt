@@ -56,6 +56,7 @@ endif()
 # 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 MSVC 时）
 if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
     find_program(CCACHE_FOUND ccache)
+
     if(CCACHE_FOUND)
         set(CMAKE_C_COMPILER_LAUNCHER ccache)
         set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
@@ -91,7 +92,18 @@ unset(CMAKE_REQUIRED_FLAGS)
 
 if(COMPILER_SUPPORTS_CXX17)
     option(EGE_ENABLE_CPP17 "Enable C++ 17" ON)
-    option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ON)
+
+    if(NOT EGE_NON_WINDOWS AND (NOT MSVC OR MSVC_VERSION GREATER_EQUAL 1930))
+        # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
+        # 在此之上, 如果使用的是 MSVC, 那么只在 MSVC2022 及以上版本启用相机捕获功能. 
+        # 因为 ege 只发布 release 包的原因, 经过测试， 在 MSVC2019 以及之前的版本上, 会出现编译时不匹配的错误.
+        set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT ON)
+    else()
+        set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT OFF)
+    endif()
+
+    option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ${EGE_ENABLE_CAMERA_CAPTURE_DEFAULT})
+    message(STATUS "EGE_ENABLE_CAMERA_CAPTURE: ${EGE_ENABLE_CAMERA_CAPTURE}")
 else()
     set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++ 17" FORCE)
     set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
@@ -207,8 +219,7 @@ if(EGE_ENABLE_CPP17)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
 endif()
 
-if(EGE_ENABLE_CAMERA_CAPTURE AND NOT EGE_NON_WINDOWS)
-    # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
+if(EGE_ENABLE_CAMERA_CAPTURE)
     include(CheckCXXCompilerFlag)
 
     # 检查是否支持AVX2
