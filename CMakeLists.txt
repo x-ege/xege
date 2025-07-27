@@ -53,8 +53,6 @@ if(CMAKE_HOST_UNIX)
     set(EGE_NON_WINDOWS ON CACHE BOOL "EGE is not compiled on Windows" FORCE)
 endif()
 
-project(XEGE)
-
 # 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 MSVC 时）
 if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
     find_program(CCACHE_FOUND ccache)
@@ -66,6 +64,8 @@ if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
         message(STATUS "ccache not found")
     endif()
 endif()
+
+project(XEGE)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
