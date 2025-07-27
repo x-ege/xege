@@ -191,11 +191,11 @@ public:
                 dy += (m_vec[m_index][h - m_width].y + m_vec[m_index][h + m_width].y - m_vec[m_index][h].y * 2.0f);
 
                 // 模拟能量损失， 当加速度方向与速度方向相反时，加快减速
-                if (((unsigned&)dx >> 31) != ((unsigned&)m_vec[m_index][h].dx >> 31)) {
+                if (std::signbit(dx) != std::signbit(m_vec[m_index][h].dx)) {
                     dx *= 1.0f + m_intensity;
                 }
 
-                if (((unsigned&)dy >> 31) != ((unsigned&)m_vec[m_index][h].dy >> 31)) {
+                if (std::signbit(dy) != std::signbit(m_vec[m_index][h].dy)) {
                     dy *= 1.0f + m_intensity;
                 }
 
