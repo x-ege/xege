@@ -289,6 +289,7 @@ bool CameraCapture::open(const char* deviceName, bool autoStart)
     }
 
     m_provider->set(PropertyName::PixelFormatOutput, ccap::PixelFormat::BGRA32);
+    m_provider->set(PropertyName::PixelFormatInternal, ccap::PixelFormat::BGRA32);
     m_provider->set(PropertyName::FrameOrientation, ccap::FrameOrientation::TopToBottom);
 
     return m_provider->open(deviceName, autoStart);
