@@ -388,6 +388,9 @@ CameraFrame* CameraCapture::grabFrame(unsigned int timeoutInMs)
                 m_frameContainer->allFrames.push_back(frameImp);
                 m_frameContainer->frameInUse.push_back(frameImp);
                 fputs("ege: new frame created!!\n", stderr);
+                if(m_frameContainer->frameInUse.size() > 100) {
+                    fputs("ege: too many frames in use, consider releasing unused frames!!\n", stderr);
+                }
                 return frameImp.get();
             }
         }
