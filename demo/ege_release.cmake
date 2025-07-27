@@ -87,7 +87,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 
     target_compile_options(xege INTERFACE -D_FORTIFY_SOURCE=0)
     target_link_options(xege INTERFACE -mwindows -static -static-libgcc -static-libstdc++)
-    target_link_libraries(xege INTERFACE gdiplus gdi32 imm32 msimg32 ole32 oleaut32 winmm uuid)
+    target_link_libraries(xege INTERFACE gdiplus gdi32 imm32 msimg32 ole32 oleaut32 winmm uuid strmiids)
 endif()
 
 target_include_directories(xege INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
