@@ -91,6 +91,19 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": "Build All",
+        },
+        {
+            "name": "Debug Camera Wave",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/demo/Debug/camera_wave.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/demo/Debug",
+            "environment": [],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "Build All",
         }
     ]
 }

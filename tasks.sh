@@ -5,8 +5,20 @@ set -e
 cd "$(dirname "$0")"
 PROJECT_DIR=$(pwd)
 
+# 缓存 WSL 检测结果
+__IS_WSL_CACHE=""
+
 function isWsl() {
-    [[ -d "/mnt/c" ]] || command -v wslpath &>/dev/null
+    if [[ -z "$__IS_WSL_CACHE" ]]; then
+        if [[ -f /proc/sys/kernel/osrelease ]] && grep -qi "Microsoft" /proc/sys/kernel/osrelease; then
+            __IS_WSL_CACHE=1
+        elif [[ -d "/mnt/c/WINDOWS/system32" ]] || command -v wslpath &>/dev/null; then
+            __IS_WSL_CACHE=1
+        else
+            __IS_WSL_CACHE=0
+        fi
+    fi
+    [[ $__IS_WSL_CACHE -eq 1 ]]
 }
 
 function isWindows() {

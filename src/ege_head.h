@@ -19,7 +19,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#define EGE_GRAPH_LIB_BUILD
+#ifndef EGE_GRAPH_LIB_BUILD
+#define EGE_GRAPH_LIB_BUILD 1
+#endif
 #ifndef EGE_DEPRECATE
 #define EGE_DEPRECATE(function, msg)
 #endif

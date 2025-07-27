@@ -53,11 +53,10 @@ if(CMAKE_HOST_UNIX)
     set(EGE_NON_WINDOWS ON CACHE BOOL "EGE is not compiled on Windows" FORCE)
 endif()
 
-project(XEGE)
-
 # 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 MSVC 时）
 if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
     find_program(CCACHE_FOUND ccache)
+
     if(CCACHE_FOUND)
         set(CMAKE_C_COMPILER_LAUNCHER ccache)
         set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
@@ -67,8 +66,10 @@ if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
     endif()
 endif()
 
+project(XEGE)
+
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build (defaulted by EGE when not provided).")
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
 elseif(NOT MSVC)
     message(STATUS "CMAKE_BUILD_TYPE is set to ${CMAKE_BUILD_TYPE}")
@@ -91,8 +92,21 @@ unset(CMAKE_REQUIRED_FLAGS)
 
 if(COMPILER_SUPPORTS_CXX17)
     option(EGE_ENABLE_CPP17 "Enable C++ 17" ON)
+
+    if(NOT EGE_NON_WINDOWS AND (NOT MSVC OR MSVC_VERSION GREATER_EQUAL 1930))
+        # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
+        # 在此之上, 如果使用的是 MSVC, 那么只在 MSVC2022 及以上版本启用相机捕获功能. 
+        # 因为 ege 只发布 release 包的原因, 经过测试， 在 MSVC2019 以及之前的版本上, 会出现编译时不匹配的错误.
+        set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT ON)
+    else()
+        set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT OFF)
+    endif()
+
+    option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ${EGE_ENABLE_CAMERA_CAPTURE_DEFAULT})
+    message(STATUS "EGE_ENABLE_CAMERA_CAPTURE: ${EGE_ENABLE_CAMERA_CAPTURE}")
 else()
     set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++ 17" FORCE)
+    set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
 endif()
 
 message(STATUS "EGE enable C++ 17: ${EGE_ENABLE_CPP17}")
@@ -205,6 +219,40 @@ if(EGE_ENABLE_CPP17)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
 endif()
 
+if(EGE_ENABLE_CAMERA_CAPTURE)
+    include(CheckCXXCompilerFlag)
+
+    # 检查是否支持AVX2
+    if(MSVC)
+        check_cxx_compiler_flag("/arch:AVX2" CCAP_SUPPORTS_AVX2)
+    else()
+        check_cxx_compiler_flag("-mavx2" CCAP_SUPPORTS_AVX2)
+    endif()
+
+    if(CCAP_SUPPORTS_AVX2)
+        set(CCAP_CONVERT_AVX2_SRC ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/ccap_convert_avx2.cpp)
+
+        if(MSVC)
+            set_source_files_properties(${CCAP_CONVERT_AVX2_SRC} PROPERTIES COMPILE_OPTIONS "/arch:AVX2")
+        else()
+            # GCC/Clang/MinGW need these options to enable AVX2
+            set_source_files_properties(${CCAP_CONVERT_AVX2_SRC} PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
+        endif()
+    else()
+        target_compile_definitions(xege PRIVATE ENABLE_AVX2_IMP=0)
+    endif()
+
+    # 启用相机相关功能
+    # 不用 submodule, 直接引入源码, 对齐 ege 的编译条件
+    target_include_directories(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/include)
+    file(GLOB CCAP_SOURCE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/*.cpp)
+    target_sources(xege PRIVATE ${CCAP_SOURCE})
+    target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
+    target_link_libraries(xege PRIVATE strmiids)
+else()
+    message(WARNING "Camera capture is disabled because your compiler does not support C++17.")
+endif()
+
 # 设置库文件名
 set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
 
@@ -219,6 +267,8 @@ target_compile_definitions(xege PUBLIC
     $<$<CONFIG:RelWithDebInfo>:NDEBUG=1>
     $<$<CONFIG:MinSizeRel>:NDEBUG=1>
 )
+
+target_compile_definitions(xege PRIVATE EGE_GRAPH_LIB_BUILD=1)
 
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")

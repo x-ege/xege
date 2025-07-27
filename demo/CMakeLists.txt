@@ -29,9 +29,11 @@ endif()
 
 project(ege-demos)
 
+
 if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
   include(./ege_release.cmake)
 endif()
+
 
 file(
   GLOB DEMO_SRCS
