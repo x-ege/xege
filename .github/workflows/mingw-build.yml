@@ -28,13 +28,13 @@ jobs:
             (github.event_name == 'push' && github.ref == 'refs/heads/master') && fromJson('["Release", "Debug"]') ||
             fromJson(format('["{0}"]', github.event.inputs.build_type || 'Release'))
           }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
       - name: Setup MinGW-w64 via MSYS2
         uses: msys2/setup-msys2@v2
         with:
@@ -57,14 +57,14 @@ jobs:
           export CC=gcc
           export CXX=g++
           export RC=windres
-          
+
           # Clean previous builds
           rm -rf build-mingw
-          
+
           # Configure CMake
           mkdir -p build-mingw
           cd build-mingw
-          
+
           cmake .. \
             -G "MinGW Makefiles" \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
@@ -72,7 +72,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=g++ \
             -DCMAKE_RC_COMPILER=windres \
             -DCMAKE_MAKE_PROGRAM=mingw32-make
-          
+
           # Build the project
           cmake --build . --parallel $(nproc)
 
@@ -83,10 +83,10 @@ jobs:
         run: |
           # Create build-type specific directory structure
           mkdir -p ${BUILD_TYPE}/lib/mingw64
-          
+
           # Copy built libraries
           find build-mingw -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw64/ \;
-          
+
           # List generated files
           echo "Generated MinGW libraries for $BUILD_TYPE:"
           ls -la ${BUILD_TYPE}/lib/mingw64/
@@ -110,7 +110,7 @@ jobs:
             (github.event_name == 'push' && github.ref == 'refs/heads/master') && fromJson('["Release", "Debug"]') ||
             fromJson(format('["{0}"]', github.event.inputs.build_type || 'Release'))
           }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -135,14 +135,14 @@ jobs:
         run: |
           # Clean previous builds
           rm -rf build-mingw-ubuntu
-          
+
           # Configure CMake for cross-compilation
           mkdir -p build-mingw-ubuntu
           cd build-mingw-ubuntu
-          
+
           # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
           cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
-          
+
           # Build the project
           cmake --build . --parallel $(nproc)
 
@@ -152,10 +152,10 @@ jobs:
         run: |
           # Create build-type specific directory structure
           mkdir -p ${BUILD_TYPE}/lib/mingw-w64-ubuntu
-          
+
           # Copy built libraries
           find build-mingw-ubuntu -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw-w64-ubuntu/ \;
-          
+
           # List generated files
           echo "Generated MinGW Ubuntu libraries for $BUILD_TYPE:"
           ls -la ${BUILD_TYPE}/lib/mingw-w64-ubuntu/
