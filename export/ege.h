@@ -45,13 +45,19 @@
 #   endif
 #endif
 
+#ifdef CUP_BUILD
+#   define _LINK_NAME "xege.lib"
+#else
+#   define _LINK_NAME "graphics.lib"
+#endif
+
 #if !defined(EGE_GRAPH_LIB_BUILD) && !defined(EGE_GRAPH_NO_LIB)
 #   ifdef _MSC_VER
 #       pragma comment(lib,"gdiplus.lib")
 #       ifdef _WIN64 // 64 bit libs
-#           pragma comment(lib,"graphics.lib")
+#           pragma comment(lib,_LINK_NAME)
 #       else   // 32 bit libs
-#           pragma comment(lib,"graphics.lib")
+#           pragma comment(lib,_LINK_NAME)
 #       endif
 #   endif
 #endif

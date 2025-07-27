@@ -1,0 +1,58 @@
+[project]
+name = "xege"
+version = "0.1.0"
+type = "static"
+
+[build]
+# generator = "Ninja"
+# generator = "MinGW Makefiles"
+# generator = "Visual Studio 17 2022"
+jobs = 0
+defines = ["CUP_BUILD"]
+
+[dependencies]
+libpng = { url = "@Anglebase/libpng", version = "0.1.0" }
+
+[tests]
+sources = [
+    "tests/tests/image_generator.cpp",
+    "tests/tests/performance_timer.cpp",
+    "tests/tests/test_framework.cpp",
+]
+includes = ["tests/tests"]
+defines = ["CUP_BUILD"]
+
+[examples]
+defines = ["CUP_BUILD"]
+
+[generator."Visual Studio 17 2022"]
+compile_options = ["/utf-8"]
+[generator."Visual Studio 16 2019"]
+compile_options = ["/utf-8"]
+[generator."Visual Studio 15 2017"]
+compile_options = ["/utf-8"]
+[generator."Visual Studio 14 2015"]
+compile_options = ["/utf-8"]
+
+[generator."MinGW Makefiles"]
+link_libs = [
+    "gdi32",
+    "user32",
+    "kernel32",
+    "gdiplus",
+    "ole32",
+    "oleaut32",
+    "uuid",
+    "winmm",
+]
+[generator."Ninja"]
+link_libs = [
+    "gdi32",
+    "user32",
+    "kernel32",
+    "gdiplus",
+    "ole32",
+    "oleaut32",
+    "uuid",
+    "winmm",
+]

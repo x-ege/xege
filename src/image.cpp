@@ -22,8 +22,11 @@
 // #undef _ITERATOR_DEBUG_LEVEL
 // #endif
 
+#ifdef CUP_BUILD
+#include "libpng/png.h"
+#else
 #include <png.h>
-
+#endif
 
 #include <math.h>
 #include <limits.h>

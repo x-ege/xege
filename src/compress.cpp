@@ -1,6 +1,9 @@
 #include "ege_head.h"
+#ifdef CUP_BUILD
+#include "zlib/zlib.h"
+#else
 #include <zlib.h>
-
+#endif
 namespace ege
 {
 

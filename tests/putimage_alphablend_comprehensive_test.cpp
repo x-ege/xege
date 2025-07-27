@@ -27,6 +27,7 @@
  */
 
 #define SHOW_CONSOLE 1
+#define NOMINMAX 1
 #include "ege.h"
 #include "image_generator.h"
 #include "performance_timer.h" 
