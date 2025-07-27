@@ -161,6 +161,10 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         ;;
     --build-dir)
+        if [[ -z "$2" ]]; then
+            echo "Error: --build-dir requires a directory path argument" >&2
+            exit 1
+        fi
         echo "set build dir to $2"
         if [[ "$2" == /* ]]; then
             export CMAKE_BUILD_DIR="$2"
@@ -181,6 +185,10 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         ;;
     --target)
+        if [[ -z "$2" ]]; then
+            echo "Error: --target requires a target name argument" >&2
+            exit 1
+        fi
         echo "set build target to $2"
         export BUILD_TARGET="$2"
         if [[ $BUILD_TARGET == "demos" ]]; then
@@ -190,18 +198,30 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
     --toolset)
+        if [[ -z "$2" ]]; then
+            echo "Error: --toolset requires a toolset name argument" >&2
+            exit 1
+        fi
         echo "set toolset to $2"
         CMAKE_CONFIG_DEFINE+=("-T" "$2")
         shift
         shift
         ;;
     --arch)
+        if [[ -z "$2" ]]; then
+            echo "Error: --arch requires an architecture argument" >&2
+            exit 1
+        fi
         echo "set arch to $2"
         CMAKE_CONFIG_DEFINE+=("-A" "$2")
         shift
         shift
         ;;
     -G | --generator)
+        if [[ -z "$2" ]]; then
+            echo "Error: --generator requires a generator name argument" >&2
+            exit 1
+        fi
         echo "set generator to $2"
         CMAKE_CONFIG_DEFINE+=("-G" "$2")
         shift
@@ -217,6 +237,10 @@ while [[ $# -gt 0 ]]; do
         break
         ;;
     --run)
+        if [[ -z "$2" ]]; then
+            echo "Error: --run requires an executable name argument" >&2
+            exit 1
+        fi
         RUN_EXECUTABLE="$2"
         shift
         shift
