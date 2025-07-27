@@ -65,7 +65,7 @@ macro(ege_add_executable_demo name source)
 
   set_property(TARGET ${name}
     PROPERTY EXCLUDE_FROM_ALL true)
-  add_dependencies(demos ${DEMO_NAME})
+  add_dependencies(demos ${name})
 endmacro()
 
 foreach(DEMO_SRC ${DEMO_SRCS})
