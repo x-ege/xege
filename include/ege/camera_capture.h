@@ -117,12 +117,10 @@ public:
 
         DeviceList(const DeviceList&) = delete;
 
-        DeviceList(DeviceList&& d)
+        DeviceList(DeviceList&& d) : info(d.info), count(d.count)
         {
-            (DeviceInfo*&)(info) = (DeviceInfo*)d.info;
-            (int&)count          = (int)d.count;
-            (DeviceInfo*&)d.info = nullptr; // 避免析构时重复释放
-            (int&)d.count        = (int)0;
+            const_cast<DeviceInfo*&>(d.info) = nullptr; // 避免析构时重复释放
+            const_cast<int&>(d.count) = 0;
         }
 
         DeviceList& operator=(const DeviceList&) = delete;

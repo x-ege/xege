@@ -100,7 +100,7 @@ public:
                 fputs("ege: 抓取到的图像格式不正确, 请上报一个错误!!", stderr);
                 fputs("ege: The captured image format is incorrect, please report an error!!", stderr);
                 assert(0);
-                return m_realImage.get();
+                return nullptr;
             }
 
             // 更新一下数据.
