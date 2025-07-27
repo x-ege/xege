@@ -298,6 +298,19 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
     fi
     cmakeBuildAll
     echo "Build demo with release libs done."
+
+    if cd "$PROJECT_DIR/Release"; then
+        CMAKE_BUILD_DIR_BASE_NAME=$(basename "$CMAKE_BUILD_DIR")
+        OUTPUT_BASE_DIR=${CMAKE_BUILD_DIR_BASE_NAME/build-/}
+        OUTPUT_DIR="$PROJECT_DIR/Release/bin/$OUTPUT_BASE_DIR"
+        mkdir -p "$OUTPUT_DIR"
+        echo "Copying executables to $OUTPUT_DIR"
+        cd "$CMAKE_BUILD_DIR"
+        # 找到 $CMAKE_BUILD_DIR 里面的所有 exe 文件, 保持相对于 $CMAKE_BUILD_DIR 的目录结构, 并复制到 $OUTPUT_DIR 目录
+        find . -maxdepth 2 -type f -executable -name "*.exe" -exec cp --parents {} "$OUTPUT_DIR" \;
+    else
+        echo "Release directory does not exist, skipping copy."
+    fi
 fi
 
 if [[ -n "$RUN_EXECUTABLE" ]]; then
