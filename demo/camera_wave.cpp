@@ -612,7 +612,6 @@ int main()
         setcolor(0x00ff0000);
         outtextxy(10, 10, TEXT_INFO_MSG);
         outtextxy(10, 30, msgBuffer);
-        printf("XXX\n");
     }
 
     fputs(TEXT_CAMERA_CLOSED, stderr);
