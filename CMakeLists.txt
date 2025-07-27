@@ -69,7 +69,7 @@ endif()
 project(XEGE)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build (defaulted by EGE when not provided).")
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
 elseif(NOT MSVC)
     message(STATUS "CMAKE_BUILD_TYPE is set to ${CMAKE_BUILD_TYPE}")
