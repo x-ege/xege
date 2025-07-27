@@ -15,10 +15,6 @@ on:
         options:
         - Release
         - Debug
-      mingw_path:
-        description: 'Custom MinGW path (optional)'
-        required: false
-        type: string
 
 jobs:
   mingw-windows-build:
@@ -36,103 +32,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Setup MinGW-w64 via MSYS2
-        uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
-          update: true
-          install: >-
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-make
-            mingw-w64-x86_64-ninja
-            make
-            git
-
-      - name: Build with MinGW (using tasks.sh)
-        shell: msys2 {0}
-        env:
-          BUILD_TYPE: ${{ matrix.build_type }}
-          MINGW64_PATH: ${{ github.event.inputs.mingw_path }}
-        run: |
-          # Set environment variables
-          export CC=gcc
-          export CXX=g++
-          export RC=windres
-          
-          # Clean previous builds
-          git clean -ffdx build Release || true
-          
-          # Configure and build using tasks.sh
-          chmod +x tasks.sh
-          
-          # Set build flag based on build type
-          if [ "$BUILD_TYPE" = "Debug" ]; then
-            BUILD_FLAG="--debug"
-            echo "Building Debug version with tasks.sh..."
-          else
-            BUILD_FLAG="--release"
-            echo "Building Release version with tasks.sh..."
-          fi
-          
-          # Run the build
-          ./tasks.sh $BUILD_FLAG \
-            --target xege \
-            --clean \
-            --load \
-            --build \
-            -- \
-            -G "MinGW Makefiles" \
-            -DCMAKE_C_COMPILER=gcc \
-            -DCMAKE_CXX_COMPILER=g++ \
-            -DCMAKE_RC_COMPILER=windres \
-            -DCMAKE_MAKE_PROGRAM=mingw32-make
-
-      - name: Package MinGW artifacts
-        shell: msys2 {0}
-        run: |
-          # Ensure Release directory exists
-          mkdir -p Release/lib/mingw64
-          
-          # Copy built libraries from different possible locations
-          if [ -d "build" ]; then
-            find build -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
-          fi
-          
-          # Also check for any other build directories
-          for build_dir in build-*; do
-            if [ -d "$build_dir" ]; then
-              find "$build_dir" -type f -name "*.a" -exec cp {} Release/lib/mingw64/ 2>/dev/null \; || true
-            fi
-          done
-          
-          # List generated files
-          echo "Generated MinGW libraries:"
-          if [ -d "Release/lib/mingw64" ] && [ "$(ls -A Release/lib/mingw64)" ]; then
-            ls -la Release/lib/mingw64/
-          else
-            echo "No libraries found in Release/lib/mingw64"
-            echo "Searching for .a files in the project..."
-            find . -name "*.a" -type f 2>/dev/null || echo "No .a files found"
-          fi
-
-      - name: Upload MinGW artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: xege-mingw-windows-${{ matrix.build_type }}-libraries
-          path: Release/lib/mingw64/
-          retention-days: 30
-        if: success()
-
-  mingw-windows-alternative-build:
-    name: MinGW Alternative Build (Direct CMake)
-    runs-on: windows-latest
-    if: github.event_name == 'workflow_dispatch'  # Only run manually
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          submodules: recursive
       
       - name: Setup MinGW-w64 via MSYS2
         uses: msys2/setup-msys2@v2
@@ -150,7 +51,7 @@ jobs:
       - name: Direct CMake Build with MinGW
         shell: msys2 {0}
         env:
-          BUILD_TYPE: ${{ github.event.inputs.build_type || 'Release' }}
+          BUILD_TYPE: ${{ matrix.build_type }}
         run: |
           # Set up environment
           export CC=gcc
@@ -158,11 +59,11 @@ jobs:
           export RC=windres
           
           # Clean previous builds
-          rm -rf build-mingw-direct
+          rm -rf build-mingw
           
           # Configure CMake
-          mkdir -p build-mingw-direct
-          cd build-mingw-direct
+          mkdir -p build-mingw
+          cd build-mingw
           
           cmake .. \
             -G "MinGW Makefiles" \
@@ -170,29 +71,95 @@ jobs:
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
             -DCMAKE_RC_COMPILER=windres \
-            -DCMAKE_MAKE_PROGRAM=mingw32-make \
-            -DEGE_BUILD_DEMO=OFF
+            -DCMAKE_MAKE_PROGRAM=mingw32-make
           
           # Build the project
-          cmake --build . --config "$BUILD_TYPE" --parallel $(nproc)
+          cmake --build . --parallel $(nproc)
 
-      - name: Package Direct CMake artifacts
+      - name: Package MinGW artifacts
         shell: msys2 {0}
         run: |
           # Create release directory structure
-          mkdir -p Release/lib/mingw64-direct
+          mkdir -p Release/lib/mingw64
           
           # Copy built libraries
-          find build-mingw-direct -type f -name "*.a" -exec cp {} Release/lib/mingw64-direct/ \;
+          find build-mingw -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
           
           # List generated files
-          echo "Generated MinGW libraries (Direct CMake build):"
-          ls -la Release/lib/mingw64-direct/
+          echo "Generated MinGW libraries:"
+          ls -la Release/lib/mingw64/
 
-      - name: Upload Direct CMake artifacts
+      - name: Upload MinGW artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: xege-mingw-windows-direct-${{ github.event.inputs.build_type || 'release' }}-libraries
-          path: Release/lib/mingw64-direct/
+          name: xege-mingw-windows-${{ matrix.build_type }}-libraries
+          path: Release/lib/mingw64/
+          retention-days: 30
+        if: success()
+
+  mingw-ubuntu-build:
+    name: MinGW Ubuntu Build (${{ matrix.build_type }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: >-
+          ${{
+            github.event_name == 'pull_request' && fromJson('["Release"]') ||
+            (github.event_name == 'push' && github.ref == 'refs/heads/master') && fromJson('["Release", "Debug"]') ||
+            fromJson(format('["{0}"]', github.event.inputs.build_type || 'Release'))
+          }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install MinGW-w64 cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            mingw-w64 \
+            mingw-w64-tools \
+            gcc-mingw-w64-x86-64 \
+            g++-mingw-w64-x86-64 \
+            cmake \
+            make \
+            git
+
+      - name: Cross-compile with MinGW-w64
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+        run: |
+          # Clean previous builds
+          rm -rf build-mingw-ubuntu
+          
+          # Configure CMake for cross-compilation
+          mkdir -p build-mingw-ubuntu
+          cd build-mingw-ubuntu
+          
+          # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
+          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+          
+          # Build the project
+          cmake --build . --parallel $(nproc)
+
+      - name: Package MinGW Ubuntu artifacts
+        run: |
+          # Create release directory structure
+          mkdir -p Release/lib/mingw-w64-ubuntu
+          
+          # Copy built libraries
+          find build-mingw-ubuntu -type f -name "*.a" -exec cp {} Release/lib/mingw-w64-ubuntu/ \;
+          
+          # List generated files
+          echo "Generated MinGW Ubuntu libraries:"
+          ls -la Release/lib/mingw-w64-ubuntu/
+
+      - name: Upload MinGW Ubuntu artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xege-mingw-ubuntu-${{ matrix.build_type }}-libraries
+          path: Release/lib/mingw-w64-ubuntu/
           retention-days: 30
         if: success()
