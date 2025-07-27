@@ -97,3 +97,16 @@ if(NOT CMAKE_HOST_UNIX)
     message(CHECK_PASS "not found")
   endif()
 endif()
+
+if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
+  file(GLOB COMPILE_TESTS_SRCS
+    LIST_DIRECTORIES false
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/compile-tests/*.cpp"
+  )
+
+  foreach(COMPILE_TEST_SRC ${COMPILE_TESTS_SRCS})
+    get_filename_component(TEST_NAME ${COMPILE_TEST_SRC} NAME_WE)
+    ege_add_executable_demo(${TEST_NAME} ${COMPILE_TEST_SRC})
+  endforeach()
+endif()
