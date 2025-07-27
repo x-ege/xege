@@ -1255,6 +1255,9 @@ inline void setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT)
  */
 initmode_flag  EGEAPI getinitmode();
 
+/// @brief Get EGE build information
+const char* egebuildinfo();
+
 /**
  * @brief Create EGE graphics window and perform environment initialization
  * 

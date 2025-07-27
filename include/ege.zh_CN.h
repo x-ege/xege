@@ -1249,6 +1249,9 @@ inline void setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT)
  */
 initmode_flag  EGEAPI getinitmode();
 
+/// @brief 获取EGE图形库的构建信息
+const char* egebuildinfo();
+
 /**
  * @brief 创建 EGE 图形化窗口，并进行环境初始化
  * 

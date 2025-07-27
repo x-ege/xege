@@ -1092,6 +1092,55 @@ initmode_flag getinitmode()
     return g_initoption;
 }
 
+const char* egebuildinfo()
+{
+    static char buildinfo[256] = {0};
+    
+    if (buildinfo[0] == '\0') {
+#ifdef _MSC_VER
+        // MSVC 编译器
+        #if _MSC_VER >= 1930
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC 2022 (v143)");
+        #elif _MSC_VER >= 1920
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC 2019 (v142)");
+        #elif _MSC_VER >= 1910
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC 2017 (v141)");
+        #elif _MSC_VER >= 1900
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC 2015 (v140)");
+        #elif _MSC_VER >= 1800
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC 2013 (v120)");
+        #elif _MSC_VER >= 1700
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC 2012 (v110)");
+        #elif _MSC_VER >= 1600
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC 2010 (v100)");
+        #else
+            snprintf(buildinfo, sizeof(buildinfo), "MSVC (Unknown version)");
+        #endif
+#elif defined(__MINGW32__)
+        // MinGW 编译器
+        #ifdef __MINGW64_VERSION_MAJOR
+            snprintf(buildinfo, sizeof(buildinfo), "MinGW-w64 %d.%d", __MINGW64_VERSION_MAJOR, __MINGW64_VERSION_MINOR);
+        #else
+            snprintf(buildinfo, sizeof(buildinfo), "MinGW (Unknown version)");
+        #endif
+#elif defined(__clang__)
+        // Clang 编译器
+        snprintf(buildinfo, sizeof(buildinfo), "Clang %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
+#elif defined(__GNUC__)
+        // GCC 编译器
+        snprintf(buildinfo, sizeof(buildinfo), "GCC %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+#else
+        snprintf(buildinfo, sizeof(buildinfo), "Unknown Compiler");
+#endif
+        
+        // 追加 EGE 版本号
+        int len = strlen(buildinfo);
+        snprintf(buildinfo + len, sizeof(buildinfo) - len, " - EGE %s", EGE_VERSION);
+    }
+    
+    return buildinfo;
+}
+
 // 获取当前版本
 long getGraphicsVer()
 {
