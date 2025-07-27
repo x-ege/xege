@@ -268,6 +268,8 @@ target_compile_definitions(xege PUBLIC
     $<$<CONFIG:MinSizeRel>:NDEBUG=1>
 )
 
+target_compile_definitions(xege PRIVATE EGE_GRAPH_LIB_BUILD=1)
+
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
 

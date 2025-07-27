@@ -15,7 +15,7 @@
 
 #endif
 
-#include "graphics.h"
+#include "ege.h"
 
 /// 强制相机输出格式为 BGRA, 适配 ege::Image.
 /// FrameOrientation 限制为 TopToBottom, 适配 ege::Image.
