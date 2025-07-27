@@ -1,4 +1,4 @@
-name: MSVC Build (2015/2017/2019/2022)
+name: MSVC Build
 
 on:
   push:
