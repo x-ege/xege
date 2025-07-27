@@ -118,7 +118,7 @@ public:
             } else { // 未对齐
                 for (uint32_t i = 0; i < m_realFrame->height; ++i) {
                     memcpy(buffer + i * m_realFrame->width, m_realFrame->data[0] + i * m_realFrame->stride[0],
-                        m_realFrame->width);
+                        m_realFrame->width * 4);
                 }
             }
         }
@@ -147,7 +147,7 @@ public:
             } else { // 未对齐
                 for (uint32_t i = 0; i < m_realFrame->height; ++i) {
                     memcpy(buffer + i * m_realFrame->width, m_realFrame->data[0] + i * m_realFrame->stride[0],
-                        m_realFrame->width);
+                        m_realFrame->width * 4);
                 }
             }
             return img;
