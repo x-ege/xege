@@ -2,12 +2,6 @@
 #ifndef EGE_CAMERA_CAPTURE_H
 #define EGE_CAMERA_CAPTURE_H
 
-#if __cplusplus < 201103L
-// 判断一下是否支持 C++11, 不支持的话, 直接屏蔽此文件内容
-#pragma message("C++11 or higher is required.")
-#define EGE_CAMERA_CAPTURE_H
-#endif
-
 // 判断一下是否支持 C++17, 不支持的给一个警告
 
 #if !(defined(EGE_ENABLE_CAMERA_CAPTURE) && EGE_ENABLE_CAMERA_CAPTURE) && __cplusplus < 201703L
@@ -120,7 +114,7 @@ public:
         DeviceList(DeviceList&& d) : info(d.info), count(d.count)
         {
             const_cast<DeviceInfo*&>(d.info) = nullptr; // 避免析构时重复释放
-            const_cast<int&>(d.count) = 0;
+            const_cast<int&>(d.count)        = 0;
         }
 
         DeviceList& operator=(const DeviceList&) = delete;
