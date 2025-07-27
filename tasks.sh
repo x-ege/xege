@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 PROJECT_DIR=$(pwd)
 
 function isWsl() {
-    [[ -d "/mnt/c" ]] || command -v wslpath &>/dev/null
+    [[ -d "/mnt/c/WINDOWS/system32" ]] || command -v wslpath &>/dev/null
 }
 
 function isWindows() {

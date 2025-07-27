@@ -254,10 +254,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "group": "build",
-            "problemMatcher": "$msCompile",
-            "dependsOn": [
-                "Build Demos"
-            ]
+            "problemMatcher": "$msCompile"
         }
     ]
 }
