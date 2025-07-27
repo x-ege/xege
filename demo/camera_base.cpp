@@ -32,8 +32,8 @@
 #define TEXT_CPP11_REQUIRED    "需要 C++11 或更高版本。"
 #else
 // 非MSVC编译器使用英文文案
-#define TEXT_WINDOW_TITLE      "EGE Camera Demo"
-#define TEXT_ERROR_NO_CAMERA   "This demo requires a camera device to run.\nPlease connect a camera and try again."
+#define TEXT_WINDOW_TITLE    "EGE Camera Demo"
+#define TEXT_ERROR_NO_CAMERA "This demo requires a camera device to run.\nPlease connect a camera and try again."
 #define TEXT_ERROR_NO_CAMERA_FEATURE \
     "The current version of EGE does not support camera features. Please use a compiler that supports C++17. If using MSVC, please use MSVC 2022 or later."
 #define TEXT_ERROR_EXIT_HINT   "Press any key to exit."
@@ -119,21 +119,17 @@ int main()
 
         CameraFrame* newFrame = camera.grabFrame(3000); // 最多等待 3 秒
         if (!newFrame) {
+            fputs(TEXT_ERROR_GRAB_FAILED, stderr);
             break;
         }
 
-        if (newFrame) {
-            // 这里的 getImage 重复调用没有额外开销.
-            auto* img = newFrame->getImage();
-            if (img) {
-                auto w = getwidth(img);
-                auto h = getheight(img);
-                putimage(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, img, 0, 0, w, h);
-                newFrame->release(); // 释放帧数据
-            }
-        } else {
-            fputs(TEXT_ERROR_GRAB_FAILED, stderr);
-            break;
+        // 这里的 getImage 重复调用没有额外开销.
+        auto* img = newFrame->getImage();
+        if (img) {
+            auto w = getwidth(img);
+            auto h = getheight(img);
+            putimage(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, img, 0, 0, w, h);
+            newFrame->release(); // 释放帧数据
         }
     }
 
