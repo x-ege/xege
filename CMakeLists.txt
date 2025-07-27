@@ -7,6 +7,7 @@ endif()
 
 if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.13)
+    cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 endif()
 
 # Clear CMake cache
@@ -48,13 +49,23 @@ if(CMAKE_HOST_UNIX)
     set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
     set(PKG_CONFIG_EXECUTABLE ${TOOLCHAIN_PREFIX}-pkg-config)
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=0")
-
     # EGE 交叉编译的时候, 实际上是 WINE 环境, 这里标记一下, 一些代码需要额外处理.
     set(EGE_NON_WINDOWS ON CACHE BOOL "EGE is not compiled on Windows" FORCE)
 endif()
 
 project(XEGE)
+
+# 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 MSVC 时）
+if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
+    find_program(CCACHE_FOUND ccache)
+    if(CCACHE_FOUND)
+        set(CMAKE_C_COMPILER_LAUNCHER ccache)
+        set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+        message(STATUS "ccache found and enabled")
+    else()
+        message(STATUS "ccache not found")
+    endif()
+endif()
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
@@ -283,9 +294,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
 
     if(CMAKE_HOST_UNIX)
-        target_link_options(xege INTERFACE PRIVATE -D_FORTIFY_SOURCE=0 -mwindows -static)
+        target_link_options(xege PUBLIC -mwindows -static)
+        target_compile_definitions(xege PUBLIC _FORTIFY_SOURCE=0)
     else()
-        target_link_options(xege INTERFACE -mwindows)
+        target_link_options(xege PUBLIC -mwindows)
     endif()
 else()
     if(CMAKE_CXX_COMPILER_ID)
@@ -299,39 +311,6 @@ target_link_libraries(xege INTERFACE
     gdiplus
     gdi32
 )
-
-# 增加链接 ege 的可执行目标
-macro(ege_add_executable name source)
-    add_executable(${name} ${source})
-    target_link_libraries(${name} xege)
-
-    if(MSVC)
-        # MSVC 2015 (v140) 及以上版本支持 /source-charset:utf-8 选项
-        if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上
-            target_compile_options(${name} PRIVATE
-                /source-charset:utf-8
-                /D_USE_MATH_DEFINES
-                /D__STDC_LIMIT_MACROS
-                /MP
-            )
-        else() # MSVC 2010-2013
-            target_compile_options(${name} PRIVATE
-                /D_USE_MATH_DEFINES
-                /D__STDC_LIMIT_MACROS
-                /MP
-            )
-        endif()
-    endif()
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        if(CMAKE_HOST_UNIX)
-            target_link_options(${name}
-                PRIVATE -D_FORTIFY_SOURCE=0 -mwindows -static)
-        else()
-            target_link_options(${name} PRIVATE -mwindows)
-        endif()
-    endif()
-endmacro()
 
 if(EGE_BUILD_DEMO)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/demo/CMakeLists.txt")

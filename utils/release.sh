@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 
 EGE_DIR=$(pwd)
 
-git clean -ffdx
+git clean -ffdx build Release
 
 if [[ $(uname -s) == "Darwin" ]]; then
     # macos/linux
@@ -12,6 +12,8 @@ if [[ $(uname -s) == "Darwin" ]]; then
         mkdir -p Release/lib/macOS
         cp -rf build/*.a Release/lib/macOS
         echo "Copy macOS libs done: $(pwd)/Release/lib/macOS"
+
+        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-macos"
     else
         echo "Build macOS failed!" >&2
     fi
@@ -21,6 +23,7 @@ elif [[ $(uname -s) == "Linux" ]]; then
         mkdir -p Release/lib/mingw-w64-debian
         cp -rf build/*.a Release/lib/mingw-w64-debian
         echo "Copy mingw-w64-debian libs done: $(pwd)/Release/lib/mingw-w64-debian"
+        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-debian"
     else
         echo "Build mingw-w64-debian failed!" >&2
     fi

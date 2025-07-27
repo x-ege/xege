@@ -10,11 +10,10 @@ function isWsl() {
 }
 
 function isWindows() {
-    if isWsl; then
-        # 定义 BUILD_EGE_NON_WINDOWS 环境变量后, 在 WSL 中运行时, 认为是非 Windows 环境
-        [[ "$PROJECT_DIR" =~ ^/mnt/ ]] && [[ -z "$BUILD_EGE_NON_WINDOWS" ]]
-    else
+    if ! isWsl; then
         [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]
+    else
+        [[ "$PROJECT_DIR" =~ ^/mnt/ ]] && [[ -z "$BUILD_EGE_NON_WINDOWS" ]]
     fi
 }
 
@@ -69,7 +68,11 @@ function loadCMakeProject() {
     # 构建 cmake 参数数组
     local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
-    cmake_args+=("..")
+    if [[ -z "$EGE_SOURCE_PATH" ]]; then
+        cmake_args+=("..")
+    else
+        cmake_args+=("$EGE_SOURCE_PATH")
+    fi
 
     set -x
 
@@ -101,7 +104,7 @@ function cmakeBuildAll() {
 
     set -x
 
-    if isWindows && [[ -f XEGE.sln ]]; then
+    if ls *.sln >/dev/null 2>&1; then
         # MSVC 专属逻辑
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
@@ -152,6 +155,25 @@ while [[ $# -gt 0 ]]; do
         export DO_BUILD=true
         shift # past argument
         ;;
+    --test-release-libs)
+        echo "使用 ege 预编译包来编译所有 Demo..."
+        export DO_TEST_RELEASE_LIBS=true
+        shift # past argument
+        ;;
+    --build-dir)
+        if [[ -z "$2" ]]; then
+            echo "Error: --build-dir requires a directory path argument" >&2
+            exit 1
+        fi
+        echo "set build dir to $2"
+        if [[ "$2" == /* ]]; then
+            export CMAKE_BUILD_DIR="$2"
+        else
+            export CMAKE_BUILD_DIR="$PROJECT_DIR/$2"
+        fi
+        shift
+        shift
+        ;;
     --debug)
         echo "enable debug mode"
         export CMAKE_BUILD_TYPE="Debug"
@@ -163,6 +185,10 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         ;;
     --target)
+        if [[ -z "$2" ]]; then
+            echo "Error: --target requires a target name argument" >&2
+            exit 1
+        fi
         echo "set build target to $2"
         export BUILD_TARGET="$2"
         if [[ $BUILD_TARGET == "demos" ]]; then
@@ -172,18 +198,30 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
     --toolset)
+        if [[ -z "$2" ]]; then
+            echo "Error: --toolset requires a toolset name argument" >&2
+            exit 1
+        fi
         echo "set toolset to $2"
         CMAKE_CONFIG_DEFINE+=("-T" "$2")
         shift
         shift
         ;;
     --arch)
+        if [[ -z "$2" ]]; then
+            echo "Error: --arch requires an architecture argument" >&2
+            exit 1
+        fi
         echo "set arch to $2"
         CMAKE_CONFIG_DEFINE+=("-A" "$2")
         shift
         shift
         ;;
     -G | --generator)
+        if [[ -z "$2" ]]; then
+            echo "Error: --generator requires a generator name argument" >&2
+            exit 1
+        fi
         echo "set generator to $2"
         CMAKE_CONFIG_DEFINE+=("-G" "$2")
         shift
@@ -199,6 +237,10 @@ while [[ $# -gt 0 ]]; do
         break
         ;;
     --run)
+        if [[ -z "$2" ]]; then
+            echo "Error: --run requires an executable name argument" >&2
+            exit 1
+        fi
         RUN_EXECUTABLE="$2"
         shift
         shift
@@ -233,6 +275,29 @@ if [[ "$DO_BUILD" == true ]]; then
         loadCMakeProject
     fi
     cmakeBuildAll
+fi
+
+if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
+    echo "DO_TEST_RELEASE_LIBS is true, start testing release libs..."
+
+    if [[ "$(basename "$CMAKE_BUILD_DIR")" != *"msvc"* ]]; then
+        if [[ "$CMAKE_BUILD_TYPE" == "Release" ]]; then
+            export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-release"
+        else
+            export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-debug"
+        fi
+    fi
+
+    export BUILD_TARGET="demos"
+    # 添加预编译库选项
+    CMAKE_CONFIG_DEFINE+=("-DEGE_BUILD_DEMO_WITH_PREBUILT_LIBS=ON")
+    mkdir -p "$CMAKE_BUILD_DIR" && cd "$CMAKE_BUILD_DIR"
+    if [[ ! -f "CMakeCache.txt" ]]; then
+        export EGE_SOURCE_PATH="../demo"
+        loadCMakeProject
+    fi
+    cmakeBuildAll
+    echo "Build demo with release libs done."
 fi
 
 if [[ -n "$RUN_EXECUTABLE" ]]; then
