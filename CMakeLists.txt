@@ -93,20 +93,16 @@ unset(CMAKE_REQUIRED_FLAGS)
 if(COMPILER_SUPPORTS_CXX17)
     option(EGE_ENABLE_CPP17 "Enable C++ 17" ON)
 
-    if(NOT EGE_NON_WINDOWS AND (NOT MSVC OR MSVC_VERSION GREATER_EQUAL 1930))
-        # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
-        # 在此之上, 如果使用的是 MSVC, 那么只在 MSVC2022 及以上版本启用相机捕获功能. 
-        # 因为 ege 只发布 release 包的原因, 经过测试， 在 MSVC2019 以及之前的版本上, 会出现编译时不匹配的错误.
-        set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT ON)
-    else()
-        set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT OFF)
-    endif()
-
+    set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT ON)
     option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ${EGE_ENABLE_CAMERA_CAPTURE_DEFAULT})
     message(STATUS "EGE_ENABLE_CAMERA_CAPTURE: ${EGE_ENABLE_CAMERA_CAPTURE}")
 else()
     set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++ 17" FORCE)
-    set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
+    
+    if(NOT EGE_NON_WINDOWS)
+        # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
+        set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
+    endif()
 endif()
 
 message(STATUS "EGE enable C++ 17: ${EGE_ENABLE_CPP17}")
@@ -169,11 +165,11 @@ if(USE_LIBPNG_AND_ZLIB)
         if(MSVC)
             target_compile_options(png_static PRIVATE
                 /MP
-                /MT
+                /MD
                 /Zl)
             target_compile_options(zlibstatic PRIVATE
                 /MP
-                /MT
+                /MD
                 /Zl)
         else()
             target_compile_options(png_static PRIVATE
@@ -279,13 +275,13 @@ if(MSVC)
         target_compile_options(xege PRIVATE
             /utf-8
             /MP
-            /MT
+            /MD
             /Zl)
     else() # MSVC 2010-2013
         # 对于老版本 MSVC，脚本单独处理源码文件(加BOM)
         target_compile_options(xege PRIVATE
             /MP
-            /MT
+            /MD
             /Zl)
     endif()
 
@@ -293,6 +289,17 @@ if(MSVC)
         /DNOMINMAX=1
         /D_CRT_SECURE_NO_WARNINGS=1
         /Zc:__cplusplus
+    )
+
+    # EGE 对外仅发布 Release 版本, 同时使用静态库版本的 CRT.
+    # 对外会保障内存分配的匹配性.
+    # 这些选项仅在编译 ege 内部生效
+    target_compile_definitions(xege PRIVATE
+        _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH=1
+        _ALLOW_RUNTIME_LIBRARY_MISMATCH=1
+        _CRT_NON_CONFORMING_SWPRINTFS=1
+        _CRT_SECURE_NO_WARNINGS=1
+        _CRT_SECURE_NO_DEPRECATE=1
     )
 
     if(MSVC_VERSION EQUAL 1200)
