@@ -93,16 +93,18 @@ unset(CMAKE_REQUIRED_FLAGS)
 if(COMPILER_SUPPORTS_CXX17)
     option(EGE_ENABLE_CPP17 "Enable C++ 17" ON)
 
+    if(NOT EGE_NON_WINDOWS)
+        # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
     set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT ON)
+    else()
+        set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT OFF)
+    endif()
+
     option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ${EGE_ENABLE_CAMERA_CAPTURE_DEFAULT})
     message(STATUS "EGE_ENABLE_CAMERA_CAPTURE: ${EGE_ENABLE_CAMERA_CAPTURE}")
 else()
     set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++ 17" FORCE)
-    
-    if(NOT EGE_NON_WINDOWS)
-        # 仅在 Windows 上启用相机捕获功能, 因为 Linux 以及 macOS 上基于 WINE 运行, 还无法启动相机设备.
-        set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
-    endif()
+    set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
 endif()
 
 message(STATUS "EGE enable C++ 17: ${EGE_ENABLE_CPP17}")
