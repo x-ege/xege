@@ -165,11 +165,9 @@ if(USE_LIBPNG_AND_ZLIB)
         if(MSVC)
             target_compile_options(png_static PRIVATE
                 /MP
-                /MD
                 /Zl)
             target_compile_options(zlibstatic PRIVATE
                 /MP
-                /MD
                 /Zl)
         else()
             target_compile_options(png_static PRIVATE
@@ -275,13 +273,11 @@ if(MSVC)
         target_compile_options(xege PRIVATE
             /utf-8
             /MP
-            /MD
             /Zl)
     else() # MSVC 2010-2013
         # 对于老版本 MSVC，脚本单独处理源码文件(加BOM)
         target_compile_options(xege PRIVATE
             /MP
-            /MD
             /Zl)
     endif()
 
