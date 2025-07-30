@@ -69,8 +69,7 @@ if(MSVC)
         "$<$<CONFIG:DEBUG>:/DDEBUG>"
         "$<$<CONFIG:RELEASE>:/DNDEBUG>"
         "$<$<CONFIG:RELWITHDEBINFO>:/DNDEBUG>"
-        "$<$<CONFIG:MINSIZEREL>:/DNDEBUG>"
-        "$<IF:$<CONFIG:Debug>,/MDd,/MD>")
+        "$<$<CONFIG:MINSIZEREL>:/DNDEBUG>")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
