@@ -287,7 +287,7 @@ if(MSVC)
         /Zc:__cplusplus
     )
 
-    # EGE 对外仅发布 Release 版本, 同时使用静态库版本的 CRT.
+    # EGE 对外仅发布 Release 版本
     # 对外会保障内存分配的匹配性.
     # 这些选项仅在编译 ege 内部生效
     target_compile_definitions(xege PRIVATE
