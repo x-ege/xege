@@ -23,18 +23,18 @@ static COLORHSL EGE_PRIVATE_RGBtoHSL(int _col)
     g = EGEGET_G(_col) / 255.0f;
     r = EGEGET_R(_col) / 255.0f;
 
-#define IFSWAP(a, b) \
-    if (*a > *b) {   \
-        t = a;       \
-        a = b;       \
-        b = t;       \
-    }
     {
-        IFSWAP(dp[0], dp[1]);
-        IFSWAP(dp[1], dp[2]);
-        IFSWAP(dp[0], dp[1]);
+        auto ifswap = [](float* a, float* b) {
+            if (*a > *b) {
+                float t = *a;
+                *a      = *b;
+                *b      = t;
+            }
+        };
+        ifswap(dp[0], dp[1]);
+        ifswap(dp[1], dp[2]);
+        ifswap(dp[0], dp[1]);
     }
-#undef IFSWAP
 
     {
         _crCol.l = (*dp[0] + *dp[2]) / 2;
@@ -54,27 +54,27 @@ static COLORHSL EGE_PRIVATE_RGBtoHSL(int _col)
             _crCol.l = 0.5;
         }
     }
-#define BLACKUNFORMAT(c, v) ((c) / ((v) * 2))
-#define WHITEUNFORMAT(c, v) (1 - (1 - c) / ((1 - (v)) * 2))
+
     if (_crCol.l == 0.5) {
         ;
     } else if (_crCol.l < 0.5) {
+        auto blackunformat = [](float c, float v) -> float { return c / ((v) * 2); };
         for (int n = 0; n < 3; ++n) {
-            *dp[n] = BLACKUNFORMAT(*dp[n], _crCol.l);
+            *dp[n] = blackunformat(*dp[n], _crCol.l);
             if (*dp[n] > 1) {
                 *dp[n] = 1;
             }
         }
     } else {
+        auto whiteunformat = [](float c, float v) -> float { return 1 - (1 - c) / ((1 - (v)) * 2); };
         for (int n = 0; n < 3; ++n) {
-            *dp[n] = WHITEUNFORMAT(*dp[n], _crCol.l);
+            *dp[n] = whiteunformat(*dp[n], _crCol.l);
             if (*dp[n] > 1) {
                 *dp[n] = 1;
             }
         }
     }
-#undef BLACKUNFORMAT
-#undef WHITEUNFORMAT
+
     {
         _crCol.s = *dp[2] * 2 - 1;
         if (_crCol.s < 1e-2) {
@@ -82,16 +82,17 @@ static COLORHSL EGE_PRIVATE_RGBtoHSL(int _col)
             return _crCol;
         }
     }
-#define SATUNFORMAT(c, s) (((c)-0.5f) / (s) + 0.5f)
+
     {
+        auto satunformat = [](float c, float s) -> float { return (c - 0.5f) / s + 0.5f; };
         for (int n = 0; n < 3; ++n) {
-            *dp[n] = SATUNFORMAT(*dp[n], _crCol.s);
+            *dp[n] = satunformat(*dp[n], _crCol.s);
             if (*dp[n] > 1) {
                 *dp[n] = 1;
             }
         }
     }
-#undef SATUNFORMAT
+
     {
         _crCol.h = *dp[1];
         if ((dp[2] == &r) && (dp[1] == &g)) {
@@ -142,32 +143,32 @@ static int EGE_PRIVATE_HSLtoRGB(float _h, float _s, float _l)
         } else {
             dp[1] = xh;
         }
-#define SATFORMAT(c, s) (((c)-0.5f) * (s) + 0.5f)
+
+        auto satformat = [](float c, float s) { return (c - 0.5f) * s + 0.5f; };
         for (n = 0; n < 3; ++n) {
-            dp[n] = SATFORMAT(dp[n], _s);
+            dp[n] = satformat(dp[n], _s);
         }
-#undef SATFORMAT
-#define BLACKFORMAT(c, v) ((c) * (v) * 2)
-#define WHITEFORMAT(c, v) (1 - (1 - (c)) * (1 - (v)) * 2)
+
         if (_l == 0.5f) {
             ;
         } else if (_l < 0.5f) {
+            auto blackformat = [](float c, float v) { return c * v * 2; };
             if (_l < 0) {
                 _l = 0;
             }
             for (n = 0; n < 3; ++n) {
-                dp[n] = BLACKFORMAT(dp[n], _l);
+                dp[n] = blackformat(dp[n], _l);
             }
         } else {
+            auto whiteformat = [](float c, float v) { return 1 - (1 - c) * (1 - v) * 2; };
             if (_l > 1) {
                 _l = 1;
             }
             for (n = 0; n < 3; ++n) {
-                dp[n] = WHITEFORMAT(dp[n], _l);
+                dp[n] = whiteformat(dp[n], _l);
             }
         }
-#undef BLACKFORMAT
-#undef WHITEFORMAT
+
         {
             if (i == 0) {
                 r = dp[0];
@@ -208,8 +209,8 @@ static void RGB_TO_HSV(const COLORRGB* input, COLORHSV* output)
     g = input->g / 255.0f;
     b = input->b / 255.0f;
 
-    minRGB    = MIN(r, MIN(g, b));
-    maxRGB    = MAX(r, MAX(g, b));
+    minRGB    = min(r, g, b);
+    maxRGB    = max(r, g, b);
     deltaRGB  = maxRGB - minRGB;
     output->v = maxRGB;
 
@@ -379,10 +380,10 @@ color_t alphablend_premultiplied(color_t dst, color_t src)
 
 color_t alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor)
 {
-    byte alpha = DIVIDE_255_FAST(EGEGET_A(src) * srcAlphaFactor + 255/2);
-    byte red   = DIVIDE_255_FAST(EGEGET_R(src) * srcAlphaFactor + 255/2);
-    byte green = DIVIDE_255_FAST(EGEGET_G(src) * srcAlphaFactor + 255/2);
-    byte blue  = DIVIDE_255_FAST(EGEGET_B(src) * srcAlphaFactor + 255/2);
+    byte alpha = DIVIDE_255_FAST(EGEGET_A(src) * srcAlphaFactor + 255 / 2);
+    byte red   = DIVIDE_255_FAST(EGEGET_R(src) * srcAlphaFactor + 255 / 2);
+    byte green = DIVIDE_255_FAST(EGEGET_G(src) * srcAlphaFactor + 255 / 2);
+    byte blue  = DIVIDE_255_FAST(EGEGET_B(src) * srcAlphaFactor + 255 / 2);
 
     return alphablend_premultiplied_inline(dst, EGEARGB(alpha, red, green, blue));
 }

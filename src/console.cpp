@@ -5,7 +5,6 @@
 #include <fcntl.h>
 #include <wincon.h>
 
-
 #undef _INC_CONIO
 #undef _CONIO_H_
 #include <conio.h>
@@ -14,7 +13,7 @@
 #define CHECK_CONSOLE_HANDLE(hHandle) \
     {                                 \
         if (hHandle == NULL)          \
-            return FALSE;             \
+            return false;             \
     }
 
 namespace ege
@@ -23,16 +22,16 @@ namespace ege
 // We don't support vc6
 #ifndef EGE_COMPILERINFO_VC6
 
-static HANDLE hInput = NULL;
-static HANDLE hOutput = NULL;
-static HWND hConsoleWnd = NULL;
-static FILE fOldIn;
-static FILE fOldOut;
+static HANDLE hInput      = NULL;
+static HANDLE hOutput     = NULL;
+static HWND   hConsoleWnd = NULL;
+static FILE   fOldIn;
+static FILE   fOldOut;
 
 bool init_console()
 {
     HMENU hMenu;
-    int hCrt;
+    int   hCrt;
     FILE* hf;
     if (hInput != NULL) {
         return false;
@@ -63,14 +62,14 @@ bool init_console()
         DrawMenuBar(hConsoleWnd);
     }
 
-    hCrt = _open_osfhandle((intptr_t)hOutput, _O_TEXT);
-    hf = _fdopen(hCrt, "w");
+    hCrt    = _open_osfhandle((intptr_t)hOutput, _O_TEXT);
+    hf      = _fdopen(hCrt, "w");
     fOldOut = *stdout;
     *stdout = *hf;
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    hCrt = _open_osfhandle((intptr_t)hInput, _O_TEXT);
-    hf = _fdopen(hCrt, "r");
+    hCrt   = _open_osfhandle((intptr_t)hInput, _O_TEXT);
+    hf     = _fdopen(hCrt, "r");
     fOldIn = *stdin;
     *stdin = *hf;
     // setvbuf( stdin, NULL, _IONBF, 0 );
@@ -92,10 +91,10 @@ bool clear_console()
 
     COORD coordScreen = {0, 0};
 
-    bool bSuccess;
-    DWORD cCharsWritten;
+    bool                       bSuccess;
+    DWORD                      cCharsWritten;
     CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
-    DWORD dwConSize;
+    DWORD                      dwConSize;
 
     if (hOutput == NULL) {
         return false;
@@ -160,11 +159,11 @@ bool close_console()
         return false;
     }
 
-    hOutput = NULL;
-    hInput = NULL;
+    hOutput     = NULL;
+    hInput      = NULL;
     hConsoleWnd = NULL;
-    *stdout = fOldOut;
-    *stdin = fOldIn;
+    *stdout     = fOldOut;
+    *stdin      = fOldIn;
     return true;
 };
 
