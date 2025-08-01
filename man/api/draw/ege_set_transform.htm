@@ -35,7 +35,7 @@
 <font color=#800080>ege_transform_matrix</font> m;
 //保存旧的坐标变换矩阵
 <font color=#008080>ege_get_transform</font>(&m);
-<font color=#008080>ege_transform_translate</font>(<font color=#008080>getwidth</font>(),<font color=#008080>getheight</font>()); //平移到屏幕中心
+<font color=#008080>ege_transform_translate</font>(<font color=#008080>getwidth</font>()/2,<font color=#008080>getheight</font>()/2); //平移到屏幕中心
 <font color=#008080>ege_transform_rotate</font>(45.0); // 顺时针旋转45度
 <font color=#008080>ege_transform_translate</font>(-<font color=#008080>getwidth</font>(img)/2, -<font color=#008080>getheight</font>(img)/2); // 平移图片img中心
 <font color=#008080>ege_drawimage</font>(img,0,0); 
