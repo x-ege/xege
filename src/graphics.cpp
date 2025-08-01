@@ -99,7 +99,7 @@ unsigned long getlogodatasize();
 }
 #endif
 
-DWORD WINAPI messageloopthread(LPVOID lpParameter);
+DWORD WINAPI messageLoopThread(LPVOID lpParameter);
 
 _graph_setting::_graph_setting()
 {
@@ -285,10 +285,12 @@ void guiupdate(_graph_setting* pg, egeControlBase* root)
     root->update();
 }
 
-/*private function*/
 int waitdealmessage(_graph_setting* pg)
 {
-    // MSG msg;
+    if (pg->init_option & INIT_EVENTLOOP) {
+        messageHandle();
+    }
+
     if (pg->update_mark_count < UPDATE_MAX_CALL) {
         egeControlBase* root = pg->egectrl_root;
         root->draw(NULL);
@@ -857,6 +859,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 {
     struct _graph_setting* pg = &graph_setting;
 
+    pg->init_option = getinitmode();
     pg->exit_flag   = 0;
     pg->exit_window = 0;
 
@@ -886,17 +889,22 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     register_classW(pg, pg->instance);
 
     // SECURITY_ATTRIBUTES sa = {0};
-    DWORD pid;
-    pg->threadui_handle = CreateThread(NULL, 0, messageloopthread, pg, CREATE_SUSPENDED, &pid);
-    ResumeThread(pg->threadui_handle);
 
-    while (!pg->has_init) {
-        ::Sleep(1);
+    if (pg->init_option & INIT_EVENTLOOP) {
+        initWindow(pg);
+    } else {
+        DWORD pid;
+        pg->threadui_handle = CreateThread(NULL, 0, messageLoopThread, pg, CREATE_SUSPENDED, &pid);
+        ResumeThread(pg->threadui_handle);
+
+        while (!pg->has_init) {
+            ::Sleep(1);
+        }
     }
 
     UpdateWindow(pg->hwnd);
 
-    if (!(g_initoption & INIT_HIDE)) {
+    if (!(pg->init_option & INIT_HIDE)) {
         ShowWindow(pg->hwnd, SW_SHOWNORMAL);
         BringWindowToTop(pg->hwnd);
         SetForegroundWindow(pg->hwnd);
@@ -914,11 +922,11 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 
     static egeControlBase _egeControlBase;
 
-    if ((g_initoption & INIT_WITHLOGO) && !(g_initoption & INIT_HIDE)) {
+    if ((pg->init_option & INIT_WITHLOGO) && !(pg->init_option & INIT_HIDE)) {
         logoscene();
     }
 
-    if (g_initoption & INIT_RENDERMANUAL) {
+    if (pg->init_option & INIT_RENDERMANUAL) {
         setrendermode(RENDER_MANUAL);
     }
 
@@ -945,12 +953,8 @@ void closegraph()
     ShowWindow(pg->hwnd, SW_HIDE);
 }
 
-/*private function*/
-DWORD WINAPI messageloopthread(LPVOID lpParameter)
+int initWindow(_graph_setting* pg)
 {
-    _graph_setting* pg = (_graph_setting*)lpParameter;
-    MSG             msg;
-
     /* 执行应用程序初始化: */
     if (!init_instance(pg->instance)) {
         return 0xFFFFFFFF;
@@ -963,25 +967,45 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
 
     pg->mouse_show     = 0;
     pg->exit_flag      = 0;
-    pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT ? false : true);
+    pg->use_force_exit = (pg->init_option & INIT_NOFORCEEXIT ? false : true);
 
-    if (g_initoption & INIT_NOFORCEEXIT) {
+    if (pg->init_option & INIT_NOFORCEEXIT) {
         SetCloseHandler(DefCloseHandler);
     }
 
     pg->close_manually = true;
-    pg->skip_timer_mark = false;
-    SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
+
+    /* 仅在 INIT_EVENTLOOP 模式下设置定时器(INIT_EVENTLOOP 模式下事件在主线程中处理，固定为手动渲染模式，无需设置定时器。 */
+    if (pg->init_option & INIT_EVENTLOOP) {
+        pg->lock_window = true;
+        pg->skip_timer_mark = true;
+    } else {
+        pg->skip_timer_mark = false;
+        SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
+    }
 
     pg->has_init = true;
+}
 
+int messageHandle()
+{
+    MSG msg;
+    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+
+    return 0;
+}
+
+/*private function*/
+DWORD WINAPI messageLoopThread(LPVOID lpParameter)
+{
+    _graph_setting* pg = (_graph_setting*)lpParameter;
+    initWindow(pg);
     while (!pg->exit_window) {
-        if (GetMessageW(&msg, NULL, 0, 0)) {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        } else {
-            Sleep(1);
-        }
+        messageHandle();
+        Sleep(1);
     }
 
     return 0;
@@ -1054,7 +1078,7 @@ BOOL init_instance(HINSTANCE hInstance)
         //DeleteObject(hfont);
     } //*/
 
-    if (!(g_initoption & INIT_HIDE)) {
+    if (!(pg->init_option & INIT_HIDE)) {
         SetActiveWindow(pg->hwnd);
     }
 

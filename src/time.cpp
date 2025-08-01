@@ -129,6 +129,10 @@ void delay_fps(double fps)
         dw = pg->delay_fps_dwLast;
     }
 
+    if (pg->init_option & INIT_EVENTLOOP) {
+        messageHandle();
+    }
+
     root->draw(NULL);
 
     for (; nloop >= 0; --nloop) {

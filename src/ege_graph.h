@@ -18,13 +18,19 @@ class egeControlBase;   // 前置声明
 
 initmode_flag getinitmode();
 
+int initWindow(_graph_setting* pg);
+
 void logoscene();
+
+int messageHandle();
 
 int dealmessage(_graph_setting* pg, bool force_update);
 
 bool needToUpdate(_graph_setting* pg);
 
 int graphupdate(_graph_setting* pg);
+
+int graphInitOption();
 
 void guiupdate(_graph_setting* pg, egeControlBase* root);
 
