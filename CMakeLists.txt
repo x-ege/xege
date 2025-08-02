@@ -53,8 +53,8 @@ if(CMAKE_HOST_UNIX)
     set(EGE_NON_WINDOWS ON CACHE BOOL "EGE is not compiled on Windows" FORCE)
 endif()
 
-# 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 MSVC 时）
-if(EGE_IS_ROOT_PROJECT AND NOT MSVC)
+# 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 Visual Studio generator 时）
+if(EGE_IS_ROOT_PROJECT AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
     find_program(CCACHE_FOUND ccache)
 
     if(CCACHE_FOUND)
