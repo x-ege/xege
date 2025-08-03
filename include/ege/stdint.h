@@ -48,7 +48,7 @@
 #else
 
 /* Avoid duplication with definitions in other stdint.h header files */
-#if !definded(_STDINT) && !defined(_GCC_STDINT_H)
+#if !defined(_STDINT) && !defined(_GCC_STDINT_H)
 #if defined(_MSC_VER)
 #define _STDINT
 #elif defined(__GNUC__)
