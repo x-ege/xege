@@ -115,6 +115,6 @@ if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
 
   foreach(COMPILE_TEST_SRC ${COMPILE_TESTS_SRCS})
     get_filename_component(TEST_NAME ${COMPILE_TEST_SRC} NAME_WE)
-    ege_add_executable_demo(${TEST_NAME} ${COMPILE_TEST_SRC})
+    ege_add_executable_demo("test-compile-${TEST_NAME}" ${COMPILE_TEST_SRC})
   endforeach()
 endif()
