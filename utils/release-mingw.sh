@@ -39,76 +39,122 @@ else
     fi
 fi
 
-MINGW64_BIN="$MINGW64_PATH/bin"
+BUILD_MINGW32=false
 
-if [[ $(uname -s) == MINGW* ]] || [[ "$OSTYPE" == "msys" ]]; then
-    echo "Building in Windows MINGW environment..."
+# 处理 MINGW32_PATH
+if [[ -z "$DISABLE_MINGW32" ]]; then
+    if [[ -n "$MINGW32_PATH" ]]; then
+        # 转换路径格式（如果需要）
+        if command -v cygpath &>/dev/null; then
+            echo "Converting MINGW32_PATH to Unix style..."
+            MINGW32_PATH=$(cygpath -u "$MINGW32_PATH")
+        fi
 
-    # 检查 MINGW64 路径是否存在
-    if [[ ! -d "$MINGW64_BIN" ]]; then
-        echo "Error: MINGW64 not found at $MINGW64_PATH"
-        echo "Please check if Dev-Cpp is installed and MINGW64 is configured correctly."
-        exit 1
+        if [[ -d "$MINGW32_PATH" ]]; then
+            echo "MINGW32_PATH is set to '${MINGW32_PATH}', 32-bit MinGW will be built, too."
+            BUILD_MINGW32=true
+        fi
+    fi
+fi
+
+function buildMingwArchitecture() {
+    local ARCH="$1" # "64" or "32"
+    local MINGW_PATH="$2"
+    local OUTPUT_DIR="$3"
+
+    echo "==================== Building ${ARCH}-bit version ===================="
+
+    local MINGW_BIN="${MINGW_PATH}/bin"
+
+    # 检查路径是否存在
+    if [[ ! -d "$MINGW_BIN" ]]; then
+        echo "Error: MinGW${ARCH} not found at $MINGW_PATH"
+        return 1
     fi
 
-    # 添加 MINGW64 到 PATH
-    export PATH="$MINGW64_BIN:$PATH"
+    # 临时修改 PATH，只在此函数作用域内生效
+    local OLD_PATH="$PATH"
+    export PATH="$MINGW_BIN:$OLD_PATH"
 
+    # 设置编译器
     export CC="gcc"
     export CXX="g++"
     export RC="windres"
-else
-    echo "Unsupported environment for MINGW build"
-    exit 1
-fi
 
-# 验证编译器是否可用
-if ! command -v $CC &>/dev/null; then
-    echo "Error: $CC could not be found"
-    echo "PATH: $PATH"
-    exit 1
-fi
+    # 验证编译器是否可用
+    if ! command -v $CC &>/dev/null; then
+        echo "Error: $CC could not be found in $MINGW_BIN"
+        export PATH="$OLD_PATH" # 恢复原来的PATH
+        return 1
+    fi
 
-echo "Found compiler: $(which $CC)"
-echo "Compiler version: $($CC --version | head -n1)"
+    echo "Found compiler: $(which $CC)"
+    echo "Compiler version: $($CC --version | head -n1)"
+    echo "C++ compiler: $(which $CXX)"
+    echo "Resource compiler: $(which $RC)"
 
-# 验证其他工具
-echo "C++ compiler: $(which $CXX)"
-echo "Resource compiler: $(which $RC)"
+    # 编译
+    echo "Configuring CMake for ${ARCH}-bit MinGW compilation..."
 
-# 根据环境设置 CMake 参数
-# Windows MINGW 本地编译配置
-echo "Configuring CMake for native MINGW compilation..."
-
-if ./tasks.sh --release \
-    --target xege \
-    --clean \
-    --load \
-    --build \
-    -- \
-    -G "MinGW Makefiles" \
-    -DCMAKE_C_COMPILER="$CC" \
-    -DCMAKE_CXX_COMPILER="$CXX" \
-    -DCMAKE_RC_COMPILER="$RC" \
-    -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)"; then
-
-    echo "Build successful!"
-
-    # 显示生成的文件
-    echo "Generated files:"
-    mkdir -p Release/lib/mingw64
-    find build -type f -name "*.a" -exec cp {} Release/lib/mingw64/ \;
-    ls -l Release/lib/mingw64
-
-    ./utils/test-release-libs.sh \
-        --build-dir "build-mingw-windows" \
+    if ./tasks.sh --release \
+        --target xege \
+        --clean \
+        --load \
+        --build \
         -- \
         -G "MinGW Makefiles" \
         -DCMAKE_C_COMPILER="$CC" \
         -DCMAKE_CXX_COMPILER="$CXX" \
         -DCMAKE_RC_COMPILER="$RC" \
-        -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)"
+        -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)"; then
+
+        echo "${ARCH}-bit build successful!"
+
+        # 创建输出目录并复制文件
+        echo "Generated files for ${ARCH}-bit:"
+        mkdir -p "$OUTPUT_DIR"
+        find build -type f -name "*.a" -exec cp {} "$OUTPUT_DIR"/ \;
+        ls -l "$OUTPUT_DIR"
+
+        # 运行测试
+        ./utils/test-release-libs.sh \
+            --build-dir "build-mingw-windows-${ARCH}" \
+            -- \
+            -G "MinGW Makefiles" \
+            -DCMAKE_C_COMPILER="$CC" \
+            -DCMAKE_CXX_COMPILER="$CXX" \
+            -DCMAKE_RC_COMPILER="$RC" \
+            -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)"
+    else
+        echo "${ARCH}-bit CMake configuration failed!"
+        export PATH="$OLD_PATH" # 恢复原来的PATH
+        return 1
+    fi
+
+    # 恢复原来的PATH
+    export PATH="$OLD_PATH"
+    return 0
+}
+
+if [[ $(uname -s) == MINGW* ]] || [[ "$OSTYPE" == "msys" ]]; then
+    echo "Building in Windows MINGW environment..."
+
+    # 编译 64位版本
+    if ! buildMingwArchitecture "64" "$MINGW64_PATH" "Release/lib/mingw64"; then
+        echo "64-bit build failed!"
+        exit 1
+    fi
+
+    # 如果需要，编译 32位版本
+    if [[ "$BUILD_MINGW32" == "true" ]]; then
+        if ! buildMingwArchitecture "32" "$MINGW32_PATH" "Release/lib/mingw32"; then
+            echo "32-bit build failed!"
+            exit 1
+        fi
+    fi
+
+    echo "All builds completed successfully!"
 else
-    echo "CMake configuration failed!"
+    echo "Unsupported environment for MINGW build"
     exit 1
 fi
