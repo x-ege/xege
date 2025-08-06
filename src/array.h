@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <stddef.h>
 
 namespace ege
@@ -8,14 +9,14 @@ namespace ege
 template <typename T> class Array
 {
 public:
-    typedef T* iterator;
+    using iterator = T*;
 
     class reverse_iterator
     {
     public:
-        reverse_iterator(iterator it) { _it = it; }
+        reverse_iterator(iterator it) : _it{it} {}
 
-        reverse_iterator(const reverse_iterator& rit) { _it = rit._it; }
+        reverse_iterator(const reverse_iterator& rit) : _it{rit._it} {}
 
         reverse_iterator& operator++()
         {
@@ -40,19 +41,10 @@ public:
     };
 
 public:
-    Array()
-    {
-        m_capacity = 0;
-        m_size     = 0;
-        m_arr      = NULL;
-    }
+    Array() : m_capacity{0}, m_size{0}, m_arr{nullptr} {}
 
-    Array(const Array& arr)
+    Array(const Array& arr) : m_capacity{arr.m_capacity}, m_size{arr.m_size}, m_arr{new T[m_size]}
     {
-        m_capacity = arr.m_capacity;
-        m_size     = arr.m_size;
-        m_arr      = new T[m_size];
-
         for (size_t i = 0; i < m_size; ++i) {
             m_arr[i] = arr.m_arr[i];
         }
@@ -61,14 +53,14 @@ public:
     ~Array()
     {
         if (m_arr) {
-            delete m_arr;
+            delete[] m_arr;
             m_arr = NULL;
         }
     }
 
     void resize(size_t sz, T c = T())
     {
-        if (m_arr == NULL) {
+        if (m_arr == nullptr) {
             m_arr = new T[sz];
             for (size_t i = 0; i < sz; ++i) {
                 m_arr[i] = c;
@@ -162,4 +154,4 @@ protected:
     T*     m_arr;
 };
 
-}
+} // namespace ege
