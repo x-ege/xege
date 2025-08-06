@@ -17,7 +17,7 @@ static int g_map_mod[] = {1, 4, 4, 4, 2, 2, 2, 1, 0};
 
 /* 初始化全局数据及图形显示 */
 void initgr() {
-    initgraph(g_width, g_height);
+    initgraph(g_width, g_height, INIT_RENDERMANUAL | INIT_EVENTLOOP);
     setfont(12, 6, "宋体");
     int Trs_map[8][4][4][4] =
     {
@@ -385,7 +385,7 @@ int main() {
     game.m_droptime = nfps / 2;
     game.m_movxtime = 10;
 
-    setrendermode(RENDER_MANUAL);
+    //setrendermode(RENDER_MANUAL);
     for ( ; is_run(); delay_fps(nfps)) {
         game.update();
         game.render();
