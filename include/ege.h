@@ -3704,7 +3704,7 @@ int  EGEAPI textheight(wchar_t c, PCIMAGE pimg = NULL);
  * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
  *       Result is affected by current font settings
  */
-void EGEAPI measuretext(const char* text, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(const char* text, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief Get display width and height of text string using GDI+ precision measurement (Unicode version)
@@ -3715,7 +3715,7 @@ void EGEAPI measuretext(const char* text, int* width, int* height, PCIMAGE pimg 
  * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
  *       Result is affected by current font settings
  */
-void EGEAPI measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(const wchar_t* text, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief Get display width and height of single character using GDI+ precision measurement
@@ -3726,7 +3726,7 @@ void EGEAPI measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pi
  * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
  *       Result is affected by current font settings
  */
-void EGEAPI measuretext(char c, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(char c, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief Get display width and height of single character using GDI+ precision measurement (Unicode version)
@@ -3737,7 +3737,7 @@ void EGEAPI measuretext(char c, int* width, int* height, PCIMAGE pimg = NULL);
  * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
  *       Result is affected by current font settings
  */
-void EGEAPI measuretext(wchar_t c, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(wchar_t c, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief Output text at specified position (supports floating-point coordinates and ARGB colors)

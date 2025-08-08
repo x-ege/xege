@@ -3689,7 +3689,7 @@ int  EGEAPI textheight(wchar_t c, PCIMAGE pimg = NULL);
  * @param pimg 目标图像指针，NULL 表示当前 EGE 窗口
  * @note 本函数使用 GDI+ 精确测量，适用于 ege_ 系列文本绘制函数，结果受当前字体设置影响
  */
-void EGEAPI measuretext(const char* text, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(const char* text, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief 使用 GDI+ 精确测量文本字符串的显示宽高（Unicode 版本）
@@ -3699,7 +3699,7 @@ void EGEAPI measuretext(const char* text, int* width, int* height, PCIMAGE pimg 
  * @param pimg 目标图像指针，NULL 表示当前 EGE 窗口
  * @note 本函数使用 GDI+ 精确测量，适用于 ege_ 系列文本绘制函数，结果受当前字体设置影响
  */
-void EGEAPI measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(const wchar_t* text, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief 使用 GDI+ 精确测量单个字符的显示宽高
@@ -3709,7 +3709,7 @@ void EGEAPI measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pi
  * @param pimg 目标图像指针，NULL 表示当前 EGE 窗口
  * @note 本函数使用 GDI+ 精确测量，适用于 ege_ 系列文本绘制函数，结果受当前字体设置影响
  */
-void EGEAPI measuretext(char c, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(char c, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief 使用 GDI+ 精确测量单个字符的显示宽高（Unicode 版本）
@@ -3719,7 +3719,7 @@ void EGEAPI measuretext(char c, int* width, int* height, PCIMAGE pimg = NULL);
  * @param pimg 目标图像指针，NULL 表示当前 EGE 窗口
  * @note 本函数使用 GDI+ 精确测量，适用于 ege_ 系列文本绘制函数，结果受当前字体设置影响
  */
-void EGEAPI measuretext(wchar_t c, int* width, int* height, PCIMAGE pimg = NULL);
+void EGEAPI measuretext(wchar_t c, double* width, double* height, PCIMAGE pimg = NULL);
 
 /**
  * @brief 在指定位置输出文本（支持浮点坐标和ARGB颜色）

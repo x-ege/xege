@@ -312,13 +312,13 @@ int textheight(wchar_t c, PCIMAGE pimg)
     return textheight(str, pimg);
 }
 
-void measuretext(const char* text, int* width, int* height, PCIMAGE pimg)
+void measuretext(const char* text, double* width, double* height, PCIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     measuretext(textstring_w.c_str(), width, height, pimg);
 }
 
-void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
+void measuretext(const wchar_t* text, double* width, double* height, PCIMAGE pimg)
 {
     if(!width || !height) return;
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
@@ -373,13 +373,13 @@ void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
     return;
 }
 
-void measuretext(CHAR c, int* width, int* height, PCIMAGE pimg)
+void measuretext(CHAR c, double* width, double* height, PCIMAGE pimg)
 {
     CHAR str[2] = {c};
     measuretext(str, width, height, pimg);
 }
 
-void measuretext(wchar_t c, int* width, int* height, PCIMAGE pimg)
+void measuretext(wchar_t c, double* width, double* height, PCIMAGE pimg)
 {
     wchar_t str[2] = {c};
     measuretext(str, width, height, pimg);
