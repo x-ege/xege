@@ -320,13 +320,18 @@ void measuretext(const char* text, int* width, int* height, PCIMAGE pimg)
 
 void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
 {
+    if (!width || !height) {
+        return;
+    }
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (!img || wcslen(text) == 0){
+    if (!img || !text || wcslen(text) == 0){
         *width = 0;
         *height = 0;
         CONVERT_IMAGE_END;
         return;
     }
+    // …rest of existing implementation…
+}
     using namespace Gdiplus;
 
     HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
