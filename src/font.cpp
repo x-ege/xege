@@ -355,10 +355,21 @@ void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
         text, (int)wcslen(text), &font, layoutRect, format, 1, &region
     );
     delete format;
+    if (s != Ok) {
+        *width = 0;
+        *height = 0;
+        CONVERT_IMAGE_END;
+        return;
+    }
 
     Gdiplus::RectF boundRect;
     s = region.GetBounds(&boundRect, &graphics);
-
+    if (s != Ok) {
+        *width = 0;
+        *height = 0;
+        CONVERT_IMAGE_END;
+        return;
+    }
     *width = boundRect.Width;
     *height = boundRect.Height;
     CONVERT_IMAGE_END;
