@@ -312,13 +312,13 @@ int textheight(wchar_t c, PCIMAGE pimg)
     return textheight(str, pimg);
 }
 
-void measuretext(const char* text, double* width, double* height, PCIMAGE pimg)
+void measuretext(const char* text, float* width, float* height, PCIMAGE pimg)
 {
     const std::wstring& textstring_w = mb2w(text);
     measuretext(textstring_w.c_str(), width, height, pimg);
 }
 
-void measuretext(const wchar_t* text, double* width, double* height, PCIMAGE pimg)
+void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
 {
     if(!width || !height) return;
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
@@ -373,13 +373,13 @@ void measuretext(const wchar_t* text, double* width, double* height, PCIMAGE pim
     return;
 }
 
-void measuretext(CHAR c, double* width, double* height, PCIMAGE pimg)
+void measuretext(CHAR c, float* width, float* height, PCIMAGE pimg)
 {
     CHAR str[2] = {c};
     measuretext(str, width, height, pimg);
 }
 
-void measuretext(wchar_t c, double* width, double* height, PCIMAGE pimg)
+void measuretext(wchar_t c, float* width, float* height, PCIMAGE pimg)
 {
     wchar_t str[2] = {c};
     measuretext(str, width, height, pimg);
@@ -821,17 +821,17 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
 
     if (lf.lfWidth != 0) {
         LONG fixedWidth = lf.lfWidth;
-        int tmp;
-        int textCurrentWidth;
+        float tmp;
+        float textCurrentWidth;
         measuretext(textstring,&textCurrentWidth,&tmp,img);
         lf.lfWidth = 0;
         setfont(&lf);
-        int textNormalWidth;
+        float textNormalWidth;
         measuretext(textstring,&textNormalWidth,&tmp,img);
         lf.lfWidth = fixedWidth;
         setfont(&lf);
 
-        if (textCurrentWidth != textNormalWidth && (textCurrentWidth != 0) && (textNormalWidth != 0)) {
+        if ((int)textCurrentWidth != (int)textNormalWidth && ((int)textCurrentWidth != 0) && ((int)textNormalWidth != 0)) {
             xScale = (float)((double)textCurrentWidth / textNormalWidth);
         }
     }
