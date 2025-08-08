@@ -328,6 +328,7 @@ void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
         CONVERT_IMAGE_END;
         return;
     }
+    
     using namespace Gdiplus;
 
     HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
@@ -345,7 +346,7 @@ void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
     Gdiplus::CharacterRange charRange(0, (int)wcslen(text));
     format->SetMeasurableCharacterRanges(1, &charRange);
 
-    Gdiplus::RectF layoutRect(0, 0, 100000, 1000);
+    Gdiplus::RectF layoutRect(0, 0, 65535, 65535);
     Gdiplus::Region region;
     Status s = graphics.MeasureCharacterRanges(
         text, (int)wcslen(text), &font, layoutRect, format, 1, &region
@@ -366,7 +367,6 @@ void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
         CONVERT_IMAGE_END;
         return;
     }
-
     *width = boundRect.Width;
     *height = boundRect.Height;
     CONVERT_IMAGE_END;
