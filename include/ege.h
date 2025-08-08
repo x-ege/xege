@@ -3696,6 +3696,50 @@ int  EGEAPI textheight(char    c, PCIMAGE pimg = NULL);
 int  EGEAPI textheight(wchar_t c, PCIMAGE pimg = NULL);
 
 /**
+ * @brief Get display width and height of text string using GDI+ precision measurement
+ * @param text Text string to measure
+ * @param width Pointer to receive text display width (pixels)
+ * @param height Pointer to receive text display height (pixels)
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
+ *       Result is affected by current font settings
+ */
+void EGEAPI measuretext(const char* text, int* width, int* height, PCIMAGE pimg = NULL);
+
+/**
+ * @brief Get display width and height of text string using GDI+ precision measurement (Unicode version)
+ * @param text Text string to measure
+ * @param width Pointer to receive text display width (pixels)
+ * @param height Pointer to receive text display height (pixels)
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
+ *       Result is affected by current font settings
+ */
+void EGEAPI measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg = NULL);
+
+/**
+ * @brief Get display width and height of single character using GDI+ precision measurement
+ * @param c Character to measure
+ * @param width Pointer to receive character display width (pixels)
+ * @param height Pointer to receive character display height (pixels)
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
+ *       Result is affected by current font settings
+ */
+void EGEAPI measuretext(char c, int* width, int* height, PCIMAGE pimg = NULL);
+
+/**
+ * @brief Get display width and height of single character using GDI+ precision measurement (Unicode version)
+ * @param c Character to measure
+ * @param width Pointer to receive character display width (pixels)
+ * @param height Pointer to receive character display height (pixels)
+ * @param pimg Target image pointer, NULL means current ege window
+ * @note Uses GDI+ for precise measurement, suitable for ege_ text rendering functions. 
+ *       Result is affected by current font settings
+ */
+void EGEAPI measuretext(wchar_t c, int* width, int* height, PCIMAGE pimg = NULL);
+
+/**
  * @brief Output text at specified position (supports floating-point coordinates and ARGB colors)
  * @param x X coordinate of output position (floating-point)
  * @param y Y coordinate of output position (floating-point)

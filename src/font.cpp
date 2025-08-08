@@ -312,6 +312,66 @@ int textheight(wchar_t c, PCIMAGE pimg)
     return textheight(str, pimg);
 }
 
+void measuretext(const char* text, int* width, int* height, PCIMAGE pimg)
+{
+    const std::wstring& textstring_w = mb2w(text);
+    measuretext(textstring_w.c_str(), width, height, pimg);
+}
+
+void measuretext(const wchar_t* text, int* width, int* height, PCIMAGE pimg)
+{
+    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
+    if (!img || wcslen(text) == 0){
+        *width = 0;
+        *height = 0;
+        CONVERT_IMAGE_END;
+        return;
+    }
+    using namespace Gdiplus;
+
+    HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+    Gdiplus::Font font(img->m_hDC, hFont);
+
+    Gdiplus::Graphics graphics(img->m_hDC);
+
+    Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic()->Clone();
+    switch (img->m_texttype.horiz) {
+        case LEFT_TEXT:   format->SetAlignment(StringAlignmentNear);    break;
+        case CENTER_TEXT: format->SetAlignment(StringAlignmentCenter);  break;
+        case RIGHT_TEXT:  format->SetAlignment(StringAlignmentFar);     break;
+        default: break;
+    }
+    Gdiplus::CharacterRange charRange(0, (int)wcslen(text));
+    format->SetMeasurableCharacterRanges(1, &charRange);
+
+    Gdiplus::RectF layoutRect(0, 0, 100000, 1000);
+    Gdiplus::Region region;
+    Status s = graphics.MeasureCharacterRanges(
+        text, (int)wcslen(text), &font, layoutRect, format, 1, &region
+    );
+    delete format;
+
+    Gdiplus::RectF boundRect;
+    s = region.GetBounds(&boundRect, &graphics);
+
+    *width = boundRect.Width;
+    *height = boundRect.Height;
+    CONVERT_IMAGE_END;
+    return;
+}
+
+void measuretext(CHAR c, int* width, int* height, PCIMAGE pimg)
+{
+    CHAR str[2] = {c};
+    measuretext(str, width, height, pimg);
+}
+
+void measuretext(wchar_t c, int* width, int* height, PCIMAGE pimg)
+{
+    wchar_t str[2] = {c};
+    measuretext(str, width, height, pimg);
+}
+
 void ege_outtextxy(float x, float y, const char* text, PIMAGE pimg)
 {
     ege_drawtext(text, x, y, pimg);
@@ -748,11 +808,13 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
 
     if (lf.lfWidth != 0) {
         LONG fixedWidth = lf.lfWidth;
-
-        int textCurrentWidth = textwidth(textstring);
+        int tmp;
+        int textCurrentWidth;
+        measuretext(textstring,&textCurrentWidth,&tmp,img);
         lf.lfWidth = 0;
         setfont(&lf);
-        int textNormalWidth = textwidth(textstring);
+        int textNormalWidth;
+        measuretext(textstring,&textNormalWidth,&tmp,img);
         lf.lfWidth = fixedWidth;
         setfont(&lf);
 
