@@ -22,8 +22,9 @@
 // #undef _ITERATOR_DEBUG_LEVEL
 // #endif
 
-#include <png.h>
-
+#include "external/stb_image.h"
+#include "external/stb_image_write.h"
+#include "stb_image_impl.h"
 
 #include <math.h>
 #include <limits.h>
@@ -450,6 +451,27 @@ void IMAGE::putimage(int xDest, int yDest, DWORD dwRop) const
     CONVERT_IMAGE_END;
 }
 
+static graphics_errors convertStbImageError(const char* errorStr)
+{
+    graphics_errors error = grError;
+
+    if (!isEmpty(errorStr)) {
+        if (startsWith(errorStr, "can't fopen")) {
+            error = grFileNotFound;
+        } else if (startsWith(errorStr, "outofmem")) {
+            error = grOutOfMemory;
+        } else if (startsWith(errorStr, "too large") || startsWith(errorStr, "unsupported") ||
+                   startsWith(errorStr, "unknown")   || startsWith(errorStr, "wrong")) {
+            error = grUnsupportedFormat;
+        } else if (startsWith(errorStr, "bad") || startsWith(errorStr, "invalid") || startsWith(errorStr, "corrupt") ||
+                   startsWith(errorStr, "not") || startsWith(errorStr, "missing") || startsWith(errorStr, "illegal")){
+            error = grInvalidFileFormat;
+        }
+    }
+
+    return error;
+}
+
 int IMAGE::getimage(const char* filename, int zoomWidth, int zoomHeight)
 {
     const std::wstring& filename_w = mb2w(filename);
@@ -498,21 +520,54 @@ int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
     (void)zoomWidth, (void)zoomHeight; // ignore
     inittest(L"IMAGE::getimage");
 
-    int error = getimage_pngfile(this, filename);
+    if (isEmpty(filename))
+        return grParamError;
 
-    /* grInvalidFileFormat 说明文件实际非 PNG 格式，继续以其它格式检测读取 */
-    if (error == grInvalidFileFormat) {
-        /* GDI+ 支持图片文件格式：BMP, GIF, JPEG, PNG, TIFF, Exif, WMF 和 EMF */
+    FILE* fp = _wfopen(filename, L"rb");
+    if (fp == NULL)
+        return grFileNotFound;
+
+    graphics_errors error = grOk;
+
+    int width = 0, height = 0;
+    int channelsInFile = 0;
+
+    /* 尝试使用 stb_image 加载图像(支持格式: PNG, BMP, JPEG, GIF, PSD, HDR, PGM, PPM, PNM, TGA)*/
+    color_t* pixels = (color_t*)stbi_load_from_file(fp, &width, &height, &channelsInFile, STBI_rgb_alpha);
+    if (pixels) {
+        const int pixelCount = width * height;
+
+        if (this->resize_f(width, height) == grOk) {
+            /* stb_image 返回的像素颜色存储按字节从高到低依次为 ABGR，和 ege 的存储顺序 ARGB 不一致，需要交换 R 和 B 通道. */
+            ABGRToARGB((color_t*)m_pBuffer, pixels, pixelCount);
+            error = grOk;
+        } else {
+            error = grAllocError;
+        }
+        stbi_image_free(pixels);
+    } else {
+        /* 加载失败，将错误信息转换为相应的错误码 */
+        error = convertStbImageError(stbi_failure_reason());
+    }
+
+    fclose(fp);
+
+    /* 如图像格式不受 stb_image 支持或者 stb_image 认为格式错误，再次尝试使用 GDI+ 读取 */
+    if (error == grUnsupportedFormat || error == grInvalidFileFormat) {
+        /* GDI+ 支持格式：BMP, GIF, JPEG, PNG, TIFF, Exif, WMF, EMF */
         Gdiplus::Bitmap bitmap(filename);
 
+        /* GDI+ bug: GDI+ Bitmap 只会报 InvalidParameter 错误，无法得到具体错误类型信息 */
         if (bitmap.GetLastStatus() != Gdiplus::Ok) {
-            /* GDI+ Bitmap 仅报 InvalidParameter 错误，无法进一步区分是不支持的格式还是格式错误 */
-            /* 通过文件扩展名判断文件是否在支持的格式中，支持为 grInvalidFileFormat，不支持则为 grUnsupportedFormat */
-            ImageDecodeFormat imageFormat = checkImageDecodeFormatByFileName(filename);
-            return (imageFormat == ImageDecodeFormat_NULL) ? grUnsupportedFormat : grInvalidFileFormat ;
-        }
+            /* 通过文件扩展名判断是否是支持解码的格式，格式支持为 grInvalidFileFormat，格式不支持则为 grUnsupportedFormat. */
+            ImageFormat       imageFormat  = checkImageFormatByFileName(filename);
+            ImageDecodeFormat decodeFormat = getImageDecodeFormat(imageFormat);
 
-        return getimage_from_bitmap(this, bitmap);
+            error = (decodeFormat == ImageDecodeFormat_NULL) ? grUnsupportedFormat : grInvalidFileFormat;
+        } else {
+            /* 从 GDI+ Bitmap 中读取图像数据，写入 ege IMAGE 中*/
+            error = getimage_from_bitmap(this, bitmap);
+        }
     }
 
     return error;
@@ -528,269 +583,39 @@ int IMAGE::saveimage(const wchar_t* filename, bool withAlphaChannel) const
     return ege::saveimage(this, filename, withAlphaChannel);
 }
 
-graphics_errors getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinfo_ptr)
-{
-    png_structp png_ptr  = (png_structp)vpng_ptr;
-    png_infop   info_ptr = (png_infop)vinfo_ptr;
-
-    #if defined(PNG_SKIP_sRGB_CHECK_PROFILE) && defined(PNG_SET_OPTION_SUPPORTED)
-    png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE,
-           PNG_OPTION_ON);
-    #endif
-
-    // 读取 PNG 文件信息, 存入 info_ptr 中
-    png_read_info(png_ptr, info_ptr);
-
-    const png_byte color_type = png_get_color_type(png_ptr, info_ptr);
-    const png_byte bit_depth  = png_get_bit_depth(png_ptr, info_ptr);    // 每通道位深度
-
-    // 将颜色类型转为 RGB 或 RGBA
-    if (color_type == PNG_COLOR_TYPE_PALETTE) {
-        png_set_palette_to_rgb(png_ptr);
-    } else if ((color_type == PNG_COLOR_TYPE_GRAY) && (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)) {
-        png_set_gray_to_rgb(png_ptr);
-    }
-
-    // 将位深度设置为每通道 8 bit
-    // (PNG 格式规定，RGB(RGBA) 位深度为 8 或 16，不会低于 8)
-    if (bit_depth == 16) {
-        png_set_strip_16(png_ptr);  // bit depth 16 to 8
-    }
-
-    // 补齐 alpha 通道
-    if ((color_type != PNG_COLOR_TYPE_RGB_ALPHA) && (color_type != PNG_COLOR_TYPE_GRAY_ALPHA)) {
-        // 若在 tRNS 块中存在透明度信息则将其转为 alpha 通道
-        if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-            png_set_tRNS_to_alpha(png_ptr);
-        } else {
-            // 添加 alpha 通道(最高字节)并以 0xFF 填充
-            png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER);
-        }
-    }
-
-    // 调整通道存储顺序，字节从低到高依次为 B, G, R, A
-    png_set_bgr(png_ptr);
-
-    // 根据以上设置的目标格式更新 png_info 结构
-    png_read_update_info(png_ptr, info_ptr);
-
-    // 经过以上设置，像素格式为 ARGB (字节顺序从低至高依次为 B, G, R, A), 位深度为 8 (每通道)
-
-    const png_uint_32 width  = png_get_image_width(png_ptr, info_ptr);
-    const png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
-
-    // 将图像宽高调整至和 PNG 图片大小一致
-    if (self->resize_f((int)width, (int)height) != grOk) {
-        return grAllocError;
-    }
-
-    // 创建 png_bytep 数组，指向图像缓冲区中每一行像素的首地址
-    const png_bytepp row_pointers = new png_bytep[height];
-    if (row_pointers == NULL) {
-        return grOutOfMemory;
-    }
-
-    color_t* buffer = (color_t*)self->m_pBuffer;
-
-    for (png_uint_32 i = 0; i < height; i++) {
-        row_pointers[i] = (png_bytep)(&buffer[i * width]);
-    }
-
-    // 读取图像数据，存入 row_pointers 所指向的内存区域
-    png_read_image(png_ptr, row_pointers);
-
-    delete[] row_pointers;
-    return grOk;
-}
-
-int IMAGE::getpngimg(FILE* fp)
-{
-    {
-        char   header[16];
-        const uint32_t number = 8;
-
-        if (fread(header, 1, number, fp) != number) {
-            return grIOerror;
-        }
-
-        if (png_sig_cmp((png_const_bytep)header, 0, number) != 0) {
-            return grInvalidFileFormat;
-        }
-        fseek(fp, 0, SEEK_SET);
-    }
-
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (png_ptr == NULL) {
-        return grAllocError;
-    }
-    png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (info_ptr == NULL) {
-        png_destroy_read_struct(&png_ptr, NULL, NULL);
-        return grAllocError;
-    }
-
-    png_init_io(png_ptr, fp);
-    graphics_errors error = getimage_from_png_struct(this, png_ptr, info_ptr);
-
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return error;
-}
-
 int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
 {
-    unsigned long i, j;
-    png_structp   png_ptr;
-    png_infop     info_ptr;
-    png_colorp    palette;
-    png_byte*     image;
-    png_bytep*    row_pointers;
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    int channels = withAlphaChannel ? 4 : 3;
 
-    uint32_t pixelsize = withAlphaChannel ? 4 : 3;
-    uint32_t width = m_width, height = m_height;
+    int pixelCount = m_width * m_height;
+    int stride = channels * m_width;
+    uint8_t* buffer = (uint8_t*)malloc(channels * pixelCount);
 
-    if (png_ptr == NULL) {
-        return grAllocError;
-    }
-    info_ptr = png_create_info_struct(png_ptr);
-    if (info_ptr == NULL) {
-        png_destroy_write_struct(&png_ptr, NULL);
-        return grAllocError;
-    }
-
-    /*if (setjmp(png_jmpbuf(png_ptr)))
-    {
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-    return -1;
-    }// */
-
-    png_init_io(png_ptr, fp);
-
-    png_set_IHDR(png_ptr, info_ptr, width, height, 8, withAlphaChannel ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
-        PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-
-    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));
-    png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
-
-    png_write_info(png_ptr, info_ptr);
-
-    png_set_packing(png_ptr);
-
-    image = (png_byte*)malloc(width * height * pixelsize * sizeof(png_byte) + 4);
-    if (image == NULL) {
-        png_destroy_write_struct(&png_ptr, &info_ptr);
+    if (buffer == NULL ) {
         return grOutOfMemory;
     }
 
-    row_pointers = (png_bytep*)malloc(height * sizeof(png_bytep));
-    if (row_pointers == NULL) {
-        png_destroy_write_struct(&png_ptr, &info_ptr);
-        free(image);
-        image = NULL;
-        return grOutOfMemory;
-    }
+    if (withAlphaChannel) {
+        // 像素格式转换 (BGRABGRA --> RGBARGBA)
+        ARGBToABGR((color_t*)buffer, (color_t*)m_pBuffer, pixelCount);
+    } else {
+        // 像素格式转换 (BGRABGRA --> RGBRGB)
+        uint8_t* dst = buffer;
+        const uint8_t* src = (uint8_t*)m_pBuffer;
+        for (int i = 0; i < pixelCount; i++) {
+            dst[0] = src[2];
+            dst[1] = src[1];
+            dst[2] = src[0];
 
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; ++j) {
-            (DWORD&)image[(i * width + j) * pixelsize] = RGBTOBGR(m_pBuffer[i * width + j]);
+            dst += channels;
+            src += sizeof(color_t);
         }
-        row_pointers[i] = (png_bytep)image + i * width * pixelsize;
     }
 
-    png_write_image(png_ptr, row_pointers);
+    int result = stbi_write_png_to_func(stbi_write_to_FILE_func,fp, m_width, m_height, channels, buffer, stride);
+    free(buffer);
 
-    png_write_end(png_ptr, info_ptr);
-
-    png_free(png_ptr, palette);
-    palette = NULL;
-
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-
-    free(row_pointers);
-    row_pointers = NULL;
-
-    free(image);
-    image = NULL;
-
-    return grOk;
-}
-
-struct MemCursor
-{
-    png_const_bytep data;
-    png_size_t      size;
-    png_size_t      cur;
-};
-
-static void read_data_from_MemCursor(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead)
-{
-    MemCursor& cursor = *(MemCursor*)png_get_io_ptr(png_ptr);
-    png_size_t count  = MIN(cursor.size - cursor.cur, byteCountToRead);
-    memcpy(outBytes, cursor.data + cursor.cur, count);
-    cursor.cur += count;
-}
-
-inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
-{
-    if (hrsrc) {
-        HGLOBAL hg     = LoadResource(0, hrsrc);
-        DWORD   dwSize = SizeofResource(0, hrsrc);
-        LPVOID  pvRes  = LockResource(hg);
-
-        if (dwSize >= 8 && png_check_sig((png_const_bytep)pvRes, 8)) {
-            png_structp png_ptr;
-            png_infop   info_ptr;
-            MemCursor   cursor;
-            cursor.data = (png_const_bytep)pvRes;
-            cursor.size = dwSize;
-            cursor.cur  = 0;
-
-            png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-            if (png_ptr == NULL) {
-                return grAllocError;
-            }
-            info_ptr = png_create_info_struct(png_ptr);
-            if (info_ptr == NULL) {
-                png_destroy_read_struct(&png_ptr, NULL, NULL);
-                return grAllocError;
-            }
-
-            png_set_read_fn(png_ptr, &cursor, read_data_from_MemCursor);
-            getimage_from_png_struct(self, png_ptr, info_ptr);
-
-            png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        } else {
-            HGLOBAL          hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
-            LPVOID           pvData;
-            IStream*         pStm;
-
-            if (hGlobal == NULL || (pvData = GlobalLock(hGlobal)) == NULL) {
-                return grAllocError;
-            }
-            memcpy(pvData, pvRes, dwSize);
-            GlobalUnlock(hGlobal);
-            if (S_OK != dll::CreateStreamOnHGlobal(hGlobal, TRUE, &pStm)) {
-                return grNullPointer;
-            }
-
-            Gdiplus::Bitmap bitmap(pStm);
-
-            int status = bitmap.GetLastStatus();
-            if (status != Gdiplus::Ok) {
-                return grError;
-            }
-
-            getimage_from_bitmap(self, bitmap);
-
-            // GlobalFree 不能在 Bitmap 读取完成之前调用
-            // 否则 Bitmap::LockBits() 返回 Win32Error 错误码
-            GlobalFree(hGlobal);
-        }
-
-        return grOk;
-    }
-
-    return grIOerror;
+    return result ? grOk : grError;
 }
 
 int IMAGE::getimage(const char* resType, const char* resName, int zoomWidth, int zoomHeight)
@@ -800,50 +625,87 @@ int IMAGE::getimage(const char* resType, const char* resName, int zoomWidth, int
     return getimage(pResType_w.c_str(), pResName_w.c_str(), zoomWidth, zoomHeight);
 }
 
+static void* getResourceData(const wchar_t* resName, const wchar_t* resType, int* size)
+{
+    struct _graph_setting* pg    = &graph_setting;
+    void* resData = NULL;
+    int resSize = 0;
+    HRSRC hRsrc = FindResourceW(pg->instance, resName, resType);
+
+    if (hRsrc != NULL) {
+        HGLOBAL resHandle = LoadResource(pg->instance, hRsrc);
+        resSize   = SizeofResource(pg->instance, hRsrc);
+
+        if (resSize > 0 && resHandle != NULL) {
+            resData = LockResource(resHandle);
+        }
+    }
+
+    if (size != NULL) {
+        *size = resSize;
+    }
+
+    return resData;
+}
+
+
 int IMAGE::getimage(const wchar_t* resType, const wchar_t* resName, int zoomWidth, int zoomHeight)
 {
     (void)zoomWidth, (void)zoomHeight; // ignore
     inittest(L"IMAGE::getimage");
-    struct _graph_setting* pg    = &graph_setting;
-    HRSRC                  hrsrc = FindResourceW(pg->instance, resName, resType);
-    return getimage_from_resource(this, hrsrc);
+
+    int size;
+    void* data = getResourceData(resName, resType, &size);
+
+    return this->getimage(data, size);
 }
 
-int IMAGE::getimage(void* pMem, long size)
+int IMAGE::getimage(void* memory, long size)
 {
     inittest(L"IMAGE::getimage");
 
-    if (pMem) {
-        DWORD            dwSize  = size;
-        HGLOBAL          hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
-        LPVOID           pvData;
-        IStream*         pStm;
+    if ((memory == NULL) || (size <= 0))
+        return grParamError;
 
-        if (hGlobal == NULL || (pvData = GlobalLock(hGlobal)) == NULL) {
-            return grAllocError;
-        }
-        memcpy(pvData, pMem, dwSize);
-        GlobalUnlock(hGlobal);
-        if (S_OK != dll::CreateStreamOnHGlobal(hGlobal, TRUE, &pStm)) {
-            return grNullPointer;
-        }
+    HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, size);
 
-        Gdiplus::Bitmap bitmap(pStm);
-
-        if (bitmap.GetLastStatus() != Gdiplus::Ok) {
-            return grError;
-        }
-
-        getimage_from_bitmap(this, bitmap);
-
-        // GlobalFree 不能在 Bitmap 读取完成之前调用
-        // 否则 Bitmap::LockBits() 返回 Win32Error 错误码
-        GlobalFree(hGlobal);
-
-        return grOk;
+    if (hGlobal == NULL) {
+        return grAllocError;
     }
 
-    return grIOerror;
+    LPVOID data = GlobalLock(hGlobal);
+
+    if (data == NULL) {
+        GlobalFree(hGlobal);
+        return grError;
+    }
+
+    memcpy(data, memory, size);
+    GlobalUnlock(hGlobal);
+
+    IStream* stream;
+
+    /* 创建流，Global 句柄在流被释放时自动释放 */
+    if (FAILED(dll::CreateStreamOnHGlobal(hGlobal, TRUE, &stream))) {
+        GlobalFree(hGlobal);
+        return grOutOfMemory;
+    }
+
+    Gdiplus::Bitmap bitmap(stream);
+
+    graphics_errors error;
+
+    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
+        error = grError;
+    } else {
+        error = getimage_from_bitmap(this, bitmap);
+    }
+
+    /* 不能在 Bitmap 读取完成之前调用，否则 Bitmap::LockBits() 将返回 Win32Error 错误 */
+    stream->Release();
+
+    return error;
+
 }
 
 void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int srcWidth,
@@ -3167,18 +3029,7 @@ int getimage_pngfile(PIMAGE pimg, const char* filename)
 
 int getimage_pngfile(PIMAGE pimg, const wchar_t* filename)
 {
-    if ((filename == NULL) || (filename[0] == '\0'))
-        return grParamError;
-
-    FILE* fp = _wfopen(filename, L"rb");
-
-    if (fp == NULL) {
-        return grFileNotFound;
-    }
-
-    int ret = pimg->getpngimg(fp);
-    fclose(fp);
-    return ret;
+    return getimage(pimg, filename);
 }
 
 int savepng(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
@@ -3189,7 +3040,7 @@ int savepng(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 
 int savepng(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
-    if ((filename == NULL) || (filename[0] == '\0'))
+    if (isEmpty(filename))
         return grParamError;
 
     pimg = CONVERT_IMAGE_CONST(pimg);
@@ -3229,7 +3080,7 @@ int savebmp(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
  */
 int savebmp(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
-    if ((filename == NULL) || (filename[0] == '\0')) {
+    if (isEmpty(filename)) {
         return grParamError;
     }
 
@@ -3367,50 +3218,94 @@ void ege_enable_aa(bool enable, PIMAGE pimg)
     CONVERT_IMAGE_END;
 }
 
-ImageDecodeFormat checkImageDecodeFormatByFileName(const wchar_t* fileName)
+ImageFormat checkImageFormatByFileName(const wchar_t* fileName)
 {
     if (fileName == NULL)
-        return ImageDecodeFormat_NULL;
+        return ImageFormat_NULL;
 
     const wchar_t* fileExtension =  wcsrchr(fileName, L'.');
     if (fileExtension == NULL) {
-        return ImageDecodeFormat_NULL;
+        return ImageFormat_NULL;
     }
 
     fileExtension++; // skip '.'
 
     const struct {
         const wchar_t* ext;
-        ImageDecodeFormat format;
+        ImageFormat format;
     } formatMap[] = {
-        {L"png",  ImageDecodeFormat_PNG },
-        {L"bmp",  ImageDecodeFormat_BMP },
-        {L"dib",  ImageDecodeFormat_BMP },
-        {L"jpg",  ImageDecodeFormat_JPEG},
-        {L"jpeg", ImageDecodeFormat_JPEG},
-        {L"jpe",  ImageDecodeFormat_JPEG},
-        {L"jfif", ImageDecodeFormat_JPEG},
-        {L"gif",  ImageDecodeFormat_GIF },
-        {L"tif",  ImageDecodeFormat_TIFF},
-        {L"tiff", ImageDecodeFormat_TIFF},
-        {L"exif", ImageDecodeFormat_EXIF},
-        {L"wmf",  ImageDecodeFormat_WMF },
-        {L"emf",  ImageDecodeFormat_EMF },
+        {L"png",  ImageFormat_PNG },
+        {L"bmp",  ImageFormat_BMP },
+        {L"dib",  ImageFormat_BMP },
+        {L"jpg",  ImageFormat_JPEG},
+        {L"jpeg", ImageFormat_JPEG},
+        {L"jpe",  ImageFormat_JPEG},
+        {L"jfif", ImageFormat_JPEG},
+        {L"gif",  ImageFormat_GIF },
+        {L"tif",  ImageFormat_TIFF},
+        {L"tiff", ImageFormat_TIFF},
+        {L"exif", ImageFormat_EXIF},
+        {L"wmf",  ImageFormat_WMF },
+        {L"emf",  ImageFormat_EMF },
+        {L"psd",  ImageFormat_PSD },
+        {L"hdr",  ImageFormat_HDR },
+        {L"pgm",  ImageFormat_PGM },
+        {L"ppm",  ImageFormat_PPM },
+        {L"tga",  ImageFormat_TGA }
     };
 
     const int formatMapLength = sizeof(formatMap) / sizeof(formatMap[0]);
 
-    ImageDecodeFormat imageDecodeFormat = ImageDecodeFormat_NULL;
+    ImageFormat imageFormat = ImageFormat_NULL;
 
     /* 忽略大小写查找匹配项 */
     for (int i = 0; i < formatMapLength; i++) {
         if (_wcsicmp(fileExtension, formatMap[i].ext) == 0) {
-            imageDecodeFormat = formatMap[i].format;
+            imageFormat = formatMap[i].format;
             break;
         }
     }
 
-    return imageDecodeFormat;
+    return imageFormat;
+}
+
+ImageDecodeFormat getImageDecodeFormat(ImageFormat imageformat)
+{
+    ImageDecodeFormat format = ImageDecodeFormat_NULL;
+    switch (imageformat) {
+        case ImageFormat_NULL: format = ImageDecodeFormat_NULL; break;
+        case ImageFormat_PNG:  format = ImageDecodeFormat_PNG;  break;
+        case ImageFormat_BMP:  format = ImageDecodeFormat_BMP;  break;
+        case ImageFormat_JPEG: format = ImageDecodeFormat_JPEG; break;
+        case ImageFormat_GIF:  format = ImageDecodeFormat_GIF;  break;
+        case ImageFormat_TIFF: format = ImageDecodeFormat_TIFF; break;
+        case ImageFormat_EXIF: format = ImageDecodeFormat_EXIF; break;
+        case ImageFormat_WMF:  format = ImageDecodeFormat_WMF;  break;
+        case ImageFormat_EMF:  format = ImageDecodeFormat_EMF;  break;
+        case ImageFormat_PSD : format = ImageDecodeFormat_PSD;  break;
+        case ImageFormat_HDR : format = ImageDecodeFormat_HDR;  break;
+        case ImageFormat_PGM : format = ImageDecodeFormat_PGM;  break;
+        case ImageFormat_PPM : format = ImageDecodeFormat_PPM;  break;
+        case ImageFormat_TGA : format = ImageDecodeFormat_TGA;  break;
+    default:
+        break;
+    }
+
+    return format;
+}
+
+ImageEncodeFormat getImageEncodeFormat(ImageFormat imageformat)
+{
+    ImageEncodeFormat format = ImageEncodeFormat_NULL;
+    switch (imageformat) {
+        case ImageFormat_NULL: format = ImageEncodeFormat_NULL; break;
+        case ImageFormat_PNG:  format = ImageEncodeFormat_PNG;  break;
+        case ImageFormat_BMP:  format = ImageEncodeFormat_BMP;  break;
+    default:
+        break;
+    }
+
+    return format;
 }
 
 } // namespace ege

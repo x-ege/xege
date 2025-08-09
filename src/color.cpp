@@ -387,4 +387,15 @@ color_t alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlph
     return alphablend_premultiplied_inline(dst, EGEARGB(alpha, red, green, blue));
 }
 
+void ARGBToABGR(color_t* dst, const color_t* src, int count)
+{
+    if ((dst == NULL) || (src == NULL) || (count <= 0)) {
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        dst[i] = RGBTOBGR(src[i]);
+    }
+}
+
 } // namespace ege
