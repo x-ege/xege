@@ -322,7 +322,7 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
 {
     if(!width || !height) return;
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (!text || !img || wcslen(text) == 0){
+    if (!text || !img || !img->m_hDC || wcslen(text) == 0){
         *width = 0;
         *height = 0;
         CONVERT_IMAGE_END;
@@ -343,6 +343,7 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
         case RIGHT_TEXT:  format->SetAlignment(StringAlignmentFar);     break;
         default: break;
     }
+    format->SetFormatFlags(StringFormatFlagsMeasureTrailingSpaces);
     Gdiplus::CharacterRange charRange(0, (int)wcslen(text));
     format->SetMeasurableCharacterRanges(1, &charRange);
 
