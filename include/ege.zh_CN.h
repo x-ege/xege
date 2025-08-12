@@ -263,12 +263,12 @@ enum graphics_errors
     grInvalidFontNum     = -14,         ///< 无效字体编号
     grInvalidVersion     = -18,         ///< 版本不兼容
 
-    grException          = 0x10,        ///< EGE异常
-    grParamError         = 0x11,        ///< 参数错误
-    grInvalidRegion      = 0x12,        ///< 无效区域
-    grOutOfMemory        = 0x13,        ///< 内存不足
-    grNullPointer        = 0x14,        ///< 空指针
-    grAllocError         = 0x15,        ///< 分配错误
+    grException          = 16,          ///< EGE异常
+    grParamError         = 17,          ///< 参数错误
+    grInvalidRegion      = 18,          ///< 无效区域
+    grOutOfMemory        = 19,          ///< 内存不足
+    grNullPointer        = 20,          ///< 空指针
+    grAllocError         = 21,          ///< 分配错误
     grInvalidFileFormat  = 22,          ///< 无效文件格式
     grUnsupportedFormat  = 23,          ///< 不支持的格式
     grInvalidMemory      = 0xCDCDCDCD   ///< 无效内存
