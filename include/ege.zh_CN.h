@@ -71,6 +71,14 @@
 #endif
 #endif
 
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS
+#endif
+
+#ifndef __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS
+#endif
+
 #include "ege/stdint.h"
 
 #if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
@@ -261,6 +269,8 @@ enum graphics_errors
     grOutOfMemory        = 0x13,        ///< 内存不足
     grNullPointer        = 0x14,        ///< 空指针
     grAllocError         = 0x15,        ///< 分配错误
+    grInvalidFileFormat  = 22,          ///< 无效文件格式
+    grUnsupportedFormat  = 23,          ///< 不支持的格式
     grInvalidMemory      = 0xCDCDCDCD   ///< 无效内存
 };
 
@@ -900,7 +910,8 @@ enum mouse_flag_e
     mouse_flag_x1       = 0x008,    ///< 鼠标X1键被按下
     mouse_flag_x2       = 0x010,    ///< 鼠标X2键被按下
     mouse_flag_shift    = 0x100,    ///< Shift键被按下
-    mouse_flag_ctrl     = 0x200     ///< Ctrl键被按下
+    mouse_flag_ctrl     = 0x200,    ///< Ctrl键被按下
+    mouse_flag_doubleclick = 0x1000    ///< 双击事件
 };
 
 /**
@@ -4871,6 +4882,10 @@ int     EGEAPI kbhitEx(int flag);
  * @see key_code_e
  */
 int     EGEAPI keystate(int key);
+int     EGEAPI keypress(int key);
+int     EGEAPI keyrelease(int key);
+int     EGEAPI keyrepeat(int key);
+
 
 /**
  * @brief 清空按键消息缓存区
