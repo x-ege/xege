@@ -320,63 +320,54 @@ void measuretext(const char* text, float* width, float* height, PCIMAGE pimg)
 
 void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
 {
-    if(!width || !height) return;
+    float textWidth = 0.0f, textHeight = 0.0f;
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (!text || !img || !img->m_hDC || wcslen(text) == 0){
-        *width = 0;
-        *height = 0;
-        CONVERT_IMAGE_END;
-        return;
-    }
-    
-    using namespace Gdiplus;
+    if (!isEmpty(text) && img && img->m_hDC) {
+        using namespace Gdiplus;
 
-    HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
-    Gdiplus::Font font(img->m_hDC, hFont);
+        HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+        Font font(img->m_hDC, hFont);
 
-    Gdiplus::Graphics graphics(img->m_hDC);
+        Graphics graphics(img->m_hDC);
 
-    Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic()->Clone();
-    switch (img->m_texttype.horiz) {
+        StringFormat* format = StringFormat::GenericTypographic()->Clone();
+        switch (img->m_texttype.horiz) {
         case LEFT_TEXT:   format->SetAlignment(StringAlignmentNear);    break;
         case CENTER_TEXT: format->SetAlignment(StringAlignmentCenter);  break;
         case RIGHT_TEXT:  format->SetAlignment(StringAlignmentFar);     break;
         default: break;
-    }
-    format->SetFormatFlags(StringFormatFlagsMeasureTrailingSpaces);
-    Gdiplus::CharacterRange charRange(0, (int)wcslen(text));
-    format->SetMeasurableCharacterRanges(1, &charRange);
+        }
+        format->SetFormatFlags(StringFormatFlagsMeasureTrailingSpaces);
 
-    Gdiplus::RectF layoutRect(0, 0, 65535, 65535);
-    Gdiplus::Region region;
-    Status s = graphics.MeasureCharacterRanges(
-        text, (int)wcslen(text), &font, layoutRect, format, 1, &region
-    );
-    delete format;
-    if(s != Ok){
-        *width = 0;
-        *height = 0;
-        CONVERT_IMAGE_END;
-        return;
+        int textLength = (int)wcslen(text);
+        CharacterRange charRange(0, textLength);
+        format->SetMeasurableCharacterRanges(1, &charRange);
+
+        Gdiplus::RectF layoutRect(0, 0, 65535, 65535);
+        Region region;
+        if (graphics.MeasureCharacterRanges(text, textLength, &font, layoutRect, format, 1, &region) == Ok) {
+            Gdiplus::RectF boundRect;
+            if (region.GetBounds(&boundRect, &graphics) == Ok) {
+                textWidth = boundRect.Width;
+                textHeight = boundRect.Height;
+            }
+        }
+
+        delete format;
     }
 
-    Gdiplus::RectF boundRect;
-    s = region.GetBounds(&boundRect, &graphics);
-    if(s != Ok){
-        *width = 0;
-        *height = 0;
-        CONVERT_IMAGE_END;
-        return;
-    }
-    *width = boundRect.Width;
-    *height = boundRect.Height;
+    if (width != NULL)
+        *width = textWidth;
+
+    if (height != NULL)
+        *height = textHeight;
+
     CONVERT_IMAGE_END;
-    return;
 }
 
-void measuretext(CHAR c, float* width, float* height, PCIMAGE pimg)
+void measuretext(char c, float* width, float* height, PCIMAGE pimg)
 {
-    CHAR str[2] = {c};
+    char str[2] = {c};
     measuretext(str, width, height, pimg);
 }
 
@@ -824,16 +815,16 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
         LONG fixedWidth = lf.lfWidth;
         float tmp;
         float textCurrentWidth;
-        measuretext(textstring,&textCurrentWidth,&tmp,img);
+        measuretext(textstring, &textCurrentWidth, &tmp, img);
         lf.lfWidth = 0;
-        setfont(&lf);
+        setfont(&lf, img);
         float textNormalWidth;
-        measuretext(textstring,&textNormalWidth,&tmp,img);
+        measuretext(textstring, &textNormalWidth, &tmp, img);
         lf.lfWidth = fixedWidth;
-        setfont(&lf);
+        setfont(&lf, img);
 
         if ((int)textCurrentWidth != (int)textNormalWidth && ((int)textCurrentWidth != 0) && ((int)textNormalWidth != 0)) {
-            xScale = (float)((double)textCurrentWidth / textNormalWidth);
+            xScale = textCurrentWidth / textNormalWidth;
         }
     }
 
