@@ -261,7 +261,7 @@ namespace dll
         HMODULE Ole32Dll = LoadLibraryA("Ole32.dll");
         if (Ole32Dll == NULL) {
             LOG("ege error: Failed to load Ole32.dll.");
-            return S_FALSE;
+            return E_NOTIMPL;
         }
 
         typedef HRESULT (WINAPI *CreateStreamOnHGlobalFuncType) (HGLOBAL hGlobal, BOOL fDeleteOnRelease, LPSTREAM *ppstm);
@@ -270,7 +270,7 @@ namespace dll
         HRESULT result;
         if (CreateStreamOnHGlobalFunc == NULL) {
             LOG("ege error: The 'CreateStreamOnHGlobal' function cannot be found from the Ole32.dll.");
-            result = S_FALSE;
+            result = E_NOINTERFACE;
         } else {
             result = CreateStreamOnHGlobalFunc(hGlobal, fDeleteOnRelease, ppstm);
         }

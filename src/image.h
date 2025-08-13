@@ -8,6 +8,42 @@
 namespace ege
 {
 
+/*
+                      支持的图像解码格式
+ ┌───────────┬────────────────────────────────────────────────────────────────────┐
+ │ stb_image │ PNG, BMP, JPEG, GIF,                     , PSD, HDR, PGM, PPM, TGA │
+ ├───────────┼────────────────────────────────────────────────────────────────────┤
+ │ GDI+      │ PNG, BMP, JPEG, GIF, TIFF, EXIF, WMF, EMF                          │
+ └───────────┴────────────────────────────────────────────────────────────────────┘
+
+                      支持的图像编码格式
+ ┌───────────┬───────────────────────────────────────────────┐
+ │ stb_image │ PNG, BMP,                                     │
+ ├───────────┼───────────────────────────────────────────────┤
+ │ GDI+      │ PNG, BMP, JPEG, GIF,                          │
+ └───────────┴───────────────────────────────────────────────┘
+ */
+
+// 图像格式
+enum ImageFormat
+{
+    ImageFormat_NULL = 0,
+    ImageFormat_PNG,
+    ImageFormat_BMP,
+    ImageFormat_JPEG,
+    ImageFormat_GIF,
+    ImageFormat_TIFF,
+    ImageFormat_EXIF,
+    ImageFormat_WMF,
+    ImageFormat_EMF,
+    ImageFormat_PSD,
+    ImageFormat_HDR,
+    ImageFormat_PGM,
+    ImageFormat_PPM,
+    ImageFormat_TGA
+};
+
+// 图像解码格式
 enum ImageDecodeFormat
 {
     ImageDecodeFormat_NULL = 0,
@@ -18,9 +54,15 @@ enum ImageDecodeFormat
     ImageDecodeFormat_TIFF,
     ImageDecodeFormat_EXIF,
     ImageDecodeFormat_WMF,
-    ImageDecodeFormat_EMF
+    ImageDecodeFormat_EMF,
+    ImageDecodeFormat_PSD,
+    ImageDecodeFormat_HDR,
+    ImageDecodeFormat_PGM,
+    ImageDecodeFormat_PPM,
+    ImageDecodeFormat_TGA
 };
 
+// 支持的图像编码格式
 enum ImageEncodeFormat
 {
     ImageEncodeFormat_NULL = 0,
@@ -269,5 +311,9 @@ graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
 
 int savebmp(PCIMAGE pimg, FILE* file, bool alpha = false);
 
-ImageDecodeFormat checkImageDecodeFormatByFileName(const WCHAR* fileName);
+ImageFormat checkImageFormatByFileName(const wchar_t* fileName);
+
+ImageDecodeFormat getImageDecodeFormat(ImageFormat imageformat);
+
+ImageEncodeFormat getImageEncodeFormat(ImageFormat imageformat);
 } // namespace ege
