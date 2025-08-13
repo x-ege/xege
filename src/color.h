@@ -164,6 +164,14 @@ EGE_FORCEINLINE color_t alphablend_premultiplied_inline(color_t dst, color_t src
     return EGEARGB(a, r, g, b);
 }
 
+/* ARGB 格式转为 ABGR 格式(仅交换 R 和 B 通道)*/
+void ARGBToABGR(color_t* dst, const color_t* src, int count);
+
+/* ABGR 格式转为 ARGB 格式(仅交换 R 和 B 通道)*/
+inline void ABGRToARGB(color_t* dst, const color_t* src, int count)
+{
+    ARGBToABGR(dst, src, count);
+}
 } //namespace ege
 
 
