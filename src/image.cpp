@@ -24,12 +24,13 @@
 
 #include <png.h>
 
-
 #include <math.h>
 #include <limits.h>
 
 namespace ege
 {
+
+using std::swap;
 
 void IMAGE::reset()
 {
@@ -39,7 +40,7 @@ void IMAGE::reset()
     m_width     = 0;
     m_height    = 0;
     m_pBuffer   = NULL;
-    m_linecolor     = 0;
+    m_linecolor = 0;
     m_fillcolor = 0;
     m_textcolor = 0;
     m_bk_color  = 0;
@@ -47,12 +48,12 @@ void IMAGE::reset()
     memset(&m_vpt, 0, sizeof(m_vpt));
     memset(&m_texttype, 0, sizeof(m_texttype));
     memset(&m_linestyle, 0, sizeof(m_linestyle));
-    m_linewidth    = 0.0f;
-    m_linestartcap = LINECAP_FLAT;
-    m_lineendcap   = LINECAP_FLAT;
-    m_linejoin     = LINEJOIN_MITER;
+    m_linewidth          = 0.0f;
+    m_linestartcap       = LINECAP_FLAT;
+    m_lineendcap         = LINECAP_FLAT;
+    m_linejoin           = LINEJOIN_MITER;
     m_linejoinmiterlimit = 10.0f;
-    m_texture      = NULL;
+    m_texture            = NULL;
 #ifdef EGE_GDIPLUS
     m_graphics = NULL;
     m_pen      = NULL;
@@ -273,7 +274,7 @@ Gdiplus::Graphics* IMAGE::getGraphics()
         POINT origin;
         SetViewportOrgEx(m_hDC, 0, 0, &origin);
         HRGN clipRgn = CreateRectRgn(0, 0, 0, 0);
-        int result = GetClipRgn(m_hDC, clipRgn);
+        int  result  = GetClipRgn(m_hDC, clipRgn);
 
         m_graphics = new Gdiplus::Graphics(m_hDC);
 
@@ -349,7 +350,7 @@ int IMAGE::resize_f(int width, int height)
     Size oldWindowSize(m_width, m_height);
 
     PDWORD  bmp_buf;
-    HBITMAP bitmap     = newbitmap(width, height, &bmp_buf);
+    HBITMAP bitmap = newbitmap(width, height, &bmp_buf);
     if (bitmap == NULL) {
         return grAllocError;
     }
@@ -471,9 +472,9 @@ graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     Gdiplus::BitmapData bitmapData;
     bitmapData.Width       = width;
     bitmapData.Height      = height;
-    bitmapData.Stride      = width * sizeof(color_t);    // 至下一行像素的偏移量(字节)
-    bitmapData.PixelFormat = PixelFormat32bppARGB;       // 像素颜色格式: 32 位 ARGB
-    bitmapData.Scan0       = getbuffer(pimg);            // 图像首行像素的首地址
+    bitmapData.Stride      = width * sizeof(color_t); // 至下一行像素的偏移量(字节)
+    bitmapData.PixelFormat = PixelFormat32bppARGB;    // 像素颜色格式: 32 位 ARGB
+    bitmapData.Scan0       = getbuffer(pimg);         // 图像首行像素的首地址
 
     /* 读取区域设置为整个图像 */
     Gdiplus::Rect rect(0, 0, width, height);
@@ -509,7 +510,7 @@ int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
             /* GDI+ Bitmap 仅报 InvalidParameter 错误，无法进一步区分是不支持的格式还是格式错误 */
             /* 通过文件扩展名判断文件是否在支持的格式中，支持为 grInvalidFileFormat，不支持则为 grUnsupportedFormat */
             ImageDecodeFormat imageFormat = checkImageDecodeFormatByFileName(filename);
-            return (imageFormat == ImageDecodeFormat_NULL) ? grUnsupportedFormat : grInvalidFileFormat ;
+            return (imageFormat == ImageDecodeFormat_NULL) ? grUnsupportedFormat : grInvalidFileFormat;
         }
 
         return getimage_from_bitmap(this, bitmap);
@@ -533,16 +534,15 @@ graphics_errors getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinf
     png_structp png_ptr  = (png_structp)vpng_ptr;
     png_infop   info_ptr = (png_infop)vinfo_ptr;
 
-    #if defined(PNG_SKIP_sRGB_CHECK_PROFILE) && defined(PNG_SET_OPTION_SUPPORTED)
-    png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE,
-           PNG_OPTION_ON);
-    #endif
+#if defined(PNG_SKIP_sRGB_CHECK_PROFILE) && defined(PNG_SET_OPTION_SUPPORTED)
+    png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
+#endif
 
     // 读取 PNG 文件信息, 存入 info_ptr 中
     png_read_info(png_ptr, info_ptr);
 
     const png_byte color_type = png_get_color_type(png_ptr, info_ptr);
-    const png_byte bit_depth  = png_get_bit_depth(png_ptr, info_ptr);    // 每通道位深度
+    const png_byte bit_depth  = png_get_bit_depth(png_ptr, info_ptr); // 每通道位深度
 
     // 将颜色类型转为 RGB 或 RGBA
     if (color_type == PNG_COLOR_TYPE_PALETTE) {
@@ -554,7 +554,7 @@ graphics_errors getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinf
     // 将位深度设置为每通道 8 bit
     // (PNG 格式规定，RGB(RGBA) 位深度为 8 或 16，不会低于 8)
     if (bit_depth == 16) {
-        png_set_strip_16(png_ptr);  // bit depth 16 to 8
+        png_set_strip_16(png_ptr); // bit depth 16 to 8
     }
 
     // 补齐 alpha 通道
@@ -606,7 +606,7 @@ graphics_errors getimage_from_png_struct(PIMAGE self, void* vpng_ptr, void* vinf
 int IMAGE::getpngimg(FILE* fp)
 {
     {
-        char   header[16];
+        char           header[16];
         const uint32_t number = 8;
 
         if (fread(header, 1, number, fp) != number) {
@@ -725,7 +725,7 @@ struct MemCursor
 static void read_data_from_MemCursor(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead)
 {
     MemCursor& cursor = *(MemCursor*)png_get_io_ptr(png_ptr);
-    png_size_t count  = MIN(cursor.size - cursor.cur, byteCountToRead);
+    png_size_t count  = min(cursor.size - cursor.cur, byteCountToRead);
     memcpy(outBytes, cursor.data + cursor.cur, count);
     cursor.cur += count;
 }
@@ -760,9 +760,9 @@ inline int getimage_from_resource(PIMAGE self, HRSRC hrsrc)
 
             png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         } else {
-            HGLOBAL          hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
-            LPVOID           pvData;
-            IStream*         pStm;
+            HGLOBAL  hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
+            LPVOID   pvData;
+            IStream* pStm;
 
             if (hGlobal == NULL || (pvData = GlobalLock(hGlobal)) == NULL) {
                 return grAllocError;
@@ -814,10 +814,10 @@ int IMAGE::getimage(void* pMem, long size)
     inittest(L"IMAGE::getimage");
 
     if (pMem) {
-        DWORD            dwSize  = size;
-        HGLOBAL          hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
-        LPVOID           pvData;
-        IStream*         pStm;
+        DWORD    dwSize  = size;
+        HGLOBAL  hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
+        LPVOID   pvData;
+        IStream* pStm;
 
         if (hGlobal == NULL || (pvData = GlobalLock(hGlobal)) == NULL) {
             return grAllocError;
@@ -846,8 +846,8 @@ int IMAGE::getimage(void* pMem, long size)
     return grIOerror;
 }
 
-void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int srcWidth,
-    int srcHeight, DWORD dwRop) const
+void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc,
+    int srcWidth, int srcHeight, DWORD dwRop) const
 {
     inittest(L"IMAGE::putimage");
     const PCIMAGE img = CONVERT_IMAGE(imgDest);
@@ -858,16 +858,16 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
     CONVERT_IMAGE_END;
 }
 
-static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDest,
-        int* xSrc, int* ySrc, int* width, int* height)
+static void fix_rect_1size(
+    PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDest, int* xSrc, int* ySrc, int* width, int* height)
 {
-    Bound vpt  = imgDest->m_vpt;
+    Bound vpt = imgDest->m_vpt;
     Point srcPos(*xSrc, *ySrc);
     Point dstPos(*xDest + vpt.left, *yDest + vpt.top);
 
     /* 区域位于图像右下角，此区域内无内容 */
-    if (   (srcPos.x >= imgSrc->m_width)  || (srcPos.y >= imgSrc->m_height)
-        || (dstPos.x >= imgDest->m_width) || (dstPos.y >= imgDest->m_height))
+    if ((srcPos.x >= imgSrc->m_width) || (srcPos.y >= imgSrc->m_height) || (dstPos.x >= imgDest->m_width) ||
+        (dstPos.y >= imgDest->m_height))
     {
         *width = *height = 0;
         return;
@@ -877,7 +877,7 @@ static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDe
     srcBound.setTopLeft(*xSrc, *ySrc);
 
     /* 调整区域: 宽高参数 <= 0 则将区域扩展至图像右下边缘，否则截断在 int 范围内*/
-    (*width <= 0)  ? srcBound.setRight(imgSrc->m_width)   : (void)srcBound.setLargeWidth(*width);
+    (*width <= 0) ? srcBound.setRight(imgSrc->m_width) : (void)srcBound.setLargeWidth(*width);
     (*height <= 0) ? srcBound.setBottom(imgSrc->m_height) : (void)srcBound.setLargeHeight(*height);
 
     /* 绘制区域 */
@@ -886,7 +886,7 @@ static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDe
     dstBound.setLargeSize(srcBound.width(), srcBound.height());
 
     /* 由视口区域计算绘制目标裁剪区域 */
-    Bound srcClip(0, 0, imgSrc->m_width,  imgSrc->m_height);
+    Bound srcClip(0, 0, imgSrc->m_width, imgSrc->m_height);
     Bound dstClip(0, 0, imgDest->m_width, imgDest->m_height);
     dstClip.intersect(vpt);
 
@@ -916,14 +916,14 @@ static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDe
     }
 }
 
-int IMAGE::putimage_transparent(PIMAGE imgDest,           // handle to dest
-    int                                xDest,             // x-coord of destination upper-left corner
-    int                                yDest,             // y-coord of destination upper-left corner
-    color_t                            transparentColor,  // color to make transparent
-    int                                xSrc,              // x-coord of source upper-left corner
-    int                                ySrc,              // y-coord of source upper-left corner
-    int                                widthSrc,          // width of source rectangle
-    int                                heightSrc          // height of source rectangle
+int IMAGE::putimage_transparent(PIMAGE imgDest,          // handle to dest
+    int                                xDest,            // x-coord of destination upper-left corner
+    int                                yDest,            // y-coord of destination upper-left corner
+    color_t                            transparentColor, // color to make transparent
+    int                                xSrc,             // x-coord of source upper-left corner
+    int                                ySrc,             // y-coord of source upper-left corner
+    int                                widthSrc,         // width of source rectangle
+    int                                heightSrc         // height of source rectangle
 ) const
 {
     inittest(L"IMAGE::putimage_transparent");
@@ -936,8 +936,9 @@ int IMAGE::putimage_transparent(PIMAGE imgDest,           // handle to dest
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
 
-        if ((widthSrc == 0) || (heightSrc == 0))
+        if ((widthSrc == 0) || (heightSrc == 0)) {
             return grOk;
+        }
 
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
@@ -959,28 +960,30 @@ int IMAGE::putimage_transparent(PIMAGE imgDest,           // handle to dest
     return grOk;
 }
 
-int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
-    int                               xDest,    // x-coord of destination upper-left corner
-    int                               yDest,    // y-coord of destination upper-left corner
-    unsigned char                     alpha,    // alpha
-    int                               xSrc,     // x-coord of source upper-left corner
-    int                               ySrc,     // y-coord of source upper-left corner
-    int                               widthSrc, // width of source rectangle
-    int                               heightSrc,// height of source rectangle
-    alpha_type                        alphaType // alpha mode(straight alpha or premultiplied alpha)
+int IMAGE::putimage_alphablend(PIMAGE imgDest,   // handle to dest
+    int                               xDest,     // x-coord of destination upper-left corner
+    int                               yDest,     // y-coord of destination upper-left corner
+    unsigned char                     alpha,     // alpha
+    int                               xSrc,      // x-coord of source upper-left corner
+    int                               ySrc,      // y-coord of source upper-left corner
+    int                               widthSrc,  // width of source rectangle
+    int                               heightSrc, // height of source rectangle
+    alpha_type                        alphaType  // alpha mode(straight alpha or premultiplied alpha)
 ) const
 {
     inittest(L"IMAGE::putimage_alphablend");
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
-        if (alpha == 0)
+        if (alpha == 0) {
             return grOk;
+        }
 
         PCIMAGE imgSrc = this;
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
 
-        if ((widthSrc == 0) || (heightSrc == 0))
+        if ((widthSrc == 0) || (heightSrc == 0)) {
             return grOk;
+        }
 
         if (alphaType == ALPHATYPE_PREMULTIPLIED) {
             BLENDFUNCTION bf;
@@ -989,8 +992,8 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
             bf.SourceConstantAlpha = alpha;
             bf.AlphaFormat         = AC_SRC_ALPHA;
             // draw
-            dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc,
-                imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
+            dll::AlphaBlend(
+                img->m_hDC, xDest, yDest, widthSrc, heightSrc, imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
         } else {
             DWORD* pdp = img->m_pBuffer + yDest * img->m_width + xDest;
             DWORD* psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -1033,21 +1036,30 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
     int                               widthSrc,   // width of source rectangle
     int                               heightSrc,  // height of source rectangle
     bool                              smooth,
-    alpha_type                        alphaType   // alpha mode(straight alpha or premultiplied alpha)
+    alpha_type                        alphaType // alpha mode(straight alpha or premultiplied alpha)
 ) const
 {
     inittest(L"IMAGE::putimage_alphablend");
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
-        if (alpha == 0)
+        if (alpha == 0) {
             return grOk;
+        }
 
         PCIMAGE imgSrc = this;
 
-        if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
-        if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
-        if (widthDest  <= 0) widthDest  = widthSrc;
-        if (heightDest <= 0) heightDest = heightSrc;
+        if (widthSrc <= 0) {
+            widthSrc = imgSrc->m_width;
+        }
+        if (heightSrc <= 0) {
+            heightSrc = imgSrc->m_height;
+        }
+        if (widthDest <= 0) {
+            widthDest = widthSrc;
+        }
+        if (heightDest <= 0) {
+            heightDest = heightSrc;
+        }
 
         if ((alphaType == ALPHATYPE_PREMULTIPLIED) && !smooth) {
             BLENDFUNCTION bf;
@@ -1056,16 +1068,16 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             bf.SourceConstantAlpha = alpha;
             bf.AlphaFormat         = AC_SRC_ALPHA;
             // draw
-            dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, imgSrc->m_hDC, xSrc, ySrc, widthSrc,
-                heightSrc, bf);
+            dll::AlphaBlend(
+                img->m_hDC, xDest, yDest, widthDest, heightDest, imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
         } else {
             const Bound& vptDest = img->m_vpt;
             const Bound& vptSrc  = imgSrc->m_vpt;
-            Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
-            Rect drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
+            Rect         drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
+            Rect         drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
 
             Gdiplus::Graphics* graphics = img->getGraphics();
-            Gdiplus::Matrix matrix;
+            Gdiplus::Matrix    matrix;
             graphics->GetTransform(&matrix);
             graphics->ResetTransform();
 
@@ -1085,24 +1097,22 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             Gdiplus::ImageAttributes* imageAtt = NULL;
 
             if (alpha != 0xFF) {
-                float scale = alpha / 255.0f;
-                Gdiplus::ColorMatrix colorMatrix = {
-                    1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                    0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f, scale, 0.0f,
-                    0.0f, 0.0f, 0.0f, 0.0f, 1.0f
-                };
-                imageAtt = new Gdiplus::ImageAttributes;
-                imageAtt->SetColorMatrix(&colorMatrix, Gdiplus::ColorMatrixFlagsDefault, Gdiplus::ColorAdjustTypeBitmap);
+                float                scale       = alpha / 255.0f;
+                Gdiplus::ColorMatrix colorMatrix = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, scale, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+                imageAtt                         = new Gdiplus::ImageAttributes;
+                imageAtt->SetColorMatrix(
+                    &colorMatrix, Gdiplus::ColorMatrixFlagsDefault, Gdiplus::ColorAdjustTypeBitmap);
             }
 
-            Gdiplus::RectF rectDest((float)drawDest.x, (float)drawDest.y, (float)drawDest.width, (float)drawDest.height);
+            Gdiplus::RectF rectDest(
+                (float)drawDest.x, (float)drawDest.y, (float)drawDest.width, (float)drawDest.height);
             Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
 
-            int stride = sizeof(color_t) * imgSrc->m_width;
+            int             stride = sizeof(color_t) * imgSrc->m_width;
             Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, stride, pixelFormat, (BYTE*)imgSrc->m_pBuffer);
-            graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, imageAtt);
+            graphics->DrawImage(
+                &bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, imageAtt);
             graphics->SetTransform(&matrix);
 
             delete imageAtt;
@@ -1112,15 +1122,15 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
     return grOk;
 }
 
-int IMAGE::putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
-    int                                     xDest,             // x-coord of destination upper-left corner
-    int                                     yDest,             // y-coord of destination upper-left corner
-    color_t                                 transparentColor,  // color to make transparent
-    unsigned char                           alpha,             // alpha
-    int                                     xSrc,              // x-coord of source upper-left corner
-    int                                     ySrc,              // y-coord of source upper-left corner
-    int                                     widthSrc,          // width of source rectangle
-    int                                     heightSrc          // height of source rectangle
+int IMAGE::putimage_alphatransparent(PIMAGE imgDest,          // handle to dest
+    int                                     xDest,            // x-coord of destination upper-left corner
+    int                                     yDest,            // y-coord of destination upper-left corner
+    color_t                                 transparentColor, // color to make transparent
+    unsigned char                           alpha,            // alpha
+    int                                     xSrc,             // x-coord of source upper-left corner
+    int                                     ySrc,             // y-coord of source upper-left corner
+    int                                     widthSrc,         // width of source rectangle
+    int                                     heightSrc         // height of source rectangle
 ) const
 {
     inittest(L"IMAGE::putimage_alphatransparent");
@@ -1133,8 +1143,9 @@ int IMAGE::putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
 
-        if ((widthSrc == 0) || (heightSrc == 0))
+        if ((widthSrc == 0) || (heightSrc == 0)) {
             return grOk;
+        }
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -1156,13 +1167,13 @@ int IMAGE::putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
     return grOk;
 }
 
-int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
-    int                              xDest,     // x-coord of destination upper-left corner
-    int                              yDest,     // y-coord of destination upper-left corner
-    int                              xSrc,      // x-coord of source upper-left corner
-    int                              ySrc,      // y-coord of source upper-left corner
-    int                              widthSrc,  // width of source rectangle
-    int                              heightSrc  // height of source rectangle
+int IMAGE::putimage_withalpha(PIMAGE imgDest,  // handle to dest
+    int                              xDest,    // x-coord of destination upper-left corner
+    int                              yDest,    // y-coord of destination upper-left corner
+    int                              xSrc,     // x-coord of source upper-left corner
+    int                              ySrc,     // y-coord of source upper-left corner
+    int                              widthSrc, // width of source rectangle
+    int                              heightSrc // height of source rectangle
 ) const
 {
     inittest(L"IMAGE::putimage_withalpha");
@@ -1175,8 +1186,9 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
 
-        if ((widthSrc == 0) || (heightSrc == 0))
+        if ((widthSrc == 0) || (heightSrc == 0)) {
             return grOk;
+        }
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -1211,7 +1223,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
     imgDest = CONVERT_IMAGE(imgDest);
     if (imgDest) {
         PCIMAGE imgSrc = this;
-        #if 0
+#if 0
         int     x, y;
         DWORD   ddx, dsx;
         DWORD * pdp, *psp;
@@ -1249,18 +1261,26 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, alphaSrc->m_hDC, 0, 0, widthSrc,
             heightSrc, bf);
         delimage(alphaSrc);
-        #endif
+#endif
 
-        if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
-        if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
-        if (widthDest  <= 0) widthDest  = widthSrc;
-        if (heightDest <= 0) heightDest = heightSrc;
+        if (widthSrc <= 0) {
+            widthSrc = imgSrc->m_width;
+        }
+        if (heightSrc <= 0) {
+            heightSrc = imgSrc->m_height;
+        }
+        if (widthDest <= 0) {
+            widthDest = widthSrc;
+        }
+        if (heightDest <= 0) {
+            heightDest = heightSrc;
+        }
 
         const Bound& vptDest = imgDest->m_vpt;
         const Bound& vptSrc  = imgSrc->m_vpt;
-        Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
-        Rect drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
-        Rect clipDest(0, 0, imgDest->m_width, imgDest->m_height);
+        Rect         drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
+        Rect         drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
+        Rect         clipDest(0, 0, imgDest->m_width, imgDest->m_height);
 
         if (imgDest->m_enableclip) {
             clipDest = Rect(vptDest.left, vptDest.top, vptDest.right - vptDest.left, vptDest.bottom - vptDest.top);
@@ -1270,7 +1290,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         Gdiplus::Region region(&path);
 
         Gdiplus::Graphics* graphics = imgDest->getGraphics();
-        Gdiplus::Matrix matrix;
+        Gdiplus::Matrix    matrix;
         graphics->GetTransform(&matrix);
         graphics->ResetTransform();
         graphics->SetClip(&region);
@@ -1285,22 +1305,23 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
 
         Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, sizeof(color_t) * imgSrc->m_width,
-        PixelFormat32bppARGB, (BYTE*)imgSrc->m_pBuffer);
-        graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
+            PixelFormat32bppARGB, (BYTE*)imgSrc->m_pBuffer);
+        graphics->DrawImage(
+            &bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
         graphics->SetTransform(&matrix);
     }
     CONVERT_IMAGE_END;
     return grOk;
 }
 
-int IMAGE::putimage_alphafilter(PIMAGE imgDest,     // handle to dest
-    int                                xDest,       // x-coord of destination upper-left corner
-    int                                yDest,       // y-coord of destination upper-left corner
-    PCIMAGE                            imgAlpha,    // alpha
-    int                                xSrc,        // x-coord of source upper-left corner
-    int                                ySrc,        // y-coord of source upper-left corner
-    int                                widthSrc,    // width of source rectangle
-    int                                heightSrc    // height of source rectangle
+int IMAGE::putimage_alphafilter(PIMAGE imgDest,  // handle to dest
+    int                                xDest,    // x-coord of destination upper-left corner
+    int                                yDest,    // y-coord of destination upper-left corner
+    PCIMAGE                            imgAlpha, // alpha
+    int                                xSrc,     // x-coord of source upper-left corner
+    int                                ySrc,     // y-coord of source upper-left corner
+    int                                widthSrc, // width of source rectangle
+    int                                heightSrc // height of source rectangle
 ) const
 {
     inittest(L"IMAGE::putimage_alphafilter");
@@ -1314,8 +1335,9 @@ int IMAGE::putimage_alphafilter(PIMAGE imgDest,     // handle to dest
         //  fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
 
-        if ((widthSrc == 0) || (heightSrc == 0))
+        if ((widthSrc == 0) || (heightSrc == 0)) {
             return grOk;
+        }
         // draw
         pdp = img->m_pBuffer + yDest * img->m_width + xDest;
         psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
@@ -1324,7 +1346,7 @@ int IMAGE::putimage_alphafilter(PIMAGE imgDest,     // handle to dest
         dsx = imgSrc->m_width - widthSrc;
         for (y = 0; y < heightSrc; ++y) {
             for (x = 0; x < widthSrc; ++x, ++psp, ++pdp, ++pap) {
-                DWORD d = *pdp, s = *psp;
+                DWORD         d = *pdp, s = *psp;
                 unsigned char alpha = *pap & 0xFF;
                 if (*pap) {
                     *pdp = alphablend_inline(d, s, alpha);
@@ -1340,11 +1362,11 @@ int IMAGE::putimage_alphafilter(PIMAGE imgDest,     // handle to dest
 }
 
 /* private function */
-static void fix_rect_0size(PIMAGE imgDest,      //
-    int*                          xDest,      // x-coord of destination upper-left corner
-    int*                          yDest,      // y-coord of destination upper-left corner
-    int*                          widthDest,  // width of destination rectangle
-    int*                          heightDest  // height of destination rectangle
+static void fix_rect_0size(PIMAGE imgDest,   //
+    int*                          xDest,     // x-coord of destination upper-left corner
+    int*                          yDest,     // y-coord of destination upper-left corner
+    int*                          widthDest, // width of destination rectangle
+    int*                          heightDest // height of destination rectangle
 )
 {
     struct viewporttype _vpt = {0, 0, imgDest->m_width, imgDest->m_height};
@@ -1355,25 +1377,24 @@ static void fix_rect_0size(PIMAGE imgDest,      //
         *heightDest = imgDest->m_height;
     }
     if (*xDest < _vpt.left) {
-        int dx         = _vpt.left - *xDest;
+        int dx  = _vpt.left - *xDest;
         *xDest += dx;
     }
     if (*yDest < _vpt.top) {
-        int dy         = _vpt.top - *yDest;
+        int dy  = _vpt.top - *yDest;
         *yDest += dy;
     }
     if (*xDest + *widthDest > _vpt.right) {
-        int dx       = *xDest + *widthDest - _vpt.right;
+        int dx      = *xDest + *widthDest - _vpt.right;
         *widthDest -= dx;
     }
     if (*yDest + *heightDest > _vpt.bottom) {
-        int dy        = *yDest + *heightDest - _vpt.bottom;
+        int dy       = *yDest + *heightDest - _vpt.bottom;
         *heightDest -= dy;
     }
 }
 
-int IMAGE::imagefilter_blurring_4(
-    int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
+int IMAGE::imagefilter_blurring_4(int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
 {
     inittest(L"IMAGE::imagefilter_blurring_4");
     struct _graph_setting* pg   = &graph_setting;
@@ -1494,8 +1515,7 @@ int IMAGE::imagefilter_blurring_4(
     return grOk;
 }
 
-int IMAGE::imagefilter_blurring_8(
-    int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
+int IMAGE::imagefilter_blurring_8(int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
 {
     inittest(L"IMAGE::imagefilter_blurring_4");
     struct _graph_setting* pg   = &graph_setting;
@@ -1636,8 +1656,7 @@ int IMAGE::imagefilter_blurring_8(
     return grOk;
 }
 
-int IMAGE::imagefilter_blurring(
-    int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
+int IMAGE::imagefilter_blurring(int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
 {
     inittest(L"IMAGE::imagefilter_blurring");
     PIMAGE imgDest = this;
@@ -1659,21 +1678,19 @@ int IMAGE::imagefilter_blurring(
     return grOk;
 }
 
-int IMAGE::putimage_rotate(PIMAGE imgTexture, int xDest, int yDest, float centerx, float centery,
-    float radian,
-    int   btransparent, // transparent (1) or not (0)
-    int   alpha,        // in range[0, 256], alpha== -1 means no alpha
-    int   smooth)
-{
-    return ege::putimage_rotate(
-        this, imgTexture, xDest, yDest, centerx, centery, radian, btransparent, alpha, smooth);
-}
-
-int IMAGE::putimage_rotatezoom(PIMAGE imgTexture, int xDest, int yDest, float centerx, float centery,
-    float radian, float zoom,
+int IMAGE::putimage_rotate(PIMAGE imgTexture, int xDest, int yDest, float centerx, float centery, float radian,
     int btransparent, // transparent (1) or not (0)
     int alpha,        // in range[0, 256], alpha== -1 means no alpha
     int smooth)
+{
+    return ege::putimage_rotate(this, imgTexture, xDest, yDest, centerx, centery, radian, btransparent, alpha, smooth);
+}
+
+int IMAGE::putimage_rotatezoom(PIMAGE imgTexture, int xDest, int yDest, float centerx, float centery, float radian,
+    float zoom,
+    int   btransparent, // transparent (1) or not (0)
+    int   alpha,        // in range[0, 256], alpha== -1 means no alpha
+    int   smooth)
 {
     return ege::putimage_rotatezoom(
         this, imgTexture, xDest, yDest, centerx, centery, radian, zoom, btransparent, alpha, smooth);
@@ -2135,20 +2152,17 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         b_alpha = 0;
     }
     {
-        struct point2d _t;
-        struct point2d _t3;
-
         if (t2d.p[1].y > t2d.p[2].y) {
-            SWAP(t2d.p[1], t2d.p[2], _t);
-            SWAP(t3d.p[1], t3d.p[2], _t3);
+            swap(t2d.p[1], t2d.p[2]);
+            swap(t3d.p[1], t3d.p[2]);
         }
         if (t2d.p[0].y > t2d.p[1].y) {
-            SWAP(t2d.p[0], t2d.p[1], _t);
-            SWAP(t3d.p[0], t3d.p[1], _t3);
+            swap(t2d.p[0], t2d.p[1]);
+            swap(t3d.p[0], t3d.p[1]);
         }
         if (t2d.p[1].y > t2d.p[2].y) {
-            SWAP(t2d.p[1], t2d.p[2], _t);
-            SWAP(t3d.p[1], t3d.p[2], _t3);
+            swap(t2d.p[1], t2d.p[2]);
+            swap(t3d.p[1], t3d.p[2]);
         }
     }
     {
@@ -2157,7 +2171,7 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         int   rs, re;
         int   i, lh, rh;
 
-        struct point2d pl, pr, pt;
+        struct point2d pl, pr;
         struct point2d spl, spr;
 
         pl.x  = t2d.p[1].x - t2d.p[0].x;
@@ -2169,8 +2183,8 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         spl.y = t3d.p[1].y - t3d.p[0].y;
         spr.y = t3d.p[2].y - t3d.p[0].y;
 
-        h     = m - s;
-        rs    = s;
+        h  = m - s;
+        rs = s;
         if (s < y1) {
             s = y1;
         }
@@ -2189,8 +2203,8 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         spr.y *= dd;
         }// */
         if (pl.x > pr.x) {
-            SWAP(pl, pr, pt);
-            SWAP(spl, spr, pt);
+            swap(pl, pr);
+            swap(spl, spr);
         } else {
             ;
         }
@@ -2305,8 +2319,8 @@ static void draw_flat_trangle_alpha(PIMAGE dc_dest, const struct trangle2d* dt, 
         spr.y *= dd;
         }// */
         if (pl.x > pr.x) {
-            SWAP(pl, pr, pt);
-            SWAP(spl, spr, pt);
+            swap(pl, pr);
+            swap(spl, spr);
         } else {
             ;
         }
@@ -2372,20 +2386,17 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         b_alpha = 0;
     }
     {
-        struct point2d _t;
-        struct point2d _t3;
-
         if (t2d.p[1].y > t2d.p[2].y) {
-            SWAP(t2d.p[1], t2d.p[2], _t);
-            SWAP(t3d.p[1], t3d.p[2], _t3);
+            swap(t2d.p[1], t2d.p[2]);
+            swap(t3d.p[1], t3d.p[2]);
         }
         if (t2d.p[0].y > t2d.p[1].y) {
-            SWAP(t2d.p[0], t2d.p[1], _t);
-            SWAP(t3d.p[0], t3d.p[1], _t3);
+            swap(t2d.p[0], t2d.p[1]);
+            swap(t3d.p[0], t3d.p[1]);
         }
         if (t2d.p[1].y > t2d.p[2].y) {
-            SWAP(t2d.p[1], t2d.p[2], _t);
-            SWAP(t3d.p[1], t3d.p[2], _t3);
+            swap(t2d.p[1], t2d.p[2]);
+            swap(t3d.p[1], t3d.p[2]);
         }
     }
     {
@@ -2394,7 +2405,7 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         int   rs, re;
         int   i, lh, rh;
 
-        struct point2d pl, pr, pt;
+        struct point2d pl, pr;
         struct point2d spl, spr;
 
         pl.x  = t2d.p[1].x - t2d.p[0].x;
@@ -2406,8 +2417,8 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         spl.y = t3d.p[1].y - t3d.p[0].y;
         spr.y = t3d.p[2].y - t3d.p[0].y;
 
-        h     = m - s;
-        rs    = s;
+        h  = m - s;
+        rs = s;
         if (s < y1) {
             s = y1;
         }
@@ -2426,8 +2437,8 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         spr.y *= dd;
         }// */
         if (pl.x > pr.x) {
-            SWAP(pl, pr, pt);
-            SWAP(spl, spr, pt);
+            swap(pl, pr);
+            swap(spl, spr);
         } else {
             ;
         }
@@ -2543,8 +2554,8 @@ static void draw_flat_trangle_alpha_s(PIMAGE dc_dest, const struct trangle2d* dt
         spr.y *= dd;
         }// */
         if (pl.x > pr.x) {
-            SWAP(pl, pr, pt);
-            SWAP(spl, spr, pt);
+            swap(pl, pr);
+            swap(spl, spr);
         } else {
             ;
         }
@@ -2633,10 +2644,9 @@ int putimage_trangle(PIMAGE imgDest, PCIMAGE imgTexture,
     return grOk;
 }
 
-int putimage_rotate(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, float centerx,
-    float centery, float radian,
-    bool transparent,
-    int alpha,        // in range[0, 256], alpha==256 means no alpha
+int putimage_rotate(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, float centerx, float centery,
+    float radian, bool transparent,
+    int  alpha, // in range[0, 256], alpha==256 means no alpha
     bool smooth)
 {
     PIMAGE  dc_dest = CONVERT_IMAGE(imgDest);
@@ -2645,8 +2655,8 @@ int putimage_rotate(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, fl
     if (dc_dest) {
         struct trangle2d _tt[2];
         struct trangle2d _dt[2];
-        double dx, dy, cr = cos(radian), sr = sin(radian);
-        int i, j;
+        double           dx, dy, cr = cos(radian), sr = sin(radian);
+        int              i, j;
         _tt[0].p[0].x = 0;
         _tt[0].p[0].y = 0;
         _tt[0].p[1].x = 0;
@@ -2677,10 +2687,10 @@ int putimage_rotate(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, fl
     return grOk;
 }
 
-int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, float centerx,
-    float centery, float radian, float zoom,
+int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, float centerx, float centery,
+    float radian, float zoom,
     bool transparent, // transparent (1) or not (0)
-    int alpha,        // in range[0, 256], alpha==256 means no alpha
+    int  alpha,       // in range[0, 256], alpha==256 means no alpha
     bool smooth)
 {
     PIMAGE  dc_dest = CONVERT_IMAGE(imgDest);
@@ -2688,8 +2698,8 @@ int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest
     if (dc_dest) {
         struct trangle2d _tt[2];
         struct trangle2d _dt[2];
-        double dx, dy, cr = cos(radian), sr = sin(radian);
-        int i, j;
+        double           dx, dy, cr = cos(radian), sr = sin(radian);
+        int              i, j;
         _tt[0].p[0].x = 0;
         _tt[0].p[0].y = 0;
         _tt[0].p[1].x = 0;
@@ -2907,8 +2917,8 @@ void putimage(PIMAGE imgDest, int xDest, int yDest, PCIMAGE pSrcImg, DWORD dwRop
     pSrcImg->putimage(imgDest, xDest, yDest, dwRop);
 }
 
-void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest,
-    PCIMAGE pSrcImg, int xSrc, int ySrc, DWORD dwRop)
+void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE pSrcImg, int xSrc, int ySrc,
+    DWORD dwRop)
 {
     pSrcImg = CONVERT_IMAGE_CONST(pSrcImg);
     pSrcImg->putimage(imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, dwRop);
@@ -2938,106 +2948,83 @@ int getimage(PIMAGE imgDest, const wchar_t* resType, const wchar_t* resName, int
     return imgDest->getimage(resType, resName, zoomWidth, zoomHeight);
 }
 
-void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest,
-    PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHeight, DWORD dwRop)
+void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, PCIMAGE pSrcImg, int xSrc, int ySrc,
+    int srcWidth, int srcHeight, DWORD dwRop)
 {
     pSrcImg = CONVERT_IMAGE_CONST(pSrcImg);
     pSrcImg->putimage(imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, srcWidth, srcHeight, dwRop);
 }
 
-void putimage(int xDest, int yDest, int widthDest, int heightDest,
-    PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHeight, DWORD dwRop)
+void putimage(int xDest, int yDest, int widthDest, int heightDest, PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth,
+    int srcHeight, DWORD dwRop)
 {
     pSrcImg = CONVERT_IMAGE_CONST(pSrcImg);
     pSrcImg->putimage(NULL, xDest, yDest, widthDest, heightDest, xSrc, ySrc, srcWidth, srcHeight, dwRop);
 }
 
-int putimage_transparent(PIMAGE imgDest,            // handle to dest
-    PCIMAGE                     imgSrc,             // handle to source
-    int                         xDest,              // x-coord of destination upper-left corner
-    int                         yDest,              // y-coord of destination upper-left corner
-    color_t                     transparentColor,   // color to make transparent
-    int                         xSrc,               // x-coord of source upper-left corner
-    int                         ySrc,               // y-coord of source upper-left corner
-    int                         widthSrc,           // width of source rectangle
-    int                         heightSrc           // height of source rectangle
+int putimage_transparent(PIMAGE imgDest,          // handle to dest
+    PCIMAGE                     imgSrc,           // handle to source
+    int                         xDest,            // x-coord of destination upper-left corner
+    int                         yDest,            // y-coord of destination upper-left corner
+    color_t                     transparentColor, // color to make transparent
+    int                         xSrc,             // x-coord of source upper-left corner
+    int                         ySrc,             // y-coord of source upper-left corner
+    int                         widthSrc,         // width of source rectangle
+    int                         heightSrc         // height of source rectangle
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
-    return imgSrc->putimage_transparent(
-        imgDest, xDest, yDest, transparentColor, xSrc, ySrc, widthSrc, heightSrc);
+    return imgSrc->putimage_transparent(imgDest, xDest, yDest, transparentColor, xSrc, ySrc, widthSrc, heightSrc);
 }
 
 int EGEAPI putimage_alphablend(
-    PIMAGE  imgDest,
-    PCIMAGE imgSrc,
-    int xDest, int yDest,
-    unsigned char alpha,
-    alpha_type alphaType
-)
+    PIMAGE imgDest, PCIMAGE imgSrc, int xDest, int yDest, unsigned char alpha, alpha_type alphaType)
 {
     return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, 0, 0, 0, 0, alphaType);
 }
 
 int EGEAPI putimage_alphablend(
-    PIMAGE  imgDest,
-    PCIMAGE imgSrc,
-    int xDest, int yDest,
-    unsigned char alpha,
-    int xSrc, int ySrc,
-    alpha_type alphaType
-)
+    PIMAGE imgDest, PCIMAGE imgSrc, int xDest, int yDest, unsigned char alpha, int xSrc, int ySrc, alpha_type alphaType)
 {
     return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, xSrc, ySrc, 0, 0, alphaType);
 }
 
-int putimage_alphablend(PIMAGE imgDest,     // handle to dest
-    PCIMAGE                    imgSrc,      // handle to source
-    int                        xDest,       // x-coord of destination upper-left corner
-    int                        yDest,       // y-coord of destination upper-left corner
-    unsigned char              alpha,       // alpha
-    int                        xSrc,        // x-coord of source upper-left corner
-    int                        ySrc,        // y-coord of source upper-left corner
-    int                        widthSrc,    // width of source rectangle
-    int                        heightSrc,   // height of source rectangle
-    alpha_type                 alphaType    // alpha mode(straight alpha or premultiplied alpha)
+int putimage_alphablend(PIMAGE imgDest,   // handle to dest
+    PCIMAGE                    imgSrc,    // handle to source
+    int                        xDest,     // x-coord of destination upper-left corner
+    int                        yDest,     // y-coord of destination upper-left corner
+    unsigned char              alpha,     // alpha
+    int                        xSrc,      // x-coord of source upper-left corner
+    int                        ySrc,      // y-coord of source upper-left corner
+    int                        widthSrc,  // width of source rectangle
+    int                        heightSrc, // height of source rectangle
+    alpha_type                 alphaType  // alpha mode(straight alpha or premultiplied alpha)
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
     return imgSrc->putimage_alphablend(imgDest, xDest, yDest, alpha, xSrc, ySrc, widthSrc, heightSrc, alphaType);
 }
 
-int EGEAPI putimage_alphablend(
-    PIMAGE  imgDest,                                        // handle to dest
-    PCIMAGE imgSrc,                                         // handle to source
-    int xDest, int yDest, int widthDest, int heightDest,
-    unsigned char alpha,
-    int xSrc, int ySrc, int widthSrc, int heightSrc,
-    bool smooth,
-    alpha_type alphaType
-)
+int EGEAPI putimage_alphablend(PIMAGE imgDest, // handle to dest
+    PCIMAGE                           imgSrc,  // handle to source
+    int xDest, int yDest, int widthDest, int heightDest, unsigned char alpha, int xSrc, int ySrc, int widthSrc,
+    int heightSrc, bool smooth, alpha_type alphaType)
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
     return imgSrc->putimage_alphablend(
-                imgDest,
-                xDest, yDest, widthDest, heightDest,
-                alpha,
-                xSrc, ySrc, widthSrc, heightSrc,
-                smooth,
-                alphaType
-           );
+        imgDest, xDest, yDest, widthDest, heightDest, alpha, xSrc, ySrc, widthSrc, heightSrc, smooth, alphaType);
 }
 
-int putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
-    PCIMAGE                          imgSrc,            // handle to source
-    int                              xDest,             // x-coord of destination upper-left corner
-    int                              yDest,             // y-coord of destination upper-left corner
-    color_t                          transparentColor,  // color to make transparent
-    unsigned char                    alpha,             // alpha
-    int                              xSrc,              // x-coord of source upper-left corner
-    int                              ySrc,              // y-coord of source upper-left corner
-    int                              widthSrc,          // width of source rectangle
-    int                              heightSrc          // height of source rectangle
+int putimage_alphatransparent(PIMAGE imgDest,          // handle to dest
+    PCIMAGE                          imgSrc,           // handle to source
+    int                              xDest,            // x-coord of destination upper-left corner
+    int                              yDest,            // y-coord of destination upper-left corner
+    color_t                          transparentColor, // color to make transparent
+    unsigned char                    alpha,            // alpha
+    int                              xSrc,             // x-coord of source upper-left corner
+    int                              ySrc,             // y-coord of source upper-left corner
+    int                              widthSrc,         // width of source rectangle
+    int                              heightSrc         // height of source rectangle
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
@@ -3056,8 +3043,7 @@ int putimage_withalpha(PIMAGE imgDest,  // handle to dest
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
-    return imgSrc->putimage_withalpha(
-        imgDest, xDest, yDest, xSrc, ySrc, widthSrc, heightSrc);
+    return imgSrc->putimage_withalpha(imgDest, xDest, yDest, xSrc, ySrc, widthSrc, heightSrc);
 }
 
 int EGEAPI putimage_withalpha(PIMAGE imgDest,    // handle to dest
@@ -3070,32 +3056,29 @@ int EGEAPI putimage_withalpha(PIMAGE imgDest,    // handle to dest
     int                              ySrc,       // y-coord of source upper-left corner
     int                              widthSrc,   // width of source rectangle
     int                              heightSrc,  // height of source rectangle
-    bool                             smooth
-)
+    bool                             smooth)
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
     return imgSrc->putimage_withalpha(
         imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, widthSrc, heightSrc, smooth);
 }
 
-int putimage_alphafilter(PIMAGE imgDest,    // handle to dest
-    PCIMAGE                     imgSrc,     // handle to source
-    int                         xDest,      // x-coord of destination upper-left corner
-    int                         yDest,      // y-coord of destination upper-left corner
-    PCIMAGE                     imgAlpha,   // alpha
-    int                         xSrc,       // x-coord of source upper-left corner
-    int                         ySrc,       // y-coord of source upper-left corner
-    int                         widthSrc,   // width of source rectangle
-    int                         heightSrc   // height of source rectangle
+int putimage_alphafilter(PIMAGE imgDest,  // handle to dest
+    PCIMAGE                     imgSrc,   // handle to source
+    int                         xDest,    // x-coord of destination upper-left corner
+    int                         yDest,    // y-coord of destination upper-left corner
+    PCIMAGE                     imgAlpha, // alpha
+    int                         xSrc,     // x-coord of source upper-left corner
+    int                         ySrc,     // y-coord of source upper-left corner
+    int                         widthSrc, // width of source rectangle
+    int                         heightSrc // height of source rectangle
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
-    return imgSrc->putimage_alphafilter(
-        imgDest, xDest, yDest, imgAlpha, xSrc, ySrc, widthSrc, heightSrc);
+    return imgSrc->putimage_alphafilter(imgDest, xDest, yDest, imgAlpha, xSrc, ySrc, widthSrc, heightSrc);
 }
 
-int imagefilter_blurring(
-    PIMAGE imgDest, int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
+int imagefilter_blurring(PIMAGE imgDest, int intensity, int alpha, int xDest, int yDest, int widthDest, int heightDest)
 {
     PIMAGE img = CONVERT_IMAGE(imgDest);
     int    ret = 0;
@@ -3167,8 +3150,9 @@ int getimage_pngfile(PIMAGE pimg, const char* filename)
 
 int getimage_pngfile(PIMAGE pimg, const wchar_t* filename)
 {
-    if ((filename == NULL) || (filename[0] == '\0'))
+    if ((filename == NULL) || (filename[0] == '\0')) {
         return grParamError;
+    }
 
     FILE* fp = _wfopen(filename, L"rb");
 
@@ -3189,10 +3173,11 @@ int savepng(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 
 int savepng(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
-    if ((filename == NULL) || (filename[0] == '\0'))
+    if ((filename == NULL) || (filename[0] == '\0')) {
         return grParamError;
+    }
 
-    pimg = CONVERT_IMAGE_CONST(pimg);
+    pimg     = CONVERT_IMAGE_CONST(pimg);
     FILE* fp = _wfopen(filename, L"wb");
 
     if (fp == NULL) {
@@ -3254,65 +3239,67 @@ int savebmp(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
  */
 int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
 {
-    if (file == NULL)
+    if (file == NULL) {
         return grIOerror;
+    }
 
-    int infoHeaderSize = 0;  // InfoHeader 大小 (BITMAPINFOHEADER: 40), (BITMAPV4HEADER: 108)
-    int bytesPerPixel  = 4;  // 每像素所占字节数
-    int paddingBytes   = 0;  // 每行填充字节数( BMP 格式规定:除非使用 RLE 压缩，否则每行像素必须是4字节对齐)
-    DWORD Compression  = 0;  // 图像压缩方式
+    int   infoHeaderSize = 0; // InfoHeader 大小 (BITMAPINFOHEADER: 40), (BITMAPV4HEADER: 108)
+    int   bytesPerPixel  = 4; // 每像素所占字节数
+    int   paddingBytes   = 0; // 每行填充字节数( BMP 格式规定:除非使用 RLE 压缩，否则每行像素必须是4字节对齐)
+    DWORD Compression    = 0; // 图像压缩方式
 
     if (withAlphaChannel) {
         // 以 ARGB 格式保存, 使用 BITMAPV4HEADER
-        infoHeaderSize = sizeof(BITMAPV4HEADER);    // 108
-        bytesPerPixel = 4;                          // 32 位
-        Compression = BI_BITFIELDS;                 // ARGB (各颜色分量由 Mask 确定)
+        infoHeaderSize = sizeof(BITMAPV4HEADER); // 108
+        bytesPerPixel  = 4;                      // 32 位
+        Compression    = BI_BITFIELDS;           // ARGB (各颜色分量由 Mask 确定)
     } else {
         // 以 RGB24 格式保存, 使用 BITMAPINFOHEADER
-        infoHeaderSize = sizeof(BITMAPINFOHEADER);  // 40
-        bytesPerPixel = 3;                          // 24 位
-        Compression = BI_RGB;                       // RGB
+        infoHeaderSize = sizeof(BITMAPINFOHEADER); // 40
+        bytesPerPixel  = 3;                        // 24 位
+        Compression    = BI_RGB;                   // RGB
 
         // 计算每行填充字节(每行4字节对齐)
-        int originalBytesPerRow  = getwidth(pimg) * bytesPerPixel;
-        int remBytes = originalBytesPerRow % 4;
+        int originalBytesPerRow = getwidth(pimg) * bytesPerPixel;
+        int remBytes            = originalBytesPerRow % 4;
         if (remBytes != 0) {
             paddingBytes = 4 - remBytes;
         }
     }
 
-    int bytesPerRow = bytesPerPixel * getwidth(pimg) + paddingBytes;    // 每行所占字节数(包括填充字节)
+    int bytesPerRow = bytesPerPixel * getwidth(pimg) + paddingBytes; // 每行所占字节数(包括填充字节)
 
     BITMAPV4HEADER bitmapInfoHeader = {0};
     // -------- BITMAPINFOHEADER, BITMAPV4HEADER 共有参数 --------
-    bitmapInfoHeader.bV4Size          = infoHeaderSize;                 // Header 大小(可用于识别 Header 版本)
-    bitmapInfoHeader.bV4Width         = getwidth(pimg);                 // 位图宽度(单位为像素)
-    bitmapInfoHeader.bV4Height        = getheight(pimg);                // 位图高度(单位为像素, 正数表示从下到上存储, 负数为从上到下)
-    bitmapInfoHeader.bV4Planes        = 1;                              // 固定值，必须为 1
-    bitmapInfoHeader.bV4BitCount      = (WORD)bytesPerPixel * 8;        // 每像素的位数(即 位深度)
-    bitmapInfoHeader.bV4V4Compression = Compression;                    // 压缩方式
-    bitmapInfoHeader.bV4SizeImage     = bytesPerRow * getheight(pimg);  // 图像像素部分所占大小(单位为字节，包括填充字节)
-    bitmapInfoHeader.bV4XPelsPerMeter = 3780;                           // 96 DPI x 39.3701(inch/m)
-    bitmapInfoHeader.bV4YPelsPerMeter = 3780;                           // 96 DPI x 39.3701(inch/m)
-    bitmapInfoHeader.bV4ClrUsed       = 0;                              // 不使用颜色表
-    bitmapInfoHeader.bV4ClrImportant  = 0;                              // 颜色表中所有颜色都重要
+    bitmapInfoHeader.bV4Size          = infoHeaderSize;  // Header 大小(可用于识别 Header 版本)
+    bitmapInfoHeader.bV4Width         = getwidth(pimg);  // 位图宽度(单位为像素)
+    bitmapInfoHeader.bV4Height        = getheight(pimg); // 位图高度(单位为像素, 正数表示从下到上存储, 负数为从上到下)
+    bitmapInfoHeader.bV4Planes        = 1;               // 固定值，必须为 1
+    bitmapInfoHeader.bV4BitCount      = (WORD)bytesPerPixel * 8;       // 每像素的位数(即 位深度)
+    bitmapInfoHeader.bV4V4Compression = Compression;                   // 压缩方式
+    bitmapInfoHeader.bV4SizeImage     = bytesPerRow * getheight(pimg); // 图像像素部分所占大小(单位为字节，包括填充字节)
+    bitmapInfoHeader.bV4XPelsPerMeter = 3780;                          // 96 DPI x 39.3701(inch/m)
+    bitmapInfoHeader.bV4YPelsPerMeter = 3780;                          // 96 DPI x 39.3701(inch/m)
+    bitmapInfoHeader.bV4ClrUsed       = 0;                             // 不使用颜色表
+    bitmapInfoHeader.bV4ClrImportant  = 0;                             // 颜色表中所有颜色都重要
 
     // --------------- BITMAPV4HEADER 特有参数 ------------------
-    bitmapInfoHeader.bV4RedMask       = 0x00FF0000U;
-    bitmapInfoHeader.bV4GreenMask     = 0x0000FF00U;
-    bitmapInfoHeader.bV4BlueMask      = 0x000000FFU;
-    bitmapInfoHeader.bV4AlphaMask     = 0xFF000000U;
-    bitmapInfoHeader.bV4CSType        = 0x73524742U;                    // 使用标准 RGB 颜色空间(LCS_sRGB宏: 'sRGB' 的值)
+    bitmapInfoHeader.bV4RedMask   = 0x00FF0000U;
+    bitmapInfoHeader.bV4GreenMask = 0x0000FF00U;
+    bitmapInfoHeader.bV4BlueMask  = 0x000000FFU;
+    bitmapInfoHeader.bV4AlphaMask = 0xFF000000U;
+    bitmapInfoHeader.bV4CSType    = 0x73524742U; // 使用标准 RGB 颜色空间(LCS_sRGB宏: 'sRGB' 的值)
     // 当 bV4CSType 为 'sRGB' 或 'Win ' 时忽略以下参数
-    //bitmapInfoHeader.bV4Endpoints
-    //bitmapInfoHeader.bV4GammaRed
-    //bitmapInfoHeader.bV4GammaGreen
-    //bitmapInfoHeader.bV4GammaBlue
+    // bitmapInfoHeader.bV4Endpoints
+    // bitmapInfoHeader.bV4GammaRed
+    // bitmapInfoHeader.bV4GammaGreen
+    // bitmapInfoHeader.bV4GammaBlue
 
     BITMAPFILEHEADER bitmapFileHeader = {0};
-    bitmapFileHeader.bfType    = (WORD&)"BM";                               // Windows Bitmap 格式
-    bitmapFileHeader.bfSize    = sizeof(BITMAPFILEHEADER) + infoHeaderSize + bytesPerRow * getheight(pimg) ; // BMP 文件总字节数
-    bitmapFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + infoHeaderSize; // 从文件起始至像素数据的偏移字节数
+    bitmapFileHeader.bfType           = (WORD&)"BM"; // Windows Bitmap 格式
+    bitmapFileHeader.bfSize =
+        sizeof(BITMAPFILEHEADER) + infoHeaderSize + bytesPerRow * getheight(pimg); // BMP 文件总字节数
+    bitmapFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + infoHeaderSize;        // 从文件起始至像素数据的偏移字节数
 
     // 1. 写入 File Header
     if (fwrite(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, file) != 1) {
@@ -3325,12 +3312,12 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
     };
 
     const color_t* buffer = getbuffer(pimg);
-    const int rowCnt = getheight(pimg);
-    const int colCnt = getwidth(pimg);
+    const int      rowCnt = getheight(pimg);
+    const int      colCnt = getwidth(pimg);
 
     // 3. 写入图像数据(从下到上进行存储)
     if (bytesPerPixel == 4) {
-        for (int row = rowCnt-1; row >= 0; row--) {
+        for (int row = rowCnt - 1; row >= 0; row--) {
             if (fwrite(&buffer[row * colCnt], bytesPerRow, 1, file) != 1) {
                 return grIOerror;
             }
@@ -3338,10 +3325,10 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
     } else if (bytesPerPixel == 3) {
         const unsigned char zeroPadding[4] = {0, 0, 0, 0};
 
-        for (int row = rowCnt-1; row >= 0; row--) {
-            const color_t* pixels = &buffer[row * colCnt];   // 每行像素首地址
+        for (int row = rowCnt - 1; row >= 0; row--) {
+            const color_t* pixels = &buffer[row * colCnt]; // 每行像素首地址
 
-            for(int col = 0; col < colCnt; col++) {
+            for (int col = 0; col < colCnt; col++) {
                 if (fwrite(&pixels[col], bytesPerPixel, 1, file) != 1) {
                     return grIOerror;
                 }
@@ -3349,7 +3336,7 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
 
             // 每行末尾填充对齐 4 字节
             if (paddingBytes != 0) {
-                if (fwrite(zeroPadding, paddingBytes,1, file) != 1) {
+                if (fwrite(zeroPadding, paddingBytes, 1, file) != 1) {
                     return grIOerror;
                 }
             }
@@ -3358,7 +3345,6 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
 
     return grOk;
 }
-
 
 void ege_enable_aa(bool enable, PIMAGE pimg)
 {
@@ -3369,33 +3355,35 @@ void ege_enable_aa(bool enable, PIMAGE pimg)
 
 ImageDecodeFormat checkImageDecodeFormatByFileName(const wchar_t* fileName)
 {
-    if (fileName == NULL)
+    if (fileName == NULL) {
         return ImageDecodeFormat_NULL;
+    }
 
-    const wchar_t* fileExtension =  wcsrchr(fileName, L'.');
+    const wchar_t* fileExtension = wcsrchr(fileName, L'.');
     if (fileExtension == NULL) {
         return ImageDecodeFormat_NULL;
     }
 
     fileExtension++; // skip '.'
 
-    const struct {
-        const wchar_t* ext;
+    const struct
+    {
+        const wchar_t*    ext;
         ImageDecodeFormat format;
     } formatMap[] = {
-        {L"png",  ImageDecodeFormat_PNG },
-        {L"bmp",  ImageDecodeFormat_BMP },
-        {L"dib",  ImageDecodeFormat_BMP },
-        {L"jpg",  ImageDecodeFormat_JPEG},
+        {L"png", ImageDecodeFormat_PNG},
+        {L"bmp", ImageDecodeFormat_BMP},
+        {L"dib", ImageDecodeFormat_BMP},
+        {L"jpg", ImageDecodeFormat_JPEG},
         {L"jpeg", ImageDecodeFormat_JPEG},
-        {L"jpe",  ImageDecodeFormat_JPEG},
+        {L"jpe", ImageDecodeFormat_JPEG},
         {L"jfif", ImageDecodeFormat_JPEG},
-        {L"gif",  ImageDecodeFormat_GIF },
-        {L"tif",  ImageDecodeFormat_TIFF},
+        {L"gif", ImageDecodeFormat_GIF},
+        {L"tif", ImageDecodeFormat_TIFF},
         {L"tiff", ImageDecodeFormat_TIFF},
         {L"exif", ImageDecodeFormat_EXIF},
-        {L"wmf",  ImageDecodeFormat_WMF },
-        {L"emf",  ImageDecodeFormat_EMF },
+        {L"wmf", ImageDecodeFormat_WMF},
+        {L"emf", ImageDecodeFormat_EMF},
     };
 
     const int formatMapLength = sizeof(formatMap) / sizeof(formatMap[0]);

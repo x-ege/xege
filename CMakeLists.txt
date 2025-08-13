@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
+set(CMAKE_CXX_STANDARD 11)
+
 # 当 CMakeLists.txt 是顶层项目的 CMakeLists.txt 时，设置默认选项。
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     set(EGE_IS_ROOT_PROJECT ON)
