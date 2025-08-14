@@ -1,7 +1,0 @@
-<map id="输入处理" name="输入处理">
-<area shape="rect" id="Node000004" href="$group__CharacterInput.html" title=" " alt="" coords="367,5,457,31"/>
-<area shape="rect" id="Node000001" title=" " alt="" coords="228,55,319,80"/>
-<area shape="rect" id="Node000003" href="$group__KeyboardInput.html" title=" " alt="" coords="367,55,457,80"/>
-<area shape="rect" id="Node000005" href="$group__MouseInput.html" title=" " alt="" coords="367,104,457,129"/>
-<area shape="rect" id="Node000002" href="$group__image__management.html" title="EGE图形库的图像创建、加载、保存和处理功能" alt="" coords="5,55,180,80"/>
-</map>

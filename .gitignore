@@ -13,4 +13,6 @@ build-*
 
 build/
 /temp
-/out
+/out# Documentation generated files
+doc/html/
+doc/latex/

@@ -1,5 +1,0 @@
-var searchData=
-[
-  ['textheight_0',['textheight',['../group__TextOutput.html#ga23148891cc435c32db7443ed1c956382',1,'ege::textheight(const char *text, PCIMAGE pimg=NULL)'],['../group__TextOutput.html#gaab4fd5900f791877931435c752ca75fa',1,'ege::textheight(const wchar_t *text, PCIMAGE pimg=NULL)'],['../group__TextOutput.html#ga8bda4cad6f50b236da79b1a3d157ec16',1,'ege::textheight(char c, PCIMAGE pimg=NULL)'],['../group__TextOutput.html#gadee5a83b8669e5a65c428ff7f41b07ab',1,'ege::textheight(wchar_t c, PCIMAGE pimg=NULL)']]],
-  ['textwidth_1',['textwidth',['../group__TextOutput.html#gae526a92156acf46019a9ba129cc709da',1,'ege::textwidth(const char *text, PCIMAGE pimg=NULL)'],['../group__TextOutput.html#ga932f5b03cfa5f0850fd5997cd22ab293',1,'ege::textwidth(const wchar_t *text, PCIMAGE pimg=NULL)'],['../group__TextOutput.html#gab4e2921677484583e199bd72bbd57961',1,'ege::textwidth(char c, PCIMAGE pimg=NULL)'],['../group__TextOutput.html#ga3908de8007b9dac609601cc6e8d0eb99',1,'ege::textwidth(wchar_t c, PCIMAGE pimg=NULL)']]]
-];
