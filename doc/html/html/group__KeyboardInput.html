@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>EGE 图形库: 键盘输入</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+  $(document).ready(function() { init_search(); });
+/* @license-end */
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="egelogo.jpg"/></td>
+  <td id="projectalign">
+   <div id="projectname">EGE 图形库<span id="projectnumber">&#160;24.04</span>
+   </div>
+   <div id="projectbrief">Easy Graphics Engine - 简单易用的图形库</div>
+  </td>
+    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect"                onmouseover="return searchBox.OnSearchSelectShow()"                onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>
+          <input type="text" id="MSearchField" value="" placeholder="搜索" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
+          </span>
+        </div>
+</td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('group__KeyboardInput.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">载入中...</div>
+<div class="SRStatus" id="Searching">搜索中...</div>
+<div class="SRStatus" id="NoMatches">未找到</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle"><div class="title">键盘输入<div class="ingroups"><a class="el" href="group__EGEGDIPlus.html">EGE GDI+增强函数</a> &raquo; <a class="el" href="group__PathManagement.html">路径管理函数</a> &raquo; <a class="el" href="group__image__management.html">图像管理和处理函数</a> &raquo; <a class="el" href="group__InputHandling.html">输入处理</a></div></div></div>
+</div><!--header-->
+<div class="contents">
+<div class="dynheader">
+键盘输入 的协作图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__KeyboardInput.png" border="0" usemap="#agroup____KeyboardInput" alt=""/></div>
+<map name="agroup____KeyboardInput" id="agroup____KeyboardInput">
+<area shape="rect" href="group__InputHandling.html" title=" " alt="" coords="5,5,96,31"/>
+<area shape="rect" title=" " alt="" coords="144,5,235,31"/>
+</map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:gaa6df1995872efd9b808e89ad4dbcd71d" id="r_gaa6df1995872efd9b808e89ad4dbcd71d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#gaa6df1995872efd9b808e89ad4dbcd71d">ege::kbmsg</a> ()</td></tr>
+<tr class="memdesc:gaa6df1995872efd9b808e89ad4dbcd71d"><td class="mdescLeft">&#160;</td><td class="mdescRight">检测当前是否有键盘消息  <br /></td></tr>
+<tr class="separator:gaa6df1995872efd9b808e89ad4dbcd71d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae43be2b322df36e277df808d7be6c8c2" id="r_gae43be2b322df36e277df808d7be6c8c2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1key__msg.html">key_msg</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#gae43be2b322df36e277df808d7be6c8c2">ege::getkey</a> ()</td></tr>
+<tr class="memdesc:gae43be2b322df36e277df808d7be6c8c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取键盘消息  <br /></td></tr>
+<tr class="separator:gae43be2b322df36e277df808d7be6c8c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga84768c1d889958e9cc15b85ed03bcdf5" id="r_ga84768c1d889958e9cc15b85ed03bcdf5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#ga84768c1d889958e9cc15b85ed03bcdf5">ege::getchEx</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> flag)</td></tr>
+<tr class="memdesc:ga84768c1d889958e9cc15b85ed03bcdf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取键盘字符输入（扩展版本）  <br /></td></tr>
+<tr class="separator:ga84768c1d889958e9cc15b85ed03bcdf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9192baf8d23c571d884994d4d0c1707f" id="r_ga9192baf8d23c571d884994d4d0c1707f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#ga9192baf8d23c571d884994d4d0c1707f">ege::kbhitEx</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> flag)</td></tr>
+<tr class="memdesc:ga9192baf8d23c571d884994d4d0c1707f"><td class="mdescLeft">&#160;</td><td class="mdescRight">检测当前是否有键盘字符输入（扩展版本）  <br /></td></tr>
+<tr class="separator:ga9192baf8d23c571d884994d4d0c1707f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ad5889a06cbb4fb9817da83434649d1" id="r_ga2ad5889a06cbb4fb9817da83434649d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#ga2ad5889a06cbb4fb9817da83434649d1">ege::keystate</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> key)</td></tr>
+<tr class="memdesc:ga2ad5889a06cbb4fb9817da83434649d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">判断键盘或鼠标上的某按键是否处于按下状态  <br /></td></tr>
+<tr class="separator:ga2ad5889a06cbb4fb9817da83434649d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5118257030d17d0bcd93898bb3d2ed56" id="r_ga5118257030d17d0bcd93898bb3d2ed56"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#ga5118257030d17d0bcd93898bb3d2ed56">ege::keypress</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> key)</td></tr>
+<tr class="separator:ga5118257030d17d0bcd93898bb3d2ed56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae6bdebb03e6b335ffa032093bd6c4594" id="r_gae6bdebb03e6b335ffa032093bd6c4594"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#gae6bdebb03e6b335ffa032093bd6c4594">ege::keyrelease</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> key)</td></tr>
+<tr class="separator:gae6bdebb03e6b335ffa032093bd6c4594"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7c99a1690b754cca88e2ca71665741bc" id="r_ga7c99a1690b754cca88e2ca71665741bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#ga7c99a1690b754cca88e2ca71665741bc">ege::keyrepeat</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> key)</td></tr>
+<tr class="separator:ga7c99a1690b754cca88e2ca71665741bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4d154e216bcbbbce0500c90ff3939fc1" id="r_ga4d154e216bcbbbce0500c90ff3939fc1"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__KeyboardInput.html#ga4d154e216bcbbbce0500c90ff3939fc1">ege::flushkey</a> ()</td></tr>
+<tr class="memdesc:ga4d154e216bcbbbce0500c90ff3939fc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">清空按键消息缓存区  <br /></td></tr>
+<tr class="separator:ga4d154e216bcbbbce0500c90ff3939fc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">详细描述</h2>
+<p>键盘输入检测和消息处理函数 </p>
+<h2 class="groupheader">函数说明</h2>
+<a id="ga4d154e216bcbbbce0500c90ff3939fc1" name="ga4d154e216bcbbbce0500c90ff3939fc1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4d154e216bcbbbce0500c90ff3939fc1">&#9670;&#160;</a></span>flushkey()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::flushkey </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>清空按键消息缓存区 </p>
+<dl class="section note"><dt>注解</dt><dd>清除所有未处理的键盘消息，常用于忽略缓存的按键输入 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__MouseInput.html#ga13ff2ed06a42c6fa14792eb85ea908d7" title="清空鼠标消息缓冲区">flushmouse()</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga84768c1d889958e9cc15b85ed03bcdf5" name="ga84768c1d889958e9cc15b85ed03bcdf5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga84768c1d889958e9cc15b85ed03bcdf5">&#9670;&#160;</a></span>getchEx()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::getchEx </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>flag</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取键盘字符输入（扩展版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">flag</td><td>消息标志位，控制接收的消息类型 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>按键代码和消息类型组合 </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000006">弃用:</a></b></dt><dd>请使用getch()函数代替 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>支持按键按下和释放事件的获取 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__CharacterInput.html#ga767e419224f9e5eec85092c8dd4d205d" title="获取键盘字符输入">getch()</a> </dd></dl>
+
+</div>
+</div>
+<a id="gae43be2b322df36e277df808d7be6c8c2" name="gae43be2b322df36e277df808d7be6c8c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae43be2b322df36e277df808d7be6c8c2">&#9670;&#160;</a></span>getkey()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1key__msg.html">key_msg</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::getkey </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取键盘消息 </p>
+<dl class="section return"><dt>返回</dt><dd>键盘消息结构体，包含按键代码、消息类型和标志位 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>如果当前没有键盘消息则等待，支持按键按下、释放和字符消息 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__KeyboardInput.html#gaa6df1995872efd9b808e89ad4dbcd71d" title="检测当前是否有键盘消息">kbmsg()</a>, <a class="el" href="structege_1_1key__msg.html" title="按键消息结构">key_msg</a>, <a class="el" href="namespaceege.html#ae99fe4e319e2c693881518fa5f42f4ca" title="按键消息类型">key_msg_e</a>, <a class="el" href="namespaceege.html#ae8574e2a0e5777c03b529e2c6ad06fbd" title="按键状态标志">key_flag_e</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga9192baf8d23c571d884994d4d0c1707f" name="ga9192baf8d23c571d884994d4d0c1707f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9192baf8d23c571d884994d4d0c1707f">&#9670;&#160;</a></span>kbhitEx()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::kbhitEx </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>flag</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>检测当前是否有键盘字符输入（扩展版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">flag</td><td>消息标志位，控制检测的消息类型 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>非零值表示有输入，0表示没有 </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">弃用:</a></b></dt><dd>请使用kbhit()函数代替 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>支持按键按下和释放事件的检测 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__CharacterInput.html#gac02b3ca7739c8944ca245e51effa96e3" title="检测当前是否有键盘字符输入">kbhit()</a> </dd></dl>
+
+</div>
+</div>
+<a id="gaa6df1995872efd9b808e89ad4dbcd71d" name="gaa6df1995872efd9b808e89ad4dbcd71d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa6df1995872efd9b808e89ad4dbcd71d">&#9670;&#160;</a></span>kbmsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::kbmsg </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>检测当前是否有键盘消息 </p>
+<dl class="section return"><dt>返回</dt><dd>非零值表示有键盘消息，0表示没有，一般与getkey搭配使用 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>用于非阻塞检测键盘输入，通常在主循环中与getkey()一起使用 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__KeyboardInput.html#gae43be2b322df36e277df808d7be6c8c2" title="获取键盘消息">getkey()</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga5118257030d17d0bcd93898bb3d2ed56" name="ga5118257030d17d0bcd93898bb3d2ed56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5118257030d17d0bcd93898bb3d2ed56">&#9670;&#160;</a></span>keypress()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::keypress </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="gae6bdebb03e6b335ffa032093bd6c4594" name="gae6bdebb03e6b335ffa032093bd6c4594"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae6bdebb03e6b335ffa032093bd6c4594">&#9670;&#160;</a></span>keyrelease()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::keyrelease </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ga7c99a1690b754cca88e2ca71665741bc" name="ga7c99a1690b754cca88e2ca71665741bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7c99a1690b754cca88e2ca71665741bc">&#9670;&#160;</a></span>keyrepeat()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::keyrepeat </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ga2ad5889a06cbb4fb9817da83434649d1" name="ga2ad5889a06cbb4fb9817da83434649d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2ad5889a06cbb4fb9817da83434649d1">&#9670;&#160;</a></span>keystate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::keystate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>判断键盘或鼠标上的某按键是否处于按下状态 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>要检测的按键代码，参见key_code_e枚举 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>非零值表示按键按下，0表示未按下，-1表示参数错误 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>实时检测按键状态，不消耗消息队列；支持键盘和鼠标按键 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="namespaceege.html#ad6f7cb29f2174735eeda875bf7e4f95b" title="键盘和鼠标键码">key_code_e</a> </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">制作者 <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

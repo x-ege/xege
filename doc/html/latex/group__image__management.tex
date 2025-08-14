@@ -1,0 +1,2329 @@
+\doxysubsubsection{图像管理和处理函数}
+\hypertarget{group__image__management}{}\label{group__image__management}\index{图像管理和处理函数@{图像管理和处理函数}}
+
+
+EGE图形库的图像创建、加载、保存和处理功能  
+
+
+图像管理和处理函数 的协作图\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group__image__management}
+\end{center}
+\end{figure}
+\doxysubsubsubsubsection*{模块}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group__putimage__functions}{putimage系列函数}}
+\begin{DoxyCompactList}\small\item\em EGE图形库的核心图像绘制功能 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{group__InputHandling}{输入处理}}
+\end{DoxyCompactItemize}
+\doxysubsubsubsubsection*{类}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classege_1_1MUSIC}{ege\+::\+MUSIC}}
+\begin{DoxyCompactList}\small\item\em 音乐播放类 \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsubsubsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{group__image__management_gab282f32abd67139fcdfc900bad7c2b46}{ege\+::mouse\+\_\+msg\+::is\+\_\+left}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为鼠标左键事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga775c39f8ffa9a642b5a10c696eccdea5}{ege\+::mouse\+\_\+msg\+::is\+\_\+right}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为鼠标右键事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga17a0f5d63cc92af704a02bfa3f210eee}{ege\+::mouse\+\_\+msg\+::is\+\_\+mid}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为鼠标中键事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga610d728fce8c4d8aa7c1bd02f8197ae7}{ege\+::mouse\+\_\+msg\+::is\+\_\+x1}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为鼠标\+X1键事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_gaa08a0e0cd3fe9639f162a5480af70dfe}{ege\+::mouse\+\_\+msg\+::is\+\_\+x2}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为鼠标\+X2键事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_gaa48fe2090c1e90226d9d436bda8ba0d5}{ege\+::mouse\+\_\+msg\+::is\+\_\+down}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为按钮按下事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga1279f643a6be81750b23bae11ed51ad9}{ege\+::mouse\+\_\+msg\+::is\+\_\+up}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为按钮释放事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_gabb0091a5df713edd000c3b6b8e62129a}{ege\+::mouse\+\_\+msg\+::is\+\_\+move}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为鼠标移动事件 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga00198c2c497e80a6ebe8116d1edebce3}{ege\+::mouse\+\_\+msg\+::is\+\_\+wheel}} () const
+\begin{DoxyCompactList}\small\item\em 检查是否为滚轮事件 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{group__image__management_ga96bc8651d6fdaa87ba212fe1411d53e4}{ege\+::ege\+\_\+path\+::ege\+\_\+path}} ()
+\begin{DoxyCompactList}\small\item\em 默认构造函数 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{group__image__management_gaed9447c63f7781df11cb7f00d632c598}{ege\+::ege\+\_\+path\+::ege\+\_\+path}} (const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, const \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char \texorpdfstring{$\ast$}{*}types, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} count)
+\begin{DoxyCompactList}\small\item\em 从点数组和类型数组构造路径 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{group__image__management_ga997f2e54b684515b7ce1ff0785c55df7}{ege\+::ege\+\_\+path\+::ege\+\_\+path}} (const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \&path)
+\begin{DoxyCompactList}\small\item\em 拷贝构造函数 \end{DoxyCompactList}\item 
+virtual \mbox{\hyperlink{group__image__management_ga75d401680a1cb47f4920d017f3f468fb}{ege\+::ege\+\_\+path\+::\texorpdfstring{$\sim$}{\string~}ege\+\_\+path}} ()
+\begin{DoxyCompactList}\small\item\em 析构函数 \end{DoxyCompactList}\item 
+const void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{group__image__management_ga970608a48b616b6e85811e882a7a8da4}{ege\+::ege\+\_\+path\+::data}} () const
+\begin{DoxyCompactList}\small\item\em 获取只读数据指针 \end{DoxyCompactList}\item 
+void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{group__image__management_ga5675ef9eaf5867e6bea79d915cd28288}{ege\+::ege\+\_\+path\+::data}} ()
+\begin{DoxyCompactList}\small\item\em 获取可写数据指针 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \& \mbox{\hyperlink{group__image__management_gac434e0058be2a09b9005dc23d602acfd}{ege\+::ege\+\_\+path\+::operator=}} (const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \&path)
+\begin{DoxyCompactList}\small\item\em 赋值操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{group__image__management_ga6792fe47d0cf5621fa2db7b824505e94}{ege\+::\+VECTOR3\+D\+::\+VECTOR3D}} ()
+\begin{DoxyCompactList}\small\item\em 默认构造函数，初始化为原点 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{group__image__management_ga5e7e7cf2850ee4894fed940e303f0b27}{ege\+::\+VECTOR3\+D\+::\+VECTOR3D}} (float \mbox{\hyperlink{group__image__management_ga05abb1f9b216a8ea09bee2238656117e}{x}}, float \mbox{\hyperlink{group__image__management_gaaec759c068eb0376e167284cc0004547}{y}}, float \mbox{\hyperlink{group__image__management_gae177bb31c22510621a2fb296b2b0f2fe}{z}}=0.\+0f)
+\begin{DoxyCompactList}\small\item\em 构造函数 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_ga65f780d9c76dd4910679d06d470d5d59}{ege\+::\+VECTOR3\+D\+::operator=}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector)
+\begin{DoxyCompactList}\small\item\em 赋值操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_ga60699d2fdf8b071ac47db9e11ebf4664}{ege\+::\+VECTOR3\+D\+::operator+=}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector)
+\begin{DoxyCompactList}\small\item\em 向量加法赋值操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_ga31c258887dac0685eaa0a85c0f095759}{ege\+::\+VECTOR3\+D\+::operator-\/=}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector)
+\begin{DoxyCompactList}\small\item\em 向量减法赋值操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \mbox{\hyperlink{group__image__management_ga02a7507cfb98827a7caa21e0c870ef2f}{ege\+::\+VECTOR3\+D\+::operator+}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector) const
+\begin{DoxyCompactList}\small\item\em 向量加法操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \mbox{\hyperlink{group__image__management_ga4547c02b02f8346fc29227ba07e28f7d}{ege\+::\+VECTOR3\+D\+::operator-\/}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector) const
+\begin{DoxyCompactList}\small\item\em 向量减法操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_ga2266928d07c249ab952bd0f59e15a564}{ege\+::\+VECTOR3\+D\+::operator\texorpdfstring{$\ast$}{*}=}} (float scale)
+\begin{DoxyCompactList}\small\item\em 标量乘法赋值操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \mbox{\hyperlink{group__image__management_gaebc1aeef67655542677d1352ca427edf}{ege\+::\+VECTOR3\+D\+::operator\texorpdfstring{$\ast$}{*}}} (float scale) const
+\begin{DoxyCompactList}\small\item\em 标量乘法操作符 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga9beeb1cf4731ec90f99e7778f1760b49}{ege\+::\+VECTOR3\+D\+::operator\texorpdfstring{$\ast$}{*}}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector) const
+\begin{DoxyCompactList}\small\item\em 向量点积操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \mbox{\hyperlink{group__image__management_ga6c65cc05699e1095a5e1ac1492c73417}{ege\+::\+VECTOR3\+D\+::operator\&}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector) const
+\begin{DoxyCompactList}\small\item\em 向量叉积操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_ga344613cfc2323bb0ec53f7cbff50458b}{ege\+::\+VECTOR3\+D\+::operator\&=}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector)
+\begin{DoxyCompactList}\small\item\em 向量叉积赋值操作符 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga21bd5f33f719c57054f20346bc18c57e}{ege\+::\+VECTOR3\+D\+::\+Get\+Module}} () const
+\begin{DoxyCompactList}\small\item\em 获取向量模长 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_gaa2466c71f9fc2b7ab27cfc47c0246297}{ege\+::\+VECTOR3\+D\+::\+Get\+Sqr\+Module}} () const
+\begin{DoxyCompactList}\small\item\em 获取向量模长的平方 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_gaf9a62748955c2456325b01c9df5461f0}{ege\+::\+VECTOR3\+D\+::\+Set\+Module}} (float m)
+\begin{DoxyCompactList}\small\item\em 设置向量模长 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_ga39db71613f4fd369ecb1bd2aace24d9e}{ege\+::\+VECTOR3\+D\+::\+Rotate}} (float rad, const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&vector)
+\begin{DoxyCompactList}\small\item\em 绕指定轴旋转向量 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_ga66cd77ec8f4252817db02dc01799cf25}{ege\+::\+VECTOR3\+D\+::\+Rotate}} (float rad, float \mbox{\hyperlink{group__image__management_ga05abb1f9b216a8ea09bee2238656117e}{x}}, float \mbox{\hyperlink{group__image__management_gaaec759c068eb0376e167284cc0004547}{y}}, float \mbox{\hyperlink{group__image__management_gae177bb31c22510621a2fb296b2b0f2fe}{z}})
+\begin{DoxyCompactList}\small\item\em 绕指定轴旋转向量 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& \mbox{\hyperlink{group__image__management_gad934e13cd28572dbaae2092f53990d58}{ege\+::\+VECTOR3\+D\+::\+Rotate}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&e, const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&s=\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}}(0.\+0f, 0.\+0f, 1.\+0f))
+\begin{DoxyCompactList}\small\item\em 从起始向量旋转到目标向量 \end{DoxyCompactList}\item 
+static float \mbox{\hyperlink{group__image__management_ga81be377200cef8f45470c57effc9df21}{ege\+::\+VECTOR3\+D\+::\+Get\+Angle}} (const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&e, const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&s=\mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}}(0.\+0f, 0.\+0f, 1.\+0f))
+\begin{DoxyCompactList}\small\item\em 计算两个向量之间的夹角 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gad89f9ec70ac35829d20c6f415e8ba41b}{ege\+::getbuffer}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg)
+\begin{DoxyCompactList}\small\item\em 获取图像像素缓冲区指针 \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga9bf0c1f705b6713daafa1070c0cc3e35}{ege\+::getbuffer}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg)
+\begin{DoxyCompactList}\small\item\em 获取图像像素缓冲区指针（只读版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga242ea4c710974781ce9475afa4d1b8be}{ege\+::resize\+\_\+f}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height)
+\begin{DoxyCompactList}\small\item\em 调整图像尺寸（快速版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga3204728337b9279c0af3dddf30a301d1}{ege\+::resize}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height)
+\begin{DoxyCompactList}\small\item\em 调整图像尺寸（标准版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gaf1f8062b6198c8ff881fa07c4e200080}{ege\+::getimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src)
+\begin{DoxyCompactList}\small\item\em 从窗口获取图像 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga67c3f35409cc0b5592d9b861e4dd2d7a}{ege\+::getimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src)
+\begin{DoxyCompactList}\small\item\em 从另一个 IMAGE 对象获取图像 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gab7694c1996abf1140c01fe4845b6cadf}{ege\+::getimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, const char \texorpdfstring{$\ast$}{*}image\+File, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Width=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Height=0)
+\begin{DoxyCompactList}\small\item\em 从图片文件获取图像（char\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga12e3cd7bb4e678cbb8e4474991a92c6e}{ege\+::getimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}image\+File, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Width=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Height=0)
+\begin{DoxyCompactList}\small\item\em 从图片文件获取图像（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gab2e53d8157cc333521d8703f895c1db7}{ege\+::getimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, const char \texorpdfstring{$\ast$}{*}res\+Type, const char \texorpdfstring{$\ast$}{*}res\+Name, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Width=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Height=0)
+\begin{DoxyCompactList}\small\item\em 从资源文件获取图像（char\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gafef8e49325ef32ff1b57dbcb04de8c8c}{ege\+::getimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}res\+Type, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}res\+Name, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Width=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} zoom\+Height=0)
+\begin{DoxyCompactList}\small\item\em 从资源文件获取图像（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga06350f1fd2e3bbc1d45deb230e9a02a6}{ege\+::getimage\+\_\+pngfile}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg, const char \texorpdfstring{$\ast$}{*}filename)
+\begin{DoxyCompactList}\small\item\em 从 PNG 图片文件获取图像（char\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga47d1f9de48742e57bb4c621f4ef7a7c8}{ege\+::getimage\+\_\+pngfile}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}filename)
+\begin{DoxyCompactList}\small\item\em 从 PNG 图片文件获取图像（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+HWND \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga776273592cb7438c3fcbf50751d7f4b0}{ege\+::get\+HWnd}} ()
+\begin{DoxyCompactList}\small\item\em 获取绘图窗口的窗口句柄 \end{DoxyCompactList}\item 
+HINSTANCE \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gad02237af243d0582c4c9807d5e8b59f1}{ege\+::get\+HInstance}} ()
+\begin{DoxyCompactList}\small\item\em 获取绘图窗口的实例句柄 \end{DoxyCompactList}\item 
+HDC \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gadda7f44ffe59bef6c69bfd48cb8fdf25}{ege\+::get\+HDC}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 获取绘图设备上下文 \end{DoxyCompactList}\item 
+PVOID \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gacf54f81984c4f496c7db20316832b081}{ege\+::get\+Procfunc}} ()
+\begin{DoxyCompactList}\small\item\em 获取过程函数指针 \end{DoxyCompactList}\item 
+long \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga7950d7efefee3fe279fb9ef4abdffffb}{ege\+::get\+Graphics\+Ver}} ()
+\begin{DoxyCompactList}\small\item\em 获取 EGE 图形库版本号 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga5d9ee192fcd474fb872d40fb1bf01b40}{ege\+::getfps}} ()
+\begin{DoxyCompactList}\small\item\em 获取当前帧率 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga40da79faea2e7bf6196fc4ac5c51296c}{ege\+::randomize}} ()
+\begin{DoxyCompactList}\small\item\em 初始化随机数生成器（使用当前时间作为种子） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gaf6d52c0c00a366ae1504a8e2676fd7af}{ege\+::randomize}} (\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} seed)
+\begin{DoxyCompactList}\small\item\em 初始化随机数生成器（使用指定种子） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gaf57040ecf75c3c6e3cd999743e53a981}{ege\+::random}} (\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} n=0)
+\begin{DoxyCompactList}\small\item\em 生成随机整数 \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga6842a7e7ffa7195ab7a6a7969135bbcf}{ege\+::randomf}} ()
+\begin{DoxyCompactList}\small\item\em 生成随机浮点数 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga425333315fcf3a8961117c498786b032}{ege\+::inputbox\+\_\+getline}} (const char \texorpdfstring{$\ast$}{*}title, const char \texorpdfstring{$\ast$}{*}text, LPSTR buf, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} len)
+\begin{DoxyCompactList}\small\item\em 显示输入对话框获取单行文本（\+ASCII 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga983cd8580f29763fffdeaa2ae242df3d}{ege\+::inputbox\+\_\+getline}} (const wchar\+\_\+t \texorpdfstring{$\ast$}{*}title, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}text, LPWSTR buf, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} len)
+\begin{DoxyCompactList}\small\item\em 显示输入对话框获取单行文本（\+Unicode 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga0f6e674c3cace4fcc1b8c264bc1fe4f8}{ege\+::\+Set\+Close\+Handler}} (\mbox{\hyperlink{namespaceege_aea94e0447970e0d4565e39280eff19d3}{LPCALLBACK\+\_\+\+PROC}} func)
+\item 
+\mbox{\hyperlink{group__image__management_ga438f4198d90424de49c8cc20d7b369a8}{ege\+::\+MUSIC\+::\+MUSIC}} ()
+\begin{DoxyCompactList}\small\item\em 构造函数 \end{DoxyCompactList}\item 
+virtual \mbox{\hyperlink{group__image__management_ga0abf31e99220b87d432e25611ed21e09}{ege\+::\+MUSIC\+::\texorpdfstring{$\sim$}{\string~}\+MUSIC}} ()
+\begin{DoxyCompactList}\small\item\em 析构函数 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{group__image__management_gafac52e40a4176d693672e248bcb4484f}{ege\+::\+MUSIC\+::operator HWND}} () const
+\begin{DoxyCompactList}\small\item\em 类型转换操作符 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga580d3424cfab80504eb6b9b11d1dfe6b}{ege\+::\+MUSIC\+::\+Is\+Open}} ()
+\begin{DoxyCompactList}\small\item\em 检查是否已打开音乐文件 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga9a88caaa645238f47edc99792bd8828b}{ege\+::\+MUSIC\+::\+Open\+File}} (const char \texorpdfstring{$\ast$}{*}filepath)
+\begin{DoxyCompactList}\small\item\em 打开音乐文件（\+ASCII 版本） \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga9c8f39c98c3a27bbf3ece2999bce3554}{ege\+::\+MUSIC\+::\+Open\+File}} (const wchar\+\_\+t \texorpdfstring{$\ast$}{*}filepath)
+\begin{DoxyCompactList}\small\item\em 打开音乐文件（\+Unicode 版本） \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_gab646e2586808726ef78cf80f0a661d6b}{ege\+::\+MUSIC\+::\+Play}} (DWORD dw\+From=\mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}}, DWORD dw\+To=\mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}})
+\begin{DoxyCompactList}\small\item\em 播放音乐 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga70bebd90e4af6601d40ac20f48cc62f2}{ege\+::\+MUSIC\+::\+Repeat\+Play}} (DWORD dw\+From=\mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}}, DWORD dw\+To=\mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}})
+\begin{DoxyCompactList}\small\item\em 循环播放音乐 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga442f2bd0db38ee1d2db6ad27b3ba5157}{ege\+::\+MUSIC\+::\+Pause}} ()
+\begin{DoxyCompactList}\small\item\em 暂停播放 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga28513afbd309257d97a0825a257a7283}{ege\+::\+MUSIC\+::\+Seek}} (DWORD dw\+To)
+\begin{DoxyCompactList}\small\item\em 定位播放位置 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga29429d9795f46cc88194650cfb85642a}{ege\+::\+MUSIC\+::\+Set\+Volume}} (float value)
+\begin{DoxyCompactList}\small\item\em 设置播放音量 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga99a7c0e370ef45493f331931c3db7770}{ege\+::\+MUSIC\+::\+Close}} ()
+\begin{DoxyCompactList}\small\item\em 关闭音乐文件 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_gaa6edf8947660fe0181605bf70b85ee7a}{ege\+::\+MUSIC\+::\+Stop}} ()
+\begin{DoxyCompactList}\small\item\em 停止播放 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_gac9b1807e806fa838cab3f86ae788462d}{ege\+::\+MUSIC\+::\+Get\+Position}} ()
+\begin{DoxyCompactList}\small\item\em 获取当前播放位置 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_gadfc00213e8cf547d6c67716b840533cd}{ege\+::\+MUSIC\+::\+Get\+Length}} ()
+\begin{DoxyCompactList}\small\item\em 获取音乐总时长 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga02b382ba991fc30ab4273ac67c11dd0a}{ege\+::\+MUSIC\+::\+Get\+Play\+Status}} ()
+\begin{DoxyCompactList}\small\item\em 获取播放状态 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gaf031ac80af9bf410c167bc107edd7200}{ege\+::ege\+\_\+compress}} (void \texorpdfstring{$\ast$}{*}dest, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \texorpdfstring{$\ast$}{*}dest\+Len, const void \texorpdfstring{$\ast$}{*}source, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long source\+Len)
+\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga3fb2e336ab95600cc21c407d094c5a39}{ege\+::ege\+\_\+compress2}} (void \texorpdfstring{$\ast$}{*}dest, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \texorpdfstring{$\ast$}{*}dest\+Len, const void \texorpdfstring{$\ast$}{*}source, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long source\+Len, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} level)
+\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_gaaeb427608b063f20e7352b0b48d12974}{ege\+::ege\+\_\+uncompress}} (void \texorpdfstring{$\ast$}{*}dest, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \texorpdfstring{$\ast$}{*}dest\+Len, const void \texorpdfstring{$\ast$}{*}source, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long source\+Len)
+\item 
+\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__image__management_ga098aae9e2a495222043c60a74042f02b}{ege\+::ege\+\_\+uncompress\+\_\+size}} (const void \texorpdfstring{$\ast$}{*}source, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long source\+Len)
+\end{DoxyCompactItemize}
+\doxysubsubsubsubsection*{变量}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{group__image__management_ga7104ffaab74b7355fdb45e5ea3ed5fd4}{ege\+::ege\+\_\+point\+::x}}
+\begin{DoxyCompactList}\small\item\em x坐标 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_gadffce799bed850b2a7a9aace165e0413}{ege\+::ege\+\_\+point\+::y}}
+\begin{DoxyCompactList}\small\item\em y坐标 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga3ecb34f9e23ac42230121767ea48843b}{ege\+::ege\+\_\+rect\+::x}}
+\begin{DoxyCompactList}\small\item\em 矩形左上角x坐标 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_gac9f14768de20286abecfbacb15231550}{ege\+::ege\+\_\+rect\+::y}}
+\begin{DoxyCompactList}\small\item\em 矩形左上角y坐标 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga9237593dc00a54ac1e4c1bc3bd4b3673}{ege\+::ege\+\_\+rect\+::w}}
+\begin{DoxyCompactList}\small\item\em 矩形宽度 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_gaa6a7ecbc56a6450d0437a68b03f2fde8}{ege\+::ege\+\_\+rect\+::h}}
+\begin{DoxyCompactList}\small\item\em 矩形高度 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga63d9c45773a43ffce0db5fe5784da66c}{ege\+::ege\+\_\+colpoint\+::x}}
+\begin{DoxyCompactList}\small\item\em x坐标 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga891236b0a3d652a717052275f0432c62}{ege\+::ege\+\_\+colpoint\+::y}}
+\begin{DoxyCompactList}\small\item\em y坐标 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} \mbox{\hyperlink{group__image__management_gacf72e7cc19accfb7164f7d5f5ccd5732}{ege\+::ege\+\_\+colpoint\+::color}}
+\begin{DoxyCompactList}\small\item\em 该点的颜色值 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gab5e818b3c5f24570da22f0e538403f7c}{ege\+::line\+\_\+style\+\_\+type\+::linestyle}}
+\begin{DoxyCompactList}\small\item\em 线条样式 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} short \mbox{\hyperlink{group__image__management_gadac04b0d5563b00b60f82951f56d9c86}{ege\+::line\+\_\+style\+\_\+type\+::upattern}}
+\begin{DoxyCompactList}\small\item\em 用户定义的线条模式 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga6defa37e59e2751c22641d1f288cda7c}{ege\+::line\+\_\+style\+\_\+type\+::thickness}}
+\begin{DoxyCompactList}\small\item\em 线条粗细 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga20a257d00ec1046d1f9b3cd40721b708}{ege\+::textsettingstype\+::font}}
+\begin{DoxyCompactList}\small\item\em 字体类型 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gafa2c216414c7650263ebff0b8796ba29}{ege\+::textsettingstype\+::direction}}
+\begin{DoxyCompactList}\small\item\em 文字方向 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gafa12a4d55d9a8e68fdd88940d1acc3ae}{ege\+::textsettingstype\+::charsize}}
+\begin{DoxyCompactList}\small\item\em 字符大小 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga92621f3f7e3a0da032a04ca95f31ef9f}{ege\+::textsettingstype\+::horiz}}
+\begin{DoxyCompactList}\small\item\em 水平对齐方式 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gad736f4e88d866bdfb089a49cffff0890}{ege\+::textsettingstype\+::vert}}
+\begin{DoxyCompactList}\small\item\em 垂直对齐方式 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga326c1380d1526448f509c8c408d3083c}{ege\+::key\+\_\+msg\+::key}}
+\begin{DoxyCompactList}\small\item\em 按键键码 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_ae99fe4e319e2c693881518fa5f42f4ca}{key\+\_\+msg\+\_\+e}} \mbox{\hyperlink{group__image__management_ga892de6fe108995780e5bdf1c8ba93327}{ege\+::key\+\_\+msg\+::msg}}
+\begin{DoxyCompactList}\small\item\em 消息类型 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga8bee6f6e3b87c2991c04b01e578e827f}{ege\+::key\+\_\+msg\+::flags}}
+\begin{DoxyCompactList}\small\item\em 状态标志 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga96857311fe9c2a0101a557f8ecad00d1}{ege\+::mouse\+\_\+msg\+::x}}
+\begin{DoxyCompactList}\small\item\em 鼠标x坐标 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga041eb0b0ee1ae8866d5552ff7362fb18}{ege\+::mouse\+\_\+msg\+::y}}
+\begin{DoxyCompactList}\small\item\em 鼠标y坐标 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a6cdf7e04ea86ebe3751a7c378754641e}{mouse\+\_\+msg\+\_\+e}} \mbox{\hyperlink{group__image__management_ga666b0682594b39b93e3b8ebf46099a52}{ege\+::mouse\+\_\+msg\+::msg}}
+\begin{DoxyCompactList}\small\item\em 消息类型 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga2465f7f12edb2cb8eea43a9436c86c1c}{ege\+::mouse\+\_\+msg\+::flags}}
+\begin{DoxyCompactList}\small\item\em 状态标志 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gabac1e84e21e34b79f880cced7b999a35}{ege\+::mouse\+\_\+msg\+::wheel}}
+\begin{DoxyCompactList}\small\item\em 滚轮滚动增量 \end{DoxyCompactList}\item 
+UINT \mbox{\hyperlink{group__image__management_ga3b8e18fd7962c16947a31ac1cf875be3}{ege\+::\+MOUSEMSG\+::u\+Msg}}
+\begin{DoxyCompactList}\small\item\em Windows消息\+ID \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga540d65b22e6c789f1139e7391842bb5b}{ege\+::\+MOUSEMSG\+::mk\+Ctrl}}
+\begin{DoxyCompactList}\small\item\em Ctrl键状态 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_gaeb6e36e63c9d5a6ec26ba669070559a2}{ege\+::\+MOUSEMSG\+::mk\+Shift}}
+\begin{DoxyCompactList}\small\item\em Shift键状态 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga74643918e4271146bdd76eedf6966a08}{ege\+::\+MOUSEMSG\+::mk\+LButton}}
+\begin{DoxyCompactList}\small\item\em 左键状态 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_gaabaf6155505f97efc9f1520fd91950a1}{ege\+::\+MOUSEMSG\+::mk\+MButton}}
+\begin{DoxyCompactList}\small\item\em 中键状态 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga31e3354cfc1f3dc8291f5602fd29c9d5}{ege\+::\+MOUSEMSG\+::mk\+RButton}}
+\begin{DoxyCompactList}\small\item\em 右键状态 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_gaecbb219d6139daa98d90de3fddf42711}{ege\+::\+MOUSEMSG\+::mk\+XButton1}}
+\begin{DoxyCompactList}\small\item\em X1键状态 \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__image__management_ga3979bfcb5e190d71f738beda1b97d4a4}{ege\+::\+MOUSEMSG\+::mk\+XButton2}}
+\begin{DoxyCompactList}\small\item\em X2键状态 \end{DoxyCompactList}\item 
+short \mbox{\hyperlink{group__image__management_ga711c8753de2673ec8237c85401edceef}{ege\+::\+MOUSEMSG\+::x}}
+\begin{DoxyCompactList}\small\item\em x坐标 \end{DoxyCompactList}\item 
+short \mbox{\hyperlink{group__image__management_gabdf6692a24a4c6b937598711e202e12f}{ege\+::\+MOUSEMSG\+::y}}
+\begin{DoxyCompactList}\small\item\em y坐标 \end{DoxyCompactList}\item 
+short \mbox{\hyperlink{group__image__management_gad292babf303c0e20d085342d44b07f01}{ege\+::\+MOUSEMSG\+::wheel}}
+\begin{DoxyCompactList}\small\item\em 滚轮增量 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga66d445604ddca7173e561d4901a38cc4}{ege\+::viewporttype\+::left}}
+\begin{DoxyCompactList}\small\item\em 左边界 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gae2848ed025752ccd735fb6a90d3cdca9}{ege\+::viewporttype\+::top}}
+\begin{DoxyCompactList}\small\item\em 上边界 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gab676702bbb2ecaa0d6f0dca1c3a6aa19}{ege\+::viewporttype\+::right}}
+\begin{DoxyCompactList}\small\item\em 右边界 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_ga0cebf48dfaa46e9f4071a9306afdb1b3}{ege\+::viewporttype\+::bottom}}
+\begin{DoxyCompactList}\small\item\em 下边界 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{group__image__management_gaf744ee5bed1f5f457cce2fd59db16e52}{ege\+::viewporttype\+::clipflag}}
+\begin{DoxyCompactList}\small\item\em 裁剪标志 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga2079f2d59380b95d933bd7ee69695f55}{ege\+::ege\+\_\+transform\+\_\+matrix\+::m11}}
+\item 
+float \mbox{\hyperlink{group__image__management_ga3fe13270f46cba50ca71a51d0ef7c6bc}{ege\+::ege\+\_\+transform\+\_\+matrix\+::m12}}
+\begin{DoxyCompactList}\small\item\em 第一行：\mbox{[}m11, m12\mbox{]} \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_gad17efd39e1e6e232b9cfb6128c5e03ee}{ege\+::ege\+\_\+transform\+\_\+matrix\+::m21}}
+\item 
+float \mbox{\hyperlink{group__image__management_gaf04923eb4db1569ac8df5398d3a4d820}{ege\+::ege\+\_\+transform\+\_\+matrix\+::m22}}
+\begin{DoxyCompactList}\small\item\em 第二行：\mbox{[}m21, m22\mbox{]} \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga512965f8b8a6113f753b907761564195}{ege\+::ege\+\_\+transform\+\_\+matrix\+::m31}}
+\item 
+float \mbox{\hyperlink{group__image__management_ga51ca631b4ccbe657827ce0364aa7a2b2}{ege\+::ege\+\_\+transform\+\_\+matrix\+::m32}}
+\begin{DoxyCompactList}\small\item\em 第三行：\mbox{[}m31, m32\mbox{]} 平移分量 \end{DoxyCompactList}\item 
+HANDLE \mbox{\hyperlink{group__image__management_gaf5e458488d08e00ffa1122129a69afff}{ege\+::msg\+\_\+createwindow\+::h\+Event}}
+\begin{DoxyCompactList}\small\item\em 事件句柄 \end{DoxyCompactList}\item 
+HWND \mbox{\hyperlink{group__image__management_ga0994668e14329ae541612ab832a4c35c}{ege\+::msg\+\_\+createwindow\+::hwnd}}
+\begin{DoxyCompactList}\small\item\em 窗口句柄 \end{DoxyCompactList}\item 
+const wchar\+\_\+t \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{group__image__management_ga2591631ff518e12d559d68ce3c5f4bdf}{ege\+::msg\+\_\+createwindow\+::classname}}
+\begin{DoxyCompactList}\small\item\em 窗口类名 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_gab03a62ea97ecdbdef871d63c8d490ad5}{ege\+::msg\+\_\+createwindow\+::style}}
+\begin{DoxyCompactList}\small\item\em 窗口样式 \end{DoxyCompactList}\item 
+DWORD \mbox{\hyperlink{group__image__management_ga789c6bcd8d006f1dfe831e9e11235625}{ege\+::msg\+\_\+createwindow\+::exstyle}}
+\begin{DoxyCompactList}\small\item\em 扩展窗口样式 \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{group__image__management_gaa1149f4d0729deaa6cad12b9fb0db876}{ege\+::msg\+\_\+createwindow\+::id}}
+\begin{DoxyCompactList}\small\item\em 窗口\+ID \end{DoxyCompactList}\item 
+LPVOID \mbox{\hyperlink{group__image__management_gae315e35476a951609980c44baf921291}{ege\+::msg\+\_\+createwindow\+::param}}
+\begin{DoxyCompactList}\small\item\em 参数指针 \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{group__image__management_ga05abb1f9b216a8ea09bee2238656117e}{ege\+::\+VECTOR3\+D\+::x}}
+\item 
+float \mbox{\hyperlink{group__image__management_gaaec759c068eb0376e167284cc0004547}{ege\+::\+VECTOR3\+D\+::y}}
+\item 
+float \mbox{\hyperlink{group__image__management_gae177bb31c22510621a2fb296b2b0f2fe}{ege\+::\+VECTOR3\+D\+::z}}
+\begin{DoxyCompactList}\small\item\em 三维坐标分量 \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsubsubsection{详细描述}
+EGE图形库的图像创建、加载、保存和处理功能 
+
+图像管理模块提供了完整的图像操作能力，包括：
+\begin{DoxyItemize}
+\item 图像缓冲区操作：getbuffer() 获取像素缓冲区
+\item 图像尺寸调整：resize(), \doxylink{group__image__management_ga242ea4c710974781ce9475afa4d1b8be}{resize\+\_\+f()} 调整图像大小
+\item 图像获取：getimage() 系列函数从不同源获取图像数据
+\item 图像保存：saveimage(), \doxylink{group__putimage__functions_gaa44071ee7e219391718448560de01cbc}{savepng()}, \doxylink{group__putimage__functions_ga213160e5a0b8998a632c678f21e5f14f}{savebmp()} 保存图像到文件
+\end{DoxyItemize}
+
+支持的图像格式：\+PNG, BMP, JPG, GIF, EMF, WMF, ICO 支持从窗口、文件、资源、其他\+IMAGE对象获取图像 
+
+\doxysubsubsubsection{函数说明}
+\Hypertarget{group__image__management_ga99a7c0e370ef45493f331931c3db7770}\label{group__image__management_ga99a7c0e370ef45493f331931c3db7770} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Close@{Close}}
+\index{Close@{Close}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Close()}{Close()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Close (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+关闭音乐文件 
+
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+关闭当前打开的音乐文件并释放相关资源 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga9a88caaa645238f47edc99792bd8828b}{Open\+File()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga5675ef9eaf5867e6bea79d915cd28288}\label{group__image__management_ga5675ef9eaf5867e6bea79d915cd28288} 
+\index{图像管理和处理函数@{图像管理和处理函数}!data@{data}}
+\index{data@{data}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{data()}{data()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \texorpdfstring{$\ast$}{*} ege\+::ege\+\_\+path\+::data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取可写数据指针 
+
+\begin{DoxyReturn}{返回}
+数据指针 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga970608a48b616b6e85811e882a7a8da4}\label{group__image__management_ga970608a48b616b6e85811e882a7a8da4} 
+\index{图像管理和处理函数@{图像管理和处理函数}!data@{data}}
+\index{data@{data}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{data()}{data()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily const void \texorpdfstring{$\ast$}{*} ege\+::ege\+\_\+path\+::data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+获取只读数据指针 
+
+\begin{DoxyReturn}{返回}
+常量数据指针 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_gaf031ac80af9bf410c167bc107edd7200}\label{group__image__management_gaf031ac80af9bf410c167bc107edd7200} 
+\index{图像管理和处理函数@{图像管理和处理函数}!ege\_compress@{ege\_compress}}
+\index{ege\_compress@{ege\_compress}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_compress()}{ege\_compress()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+compress (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{dest,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \texorpdfstring{$\ast$}{*}}]{dest\+Len,  }\item[{const void \texorpdfstring{$\ast$}{*}}]{source,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long}]{source\+Len }\end{DoxyParamCaption})}
+
+\Hypertarget{group__image__management_ga3fb2e336ab95600cc21c407d094c5a39}\label{group__image__management_ga3fb2e336ab95600cc21c407d094c5a39} 
+\index{图像管理和处理函数@{图像管理和处理函数}!ege\_compress2@{ege\_compress2}}
+\index{ege\_compress2@{ege\_compress2}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_compress2()}{ege\_compress2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+compress2 (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{dest,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \texorpdfstring{$\ast$}{*}}]{dest\+Len,  }\item[{const void \texorpdfstring{$\ast$}{*}}]{source,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long}]{source\+Len,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{level }\end{DoxyParamCaption})}
+
+\Hypertarget{group__image__management_ga96bc8651d6fdaa87ba212fe1411d53e4}\label{group__image__management_ga96bc8651d6fdaa87ba212fe1411d53e4} 
+\index{图像管理和处理函数@{图像管理和处理函数}!ege\_path@{ege\_path}}
+\index{ege\_path@{ege\_path}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path()}{ege\_path()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily ege\+::ege\+\_\+path\+::ege\+\_\+path (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+默认构造函数 
+
+\Hypertarget{group__image__management_ga997f2e54b684515b7ce1ff0785c55df7}\label{group__image__management_ga997f2e54b684515b7ce1ff0785c55df7} 
+\index{图像管理和处理函数@{图像管理和处理函数}!ege\_path@{ege\_path}}
+\index{ege\_path@{ege\_path}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path()}{ege\_path()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily ege\+::ege\+\_\+path\+::ege\+\_\+path (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \&}]{path }\end{DoxyParamCaption})}
+
+
+
+拷贝构造函数 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 要拷贝的路径 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__image__management_gaed9447c63f7781df11cb7f00d632c598}\label{group__image__management_gaed9447c63f7781df11cb7f00d632c598} 
+\index{图像管理和处理函数@{图像管理和处理函数}!ege\_path@{ege\_path}}
+\index{ege\_path@{ege\_path}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path()}{ege\_path()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily ege\+::ege\+\_\+path\+::ege\+\_\+path (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{const \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char \texorpdfstring{$\ast$}{*}}]{types,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{count }\end{DoxyParamCaption})}
+
+
+
+从点数组和类型数组构造路径 
+
+
+\begin{DoxyParams}{参数}
+{\em points} & 点数组 \\
+\hline
+{\em types} & 路径类型数组 \\
+\hline
+{\em count} & 点的数量 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__image__management_gaaeb427608b063f20e7352b0b48d12974}\label{group__image__management_gaaeb427608b063f20e7352b0b48d12974} 
+\index{图像管理和处理函数@{图像管理和处理函数}!ege\_uncompress@{ege\_uncompress}}
+\index{ege\_uncompress@{ege\_uncompress}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_uncompress()}{ege\_uncompress()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+uncompress (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{dest,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \texorpdfstring{$\ast$}{*}}]{dest\+Len,  }\item[{const void \texorpdfstring{$\ast$}{*}}]{source,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long}]{source\+Len }\end{DoxyParamCaption})}
+
+\Hypertarget{group__image__management_ga098aae9e2a495222043c60a74042f02b}\label{group__image__management_ga098aae9e2a495222043c60a74042f02b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!ege\_uncompress\_size@{ege\_uncompress\_size}}
+\index{ege\_uncompress\_size@{ege\_uncompress\_size}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_uncompress\_size()}{ege\_uncompress\_size()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+uncompress\+\_\+size (\begin{DoxyParamCaption}\item[{const void \texorpdfstring{$\ast$}{*}}]{source,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} long}]{source\+Len }\end{DoxyParamCaption})}
+
+\Hypertarget{group__image__management_ga81be377200cef8f45470c57effc9df21}\label{group__image__management_ga81be377200cef8f45470c57effc9df21} 
+\index{图像管理和处理函数@{图像管理和处理函数}!GetAngle@{GetAngle}}
+\index{GetAngle@{GetAngle}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{GetAngle()}{GetAngle()}}
+{\footnotesize\ttfamily static float ege\+::\+VECTOR3\+D\+::\+Get\+Angle (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{e,  }\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{s = {\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}}(0.0f,~0.0f,~1.0f)} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+计算两个向量之间的夹角 
+
+
+\begin{DoxyParams}{参数}
+{\em e} & 第一个向量 \\
+\hline
+{\em s} & 第二个向量（默认为z轴正方向） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+夹角（弧度） 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga9bf0c1f705b6713daafa1070c0cc3e35}\label{group__image__management_ga9bf0c1f705b6713daafa1070c0cc3e35} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getbuffer@{getbuffer}}
+\index{getbuffer@{getbuffer}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getbuffer()}{getbuffer()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getbuffer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg }\end{DoxyParamCaption})}
+
+
+
+获取图像像素缓冲区指针（只读版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+图像缓冲区首地址（只读），缓冲区为一维数组，大小为 图像宽度×图像高度 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+坐标为(x, y)的像素对应缓冲区索引：buffer\mbox{[}y \texorpdfstring{$\ast$}{*} width + x\mbox{]} 
+
+返回的指针只能读取像素数据，不能修改 
+\end{DoxyNote}
+\Hypertarget{group__image__management_gad89f9ec70ac35829d20c6f415e8ba41b}\label{group__image__management_gad89f9ec70ac35829d20c6f415e8ba41b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getbuffer@{getbuffer}}
+\index{getbuffer@{getbuffer}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getbuffer()}{getbuffer()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getbuffer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg }\end{DoxyParamCaption})}
+
+
+
+获取图像像素缓冲区指针 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+图像缓冲区首地址，缓冲区为一维数组，大小为 图像宽度×图像高度 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+坐标为(x, y)的像素对应缓冲区索引：buffer\mbox{[}y \texorpdfstring{$\ast$}{*} width + x\mbox{]} 
+
+返回的指针可以直接操作像素数据，修改后会立即生效 
+\end{DoxyNote}
+\Hypertarget{group__image__management_ga5d9ee192fcd474fb872d40fb1bf01b40}\label{group__image__management_ga5d9ee192fcd474fb872d40fb1bf01b40} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getfps@{getfps}}
+\index{getfps@{getfps}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getfps()}{getfps()}}
+{\footnotesize\ttfamily float \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getfps (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取当前帧率 
+
+\begin{DoxyReturn}{返回}
+当前的帧率(fps) 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+返回每秒帧数，用于性能监控和调试 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__Time_ga26da238c5fab9ea2aa039dd4b3651d83}{delay\+\_\+fps()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga7950d7efefee3fe279fb9ef4abdffffb}\label{group__image__management_ga7950d7efefee3fe279fb9ef4abdffffb} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getGraphicsVer@{getGraphicsVer}}
+\index{getGraphicsVer@{getGraphicsVer}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getGraphicsVer()}{getGraphicsVer()}}
+{\footnotesize\ttfamily long \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::get\+Graphics\+Ver (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取 EGE 图形库版本号 
+
+\begin{DoxyReturn}{返回}
+EGE 图形库的版本号 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+版本号格式为数字形式，可用于兼容性检查 
+\end{DoxyNote}
+\Hypertarget{group__image__management_gadda7f44ffe59bef6c69bfd48cb8fdf25}\label{group__image__management_gadda7f44ffe59bef6c69bfd48cb8fdf25} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getHDC@{getHDC}}
+\index{getHDC@{getHDC}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getHDC()}{getHDC()}}
+{\footnotesize\ttfamily HDC \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::get\+HDC (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+获取绘图设备上下文 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 图像对象指针，如果为 NULL 则获取绘图窗口的设备上下文 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+设备上下文句柄(\+HDC) 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+返回的是 Windows 系统的设备上下文句柄，可用于 GDI 绘图操作 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+不要手动释放返回的 HDC，由 EGE 库自动管理 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga776273592cb7438c3fcbf50751d7f4b0}{get\+HWnd()}, \doxylink{group__image__management_gad02237af243d0582c4c9807d5e8b59f1}{get\+HInstance()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gad02237af243d0582c4c9807d5e8b59f1}\label{group__image__management_gad02237af243d0582c4c9807d5e8b59f1} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getHInstance@{getHInstance}}
+\index{getHInstance@{getHInstance}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getHInstance()}{getHInstance()}}
+{\footnotesize\ttfamily HINSTANCE \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::get\+HInstance (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取绘图窗口的实例句柄 
+
+\begin{DoxyReturn}{返回}
+应用程序实例句柄(\+HINSTANCE) 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+返回的是 Windows 系统的应用程序实例句柄，可用于 Windows API 调用 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga776273592cb7438c3fcbf50751d7f4b0}{get\+HWnd()}, \doxylink{group__image__management_gadda7f44ffe59bef6c69bfd48cb8fdf25}{get\+HDC()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga776273592cb7438c3fcbf50751d7f4b0}\label{group__image__management_ga776273592cb7438c3fcbf50751d7f4b0} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getHWnd@{getHWnd}}
+\index{getHWnd@{getHWnd}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getHWnd()}{getHWnd()}}
+{\footnotesize\ttfamily HWND \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::get\+HWnd (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取绘图窗口的窗口句柄 
+
+\begin{DoxyReturn}{返回}
+绘图窗口的窗口句柄(\+HWND) 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+返回的是 Windows 系统的窗口句柄，可用于 Windows API 调用 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gad02237af243d0582c4c9807d5e8b59f1}{get\+HInstance()}, \doxylink{group__image__management_gadda7f44ffe59bef6c69bfd48cb8fdf25}{get\+HDC()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gab7694c1996abf1140c01fe4845b6cadf}\label{group__image__management_gab7694c1996abf1140c01fe4845b6cadf} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage@{getimage}}
+\index{getimage@{getimage}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage()}{getimage()}\hspace{0.1cm}{\footnotesize\ttfamily [1/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{image\+File,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Width = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Height = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+从图片文件获取图像（char\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 保存图像的 IMAGE 对象指针 \\
+\hline
+{\em image\+File} & 图片文件名 \\
+\hline
+{\em zoom\+Width} & 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放 \\
+\hline
+{\em zoom\+Height} & 设定图像缩放至的高度，0 表示使用原始高度，不缩放 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回相应错误码（gr\+Alloc\+Error/gr\+File\+Not\+Found/gr\+Null\+Pointer/gr\+IOerror） 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+支持格式：\+PNG, BMP, JPG, GIF, EMF, WMF, ICO 
+
+如果图像包含多帧，仅获取第一帧 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga12e3cd7bb4e678cbb8e4474991a92c6e}{getimage(\+PIMAGE, const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, int, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gab2e53d8157cc333521d8703f895c1db7}\label{group__image__management_gab2e53d8157cc333521d8703f895c1db7} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage@{getimage}}
+\index{getimage@{getimage}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage()}{getimage()}\hspace{0.1cm}{\footnotesize\ttfamily [2/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{res\+Type,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{res\+Name,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Width = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Height = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+从资源文件获取图像（char\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 保存图像的 IMAGE 对象指针 \\
+\hline
+{\em res\+Type} & 资源类型 \\
+\hline
+{\em res\+Name} & 资源名称 \\
+\hline
+{\em zoom\+Width} & 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放 \\
+\hline
+{\em zoom\+Height} & 设定图像缩放至的高度，0 表示使用原始高度，不缩放 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回相应错误码（gr\+Alloc\+Error/gr\+File\+Not\+Found/gr\+Null\+Pointer/gr\+IOerror） 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+支持格式：\+PNG, BMP, JPG, GIF, EMF, WMF, ICO 
+
+如果图像包含多帧，仅获取第一帧 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gafef8e49325ef32ff1b57dbcb04de8c8c}{getimage(\+PIMAGE, const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, int, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga12e3cd7bb4e678cbb8e4474991a92c6e}\label{group__image__management_ga12e3cd7bb4e678cbb8e4474991a92c6e} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage@{getimage}}
+\index{getimage@{getimage}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage()}{getimage()}\hspace{0.1cm}{\footnotesize\ttfamily [3/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{image\+File,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Width = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Height = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+从图片文件获取图像（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 保存图像的 IMAGE 对象指针 \\
+\hline
+{\em image\+File} & 图片文件名（宽字符版本） \\
+\hline
+{\em zoom\+Width} & 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放 \\
+\hline
+{\em zoom\+Height} & 设定图像缩放至的高度，0 表示使用原始高度，不缩放 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回相应错误码（gr\+Alloc\+Error/gr\+File\+Not\+Found/gr\+Null\+Pointer/gr\+IOerror） 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+支持格式：\+PNG, BMP, JPG, GIF, EMF, WMF, ICO 
+
+如果图像包含多帧，仅获取第一帧 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gab7694c1996abf1140c01fe4845b6cadf}{getimage(\+PIMAGE, const char\texorpdfstring{$\ast$}{*}, int, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gafef8e49325ef32ff1b57dbcb04de8c8c}\label{group__image__management_gafef8e49325ef32ff1b57dbcb04de8c8c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage@{getimage}}
+\index{getimage@{getimage}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage()}{getimage()}\hspace{0.1cm}{\footnotesize\ttfamily [4/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{res\+Type,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{res\+Name,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Width = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{zoom\+Height = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+从资源文件获取图像（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 保存图像的 IMAGE 对象指针 \\
+\hline
+{\em res\+Type} & 资源类型（宽字符版本） \\
+\hline
+{\em res\+Name} & 资源名称（宽字符版本） \\
+\hline
+{\em zoom\+Width} & 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放 \\
+\hline
+{\em zoom\+Height} & 设定图像缩放至的高度，0 表示使用原始高度，不缩放 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回相应错误码（gr\+Alloc\+Error/gr\+File\+Not\+Found/gr\+Null\+Pointer/gr\+IOerror） 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+支持格式：\+PNG, BMP, JPG, GIF, EMF, WMF, ICO 
+
+如果图像包含多帧，仅获取第一帧 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gab2e53d8157cc333521d8703f895c1db7}{getimage(\+PIMAGE, const char\texorpdfstring{$\ast$}{*}, const char\texorpdfstring{$\ast$}{*}, int, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gaf1f8062b6198c8ff881fa07c4e200080}\label{group__image__management_gaf1f8062b6198c8ff881fa07c4e200080} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage@{getimage}}
+\index{getimage@{getimage}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage()}{getimage()}\hspace{0.1cm}{\footnotesize\ttfamily [5/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src }\end{DoxyParamCaption})}
+
+
+
+从窗口获取图像 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 保存图像的 IMAGE 对象指针 \\
+\hline
+{\em x\+Src} & 要获取图像的区域左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 要获取图像的区域左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 要获取图像的区域宽度 \\
+\hline
+{\em height\+Src} & 要获取图像的区域高度 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回相应错误码 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+从当前窗口的指定区域获取图像数据 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga67c3f35409cc0b5592d9b861e4dd2d7a}{getimage(\+PIMAGE, PCIMAGE, int, int, int, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga67c3f35409cc0b5592d9b861e4dd2d7a}\label{group__image__management_ga67c3f35409cc0b5592d9b861e4dd2d7a} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage@{getimage}}
+\index{getimage@{getimage}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage()}{getimage()}\hspace{0.1cm}{\footnotesize\ttfamily [6/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src }\end{DoxyParamCaption})}
+
+
+
+从另一个 IMAGE 对象获取图像 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 保存图像的 IMAGE 对象指针 \\
+\hline
+{\em img\+Src} & 源图像 IMAGE 对象指针 \\
+\hline
+{\em x\+Src} & 要获取图像的区域左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 要获取图像的区域左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 要获取图像的区域宽度 \\
+\hline
+{\em height\+Src} & 要获取图像的区域高度 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回相应错误码 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+从源 IMAGE 对象的指定区域复制图像数据到目标 IMAGE 对象 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gaf1f8062b6198c8ff881fa07c4e200080}{getimage(\+PIMAGE, int, int, int, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga06350f1fd2e3bbc1d45deb230e9a02a6}\label{group__image__management_ga06350f1fd2e3bbc1d45deb230e9a02a6} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage\_pngfile@{getimage\_pngfile}}
+\index{getimage\_pngfile@{getimage\_pngfile}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage\_pngfile()}{getimage\_pngfile()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage\+\_\+pngfile (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{filename }\end{DoxyParamCaption})}
+
+
+
+从 PNG 图片文件获取图像（char\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 图像对象指针，需要先使用 \doxylink{group__PathManagement_gaa9325eb9f6d8949a22cbbd425a3a3492}{newimage()} 创建 \\
+\hline
+{\em filename} & 图像文件名 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+获取后图像大小与原图大小一致，而不是图像原先的大小 
+
+专门用于处理 PNG 格式图像 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga47d1f9de48742e57bb4c621f4ef7a7c8}{getimage\+\_\+pngfile(\+PIMAGE, const wchar\+\_\+t\texorpdfstring{$\ast$}{*})} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga47d1f9de48742e57bb4c621f4ef7a7c8}\label{group__image__management_ga47d1f9de48742e57bb4c621f4ef7a7c8} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getimage\_pngfile@{getimage\_pngfile}}
+\index{getimage\_pngfile@{getimage\_pngfile}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getimage\_pngfile()}{getimage\_pngfile()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getimage\+\_\+pngfile (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{filename }\end{DoxyParamCaption})}
+
+
+
+从 PNG 图片文件获取图像（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 图像对象指针，需要先使用 \doxylink{group__PathManagement_gaa9325eb9f6d8949a22cbbd425a3a3492}{newimage()} 创建 \\
+\hline
+{\em filename} & 图像文件名（宽字符版本） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+获取后图像大小与原图大小一致，而不是图像原先的大小 
+
+专门用于处理 PNG 格式图像 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga06350f1fd2e3bbc1d45deb230e9a02a6}{getimage\+\_\+pngfile(\+PIMAGE, const char\texorpdfstring{$\ast$}{*})} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gadfc00213e8cf547d6c67716b840533cd}\label{group__image__management_gadfc00213e8cf547d6c67716b840533cd} 
+\index{图像管理和处理函数@{图像管理和处理函数}!GetLength@{GetLength}}
+\index{GetLength@{GetLength}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{GetLength()}{GetLength()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Get\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取音乐总时长 
+
+\begin{DoxyReturn}{返回}
+音乐总时长（毫秒） 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+返回音乐文件的总长度，单位为毫秒 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gac9b1807e806fa838cab3f86ae788462d}{Get\+Position()}, \doxylink{group__image__management_ga02b382ba991fc30ab4273ac67c11dd0a}{Get\+Play\+Status()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga21bd5f33f719c57054f20346bc18c57e}\label{group__image__management_ga21bd5f33f719c57054f20346bc18c57e} 
+\index{图像管理和处理函数@{图像管理和处理函数}!GetModule@{GetModule}}
+\index{GetModule@{GetModule}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{GetModule()}{GetModule()}}
+{\footnotesize\ttfamily float ege\+::\+VECTOR3\+D\+::\+Get\+Module (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+获取向量模长 
+
+\begin{DoxyReturn}{返回}
+向量的模长 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga02b382ba991fc30ab4273ac67c11dd0a}\label{group__image__management_ga02b382ba991fc30ab4273ac67c11dd0a} 
+\index{图像管理和处理函数@{图像管理和处理函数}!GetPlayStatus@{GetPlayStatus}}
+\index{GetPlayStatus@{GetPlayStatus}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{GetPlayStatus()}{GetPlayStatus()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Get\+Play\+Status (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取播放状态 
+
+\begin{DoxyReturn}{返回}
+当前播放状态，参见 music\+\_\+state\+\_\+flag 枚举 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+返回值可能为：
+\begin{DoxyItemize}
+\item MUSIC\+\_\+\+MODE\+\_\+\+NOT\+\_\+\+OPEN\+: 未打开
+\item MUSIC\+\_\+\+MODE\+\_\+\+NOT\+\_\+\+READY\+: 设备未就绪
+\item MUSIC\+\_\+\+MODE\+\_\+\+PAUSE\+: 暂停中
+\item MUSIC\+\_\+\+MODE\+\_\+\+PLAY\+: 正在播放
+\item MUSIC\+\_\+\+MODE\+\_\+\+STOP\+: 停止状态
+\item MUSIC\+\_\+\+MODE\+\_\+\+OPEN\+: 打开中
+\item MUSIC\+\_\+\+MODE\+\_\+\+SEEK\+: 定位中 
+\end{DoxyItemize}
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{namespaceege_a2ab13b23e3497bb123ad1c95d62576fd}{music\+\_\+state\+\_\+flag}, \doxylink{group__image__management_gac9b1807e806fa838cab3f86ae788462d}{Get\+Position()}, \doxylink{group__image__management_gadfc00213e8cf547d6c67716b840533cd}{Get\+Length()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gac9b1807e806fa838cab3f86ae788462d}\label{group__image__management_gac9b1807e806fa838cab3f86ae788462d} 
+\index{图像管理和处理函数@{图像管理和处理函数}!GetPosition@{GetPosition}}
+\index{GetPosition@{GetPosition}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{GetPosition()}{GetPosition()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Get\+Position (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取当前播放位置 
+
+\begin{DoxyReturn}{返回}
+当前播放位置（毫秒） 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+返回当前播放进度，单位为毫秒 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gadfc00213e8cf547d6c67716b840533cd}{Get\+Length()}, \doxylink{group__image__management_ga02b382ba991fc30ab4273ac67c11dd0a}{Get\+Play\+Status()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gacf54f81984c4f496c7db20316832b081}\label{group__image__management_gacf54f81984c4f496c7db20316832b081} 
+\index{图像管理和处理函数@{图像管理和处理函数}!getProcfunc@{getProcfunc}}
+\index{getProcfunc@{getProcfunc}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{getProcfunc()}{getProcfunc()}}
+{\footnotesize\ttfamily PVOID \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::get\+Procfunc (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取过程函数指针 
+
+\begin{DoxyReturn}{返回}
+过程函数指针 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+内部使用函数，用于获取窗口过程函数指针 
+\end{DoxyNote}
+\Hypertarget{group__image__management_gaa2466c71f9fc2b7ab27cfc47c0246297}\label{group__image__management_gaa2466c71f9fc2b7ab27cfc47c0246297} 
+\index{图像管理和处理函数@{图像管理和处理函数}!GetSqrModule@{GetSqrModule}}
+\index{GetSqrModule@{GetSqrModule}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{GetSqrModule()}{GetSqrModule()}}
+{\footnotesize\ttfamily float ege\+::\+VECTOR3\+D\+::\+Get\+Sqr\+Module (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+获取向量模长的平方 
+
+\begin{DoxyReturn}{返回}
+向量模长的平方 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga425333315fcf3a8961117c498786b032}\label{group__image__management_ga425333315fcf3a8961117c498786b032} 
+\index{图像管理和处理函数@{图像管理和处理函数}!inputbox\_getline@{inputbox\_getline}}
+\index{inputbox\_getline@{inputbox\_getline}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{inputbox\_getline()}{inputbox\_getline()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::inputbox\+\_\+getline (\begin{DoxyParamCaption}\item[{const char \texorpdfstring{$\ast$}{*}}]{title,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{text,  }\item[{LPSTR}]{buf,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{len }\end{DoxyParamCaption})}
+
+
+
+显示输入对话框获取单行文本（\+ASCII 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em title} & 对话框标题 \\
+\hline
+{\em text} & 提示文本 \\
+\hline
+{\em buf} & 用于存储输入文本的缓冲区 \\
+\hline
+{\em len} & 缓冲区长度 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回非零值，失败或取消返回 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+显示一个模态对话框让用户输入单行文本 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+确保缓冲区足够大以避免溢出 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga983cd8580f29763fffdeaa2ae242df3d}{inputbox\+\_\+getline(const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, LPWSTR, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga983cd8580f29763fffdeaa2ae242df3d}\label{group__image__management_ga983cd8580f29763fffdeaa2ae242df3d} 
+\index{图像管理和处理函数@{图像管理和处理函数}!inputbox\_getline@{inputbox\_getline}}
+\index{inputbox\_getline@{inputbox\_getline}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{inputbox\_getline()}{inputbox\_getline()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::inputbox\+\_\+getline (\begin{DoxyParamCaption}\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{title,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{text,  }\item[{LPWSTR}]{buf,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{len }\end{DoxyParamCaption})}
+
+
+
+显示输入对话框获取单行文本（\+Unicode 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em title} & 对话框标题 \\
+\hline
+{\em text} & 提示文本 \\
+\hline
+{\em buf} & 用于存储输入文本的缓冲区 \\
+\hline
+{\em len} & 缓冲区长度 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回非零值，失败或取消返回 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+显示一个模态对话框让用户输入单行文本，支持 Unicode 字符 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+确保缓冲区足够大以避免溢出 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga425333315fcf3a8961117c498786b032}{inputbox\+\_\+getline(const char\texorpdfstring{$\ast$}{*}, const char\texorpdfstring{$\ast$}{*}, LPSTR, int)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gaa48fe2090c1e90226d9d436bda8ba0d5}\label{group__image__management_gaa48fe2090c1e90226d9d436bda8ba0d5} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_down@{is\_down}}
+\index{is\_down@{is\_down}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_down()}{is\_down()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+down (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为按钮按下事件 
+
+\Hypertarget{group__image__management_gab282f32abd67139fcdfc900bad7c2b46}\label{group__image__management_gab282f32abd67139fcdfc900bad7c2b46} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_left@{is\_left}}
+\index{is\_left@{is\_left}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_left()}{is\_left()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+left (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为鼠标左键事件 
+
+\Hypertarget{group__image__management_ga17a0f5d63cc92af704a02bfa3f210eee}\label{group__image__management_ga17a0f5d63cc92af704a02bfa3f210eee} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_mid@{is\_mid}}
+\index{is\_mid@{is\_mid}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_mid()}{is\_mid()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+mid (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为鼠标中键事件 
+
+\Hypertarget{group__image__management_gabb0091a5df713edd000c3b6b8e62129a}\label{group__image__management_gabb0091a5df713edd000c3b6b8e62129a} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_move@{is\_move}}
+\index{is\_move@{is\_move}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_move()}{is\_move()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+move (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为鼠标移动事件 
+
+\Hypertarget{group__image__management_ga775c39f8ffa9a642b5a10c696eccdea5}\label{group__image__management_ga775c39f8ffa9a642b5a10c696eccdea5} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_right@{is\_right}}
+\index{is\_right@{is\_right}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_right()}{is\_right()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+right (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为鼠标右键事件 
+
+\Hypertarget{group__image__management_ga1279f643a6be81750b23bae11ed51ad9}\label{group__image__management_ga1279f643a6be81750b23bae11ed51ad9} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_up@{is\_up}}
+\index{is\_up@{is\_up}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_up()}{is\_up()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+up (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为按钮释放事件 
+
+\Hypertarget{group__image__management_ga00198c2c497e80a6ebe8116d1edebce3}\label{group__image__management_ga00198c2c497e80a6ebe8116d1edebce3} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_wheel@{is\_wheel}}
+\index{is\_wheel@{is\_wheel}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_wheel()}{is\_wheel()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+wheel (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为滚轮事件 
+
+\Hypertarget{group__image__management_ga610d728fce8c4d8aa7c1bd02f8197ae7}\label{group__image__management_ga610d728fce8c4d8aa7c1bd02f8197ae7} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_x1@{is\_x1}}
+\index{is\_x1@{is\_x1}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_x1()}{is\_x1()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+x1 (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为鼠标\+X1键事件 
+
+\Hypertarget{group__image__management_gaa08a0e0cd3fe9639f162a5480af70dfe}\label{group__image__management_gaa08a0e0cd3fe9639f162a5480af70dfe} 
+\index{图像管理和处理函数@{图像管理和处理函数}!is\_x2@{is\_x2}}
+\index{is\_x2@{is\_x2}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{is\_x2()}{is\_x2()}}
+{\footnotesize\ttfamily bool ege\+::mouse\+\_\+msg\+::is\+\_\+x2 (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否为鼠标\+X2键事件 
+
+\Hypertarget{group__image__management_ga580d3424cfab80504eb6b9b11d1dfe6b}\label{group__image__management_ga580d3424cfab80504eb6b9b11d1dfe6b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!IsOpen@{IsOpen}}
+\index{IsOpen@{IsOpen}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{IsOpen()}{IsOpen()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::\+MUSIC\+::\+Is\+Open (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+检查是否已打开音乐文件 
+
+\begin{DoxyReturn}{返回}
+1 表示已打开，0 表示未打开 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+用于判断是否成功打开了音乐文件 
+\end{DoxyNote}
+\Hypertarget{group__image__management_ga438f4198d90424de49c8cc20d7b369a8}\label{group__image__management_ga438f4198d90424de49c8cc20d7b369a8} 
+\index{图像管理和处理函数@{图像管理和处理函数}!MUSIC@{MUSIC}}
+\index{MUSIC@{MUSIC}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{MUSIC()}{MUSIC()}}
+{\footnotesize\ttfamily ege\+::\+MUSIC\+::\+MUSIC (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+构造函数 
+
+\begin{DoxyNote}{注解}
+初始化音乐播放器，设置初始状态为未打开 
+\end{DoxyNote}
+\Hypertarget{group__image__management_ga9a88caaa645238f47edc99792bd8828b}\label{group__image__management_ga9a88caaa645238f47edc99792bd8828b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!OpenFile@{OpenFile}}
+\index{OpenFile@{OpenFile}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{OpenFile()}{OpenFile()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Open\+File (\begin{DoxyParamCaption}\item[{const char \texorpdfstring{$\ast$}{*}}]{filepath }\end{DoxyParamCaption})}
+
+
+
+打开音乐文件（\+ASCII 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em filepath} & 音乐文件路径（包含文件名） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+支持 WAV、\+MP3、\+MIDI 等格式，成功打开后播放状态为 MUSIC\+\_\+\+MODE\+\_\+\+STOP 
+
+如果已经打开了其他文件，会自动关闭原文件 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga9c8f39c98c3a27bbf3ece2999bce3554}{Open\+File(const wchar\+\_\+t\texorpdfstring{$\ast$}{*})}, \doxylink{group__image__management_ga99a7c0e370ef45493f331931c3db7770}{Close()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga9c8f39c98c3a27bbf3ece2999bce3554}\label{group__image__management_ga9c8f39c98c3a27bbf3ece2999bce3554} 
+\index{图像管理和处理函数@{图像管理和处理函数}!OpenFile@{OpenFile}}
+\index{OpenFile@{OpenFile}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{OpenFile()}{OpenFile()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Open\+File (\begin{DoxyParamCaption}\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{filepath }\end{DoxyParamCaption})}
+
+
+
+打开音乐文件（\+Unicode 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em filepath} & 音乐文件路径（包含文件名） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+支持 WAV、\+MP3、\+MIDI 等格式，成功打开后播放状态为 MUSIC\+\_\+\+MODE\+\_\+\+STOP 
+
+如果已经打开了其他文件，会自动关闭原文件 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga9a88caaa645238f47edc99792bd8828b}{Open\+File(const char\texorpdfstring{$\ast$}{*})}, \doxylink{group__image__management_ga99a7c0e370ef45493f331931c3db7770}{Close()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gafac52e40a4176d693672e248bcb4484f}\label{group__image__management_gafac52e40a4176d693672e248bcb4484f} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator HWND@{operator HWND}}
+\index{operator HWND@{operator HWND}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator HWND()}{operator HWND()}}
+{\footnotesize\ttfamily ege\+::\+MUSIC\+::operator HWND (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+类型转换操作符 
+
+\begin{DoxyReturn}{返回}
+返回窗口句柄(\+HWND) 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+用于与 Windows API 交互 
+\end{DoxyNote}
+\Hypertarget{group__image__management_ga6c65cc05699e1095a5e1ac1492c73417}\label{group__image__management_ga6c65cc05699e1095a5e1ac1492c73417} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator\&@{operator\&}}
+\index{operator\&@{operator\&}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator\&()}{operator\&()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} ege\+::\+VECTOR3\+D\+::operator\& (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption}) const}
+
+
+
+向量叉积操作符 
+
+\Hypertarget{group__image__management_ga344613cfc2323bb0ec53f7cbff50458b}\label{group__image__management_ga344613cfc2323bb0ec53f7cbff50458b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator\&=@{operator\&=}}
+\index{operator\&=@{operator\&=}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator\&=()}{operator\&=()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::operator\&= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption})}
+
+
+
+向量叉积赋值操作符 
+
+\Hypertarget{group__image__management_ga9beeb1cf4731ec90f99e7778f1760b49}\label{group__image__management_ga9beeb1cf4731ec90f99e7778f1760b49} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator\texorpdfstring{$\ast$}{*}@{operator\texorpdfstring{$\ast$}{*}}}
+\index{operator\texorpdfstring{$\ast$}{*}@{operator\texorpdfstring{$\ast$}{*}}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator\texorpdfstring{$\ast$}{*}()}{operator*()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily float ege\+::\+VECTOR3\+D\+::operator\texorpdfstring{$\ast$}{*} (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption}) const}
+
+
+
+向量点积操作符 
+
+\Hypertarget{group__image__management_gaebc1aeef67655542677d1352ca427edf}\label{group__image__management_gaebc1aeef67655542677d1352ca427edf} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator\texorpdfstring{$\ast$}{*}@{operator\texorpdfstring{$\ast$}{*}}}
+\index{operator\texorpdfstring{$\ast$}{*}@{operator\texorpdfstring{$\ast$}{*}}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator\texorpdfstring{$\ast$}{*}()}{operator*()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} ege\+::\+VECTOR3\+D\+::operator\texorpdfstring{$\ast$}{*} (\begin{DoxyParamCaption}\item[{float}]{scale }\end{DoxyParamCaption}) const}
+
+
+
+标量乘法操作符 
+
+\Hypertarget{group__image__management_ga2266928d07c249ab952bd0f59e15a564}\label{group__image__management_ga2266928d07c249ab952bd0f59e15a564} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator\texorpdfstring{$\ast$}{*}=@{operator\texorpdfstring{$\ast$}{*}=}}
+\index{operator\texorpdfstring{$\ast$}{*}=@{operator\texorpdfstring{$\ast$}{*}=}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator\texorpdfstring{$\ast$}{*}=()}{operator*=()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::operator\texorpdfstring{$\ast$}{*}= (\begin{DoxyParamCaption}\item[{float}]{scale }\end{DoxyParamCaption})}
+
+
+
+标量乘法赋值操作符 
+
+\Hypertarget{group__image__management_ga02a7507cfb98827a7caa21e0c870ef2f}\label{group__image__management_ga02a7507cfb98827a7caa21e0c870ef2f} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator+@{operator+}}
+\index{operator+@{operator+}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator+()}{operator+()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} ege\+::\+VECTOR3\+D\+::operator+ (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption}) const}
+
+
+
+向量加法操作符 
+
+\Hypertarget{group__image__management_ga60699d2fdf8b071ac47db9e11ebf4664}\label{group__image__management_ga60699d2fdf8b071ac47db9e11ebf4664} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator+=@{operator+=}}
+\index{operator+=@{operator+=}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator+=()}{operator+=()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::operator+= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption})}
+
+
+
+向量加法赋值操作符 
+
+\Hypertarget{group__image__management_ga4547c02b02f8346fc29227ba07e28f7d}\label{group__image__management_ga4547c02b02f8346fc29227ba07e28f7d} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator-\/@{operator-\/}}
+\index{operator-\/@{operator-\/}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator-\/()}{operator-()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} ege\+::\+VECTOR3\+D\+::operator-\/ (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption}) const}
+
+
+
+向量减法操作符 
+
+\Hypertarget{group__image__management_ga31c258887dac0685eaa0a85c0f095759}\label{group__image__management_ga31c258887dac0685eaa0a85c0f095759} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator-\/=@{operator-\/=}}
+\index{operator-\/=@{operator-\/=}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator-\/=()}{operator-=()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::operator-\/= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption})}
+
+
+
+向量减法赋值操作符 
+
+\Hypertarget{group__image__management_gac434e0058be2a09b9005dc23d602acfd}\label{group__image__management_gac434e0058be2a09b9005dc23d602acfd} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator=@{operator=}}
+\index{operator=@{operator=}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator=()}{operator=()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \& ege\+::ege\+\_\+path\+::operator= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \&}]{path }\end{DoxyParamCaption})}
+
+
+
+赋值操作符 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 要赋值的路径 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+路径引用 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga65f780d9c76dd4910679d06d470d5d59}\label{group__image__management_ga65f780d9c76dd4910679d06d470d5d59} 
+\index{图像管理和处理函数@{图像管理和处理函数}!operator=@{operator=}}
+\index{operator=@{operator=}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{operator=()}{operator=()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::operator= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+赋值操作符 
+
+
+\begin{DoxyParams}{参数}
+{\em vector} & 要赋值的向量 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+向量引用 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga442f2bd0db38ee1d2db6ad27b3ba5157}\label{group__image__management_ga442f2bd0db38ee1d2db6ad27b3ba5157} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Pause@{Pause}}
+\index{Pause@{Pause}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Pause()}{Pause()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Pause (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+暂停播放 
+
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+播放状态变为 MUSIC\+\_\+\+MODE\+\_\+\+PAUSE，播放进度保持不变 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gab646e2586808726ef78cf80f0a661d6b}{Play()}, \doxylink{group__image__management_gaa6edf8947660fe0181605bf70b85ee7a}{Stop()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gab646e2586808726ef78cf80f0a661d6b}\label{group__image__management_gab646e2586808726ef78cf80f0a661d6b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Play@{Play}}
+\index{Play@{Play}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Play()}{Play()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Play (\begin{DoxyParamCaption}\item[{DWORD}]{dw\+From = {\ttfamily \mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}}},  }\item[{DWORD}]{dw\+To = {\ttfamily \mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}}} }\end{DoxyParamCaption})}
+
+
+
+播放音乐 
+
+
+\begin{DoxyParams}{参数}
+{\em dw\+From} & 播放开始位置（毫秒），默认为 MUSIC\+\_\+\+ERROR（继续播放） \\
+\hline
+{\em dw\+To} & 播放结束位置（毫秒），默认为 MUSIC\+\_\+\+ERROR（播放到末尾） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+\doxylink{group__image__management_gab646e2586808726ef78cf80f0a661d6b}{Play()} 为继续播放，\+Play(0) 为从头开始播放 
+
+播放状态变为 MUSIC\+\_\+\+MODE\+\_\+\+PLAY 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga442f2bd0db38ee1d2db6ad27b3ba5157}{Pause()}, \doxylink{group__image__management_gaa6edf8947660fe0181605bf70b85ee7a}{Stop()}, \doxylink{group__image__management_ga70bebd90e4af6601d40ac20f48cc62f2}{Repeat\+Play()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gaf57040ecf75c3c6e3cd999743e53a981}\label{group__image__management_gaf57040ecf75c3c6e3cd999743e53a981} 
+\index{图像管理和处理函数@{图像管理和处理函数}!random@{random}}
+\index{random@{random}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{random()}{random()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::random (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{n = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+生成随机整数 
+
+
+\begin{DoxyParams}{参数}
+{\em n} & 随机数范围的上限，如果为 0 则生成完整范围的随机数 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+生成的随机整数，范围为 \mbox{[}0, n) 或 \mbox{[}0, UINT\+\_\+\+MAX\mbox{]} 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+使用 Mersenne Twister 算法生成高质量随机数 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga40da79faea2e7bf6196fc4ac5c51296c}{randomize()}, \doxylink{group__image__management_ga6842a7e7ffa7195ab7a6a7969135bbcf}{randomf()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga6842a7e7ffa7195ab7a6a7969135bbcf}\label{group__image__management_ga6842a7e7ffa7195ab7a6a7969135bbcf} 
+\index{图像管理和处理函数@{图像管理和处理函数}!randomf@{randomf}}
+\index{randomf@{randomf}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{randomf()}{randomf()}}
+{\footnotesize\ttfamily double \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::randomf (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+生成随机浮点数 
+
+\begin{DoxyReturn}{返回}
+生成的随机浮点数，范围为 \mbox{[}0.\+0, 1.\+0) 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+使用 Mersenne Twister 算法生成高质量随机浮点数 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga40da79faea2e7bf6196fc4ac5c51296c}{randomize()}, \doxylink{group__image__management_gaf57040ecf75c3c6e3cd999743e53a981}{random()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga40da79faea2e7bf6196fc4ac5c51296c}\label{group__image__management_ga40da79faea2e7bf6196fc4ac5c51296c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!randomize@{randomize}}
+\index{randomize@{randomize}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{randomize()}{randomize()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::randomize (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+初始化随机数生成器（使用当前时间作为种子） 
+
+\begin{DoxyReturn}{返回}
+使用的随机数种子值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+使用当前时间戳作为种子初始化 Mersenne Twister 随机数生成器 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gaf6d52c0c00a366ae1504a8e2676fd7af}{randomize(unsigned int seed)}, \doxylink{group__image__management_gaf57040ecf75c3c6e3cd999743e53a981}{random()}, \doxylink{group__image__management_ga6842a7e7ffa7195ab7a6a7969135bbcf}{randomf()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_gaf6d52c0c00a366ae1504a8e2676fd7af}\label{group__image__management_gaf6d52c0c00a366ae1504a8e2676fd7af} 
+\index{图像管理和处理函数@{图像管理和处理函数}!randomize@{randomize}}
+\index{randomize@{randomize}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{randomize()}{randomize()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::randomize (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{seed }\end{DoxyParamCaption})}
+
+
+
+初始化随机数生成器（使用指定种子） 
+
+
+\begin{DoxyParams}{参数}
+{\em seed} & 随机数种子 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+使用的随机数种子值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+使用指定种子初始化 Mersenne Twister 随机数生成器，相同种子产生相同序列 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_ga40da79faea2e7bf6196fc4ac5c51296c}{randomize()}, \doxylink{group__image__management_gaf57040ecf75c3c6e3cd999743e53a981}{random()}, \doxylink{group__image__management_ga6842a7e7ffa7195ab7a6a7969135bbcf}{randomf()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga70bebd90e4af6601d40ac20f48cc62f2}\label{group__image__management_ga70bebd90e4af6601d40ac20f48cc62f2} 
+\index{图像管理和处理函数@{图像管理和处理函数}!RepeatPlay@{RepeatPlay}}
+\index{RepeatPlay@{RepeatPlay}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{RepeatPlay()}{RepeatPlay()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Repeat\+Play (\begin{DoxyParamCaption}\item[{DWORD}]{dw\+From = {\ttfamily \mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}}},  }\item[{DWORD}]{dw\+To = {\ttfamily \mbox{\hyperlink{ege_8zh__CN_8h_a49068db26650345d17a662e45ae398e4}{MUSIC\+\_\+\+ERROR}}} }\end{DoxyParamCaption})}
+
+
+
+循环播放音乐 
+
+
+\begin{DoxyParams}{参数}
+{\em dw\+From} & 播放开始位置（毫秒），默认为 MUSIC\+\_\+\+ERROR \\
+\hline
+{\em dw\+To} & 播放结束位置（毫秒），默认为 MUSIC\+\_\+\+ERROR \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+在指定的时间段内循环播放音乐 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gab646e2586808726ef78cf80f0a661d6b}{Play()}, \doxylink{group__image__management_ga442f2bd0db38ee1d2db6ad27b3ba5157}{Pause()}, \doxylink{group__image__management_gaa6edf8947660fe0181605bf70b85ee7a}{Stop()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga3204728337b9279c0af3dddf30a301d1}\label{group__image__management_ga3204728337b9279c0af3dddf30a301d1} 
+\index{图像管理和处理函数@{图像管理和处理函数}!resize@{resize}}
+\index{resize@{resize}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{resize()}{resize()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::resize (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height }\end{DoxyParamCaption})}
+
+
+
+调整图像尺寸（标准版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要调整大小的图像对象指针，不能为 NULL \\
+\hline
+{\em width} & 图像新宽度 \\
+\hline
+{\em height} & 图像新高度 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+调整后图像用背景色填充，视口重置为初始状态 
+
+此函数会清空图像内容并用背景色填充 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\Hypertarget{group__image__management_ga242ea4c710974781ce9475afa4d1b8be}\label{group__image__management_ga242ea4c710974781ce9475afa4d1b8be} 
+\index{图像管理和处理函数@{图像管理和处理函数}!resize\_f@{resize\_f}}
+\index{resize\_f@{resize\_f}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{resize\_f()}{resize\_f()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::resize\+\_\+f (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height }\end{DoxyParamCaption})}
+
+
+
+调整图像尺寸（快速版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要调整大小的图像对象指针，不能为 NULL \\
+\hline
+{\em width} & 图像新宽度 \\
+\hline
+{\em height} & 图像新高度 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+调整后图像内容未定义，视口重置为初始状态 
+
+此函数速度较快，但不保留原图像内容 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\Hypertarget{group__image__management_gad934e13cd28572dbaae2092f53990d58}\label{group__image__management_gad934e13cd28572dbaae2092f53990d58} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Rotate@{Rotate}}
+\index{Rotate@{Rotate}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Rotate()}{Rotate()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::\+Rotate (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{e,  }\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{s = {\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}}(0.0f,~0.0f,~1.0f)} }\end{DoxyParamCaption})}
+
+
+
+从起始向量旋转到目标向量 
+
+
+\begin{DoxyParams}{参数}
+{\em e} & 目标向量 \\
+\hline
+{\em s} & 起始向量（默认为z轴正方向） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+向量引用 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga39db71613f4fd369ecb1bd2aace24d9e}\label{group__image__management_ga39db71613f4fd369ecb1bd2aace24d9e} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Rotate@{Rotate}}
+\index{Rotate@{Rotate}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Rotate()}{Rotate()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::\+Rotate (\begin{DoxyParamCaption}\item[{float}]{rad,  }\item[{const \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \&}]{vector }\end{DoxyParamCaption})}
+
+
+
+绕指定轴旋转向量 
+
+
+\begin{DoxyParams}{参数}
+{\em rad} & 旋转角度（弧度） \\
+\hline
+{\em vector} & 旋转轴向量 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+向量引用 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga66cd77ec8f4252817db02dc01799cf25}\label{group__image__management_ga66cd77ec8f4252817db02dc01799cf25} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Rotate@{Rotate}}
+\index{Rotate@{Rotate}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Rotate()}{Rotate()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::\+Rotate (\begin{DoxyParamCaption}\item[{float}]{rad,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{z }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+绕指定轴旋转向量 
+
+
+\begin{DoxyParams}{参数}
+{\em rad} & 旋转角度（弧度） \\
+\hline
+{\em x} & 旋转轴x分量 \\
+\hline
+{\em y} & 旋转轴y分量 \\
+\hline
+{\em z} & 旋转轴z分量 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+向量引用 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga28513afbd309257d97a0825a257a7283}\label{group__image__management_ga28513afbd309257d97a0825a257a7283} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Seek@{Seek}}
+\index{Seek@{Seek}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Seek()}{Seek()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Seek (\begin{DoxyParamCaption}\item[{DWORD}]{dw\+To }\end{DoxyParamCaption})}
+
+
+
+定位播放位置 
+
+
+\begin{DoxyParams}{参数}
+{\em dw\+To} & 目标播放位置（毫秒） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+目前此函数无效，建议使用 Play(dw\+To) 代替 
+\end{DoxyNote}
+\begin{DoxyRefDesc}{弃用}
+\item[\mbox{\hyperlink{deprecated__deprecated000009}{弃用}}]推荐使用 Play(dw\+To) 实现定位播放 \end{DoxyRefDesc}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gab646e2586808726ef78cf80f0a661d6b}{Play()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga0f6e674c3cace4fcc1b8c264bc1fe4f8}\label{group__image__management_ga0f6e674c3cace4fcc1b8c264bc1fe4f8} 
+\index{图像管理和处理函数@{图像管理和处理函数}!SetCloseHandler@{SetCloseHandler}}
+\index{SetCloseHandler@{SetCloseHandler}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{SetCloseHandler()}{SetCloseHandler()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::\+Set\+Close\+Handler (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aea94e0447970e0d4565e39280eff19d3}{LPCALLBACK\+\_\+\+PROC}}}]{func }\end{DoxyParamCaption})}
+
+\Hypertarget{group__image__management_gaf9a62748955c2456325b01c9df5461f0}\label{group__image__management_gaf9a62748955c2456325b01c9df5461f0} 
+\index{图像管理和处理函数@{图像管理和处理函数}!SetModule@{SetModule}}
+\index{SetModule@{SetModule}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{SetModule()}{SetModule()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1VECTOR3D}{VECTOR3D}} \& ege\+::\+VECTOR3\+D\+::\+Set\+Module (\begin{DoxyParamCaption}\item[{float}]{m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+设置向量模长 
+
+
+\begin{DoxyParams}{参数}
+{\em m} & 新的模长 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+向量引用 
+\end{DoxyReturn}
+\Hypertarget{group__image__management_ga29429d9795f46cc88194650cfb85642a}\label{group__image__management_ga29429d9795f46cc88194650cfb85642a} 
+\index{图像管理和处理函数@{图像管理和处理函数}!SetVolume@{SetVolume}}
+\index{SetVolume@{SetVolume}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{SetVolume()}{SetVolume()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Set\+Volume (\begin{DoxyParamCaption}\item[{float}]{value }\end{DoxyParamCaption})}
+
+
+
+设置播放音量 
+
+
+\begin{DoxyParams}{参数}
+{\em value} & 音量大小，范围 0.\+0\texorpdfstring{$\sim$}{\string~}1.0 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+0.\+0 为静音，1.0 为最大音量 
+\end{DoxyNote}
+\Hypertarget{group__image__management_gaa6edf8947660fe0181605bf70b85ee7a}\label{group__image__management_gaa6edf8947660fe0181605bf70b85ee7a} 
+\index{图像管理和处理函数@{图像管理和处理函数}!Stop@{Stop}}
+\index{Stop@{Stop}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{Stop()}{Stop()}}
+{\footnotesize\ttfamily DWORD ege\+::\+MUSIC\+::\+Stop (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+停止播放 
+
+\begin{DoxyReturn}{返回}
+操作成功返回 0，操作失败返回非 0 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+播放状态变为 MUSIC\+\_\+\+MODE\+\_\+\+STOP，播放进度保持不变 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__image__management_gab646e2586808726ef78cf80f0a661d6b}{Play()}, \doxylink{group__image__management_ga442f2bd0db38ee1d2db6ad27b3ba5157}{Pause()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__image__management_ga6792fe47d0cf5621fa2db7b824505e94}\label{group__image__management_ga6792fe47d0cf5621fa2db7b824505e94} 
+\index{图像管理和处理函数@{图像管理和处理函数}!VECTOR3D@{VECTOR3D}}
+\index{VECTOR3D@{VECTOR3D}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{VECTOR3D()}{VECTOR3D()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily ege\+::\+VECTOR3\+D\+::\+VECTOR3D (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+默认构造函数，初始化为原点 
+
+\Hypertarget{group__image__management_ga5e7e7cf2850ee4894fed940e303f0b27}\label{group__image__management_ga5e7e7cf2850ee4894fed940e303f0b27} 
+\index{图像管理和处理函数@{图像管理和处理函数}!VECTOR3D@{VECTOR3D}}
+\index{VECTOR3D@{VECTOR3D}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{VECTOR3D()}{VECTOR3D()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily ege\+::\+VECTOR3\+D\+::\+VECTOR3D (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{z = {\ttfamily 0.0f} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+构造函数 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & x坐标 \\
+\hline
+{\em y} & y坐标 \\
+\hline
+{\em z} & z坐标（默认为0） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__image__management_ga75d401680a1cb47f4920d017f3f468fb}\label{group__image__management_ga75d401680a1cb47f4920d017f3f468fb} 
+\index{图像管理和处理函数@{图像管理和处理函数}!````~ege\_path@{\texorpdfstring{$\sim$}{\string~}ege\_path}}
+\index{````~ege\_path@{\texorpdfstring{$\sim$}{\string~}ege\_path}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}ege\_path()}{\string~ege\_path()}}
+{\footnotesize\ttfamily virtual ege\+::ege\+\_\+path\+::\texorpdfstring{$\sim$}{\string~}ege\+\_\+path (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+析构函数 
+
+\Hypertarget{group__image__management_ga0abf31e99220b87d432e25611ed21e09}\label{group__image__management_ga0abf31e99220b87d432e25611ed21e09} 
+\index{图像管理和处理函数@{图像管理和处理函数}!````~MUSIC@{\texorpdfstring{$\sim$}{\string~}MUSIC}}
+\index{````~MUSIC@{\texorpdfstring{$\sim$}{\string~}MUSIC}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}MUSIC()}{\string~MUSIC()}}
+{\footnotesize\ttfamily virtual ege\+::\+MUSIC\+::\texorpdfstring{$\sim$}{\string~}\+MUSIC (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+析构函数 
+
+\begin{DoxyNote}{注解}
+自动关闭已打开的音乐文件并清理资源 
+\end{DoxyNote}
+
+
+\doxysubsubsubsection{变量说明}
+\Hypertarget{group__image__management_ga0cebf48dfaa46e9f4071a9306afdb1b3}\label{group__image__management_ga0cebf48dfaa46e9f4071a9306afdb1b3} 
+\index{图像管理和处理函数@{图像管理和处理函数}!bottom@{bottom}}
+\index{bottom@{bottom}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{bottom}{bottom}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::viewporttype\+::bottom}
+
+
+
+下边界 
+
+\Hypertarget{group__image__management_gafa12a4d55d9a8e68fdd88940d1acc3ae}\label{group__image__management_gafa12a4d55d9a8e68fdd88940d1acc3ae} 
+\index{图像管理和处理函数@{图像管理和处理函数}!charsize@{charsize}}
+\index{charsize@{charsize}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{charsize}{charsize}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::textsettingstype\+::charsize}
+
+
+
+字符大小 
+
+\Hypertarget{group__image__management_ga2591631ff518e12d559d68ce3c5f4bdf}\label{group__image__management_ga2591631ff518e12d559d68ce3c5f4bdf} 
+\index{图像管理和处理函数@{图像管理和处理函数}!classname@{classname}}
+\index{classname@{classname}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{classname}{classname}}
+{\footnotesize\ttfamily const wchar\+\_\+t\texorpdfstring{$\ast$}{*} ege\+::msg\+\_\+createwindow\+::classname}
+
+
+
+窗口类名 
+
+\Hypertarget{group__image__management_gaf744ee5bed1f5f457cce2fd59db16e52}\label{group__image__management_gaf744ee5bed1f5f457cce2fd59db16e52} 
+\index{图像管理和处理函数@{图像管理和处理函数}!clipflag@{clipflag}}
+\index{clipflag@{clipflag}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{clipflag}{clipflag}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::viewporttype\+::clipflag}
+
+
+
+裁剪标志 
+
+\Hypertarget{group__image__management_gacf72e7cc19accfb7164f7d5f5ccd5732}\label{group__image__management_gacf72e7cc19accfb7164f7d5f5ccd5732} 
+\index{图像管理和处理函数@{图像管理和处理函数}!color@{color}}
+\index{color@{color}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{color}{color}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} ege\+::ege\+\_\+colpoint\+::color}
+
+
+
+该点的颜色值 
+
+\Hypertarget{group__image__management_gafa2c216414c7650263ebff0b8796ba29}\label{group__image__management_gafa2c216414c7650263ebff0b8796ba29} 
+\index{图像管理和处理函数@{图像管理和处理函数}!direction@{direction}}
+\index{direction@{direction}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{direction}{direction}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::textsettingstype\+::direction}
+
+
+
+文字方向 
+
+\Hypertarget{group__image__management_ga789c6bcd8d006f1dfe831e9e11235625}\label{group__image__management_ga789c6bcd8d006f1dfe831e9e11235625} 
+\index{图像管理和处理函数@{图像管理和处理函数}!exstyle@{exstyle}}
+\index{exstyle@{exstyle}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{exstyle}{exstyle}}
+{\footnotesize\ttfamily DWORD ege\+::msg\+\_\+createwindow\+::exstyle}
+
+
+
+扩展窗口样式 
+
+\Hypertarget{group__image__management_ga8bee6f6e3b87c2991c04b01e578e827f}\label{group__image__management_ga8bee6f6e3b87c2991c04b01e578e827f} 
+\index{图像管理和处理函数@{图像管理和处理函数}!flags@{flags}}
+\index{flags@{flags}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{flags}{flags}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::key\+\_\+msg\+::flags}
+
+
+
+状态标志 
+
+\Hypertarget{group__image__management_ga2465f7f12edb2cb8eea43a9436c86c1c}\label{group__image__management_ga2465f7f12edb2cb8eea43a9436c86c1c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!flags@{flags}}
+\index{flags@{flags}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{flags}{flags}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::mouse\+\_\+msg\+::flags}
+
+
+
+状态标志 
+
+\Hypertarget{group__image__management_ga20a257d00ec1046d1f9b3cd40721b708}\label{group__image__management_ga20a257d00ec1046d1f9b3cd40721b708} 
+\index{图像管理和处理函数@{图像管理和处理函数}!font@{font}}
+\index{font@{font}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{font}{font}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::textsettingstype\+::font}
+
+
+
+字体类型 
+
+\Hypertarget{group__image__management_gaa6a7ecbc56a6450d0437a68b03f2fde8}\label{group__image__management_gaa6a7ecbc56a6450d0437a68b03f2fde8} 
+\index{图像管理和处理函数@{图像管理和处理函数}!h@{h}}
+\index{h@{h}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{h}{h}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+rect\+::h}
+
+
+
+矩形高度 
+
+\Hypertarget{group__image__management_gaf5e458488d08e00ffa1122129a69afff}\label{group__image__management_gaf5e458488d08e00ffa1122129a69afff} 
+\index{图像管理和处理函数@{图像管理和处理函数}!hEvent@{hEvent}}
+\index{hEvent@{hEvent}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{hEvent}{hEvent}}
+{\footnotesize\ttfamily HANDLE ege\+::msg\+\_\+createwindow\+::h\+Event}
+
+
+
+事件句柄 
+
+\Hypertarget{group__image__management_ga92621f3f7e3a0da032a04ca95f31ef9f}\label{group__image__management_ga92621f3f7e3a0da032a04ca95f31ef9f} 
+\index{图像管理和处理函数@{图像管理和处理函数}!horiz@{horiz}}
+\index{horiz@{horiz}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{horiz}{horiz}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::textsettingstype\+::horiz}
+
+
+
+水平对齐方式 
+
+\Hypertarget{group__image__management_ga0994668e14329ae541612ab832a4c35c}\label{group__image__management_ga0994668e14329ae541612ab832a4c35c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!hwnd@{hwnd}}
+\index{hwnd@{hwnd}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{hwnd}{hwnd}}
+{\footnotesize\ttfamily HWND ege\+::msg\+\_\+createwindow\+::hwnd}
+
+
+
+窗口句柄 
+
+\Hypertarget{group__image__management_gaa1149f4d0729deaa6cad12b9fb0db876}\label{group__image__management_gaa1149f4d0729deaa6cad12b9fb0db876} 
+\index{图像管理和处理函数@{图像管理和处理函数}!id@{id}}
+\index{id@{id}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{id}{id}}
+{\footnotesize\ttfamily size\+\_\+t ege\+::msg\+\_\+createwindow\+::id}
+
+
+
+窗口\+ID 
+
+\Hypertarget{group__image__management_ga326c1380d1526448f509c8c408d3083c}\label{group__image__management_ga326c1380d1526448f509c8c408d3083c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!key@{key}}
+\index{key@{key}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{key}{key}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::key\+\_\+msg\+::key}
+
+
+
+按键键码 
+
+\Hypertarget{group__image__management_ga66d445604ddca7173e561d4901a38cc4}\label{group__image__management_ga66d445604ddca7173e561d4901a38cc4} 
+\index{图像管理和处理函数@{图像管理和处理函数}!left@{left}}
+\index{left@{left}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{left}{left}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::viewporttype\+::left}
+
+
+
+左边界 
+
+\Hypertarget{group__image__management_gab5e818b3c5f24570da22f0e538403f7c}\label{group__image__management_gab5e818b3c5f24570da22f0e538403f7c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!linestyle@{linestyle}}
+\index{linestyle@{linestyle}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{linestyle}{linestyle}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::line\+\_\+style\+\_\+type\+::linestyle}
+
+
+
+线条样式 
+
+\Hypertarget{group__image__management_ga2079f2d59380b95d933bd7ee69695f55}\label{group__image__management_ga2079f2d59380b95d933bd7ee69695f55} 
+\index{图像管理和处理函数@{图像管理和处理函数}!m11@{m11}}
+\index{m11@{m11}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{m11}{m11}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+transform\+\_\+matrix\+::m11}
+
+\Hypertarget{group__image__management_ga3fe13270f46cba50ca71a51d0ef7c6bc}\label{group__image__management_ga3fe13270f46cba50ca71a51d0ef7c6bc} 
+\index{图像管理和处理函数@{图像管理和处理函数}!m12@{m12}}
+\index{m12@{m12}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{m12}{m12}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+transform\+\_\+matrix\+::m12}
+
+
+
+第一行：\mbox{[}m11, m12\mbox{]} 
+
+\Hypertarget{group__image__management_gad17efd39e1e6e232b9cfb6128c5e03ee}\label{group__image__management_gad17efd39e1e6e232b9cfb6128c5e03ee} 
+\index{图像管理和处理函数@{图像管理和处理函数}!m21@{m21}}
+\index{m21@{m21}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{m21}{m21}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+transform\+\_\+matrix\+::m21}
+
+\Hypertarget{group__image__management_gaf04923eb4db1569ac8df5398d3a4d820}\label{group__image__management_gaf04923eb4db1569ac8df5398d3a4d820} 
+\index{图像管理和处理函数@{图像管理和处理函数}!m22@{m22}}
+\index{m22@{m22}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{m22}{m22}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+transform\+\_\+matrix\+::m22}
+
+
+
+第二行：\mbox{[}m21, m22\mbox{]} 
+
+\Hypertarget{group__image__management_ga512965f8b8a6113f753b907761564195}\label{group__image__management_ga512965f8b8a6113f753b907761564195} 
+\index{图像管理和处理函数@{图像管理和处理函数}!m31@{m31}}
+\index{m31@{m31}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{m31}{m31}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+transform\+\_\+matrix\+::m31}
+
+\Hypertarget{group__image__management_ga51ca631b4ccbe657827ce0364aa7a2b2}\label{group__image__management_ga51ca631b4ccbe657827ce0364aa7a2b2} 
+\index{图像管理和处理函数@{图像管理和处理函数}!m32@{m32}}
+\index{m32@{m32}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{m32}{m32}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+transform\+\_\+matrix\+::m32}
+
+
+
+第三行：\mbox{[}m31, m32\mbox{]} 平移分量 
+
+\Hypertarget{group__image__management_ga540d65b22e6c789f1139e7391842bb5b}\label{group__image__management_ga540d65b22e6c789f1139e7391842bb5b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!mkCtrl@{mkCtrl}}
+\index{mkCtrl@{mkCtrl}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{mkCtrl}{mkCtrl}}
+{\footnotesize\ttfamily bool ege\+::\+MOUSEMSG\+::mk\+Ctrl}
+
+
+
+Ctrl键状态 
+
+\Hypertarget{group__image__management_ga74643918e4271146bdd76eedf6966a08}\label{group__image__management_ga74643918e4271146bdd76eedf6966a08} 
+\index{图像管理和处理函数@{图像管理和处理函数}!mkLButton@{mkLButton}}
+\index{mkLButton@{mkLButton}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{mkLButton}{mkLButton}}
+{\footnotesize\ttfamily bool ege\+::\+MOUSEMSG\+::mk\+LButton}
+
+
+
+左键状态 
+
+\Hypertarget{group__image__management_gaabaf6155505f97efc9f1520fd91950a1}\label{group__image__management_gaabaf6155505f97efc9f1520fd91950a1} 
+\index{图像管理和处理函数@{图像管理和处理函数}!mkMButton@{mkMButton}}
+\index{mkMButton@{mkMButton}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{mkMButton}{mkMButton}}
+{\footnotesize\ttfamily bool ege\+::\+MOUSEMSG\+::mk\+MButton}
+
+
+
+中键状态 
+
+\Hypertarget{group__image__management_ga31e3354cfc1f3dc8291f5602fd29c9d5}\label{group__image__management_ga31e3354cfc1f3dc8291f5602fd29c9d5} 
+\index{图像管理和处理函数@{图像管理和处理函数}!mkRButton@{mkRButton}}
+\index{mkRButton@{mkRButton}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{mkRButton}{mkRButton}}
+{\footnotesize\ttfamily bool ege\+::\+MOUSEMSG\+::mk\+RButton}
+
+
+
+右键状态 
+
+\Hypertarget{group__image__management_gaeb6e36e63c9d5a6ec26ba669070559a2}\label{group__image__management_gaeb6e36e63c9d5a6ec26ba669070559a2} 
+\index{图像管理和处理函数@{图像管理和处理函数}!mkShift@{mkShift}}
+\index{mkShift@{mkShift}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{mkShift}{mkShift}}
+{\footnotesize\ttfamily bool ege\+::\+MOUSEMSG\+::mk\+Shift}
+
+
+
+Shift键状态 
+
+\Hypertarget{group__image__management_gaecbb219d6139daa98d90de3fddf42711}\label{group__image__management_gaecbb219d6139daa98d90de3fddf42711} 
+\index{图像管理和处理函数@{图像管理和处理函数}!mkXButton1@{mkXButton1}}
+\index{mkXButton1@{mkXButton1}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{mkXButton1}{mkXButton1}}
+{\footnotesize\ttfamily bool ege\+::\+MOUSEMSG\+::mk\+XButton1}
+
+
+
+X1键状态 
+
+\Hypertarget{group__image__management_ga3979bfcb5e190d71f738beda1b97d4a4}\label{group__image__management_ga3979bfcb5e190d71f738beda1b97d4a4} 
+\index{图像管理和处理函数@{图像管理和处理函数}!mkXButton2@{mkXButton2}}
+\index{mkXButton2@{mkXButton2}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{mkXButton2}{mkXButton2}}
+{\footnotesize\ttfamily bool ege\+::\+MOUSEMSG\+::mk\+XButton2}
+
+
+
+X2键状态 
+
+\Hypertarget{group__image__management_ga892de6fe108995780e5bdf1c8ba93327}\label{group__image__management_ga892de6fe108995780e5bdf1c8ba93327} 
+\index{图像管理和处理函数@{图像管理和处理函数}!msg@{msg}}
+\index{msg@{msg}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{msg}{msg}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_ae99fe4e319e2c693881518fa5f42f4ca}{key\+\_\+msg\+\_\+e}} ege\+::key\+\_\+msg\+::msg}
+
+
+
+消息类型 
+
+\Hypertarget{group__image__management_ga666b0682594b39b93e3b8ebf46099a52}\label{group__image__management_ga666b0682594b39b93e3b8ebf46099a52} 
+\index{图像管理和处理函数@{图像管理和处理函数}!msg@{msg}}
+\index{msg@{msg}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{msg}{msg}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a6cdf7e04ea86ebe3751a7c378754641e}{mouse\+\_\+msg\+\_\+e}} ege\+::mouse\+\_\+msg\+::msg}
+
+
+
+消息类型 
+
+\Hypertarget{group__image__management_gae315e35476a951609980c44baf921291}\label{group__image__management_gae315e35476a951609980c44baf921291} 
+\index{图像管理和处理函数@{图像管理和处理函数}!param@{param}}
+\index{param@{param}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{param}{param}}
+{\footnotesize\ttfamily LPVOID ege\+::msg\+\_\+createwindow\+::param}
+
+
+
+参数指针 
+
+\Hypertarget{group__image__management_gab676702bbb2ecaa0d6f0dca1c3a6aa19}\label{group__image__management_gab676702bbb2ecaa0d6f0dca1c3a6aa19} 
+\index{图像管理和处理函数@{图像管理和处理函数}!right@{right}}
+\index{right@{right}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{right}{right}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::viewporttype\+::right}
+
+
+
+右边界 
+
+\Hypertarget{group__image__management_gab03a62ea97ecdbdef871d63c8d490ad5}\label{group__image__management_gab03a62ea97ecdbdef871d63c8d490ad5} 
+\index{图像管理和处理函数@{图像管理和处理函数}!style@{style}}
+\index{style@{style}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{style}{style}}
+{\footnotesize\ttfamily DWORD ege\+::msg\+\_\+createwindow\+::style}
+
+
+
+窗口样式 
+
+\Hypertarget{group__image__management_ga6defa37e59e2751c22641d1f288cda7c}\label{group__image__management_ga6defa37e59e2751c22641d1f288cda7c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!thickness@{thickness}}
+\index{thickness@{thickness}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{thickness}{thickness}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::line\+\_\+style\+\_\+type\+::thickness}
+
+
+
+线条粗细 
+
+\Hypertarget{group__image__management_gae2848ed025752ccd735fb6a90d3cdca9}\label{group__image__management_gae2848ed025752ccd735fb6a90d3cdca9} 
+\index{图像管理和处理函数@{图像管理和处理函数}!top@{top}}
+\index{top@{top}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{top}{top}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::viewporttype\+::top}
+
+
+
+上边界 
+
+\Hypertarget{group__image__management_ga3b8e18fd7962c16947a31ac1cf875be3}\label{group__image__management_ga3b8e18fd7962c16947a31ac1cf875be3} 
+\index{图像管理和处理函数@{图像管理和处理函数}!uMsg@{uMsg}}
+\index{uMsg@{uMsg}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{uMsg}{uMsg}}
+{\footnotesize\ttfamily UINT ege\+::\+MOUSEMSG\+::u\+Msg}
+
+
+
+Windows消息\+ID 
+
+\Hypertarget{group__image__management_gadac04b0d5563b00b60f82951f56d9c86}\label{group__image__management_gadac04b0d5563b00b60f82951f56d9c86} 
+\index{图像管理和处理函数@{图像管理和处理函数}!upattern@{upattern}}
+\index{upattern@{upattern}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{upattern}{upattern}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} short ege\+::line\+\_\+style\+\_\+type\+::upattern}
+
+
+
+用户定义的线条模式 
+
+\Hypertarget{group__image__management_gad736f4e88d866bdfb089a49cffff0890}\label{group__image__management_gad736f4e88d866bdfb089a49cffff0890} 
+\index{图像管理和处理函数@{图像管理和处理函数}!vert@{vert}}
+\index{vert@{vert}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{vert}{vert}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::textsettingstype\+::vert}
+
+
+
+垂直对齐方式 
+
+\Hypertarget{group__image__management_ga9237593dc00a54ac1e4c1bc3bd4b3673}\label{group__image__management_ga9237593dc00a54ac1e4c1bc3bd4b3673} 
+\index{图像管理和处理函数@{图像管理和处理函数}!w@{w}}
+\index{w@{w}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{w}{w}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+rect\+::w}
+
+
+
+矩形宽度 
+
+\Hypertarget{group__image__management_gabac1e84e21e34b79f880cced7b999a35}\label{group__image__management_gabac1e84e21e34b79f880cced7b999a35} 
+\index{图像管理和处理函数@{图像管理和处理函数}!wheel@{wheel}}
+\index{wheel@{wheel}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{wheel}{wheel}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::mouse\+\_\+msg\+::wheel}
+
+
+
+滚轮滚动增量 
+
+\Hypertarget{group__image__management_gad292babf303c0e20d085342d44b07f01}\label{group__image__management_gad292babf303c0e20d085342d44b07f01} 
+\index{图像管理和处理函数@{图像管理和处理函数}!wheel@{wheel}}
+\index{wheel@{wheel}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{wheel}{wheel}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily short ege\+::\+MOUSEMSG\+::wheel}
+
+
+
+滚轮增量 
+
+\Hypertarget{group__image__management_ga7104ffaab74b7355fdb45e5ea3ed5fd4}\label{group__image__management_ga7104ffaab74b7355fdb45e5ea3ed5fd4} 
+\index{图像管理和处理函数@{图像管理和处理函数}!x@{x}}
+\index{x@{x}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{x}{x}\hspace{0.1cm}{\footnotesize\ttfamily [1/6]}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+point\+::x}
+
+
+
+x坐标 
+
+\Hypertarget{group__image__management_ga3ecb34f9e23ac42230121767ea48843b}\label{group__image__management_ga3ecb34f9e23ac42230121767ea48843b} 
+\index{图像管理和处理函数@{图像管理和处理函数}!x@{x}}
+\index{x@{x}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{x}{x}\hspace{0.1cm}{\footnotesize\ttfamily [2/6]}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+rect\+::x}
+
+
+
+矩形左上角x坐标 
+
+\Hypertarget{group__image__management_ga63d9c45773a43ffce0db5fe5784da66c}\label{group__image__management_ga63d9c45773a43ffce0db5fe5784da66c} 
+\index{图像管理和处理函数@{图像管理和处理函数}!x@{x}}
+\index{x@{x}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{x}{x}\hspace{0.1cm}{\footnotesize\ttfamily [3/6]}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+colpoint\+::x}
+
+
+
+x坐标 
+
+\Hypertarget{group__image__management_ga96857311fe9c2a0101a557f8ecad00d1}\label{group__image__management_ga96857311fe9c2a0101a557f8ecad00d1} 
+\index{图像管理和处理函数@{图像管理和处理函数}!x@{x}}
+\index{x@{x}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{x}{x}\hspace{0.1cm}{\footnotesize\ttfamily [4/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::mouse\+\_\+msg\+::x}
+
+
+
+鼠标x坐标 
+
+\Hypertarget{group__image__management_ga711c8753de2673ec8237c85401edceef}\label{group__image__management_ga711c8753de2673ec8237c85401edceef} 
+\index{图像管理和处理函数@{图像管理和处理函数}!x@{x}}
+\index{x@{x}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{x}{x}\hspace{0.1cm}{\footnotesize\ttfamily [5/6]}}
+{\footnotesize\ttfamily short ege\+::\+MOUSEMSG\+::x}
+
+
+
+x坐标 
+
+\Hypertarget{group__image__management_ga05abb1f9b216a8ea09bee2238656117e}\label{group__image__management_ga05abb1f9b216a8ea09bee2238656117e} 
+\index{图像管理和处理函数@{图像管理和处理函数}!x@{x}}
+\index{x@{x}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{x}{x}\hspace{0.1cm}{\footnotesize\ttfamily [6/6]}}
+{\footnotesize\ttfamily float ege\+::\+VECTOR3\+D\+::x}
+
+\Hypertarget{group__image__management_gadffce799bed850b2a7a9aace165e0413}\label{group__image__management_gadffce799bed850b2a7a9aace165e0413} 
+\index{图像管理和处理函数@{图像管理和处理函数}!y@{y}}
+\index{y@{y}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{y}{y}\hspace{0.1cm}{\footnotesize\ttfamily [1/6]}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+point\+::y}
+
+
+
+y坐标 
+
+\Hypertarget{group__image__management_gac9f14768de20286abecfbacb15231550}\label{group__image__management_gac9f14768de20286abecfbacb15231550} 
+\index{图像管理和处理函数@{图像管理和处理函数}!y@{y}}
+\index{y@{y}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{y}{y}\hspace{0.1cm}{\footnotesize\ttfamily [2/6]}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+rect\+::y}
+
+
+
+矩形左上角y坐标 
+
+\Hypertarget{group__image__management_ga891236b0a3d652a717052275f0432c62}\label{group__image__management_ga891236b0a3d652a717052275f0432c62} 
+\index{图像管理和处理函数@{图像管理和处理函数}!y@{y}}
+\index{y@{y}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{y}{y}\hspace{0.1cm}{\footnotesize\ttfamily [3/6]}}
+{\footnotesize\ttfamily float ege\+::ege\+\_\+colpoint\+::y}
+
+
+
+y坐标 
+
+\Hypertarget{group__image__management_ga041eb0b0ee1ae8866d5552ff7362fb18}\label{group__image__management_ga041eb0b0ee1ae8866d5552ff7362fb18} 
+\index{图像管理和处理函数@{图像管理和处理函数}!y@{y}}
+\index{y@{y}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{y}{y}\hspace{0.1cm}{\footnotesize\ttfamily [4/6]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} ege\+::mouse\+\_\+msg\+::y}
+
+
+
+鼠标y坐标 
+
+\Hypertarget{group__image__management_gabdf6692a24a4c6b937598711e202e12f}\label{group__image__management_gabdf6692a24a4c6b937598711e202e12f} 
+\index{图像管理和处理函数@{图像管理和处理函数}!y@{y}}
+\index{y@{y}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{y}{y}\hspace{0.1cm}{\footnotesize\ttfamily [5/6]}}
+{\footnotesize\ttfamily short ege\+::\+MOUSEMSG\+::y}
+
+
+
+y坐标 
+
+\Hypertarget{group__image__management_gaaec759c068eb0376e167284cc0004547}\label{group__image__management_gaaec759c068eb0376e167284cc0004547} 
+\index{图像管理和处理函数@{图像管理和处理函数}!y@{y}}
+\index{y@{y}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{y}{y}\hspace{0.1cm}{\footnotesize\ttfamily [6/6]}}
+{\footnotesize\ttfamily float ege\+::\+VECTOR3\+D\+::y}
+
+\Hypertarget{group__image__management_gae177bb31c22510621a2fb296b2b0f2fe}\label{group__image__management_gae177bb31c22510621a2fb296b2b0f2fe} 
+\index{图像管理和处理函数@{图像管理和处理函数}!z@{z}}
+\index{z@{z}!图像管理和处理函数@{图像管理和处理函数}}
+\doxysubsubsubsubsection{\texorpdfstring{z}{z}}
+{\footnotesize\ttfamily float ege\+::\+VECTOR3\+D\+::z}
+
+
+
+三维坐标分量 
+
+\input{group__putimage__functions}
+\input{group__InputHandling}

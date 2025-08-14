@@ -1,0 +1,442 @@
+\doxysubsubsection{路径添加函数}
+\hypertarget{group__PathAdd}{}\label{group__PathAdd}\index{路径添加函数@{路径添加函数}}
+路径添加函数 的协作图\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=302pt]{group__PathAdd}
+\end{center}
+\end{figure}
+\doxysubsubsubsubsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga366507d88e37faa4322a50afabe1d736}{ege\+::ege\+\_\+path\+\_\+addpath}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}dst\+Path, const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}src\+Path, bool connect)
+\begin{DoxyCompactList}\small\item\em 向路径添加另一个路径 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_gae0b409acf41efaf0e900d23f360b86aa}{ege\+::ege\+\_\+path\+\_\+addline}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x1, float y1, float x2, float y2)
+\begin{DoxyCompactList}\small\item\em 向路径添加直线段 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga15a43ab2766d1acfddb9a4d1821ca6f9}{ege\+::ege\+\_\+path\+\_\+addarc}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, float width, float height, float start\+Angle, float sweep\+Angle)
+\begin{DoxyCompactList}\small\item\em 向路径添加弧形 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_gab03f2bb0e0f69b0f5b4cd4b89a88e8bb}{ege\+::ege\+\_\+path\+\_\+addpolyline}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points)
+\begin{DoxyCompactList}\small\item\em 向路径添加折线 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga38b709cf61a60b5f2a362afde98b949c}{ege\+::ege\+\_\+path\+\_\+addbezier}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points)
+\begin{DoxyCompactList}\small\item\em 向路径添加贝塞尔曲线（点数组版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga66aa8f0e5784b380b1a6dc8969a28bc7}{ege\+::ege\+\_\+path\+\_\+addbezier}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+\begin{DoxyCompactList}\small\item\em 向路径添加贝塞尔曲线（坐标版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga07a8e6af427c4ae3aea63238f2d6231b}{ege\+::ege\+\_\+path\+\_\+addcurve}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points)
+\begin{DoxyCompactList}\small\item\em 向路径添加基数样条曲线 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga145ce8c58fac4bc2822a0ea440147383}{ege\+::ege\+\_\+path\+\_\+addcurve}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, float tension)
+\begin{DoxyCompactList}\small\item\em 向路径添加基数样条曲线（指定张力） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_gafdda31193e148e492346094696a11311}{ege\+::ege\+\_\+path\+\_\+addcircle}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, float radius)
+\begin{DoxyCompactList}\small\item\em 向路径添加圆形 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga7dda30369c36d5df8128d669962e7a1d}{ege\+::ege\+\_\+path\+\_\+addrect}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, float width, float height)
+\begin{DoxyCompactList}\small\item\em 向路径添加矩形 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_gaa5167bf954893f0cc2562e302e55e02b}{ege\+::ege\+\_\+path\+\_\+addellipse}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, float width, float height)
+\begin{DoxyCompactList}\small\item\em 向路径添加椭圆 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga3689f210b2e818a077eb8ca5e9754d90}{ege\+::ege\+\_\+path\+\_\+addpie}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, float width, float height, float start\+Angle, float sweep\+Angle)
+\begin{DoxyCompactList}\small\item\em 向路径添加饼图 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga1fd3319212b25329bfe73432f0590ee0}{ege\+::ege\+\_\+path\+\_\+addtext}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, const char \texorpdfstring{$\ast$}{*}text, float height, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} length=-\/1, const char \texorpdfstring{$\ast$}{*}typeface=NULL, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} font\+Style=0)
+\begin{DoxyCompactList}\small\item\em 向路径添加文本（\+ANSI版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga513855d04bac21b7d7272fedf5b9bfcd}{ege\+::ege\+\_\+path\+\_\+addtext}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}text, float height, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} length=-\/1, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}typeface=NULL, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} font\+Style=0)
+\begin{DoxyCompactList}\small\item\em 向路径添加文本（\+Unicode版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga0e3f5ef52df4123db8030ccec31d2ed6}{ege\+::ege\+\_\+path\+\_\+addpolygon}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points)
+\begin{DoxyCompactList}\small\item\em 向路径添加多边形 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_gacd950933d9e196fe5104eecc712bf51b}{ege\+::ege\+\_\+path\+\_\+addclosedcurve}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points)
+\begin{DoxyCompactList}\small\item\em 向路径添加闭合基数样条曲线 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__PathAdd_ga0520a69a1e1cd7e29b5a970e7b52dc63}{ege\+::ege\+\_\+path\+\_\+addclosedcurve}} (\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, float tension)
+\begin{DoxyCompactList}\small\item\em 向路径添加闭合基数样条曲线（指定张力） \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsubsubsection{详细描述}
+
+
+\doxysubsubsubsection{函数说明}
+\Hypertarget{group__PathAdd_ga15a43ab2766d1acfddb9a4d1821ca6f9}\label{group__PathAdd_ga15a43ab2766d1acfddb9a4d1821ca6f9} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addarc@{ege\_path\_addarc}}
+\index{ege\_path\_addarc@{ege\_path\_addarc}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addarc()}{ege\_path\_addarc()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addarc (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{width,  }\item[{float}]{height,  }\item[{float}]{start\+Angle,  }\item[{float}]{sweep\+Angle }\end{DoxyParamCaption})}
+
+
+
+向路径添加弧形 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & 椭圆左上角x坐标 \\
+\hline
+{\em y} & 椭圆左上角y坐标 \\
+\hline
+{\em width} & 椭圆宽度 \\
+\hline
+{\em height} & 椭圆高度 \\
+\hline
+{\em start\+Angle} & 起始角度（度） \\
+\hline
+{\em sweep\+Angle} & 扫描角度（度） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga66aa8f0e5784b380b1a6dc8969a28bc7}\label{group__PathAdd_ga66aa8f0e5784b380b1a6dc8969a28bc7} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addbezier@{ege\_path\_addbezier}}
+\index{ege\_path\_addbezier@{ege\_path\_addbezier}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addbezier()}{ege\_path\_addbezier()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addbezier (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x1,  }\item[{float}]{y1,  }\item[{float}]{x2,  }\item[{float}]{y2,  }\item[{float}]{x3,  }\item[{float}]{y3,  }\item[{float}]{x4,  }\item[{float}]{y4 }\end{DoxyParamCaption})}
+
+
+
+向路径添加贝塞尔曲线（坐标版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x1} & 起点x坐标 \\
+\hline
+{\em y1} & 起点y坐标 \\
+\hline
+{\em x2} & 第一个控制点x坐标 \\
+\hline
+{\em y2} & 第一个控制点y坐标 \\
+\hline
+{\em x3} & 第二个控制点x坐标 \\
+\hline
+{\em y3} & 第二个控制点y坐标 \\
+\hline
+{\em x4} & 终点x坐标 \\
+\hline
+{\em y4} & 终点y坐标 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga38b709cf61a60b5f2a362afde98b949c}\label{group__PathAdd_ga38b709cf61a60b5f2a362afde98b949c} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addbezier@{ege\_path\_addbezier}}
+\index{ege\_path\_addbezier@{ege\_path\_addbezier}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addbezier()}{ege\_path\_addbezier()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addbezier (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points }\end{DoxyParamCaption})}
+
+
+
+向路径添加贝塞尔曲线（点数组版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em num\+Of\+Points} & 控制点的数量 \\
+\hline
+{\em points} & 控制点数组 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_gafdda31193e148e492346094696a11311}\label{group__PathAdd_gafdda31193e148e492346094696a11311} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addcircle@{ege\_path\_addcircle}}
+\index{ege\_path\_addcircle@{ege\_path\_addcircle}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addcircle()}{ege\_path\_addcircle()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addcircle (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{radius }\end{DoxyParamCaption})}
+
+
+
+向路径添加圆形 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & 圆心x坐标 \\
+\hline
+{\em y} & 圆心y坐标 \\
+\hline
+{\em radius} & 半径 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_gacd950933d9e196fe5104eecc712bf51b}\label{group__PathAdd_gacd950933d9e196fe5104eecc712bf51b} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addclosedcurve@{ege\_path\_addclosedcurve}}
+\index{ege\_path\_addclosedcurve@{ege\_path\_addclosedcurve}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addclosedcurve()}{ege\_path\_addclosedcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addclosedcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points }\end{DoxyParamCaption})}
+
+
+
+向路径添加闭合基数样条曲线 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em num\+Of\+Points} & 控制点的数量 \\
+\hline
+{\em points} & 控制点数组 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga0520a69a1e1cd7e29b5a970e7b52dc63}\label{group__PathAdd_ga0520a69a1e1cd7e29b5a970e7b52dc63} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addclosedcurve@{ege\_path\_addclosedcurve}}
+\index{ege\_path\_addclosedcurve@{ege\_path\_addclosedcurve}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addclosedcurve()}{ege\_path\_addclosedcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addclosedcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{float}]{tension }\end{DoxyParamCaption})}
+
+
+
+向路径添加闭合基数样条曲线（指定张力） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em num\+Of\+Points} & 控制点的数量 \\
+\hline
+{\em points} & 控制点数组 \\
+\hline
+{\em tension} & 张力值（0.0-\/1.\+0） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga07a8e6af427c4ae3aea63238f2d6231b}\label{group__PathAdd_ga07a8e6af427c4ae3aea63238f2d6231b} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addcurve@{ege\_path\_addcurve}}
+\index{ege\_path\_addcurve@{ege\_path\_addcurve}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addcurve()}{ege\_path\_addcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points }\end{DoxyParamCaption})}
+
+
+
+向路径添加基数样条曲线 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em num\+Of\+Points} & 控制点的数量 \\
+\hline
+{\em points} & 控制点数组 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga145ce8c58fac4bc2822a0ea440147383}\label{group__PathAdd_ga145ce8c58fac4bc2822a0ea440147383} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addcurve@{ege\_path\_addcurve}}
+\index{ege\_path\_addcurve@{ege\_path\_addcurve}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addcurve()}{ege\_path\_addcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{float}]{tension }\end{DoxyParamCaption})}
+
+
+
+向路径添加基数样条曲线（指定张力） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em num\+Of\+Points} & 控制点的数量 \\
+\hline
+{\em points} & 控制点数组 \\
+\hline
+{\em tension} & 张力值（0.0-\/1.\+0） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_gaa5167bf954893f0cc2562e302e55e02b}\label{group__PathAdd_gaa5167bf954893f0cc2562e302e55e02b} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addellipse@{ege\_path\_addellipse}}
+\index{ege\_path\_addellipse@{ege\_path\_addellipse}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addellipse()}{ege\_path\_addellipse()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addellipse (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{width,  }\item[{float}]{height }\end{DoxyParamCaption})}
+
+
+
+向路径添加椭圆 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & 椭圆边界左上角x坐标 \\
+\hline
+{\em y} & 椭圆边界左上角y坐标 \\
+\hline
+{\em width} & 椭圆宽度 \\
+\hline
+{\em height} & 椭圆高度 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_gae0b409acf41efaf0e900d23f360b86aa}\label{group__PathAdd_gae0b409acf41efaf0e900d23f360b86aa} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addline@{ege\_path\_addline}}
+\index{ege\_path\_addline@{ege\_path\_addline}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addline()}{ege\_path\_addline()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addline (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x1,  }\item[{float}]{y1,  }\item[{float}]{x2,  }\item[{float}]{y2 }\end{DoxyParamCaption})}
+
+
+
+向路径添加直线段 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x1} & 起点x坐标 \\
+\hline
+{\em y1} & 起点y坐标 \\
+\hline
+{\em x2} & 终点x坐标 \\
+\hline
+{\em y2} & 终点y坐标 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga366507d88e37faa4322a50afabe1d736}\label{group__PathAdd_ga366507d88e37faa4322a50afabe1d736} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addpath@{ege\_path\_addpath}}
+\index{ege\_path\_addpath@{ege\_path\_addpath}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addpath()}{ege\_path\_addpath()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addpath (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{dst\+Path,  }\item[{const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{src\+Path,  }\item[{bool}]{connect }\end{DoxyParamCaption})}
+
+
+
+向路径添加另一个路径 
+
+
+\begin{DoxyParams}{参数}
+{\em dst\+Path} & 目标路径对象指针 \\
+\hline
+{\em src\+Path} & 源路径对象指针 \\
+\hline
+{\em connect} & 是否连接到当前路径的最后一点 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga3689f210b2e818a077eb8ca5e9754d90}\label{group__PathAdd_ga3689f210b2e818a077eb8ca5e9754d90} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addpie@{ege\_path\_addpie}}
+\index{ege\_path\_addpie@{ege\_path\_addpie}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addpie()}{ege\_path\_addpie()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addpie (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{width,  }\item[{float}]{height,  }\item[{float}]{start\+Angle,  }\item[{float}]{sweep\+Angle }\end{DoxyParamCaption})}
+
+
+
+向路径添加饼图 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & 椭圆边界左上角x坐标 \\
+\hline
+{\em y} & 椭圆边界左上角y坐标 \\
+\hline
+{\em width} & 椭圆宽度 \\
+\hline
+{\em height} & 椭圆高度 \\
+\hline
+{\em start\+Angle} & 起始角度（度） \\
+\hline
+{\em sweep\+Angle} & 扫描角度（度） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga0e3f5ef52df4123db8030ccec31d2ed6}\label{group__PathAdd_ga0e3f5ef52df4123db8030ccec31d2ed6} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addpolygon@{ege\_path\_addpolygon}}
+\index{ege\_path\_addpolygon@{ege\_path\_addpolygon}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addpolygon()}{ege\_path\_addpolygon()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addpolygon (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points }\end{DoxyParamCaption})}
+
+
+
+向路径添加多边形 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em num\+Of\+Points} & 顶点数量 \\
+\hline
+{\em points} & 顶点数组 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_gab03f2bb0e0f69b0f5b4cd4b89a88e8bb}\label{group__PathAdd_gab03f2bb0e0f69b0f5b4cd4b89a88e8bb} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addpolyline@{ege\_path\_addpolyline}}
+\index{ege\_path\_addpolyline@{ege\_path\_addpolyline}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addpolyline()}{ege\_path\_addpolyline()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addpolyline (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points }\end{DoxyParamCaption})}
+
+
+
+向路径添加折线 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em num\+Of\+Points} & 点的数量 \\
+\hline
+{\em points} & 点数组 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga7dda30369c36d5df8128d669962e7a1d}\label{group__PathAdd_ga7dda30369c36d5df8128d669962e7a1d} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addrect@{ege\_path\_addrect}}
+\index{ege\_path\_addrect@{ege\_path\_addrect}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addrect()}{ege\_path\_addrect()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addrect (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{width,  }\item[{float}]{height }\end{DoxyParamCaption})}
+
+
+
+向路径添加矩形 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & 矩形左上角x坐标 \\
+\hline
+{\em y} & 矩形左上角y坐标 \\
+\hline
+{\em width} & 矩形宽度 \\
+\hline
+{\em height} & 矩形高度 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga1fd3319212b25329bfe73432f0590ee0}\label{group__PathAdd_ga1fd3319212b25329bfe73432f0590ee0} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addtext@{ege\_path\_addtext}}
+\index{ege\_path\_addtext@{ege\_path\_addtext}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addtext()}{ege\_path\_addtext()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addtext (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{text,  }\item[{float}]{height,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{length = {\ttfamily -\/1},  }\item[{const char \texorpdfstring{$\ast$}{*}}]{typeface = {\ttfamily NULL},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{font\+Style = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+向路径添加文本（\+ANSI版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & 文本起始x坐标 \\
+\hline
+{\em y} & 文本起始y坐标 \\
+\hline
+{\em text} & 文本内容 \\
+\hline
+{\em height} & 文本高度 \\
+\hline
+{\em length} & 文本长度，-\/1表示自动计算 \\
+\hline
+{\em typeface} & 字体名称，\+NULL表示使用默认字体 \\
+\hline
+{\em font\+Style} & 字体样式 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__PathAdd_ga513855d04bac21b7d7272fedf5b9bfcd}\label{group__PathAdd_ga513855d04bac21b7d7272fedf5b9bfcd} 
+\index{路径添加函数@{路径添加函数}!ege\_path\_addtext@{ege\_path\_addtext}}
+\index{ege\_path\_addtext@{ege\_path\_addtext}!路径添加函数@{路径添加函数}}
+\doxysubsubsubsubsection{\texorpdfstring{ege\_path\_addtext()}{ege\_path\_addtext()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+path\+\_\+addtext (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{text,  }\item[{float}]{height,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{length = {\ttfamily -\/1},  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{typeface = {\ttfamily NULL},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{font\+Style = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+向路径添加文本（\+Unicode版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & 文本起始x坐标 \\
+\hline
+{\em y} & 文本起始y坐标 \\
+\hline
+{\em text} & 文本内容 \\
+\hline
+{\em height} & 文本高度 \\
+\hline
+{\em length} & 文本长度，-\/1表示自动计算 \\
+\hline
+{\em typeface} & 字体名称，\+NULL表示使用默认字体 \\
+\hline
+{\em font\+Style} & 字体样式 \\
+\hline
+\end{DoxyParams}

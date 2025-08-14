@@ -1,0 +1,153 @@
+\doxysubsubsubsubsection{鼠标输入}
+\hypertarget{group__MouseInput}{}\label{group__MouseInput}\index{鼠标输入@{鼠标输入}}
+鼠标输入 的协作图\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=252pt]{group__MouseInput}
+\end{center}
+\end{figure}
+\doxysubsubsubsubsubsubsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__MouseInput_gade290a01972798b9bb84511a6c7c2f24}{ege\+::mousemsg}} ()
+\begin{DoxyCompactList}\small\item\em 检测当前是否有鼠标消息 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1mouse__msg}{mouse\+\_\+msg}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__MouseInput_ga952a4f4b7eb17d3586c43039f0bdb827}{ege\+::getmouse}} ()
+\begin{DoxyCompactList}\small\item\em 获取一个鼠标消息 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structege_1_1MOUSEMSG}{MOUSEMSG}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__MouseInput_ga95f66fc8f2cb581213924183c8121b1e}{ege\+::\+Get\+Mouse\+Msg}} ()
+\begin{DoxyCompactList}\small\item\em 获取一个鼠标消息（过时函数） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__MouseInput_ga13ff2ed06a42c6fa14792eb85ea908d7}{ege\+::flushmouse}} ()
+\begin{DoxyCompactList}\small\item\em 清空鼠标消息缓冲区 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__MouseInput_ga8a5611351393d6d8d649a88dc82bf2c6}{ege\+::showmouse}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} b\+Show)
+\begin{DoxyCompactList}\small\item\em 设置鼠标指针是否显示 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__MouseInput_ga0ffe7fb0c6726bfd5f6c119dc3c9d589}{ege\+::mousepos}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \texorpdfstring{$\ast$}{*}x, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \texorpdfstring{$\ast$}{*}y)
+\begin{DoxyCompactList}\small\item\em 获取当前鼠标位置坐标 \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsubsubsubsubsection{详细描述}
+鼠标输入检测和消息处理函数 
+
+\doxysubsubsubsubsubsection{函数说明}
+\Hypertarget{group__MouseInput_ga13ff2ed06a42c6fa14792eb85ea908d7}\label{group__MouseInput_ga13ff2ed06a42c6fa14792eb85ea908d7} 
+\index{鼠标输入@{鼠标输入}!flushmouse@{flushmouse}}
+\index{flushmouse@{flushmouse}!鼠标输入@{鼠标输入}}
+\doxysubsubsubsubsubsubsection{\texorpdfstring{flushmouse()}{flushmouse()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::flushmouse (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+清空鼠标消息缓冲区 
+
+\begin{DoxyNote}{注解}
+清除所有未处理的鼠标消息，常用于忽略缓存的鼠标输入 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__KeyboardInput_ga4d154e216bcbbbce0500c90ff3939fc1}{flushkey()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__MouseInput_ga952a4f4b7eb17d3586c43039f0bdb827}\label{group__MouseInput_ga952a4f4b7eb17d3586c43039f0bdb827} 
+\index{鼠标输入@{鼠标输入}!getmouse@{getmouse}}
+\index{getmouse@{getmouse}!鼠标输入@{鼠标输入}}
+\doxysubsubsubsubsubsubsection{\texorpdfstring{getmouse()}{getmouse()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1mouse__msg}{mouse\+\_\+msg}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::getmouse (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取一个鼠标消息 
+
+\begin{DoxyReturn}{返回}
+鼠标消息结构体，包含坐标、按键状态和消息类型 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+如果当前鼠标消息队列为空则等待，直到有新消息产生 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__MouseInput_gade290a01972798b9bb84511a6c7c2f24}{mousemsg()}, \doxylink{structege_1_1mouse__msg}{mouse\+\_\+msg}, \doxylink{namespaceege_a6cdf7e04ea86ebe3751a7c378754641e}{mouse\+\_\+msg\+\_\+e}, \doxylink{namespaceege_afddec8ac8f47a7b680f13b8c7e5a6851}{mouse\+\_\+flag\+\_\+e} 
+\end{DoxySeeAlso}
+\Hypertarget{group__MouseInput_ga95f66fc8f2cb581213924183c8121b1e}\label{group__MouseInput_ga95f66fc8f2cb581213924183c8121b1e} 
+\index{鼠标输入@{鼠标输入}!GetMouseMsg@{GetMouseMsg}}
+\index{GetMouseMsg@{GetMouseMsg}!鼠标输入@{鼠标输入}}
+\doxysubsubsubsubsubsubsection{\texorpdfstring{GetMouseMsg()}{GetMouseMsg()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structege_1_1MOUSEMSG}{MOUSEMSG}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::\+Get\+Mouse\+Msg (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+获取一个鼠标消息（过时函数） 
+
+\begin{DoxyReturn}{返回}
+MOUSEMSG结构体，包含鼠标状态信息 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{弃用}
+\item[\mbox{\hyperlink{deprecated__deprecated000008}{弃用}}]请使用getmouse()函数代替 \end{DoxyRefDesc}
+\begin{DoxyNote}{注解}
+兼容旧版本\+API，建议使用更现代的getmouse()函数 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__MouseInput_ga952a4f4b7eb17d3586c43039f0bdb827}{getmouse()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__MouseInput_gade290a01972798b9bb84511a6c7c2f24}\label{group__MouseInput_gade290a01972798b9bb84511a6c7c2f24} 
+\index{鼠标输入@{鼠标输入}!mousemsg@{mousemsg}}
+\index{mousemsg@{mousemsg}!鼠标输入@{鼠标输入}}
+\doxysubsubsubsubsubsubsection{\texorpdfstring{mousemsg()}{mousemsg()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::mousemsg (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+检测当前是否有鼠标消息 
+
+\begin{DoxyReturn}{返回}
+非零值表示有鼠标消息，0表示没有 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+用于非阻塞检测鼠标输入，一般与getmouse搭配使用 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__MouseInput_ga952a4f4b7eb17d3586c43039f0bdb827}{getmouse()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__MouseInput_ga0ffe7fb0c6726bfd5f6c119dc3c9d589}\label{group__MouseInput_ga0ffe7fb0c6726bfd5f6c119dc3c9d589} 
+\index{鼠标输入@{鼠标输入}!mousepos@{mousepos}}
+\index{mousepos@{mousepos}!鼠标输入@{鼠标输入}}
+\doxysubsubsubsubsubsubsection{\texorpdfstring{mousepos()}{mousepos()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::mousepos (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \texorpdfstring{$\ast$}{*}}]{x,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \texorpdfstring{$\ast$}{*}}]{y }\end{DoxyParamCaption})}
+
+
+
+获取当前鼠标位置坐标 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 接收鼠标x坐标的指针 \\
+\hline
+{\em y} & 接收鼠标y坐标的指针 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+函数执行状态 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+获取鼠标在图形窗口中的实时坐标位置 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__KeyboardInput_ga2ad5889a06cbb4fb9817da83434649d1}{keystate()} 
+\end{DoxySeeAlso}
+\Hypertarget{group__MouseInput_ga8a5611351393d6d8d649a88dc82bf2c6}\label{group__MouseInput_ga8a5611351393d6d8d649a88dc82bf2c6} 
+\index{鼠标输入@{鼠标输入}!showmouse@{showmouse}}
+\index{showmouse@{showmouse}!鼠标输入@{鼠标输入}}
+\doxysubsubsubsubsubsubsection{\texorpdfstring{showmouse()}{showmouse()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::showmouse (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{b\+Show }\end{DoxyParamCaption})}
+
+
+
+设置鼠标指针是否显示 
+
+
+\begin{DoxyParams}{参数}
+{\em b\+Show} & 非零值显示鼠标指针，0隐藏鼠标指针 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+之前的显示状态 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+用于控制鼠标光标在图形窗口中的可见性 
+\end{DoxyNote}

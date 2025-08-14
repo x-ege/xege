@@ -1,0 +1,959 @@
+\doxysubsubsubsection{putimage系列函数}
+\hypertarget{group__putimage__functions}{}\label{group__putimage__functions}\index{putimage系列函数@{putimage系列函数}}
+
+
+EGE图形库的核心图像绘制功能  
+
+
+putimage系列函数 的协作图\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group__putimage__functions}
+\end{center}
+\end{figure}
+\doxysubsubsubsubsubsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga7791d716354dc11d1629225b2268a704}{ege\+::putimage}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg, DWORD dw\+Rop=SRCCOPY)
+\begin{DoxyCompactList}\small\item\em 基础图像绘制函数 -\/ 在指定位置绘制整个图像 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga23560a27bd6925bceadfea08812ef359}{ege\+::putimage}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, DWORD dw\+Rop=SRCCOPY)
+\begin{DoxyCompactList}\small\item\em 区域图像绘制函数 -\/ 绘制图像的指定区域 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_gabbc92eabe7abc3527a6e3902b9bbcf8d}{ege\+::putimage}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src, DWORD dw\+Rop=SRCCOPY)
+\begin{DoxyCompactList}\small\item\em 拉伸图像绘制函数 -\/ 将源图像区域拉伸到目标区域 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga1c0719a9132921761719016905a2af04}{ege\+::putimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, DWORD dw\+Rop=SRCCOPY)
+\begin{DoxyCompactList}\small\item\em 图像到图像绘制函数 -\/ 在另一个图像上绘制图像 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga9386009271cf2064a2ed23be2d82d5b4}{ege\+::putimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, DWORD dw\+Rop=SRCCOPY)
+\begin{DoxyCompactList}\small\item\em 图像到图像区域绘制函数 -\/ 在另一个图像上绘制图像的指定区域 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga0e915ece1d3eadbec6ff4b64be83922e}{ege\+::putimage}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src, DWORD dw\+Rop=SRCCOPY)
+\begin{DoxyCompactList}\small\item\em 图像到图像拉伸绘制函数 -\/ 在另一个图像上拉伸绘制图像 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga61c7153ce621ca601d993bba1f127590}{ege\+::saveimage}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg, const char \texorpdfstring{$\ast$}{*}filename, bool with\+Alpha\+Channel=false)
+\begin{DoxyCompactList}\small\item\em 将图像保存到文件（char\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga37109cca92edba83d7cc7fcefbfddec2}{ege\+::saveimage}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}filename, bool with\+Alpha\+Channel=false)
+\begin{DoxyCompactList}\small\item\em 将图像保存到文件（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_gaa44071ee7e219391718448560de01cbc}{ege\+::savepng}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg, const char \texorpdfstring{$\ast$}{*}filename, bool with\+Alpha\+Channel=false)
+\begin{DoxyCompactList}\small\item\em 将图像以 PNG 格式保存到文件（char\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_gaec5363aea592e7261d2d0a5362accd63}{ege\+::savepng}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}filename, bool with\+Alpha\+Channel=false)
+\begin{DoxyCompactList}\small\item\em 将图像以 PNG 格式保存到文件（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga213160e5a0b8998a632c678f21e5f14f}{ege\+::savebmp}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg, const char \texorpdfstring{$\ast$}{*}filename, bool with\+Alpha\+Channel=false)
+\begin{DoxyCompactList}\small\item\em 将图像以 BMP 格式保存到文件（char\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga9b0268233ff50f793694036e3a8112d6}{ege\+::savebmp}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} pimg, const wchar\+\_\+t \texorpdfstring{$\ast$}{*}filename, bool with\+Alpha\+Channel=false)
+\begin{DoxyCompactList}\small\item\em 将图像以 BMP 格式保存到文件（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga4fc498fa59b058399a640f841de6a9c8}{ege\+::putimage\+\_\+transparent}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} transparent\+Color, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src=0)
+\begin{DoxyCompactList}\small\item\em 透明色绘制函数 -\/ 指定颜色变为透明的图像绘制 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_gaddd5501a4b12fe9515e21dcbb042fa70}{ege\+::putimage\+\_\+alphablend}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char alpha, \mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}} alpha\+Type=\mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}})
+\begin{DoxyCompactList}\small\item\em Alpha混合绘制函数 -\/ 基础版本，指定整体透明度 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga9cb448dbf74466bf29eec60f31571ead}{ege\+::putimage\+\_\+alphablend}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char alpha, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}} alpha\+Type=\mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}})
+\begin{DoxyCompactList}\small\item\em Alpha混合绘制函数 -\/ 指定源图像起始位置 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga80c89a74e11223bd3073138e8fb41c11}{ege\+::putimage\+\_\+alphablend}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char alpha, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src, \mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}} alpha\+Type=\mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}})
+\begin{DoxyCompactList}\small\item\em Alpha混合绘制函数 -\/ 指定源图像区域 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga1d652d76e766940c68ff0a8be43cfdc9}{ege\+::putimage\+\_\+alphablend}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char alpha, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src, bool smooth=false, \mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}} alpha\+Type=\mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}})
+\begin{DoxyCompactList}\small\item\em Alpha混合绘制函数 -\/ 完整版本，支持拉伸和平滑处理 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga10a4a3ff3051d3851e5a8973559b952c}{ege\+::putimage\+\_\+alphatransparent}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} transparent\+Color, \mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char alpha, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src=0)
+\begin{DoxyCompactList}\small\item\em Alpha透明色混合绘制函数 -\/ 结合透明色和\+Alpha混合 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_gabfa951d87707dcfd74025fb6d345f97e}{ege\+::putimage\+\_\+withalpha}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src=0)
+\begin{DoxyCompactList}\small\item\em Alpha通道绘制函数 -\/ 使用图像自身的\+Alpha通道，基础版本 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga8c2b89051658e1f14d000f094b19325d}{ege\+::putimage\+\_\+withalpha}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src, bool smooth=false)
+\begin{DoxyCompactList}\small\item\em Alpha通道绘制函数 -\/ 使用图像自身的\+Alpha通道，支持拉伸和平滑处理 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga64ab75c02417b7bf4680172ca791a801}{ege\+::putimage\+\_\+alphafilter}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Alpha, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src)
+\begin{DoxyCompactList}\small\item\em Alpha滤镜绘制函数 -\/ 使用另一图像作为\+Alpha遮罩 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_gad9a7f816e333bb238d13ee3f6722a7e2}{ege\+::imagefilter\+\_\+blurring}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} intensity, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} alpha, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest=0, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest=0)
+\begin{DoxyCompactList}\small\item\em 图像模糊滤镜函数 -\/ 对图像进行模糊处理 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga53d84af9513cc8e4bbfac2e07fdccf1d}{ege\+::putimage\+\_\+rotate}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Texture, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, float x\+Center, float y\+Center, float radian, bool transparent=false, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} alpha=-\/1, bool smooth=false)
+\begin{DoxyCompactList}\small\item\em 旋转绘制函数 -\/ 围绕中心点旋转图像 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_gac9e5123fe64c4acbaf28b8d38dd33a88}{ege\+::putimage\+\_\+rotatezoom}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Texture, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, float x\+Center, float y\+Center, float radian, float zoom, bool transparent=false, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} alpha=-\/1, bool smooth=false)
+\begin{DoxyCompactList}\small\item\em 旋转缩放绘制函数 -\/ 同时进行旋转和缩放 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga6fc0966df910129130301cb4c051da47}{ege\+::putimage\+\_\+rotatetransparent}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Center\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Center\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Center\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Center\+Src, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} transparent\+Color, float radian, float zoom=1.\+0f)
+\begin{DoxyCompactList}\small\item\em 旋转透明绘制函数 -\/ 旋转时指定透明色，基础版本 \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__putimage__functions_ga84afbeb0fc905fe7539e77273abb2bd4}{ege\+::putimage\+\_\+rotatetransparent}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Dest, \mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Center\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Center\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Center\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Center\+Src, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} transparent\+Color, float radian, float zoom=1.\+0f)
+\begin{DoxyCompactList}\small\item\em 旋转透明绘制函数 -\/ 旋转时指定透明色，完整版本 \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsubsubsubsection{详细描述}
+EGE图形库的核心图像绘制功能 
+
+putimage系列函数提供了丰富的图像绘制和处理能力，包括：
+\begin{DoxyItemize}
+\item 基础图像绘制：putimage() 系列重载函数
+\item 透明效果：putimage\+\_\+transparent(), \doxylink{group__putimage__functions_gaddd5501a4b12fe9515e21dcbb042fa70}{putimage\+\_\+alphablend()}, \doxylink{group__putimage__functions_gabfa951d87707dcfd74025fb6d345f97e}{putimage\+\_\+withalpha()}
+\item 混合效果：putimage\+\_\+alphatransparent(), \doxylink{group__putimage__functions_ga64ab75c02417b7bf4680172ca791a801}{putimage\+\_\+alphafilter()}
+\item 变换效果：putimage\+\_\+rotate(), \doxylink{group__putimage__functions_gac9e5123fe64c4acbaf28b8d38dd33a88}{putimage\+\_\+rotatezoom()}, \doxylink{group__putimage__functions_ga6fc0966df910129130301cb4c051da47}{putimage\+\_\+rotatetransparent()}
+\end{DoxyItemize}
+
+这些函数支持多种绘制模式：
+\begin{DoxyItemize}
+\item 绘制到屏幕（img\+Dest = NULL）或另一个图像
+\item 支持区域裁剪、拉伸缩放、旋转变换
+\item 支持多种透明和混合模式
+\item 支持光栅操作码（\+SRCCOPY, SRCAND, SRCPAINT等）
+\item 支持平滑处理（抗锯齿） 
+\end{DoxyItemize}
+
+\doxysubsubsubsubsection{函数说明}
+\Hypertarget{group__putimage__functions_gad9a7f816e333bb238d13ee3f6722a7e2}\label{group__putimage__functions_gad9a7f816e333bb238d13ee3f6722a7e2} 
+\index{putimage系列函数@{putimage系列函数}!imagefilter\_blurring@{imagefilter\_blurring}}
+\index{imagefilter\_blurring@{imagefilter\_blurring}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{imagefilter\_blurring()}{imagefilter\_blurring()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::imagefilter\+\_\+blurring (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{intensity,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{alpha,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+图像模糊滤镜函数 -\/ 对图像进行模糊处理 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，要进行模糊处理的图像 \\
+\hline
+{\em intensity} & 模糊强度，值越大模糊效果越强 \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/255)，255为完全不透明 \\
+\hline
+{\em x\+Dest} & 处理区域的左上角 x 坐标，默认为 0 \\
+\hline
+{\em y\+Dest} & 处理区域的左上角 y 坐标，默认为 0 \\
+\hline
+{\em width\+Dest} & 处理区域的宽度，默认为 0（使用整个图像宽度） \\
+\hline
+{\em height\+Dest} & 处理区域的高度，默认为 0（使用整个图像高度） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga7791d716354dc11d1629225b2268a704}\label{group__putimage__functions_ga7791d716354dc11d1629225b2268a704} 
+\index{putimage系列函数@{putimage系列函数}!putimage@{putimage}}
+\index{putimage@{putimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage()}{putimage()}\hspace{0.1cm}{\footnotesize\ttfamily [1/6]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg,  }\item[{DWORD}]{dw\+Rop = {\ttfamily SRCCOPY} }\end{DoxyParamCaption})}
+
+
+
+基础图像绘制函数 -\/ 在指定位置绘制整个图像 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 绘制位置的 x 坐标 \\
+\hline
+{\em y} & 绘制位置的 y 坐标 \\
+\hline
+{\em pimg} & 要绘制的 IMAGE 对象指针 \\
+\hline
+{\em dw\+Rop} & 三元光栅操作码，默认为 SRCCOPY（直接复制） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__putimage__functions_ga23560a27bd6925bceadfea08812ef359}\label{group__putimage__functions_ga23560a27bd6925bceadfea08812ef359} 
+\index{putimage系列函数@{putimage系列函数}!putimage@{putimage}}
+\index{putimage@{putimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage()}{putimage()}\hspace{0.1cm}{\footnotesize\ttfamily [2/6]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{DWORD}]{dw\+Rop = {\ttfamily SRCCOPY} }\end{DoxyParamCaption})}
+
+
+
+区域图像绘制函数 -\/ 绘制图像的指定区域 
+
+
+\begin{DoxyParams}{参数}
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em width\+Dest} & 绘制的宽度 \\
+\hline
+{\em height\+Dest} & 绘制的高度 \\
+\hline
+{\em img\+Src} & 要绘制的 IMAGE 对象指针 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em dw\+Rop} & 三元光栅操作码，默认为 SRCCOPY（直接复制） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__putimage__functions_gabbc92eabe7abc3527a6e3902b9bbcf8d}\label{group__putimage__functions_gabbc92eabe7abc3527a6e3902b9bbcf8d} 
+\index{putimage系列函数@{putimage系列函数}!putimage@{putimage}}
+\index{putimage@{putimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage()}{putimage()}\hspace{0.1cm}{\footnotesize\ttfamily [3/6]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src,  }\item[{DWORD}]{dw\+Rop = {\ttfamily SRCCOPY} }\end{DoxyParamCaption})}
+
+
+
+拉伸图像绘制函数 -\/ 将源图像区域拉伸到目标区域 
+
+
+\begin{DoxyParams}{参数}
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em width\+Dest} & 绘制的宽度 \\
+\hline
+{\em height\+Dest} & 绘制的高度 \\
+\hline
+{\em img\+Src} & 要绘制的 IMAGE 对象指针 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度 \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度 \\
+\hline
+{\em dw\+Rop} & 三元光栅操作码，默认为 SRCCOPY（直接复制） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__putimage__functions_ga9386009271cf2064a2ed23be2d82d5b4}\label{group__putimage__functions_ga9386009271cf2064a2ed23be2d82d5b4} 
+\index{putimage系列函数@{putimage系列函数}!putimage@{putimage}}
+\index{putimage@{putimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage()}{putimage()}\hspace{0.1cm}{\footnotesize\ttfamily [4/6]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{DWORD}]{dw\+Rop = {\ttfamily SRCCOPY} }\end{DoxyParamCaption})}
+
+
+
+图像到图像区域绘制函数 -\/ 在另一个图像上绘制图像的指定区域 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em width\+Dest} & 绘制的宽度 \\
+\hline
+{\em height\+Dest} & 绘制的高度 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em dw\+Rop} & 三元光栅操作码，默认为 SRCCOPY（直接复制） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__putimage__functions_ga0e915ece1d3eadbec6ff4b64be83922e}\label{group__putimage__functions_ga0e915ece1d3eadbec6ff4b64be83922e} 
+\index{putimage系列函数@{putimage系列函数}!putimage@{putimage}}
+\index{putimage@{putimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage()}{putimage()}\hspace{0.1cm}{\footnotesize\ttfamily [5/6]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src,  }\item[{DWORD}]{dw\+Rop = {\ttfamily SRCCOPY} }\end{DoxyParamCaption})}
+
+
+
+图像到图像拉伸绘制函数 -\/ 在另一个图像上拉伸绘制图像 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em width\+Dest} & 绘制的宽度 \\
+\hline
+{\em height\+Dest} & 绘制的高度 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度 \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度 \\
+\hline
+{\em dw\+Rop} & 三元光栅操作码，默认为 SRCCOPY（直接复制） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__putimage__functions_ga1c0719a9132921761719016905a2af04}\label{group__putimage__functions_ga1c0719a9132921761719016905a2af04} 
+\index{putimage系列函数@{putimage系列函数}!putimage@{putimage}}
+\index{putimage@{putimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage()}{putimage()}\hspace{0.1cm}{\footnotesize\ttfamily [6/6]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{DWORD}]{dw\+Rop = {\ttfamily SRCCOPY} }\end{DoxyParamCaption})}
+
+
+
+图像到图像绘制函数 -\/ 在另一个图像上绘制图像 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em dw\+Rop} & 三元光栅操作码，默认为 SRCCOPY（直接复制） \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__putimage__functions_ga1d652d76e766940c68ff0a8be43cfdc9}\label{group__putimage__functions_ga1d652d76e766940c68ff0a8be43cfdc9} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_alphablend@{putimage\_alphablend}}
+\index{putimage\_alphablend@{putimage\_alphablend}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_alphablend()}{putimage\_alphablend()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+alphablend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char}]{alpha,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src,  }\item[{bool}]{smooth = {\ttfamily false},  }\item[{\mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}}}]{alpha\+Type = {\ttfamily \mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}}} }\end{DoxyParamCaption})}
+
+
+
+Alpha混合绘制函数 -\/ 完整版本，支持拉伸和平滑处理 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em width\+Dest} & 绘制的宽度 \\
+\hline
+{\em height\+Dest} & 绘制的高度 \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/255)，0为完全透明，255为完全不透明 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度 \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度 \\
+\hline
+{\em smooth} & 是否使用平滑处理（抗锯齿），默认为 false \\
+\hline
+{\em alpha\+Type} & 源图像像素的 alpha 类型，默认为 ALPHATYPE\+\_\+\+STRAIGHT \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_gaddd5501a4b12fe9515e21dcbb042fa70}\label{group__putimage__functions_gaddd5501a4b12fe9515e21dcbb042fa70} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_alphablend@{putimage\_alphablend}}
+\index{putimage\_alphablend@{putimage\_alphablend}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_alphablend()}{putimage\_alphablend()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+alphablend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char}]{alpha,  }\item[{\mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}}}]{alpha\+Type = {\ttfamily \mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}}} }\end{DoxyParamCaption})}
+
+
+
+Alpha混合绘制函数 -\/ 基础版本，指定整体透明度 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/255)，0为完全透明，255为完全不透明 \\
+\hline
+{\em alpha\+Type} & 源图像像素的 alpha 类型，默认为 ALPHATYPE\+\_\+\+STRAIGHT \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga9cb448dbf74466bf29eec60f31571ead}\label{group__putimage__functions_ga9cb448dbf74466bf29eec60f31571ead} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_alphablend@{putimage\_alphablend}}
+\index{putimage\_alphablend@{putimage\_alphablend}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_alphablend()}{putimage\_alphablend()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+alphablend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char}]{alpha,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}}}]{alpha\+Type = {\ttfamily \mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}}} }\end{DoxyParamCaption})}
+
+
+
+Alpha混合绘制函数 -\/ 指定源图像起始位置 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/255)，0为完全透明，255为完全不透明 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em alpha\+Type} & 源图像像素的 alpha 类型，默认为 ALPHATYPE\+\_\+\+STRAIGHT \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga80c89a74e11223bd3073138e8fb41c11}\label{group__putimage__functions_ga80c89a74e11223bd3073138e8fb41c11} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_alphablend@{putimage\_alphablend}}
+\index{putimage\_alphablend@{putimage\_alphablend}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_alphablend()}{putimage\_alphablend()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+alphablend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char}]{alpha,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src,  }\item[{\mbox{\hyperlink{namespaceege_a21db7737ccb90e8280f370869bce9b9a}{alpha\+\_\+type}}}]{alpha\+Type = {\ttfamily \mbox{\hyperlink{group__image__management_ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2}{ALPHATYPE\+\_\+\+STRAIGHT}}} }\end{DoxyParamCaption})}
+
+
+
+Alpha混合绘制函数 -\/ 指定源图像区域 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/255)，0为完全透明，255为完全不透明 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度 \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度 \\
+\hline
+{\em alpha\+Type} & 源图像像素的 alpha 类型，默认为 ALPHATYPE\+\_\+\+STRAIGHT \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga64ab75c02417b7bf4680172ca791a801}\label{group__putimage__functions_ga64ab75c02417b7bf4680172ca791a801} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_alphafilter@{putimage\_alphafilter}}
+\index{putimage\_alphafilter@{putimage\_alphafilter}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_alphafilter()}{putimage\_alphafilter()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+alphafilter (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Alpha,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src }\end{DoxyParamCaption})}
+
+
+
+Alpha滤镜绘制函数 -\/ 使用另一图像作为\+Alpha遮罩 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em img\+Alpha} & 用作\+Alpha遮罩的 IMAGE 对象指针 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度 \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga10a4a3ff3051d3851e5a8973559b952c}\label{group__putimage__functions_ga10a4a3ff3051d3851e5a8973559b952c} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_alphatransparent@{putimage\_alphatransparent}}
+\index{putimage\_alphatransparent@{putimage\_alphatransparent}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_alphatransparent()}{putimage\_alphatransparent()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+alphatransparent (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{transparent\+Color,  }\item[{\mbox{\hyperlink{namespaceege_a603d426ff263a0ca867a61ab9da82f03}{unsigned}} char}]{alpha,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Alpha透明色混合绘制函数 -\/ 结合透明色和\+Alpha混合 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em transparent\+Color} & 要变为透明的像素颜色 \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/255)，0为完全透明，255为完全不透明 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度） \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga53d84af9513cc8e4bbfac2e07fdccf1d}\label{group__putimage__functions_ga53d84af9513cc8e4bbfac2e07fdccf1d} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_rotate@{putimage\_rotate}}
+\index{putimage\_rotate@{putimage\_rotate}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_rotate()}{putimage\_rotate()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+rotate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Texture,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{float}]{x\+Center,  }\item[{float}]{y\+Center,  }\item[{float}]{radian,  }\item[{bool}]{transparent = {\ttfamily false},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{alpha = {\ttfamily -\/1},  }\item[{bool}]{smooth = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+旋转绘制函数 -\/ 围绕中心点旋转图像 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Texture} & 源纹理 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em x\+Center} & 旋转中心点的 x 坐标（相对于源图像） \\
+\hline
+{\em y\+Center} & 旋转中心点的 y 坐标（相对于源图像） \\
+\hline
+{\em radian} & 旋转角度（弧度制，顺时针方向） \\
+\hline
+{\em transparent} & 是否使用图像的透明通道，默认为 false \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/256)，-\/1表示不使用alpha，默认为 -\/1 \\
+\hline
+{\em smooth} & 是否使用平滑处理（抗锯齿），默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga6fc0966df910129130301cb4c051da47}\label{group__putimage__functions_ga6fc0966df910129130301cb4c051da47} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_rotatetransparent@{putimage\_rotatetransparent}}
+\index{putimage\_rotatetransparent@{putimage\_rotatetransparent}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_rotatetransparent()}{putimage\_rotatetransparent()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+rotatetransparent (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Center\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Center\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Center\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Center\+Src,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{transparent\+Color,  }\item[{float}]{radian,  }\item[{float}]{zoom = {\ttfamily 1.0f} }\end{DoxyParamCaption})}
+
+
+
+旋转透明绘制函数 -\/ 旋转时指定透明色，基础版本 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Center\+Dest} & 旋转中心点在目标图像中的 x 坐标 \\
+\hline
+{\em y\+Center\+Dest} & 旋转中心点在目标图像中的 y 坐标 \\
+\hline
+{\em x\+Center\+Src} & 旋转中心点在源图像中的 x 坐标 \\
+\hline
+{\em y\+Center\+Src} & 旋转中心点在源图像中的 y 坐标 \\
+\hline
+{\em transparent\+Color} & 要变为透明的像素颜色 \\
+\hline
+{\em radian} & 旋转角度（弧度制，顺时针方向） \\
+\hline
+{\em zoom} & 缩放比例，1.0为原始大小，默认为 1.\+0f \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga84afbeb0fc905fe7539e77273abb2bd4}\label{group__putimage__functions_ga84afbeb0fc905fe7539e77273abb2bd4} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_rotatetransparent@{putimage\_rotatetransparent}}
+\index{putimage\_rotatetransparent@{putimage\_rotatetransparent}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_rotatetransparent()}{putimage\_rotatetransparent()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+rotatetransparent (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Center\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Center\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Center\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Center\+Src,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{transparent\+Color,  }\item[{float}]{radian,  }\item[{float}]{zoom = {\ttfamily 1.0f} }\end{DoxyParamCaption})}
+
+
+
+旋转透明绘制函数 -\/ 旋转时指定透明色，完整版本 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Center\+Dest} & 旋转中心点在目标图像中的 x 坐标 \\
+\hline
+{\em y\+Center\+Dest} & 旋转中心点在目标图像中的 y 坐标 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度 \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度 \\
+\hline
+{\em x\+Center\+Src} & 旋转中心点在源图像中的 x 坐标 \\
+\hline
+{\em y\+Center\+Src} & 旋转中心点在源图像中的 y 坐标 \\
+\hline
+{\em transparent\+Color} & 要变为透明的像素颜色 \\
+\hline
+{\em radian} & 旋转角度（弧度制，顺时针方向） \\
+\hline
+{\em zoom} & 缩放比例，1.0为原始大小，默认为 1.\+0f \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_gac9e5123fe64c4acbaf28b8d38dd33a88}\label{group__putimage__functions_gac9e5123fe64c4acbaf28b8d38dd33a88} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_rotatezoom@{putimage\_rotatezoom}}
+\index{putimage\_rotatezoom@{putimage\_rotatezoom}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_rotatezoom()}{putimage\_rotatezoom()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+rotatezoom (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Texture,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{float}]{x\+Center,  }\item[{float}]{y\+Center,  }\item[{float}]{radian,  }\item[{float}]{zoom,  }\item[{bool}]{transparent = {\ttfamily false},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{alpha = {\ttfamily -\/1},  }\item[{bool}]{smooth = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+旋转缩放绘制函数 -\/ 同时进行旋转和缩放 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Texture} & 源纹理 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em x\+Center} & 旋转中心点的 x 坐标（相对于源图像） \\
+\hline
+{\em y\+Center} & 旋转中心点的 y 坐标（相对于源图像） \\
+\hline
+{\em radian} & 旋转角度（弧度制，顺时针方向） \\
+\hline
+{\em zoom} & 缩放比例，1.0为原始大小 \\
+\hline
+{\em transparent} & 是否使用图像的透明通道，默认为 false \\
+\hline
+{\em alpha} & 图像整体透明度 (0-\/256)，-\/1表示不使用alpha，默认为 -\/1 \\
+\hline
+{\em smooth} & 是否使用平滑处理（抗锯齿），默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga4fc498fa59b058399a640f841de6a9c8}\label{group__putimage__functions_ga4fc498fa59b058399a640f841de6a9c8} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_transparent@{putimage\_transparent}}
+\index{putimage\_transparent@{putimage\_transparent}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_transparent()}{putimage\_transparent()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+transparent (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{transparent\+Color,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+透明色绘制函数 -\/ 指定颜色变为透明的图像绘制 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针 \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em transparent\+Color} & 要变为透明的像素颜色 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度） \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga8c2b89051658e1f14d000f094b19325d}\label{group__putimage__functions_ga8c2b89051658e1f14d000f094b19325d} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_withalpha@{putimage\_withalpha}}
+\index{putimage\_withalpha@{putimage\_withalpha}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_withalpha()}{putimage\_withalpha()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+withalpha (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src,  }\item[{bool}]{smooth = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+Alpha通道绘制函数 -\/ 使用图像自身的\+Alpha通道，支持拉伸和平滑处理 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针（必须包含\+Alpha通道数据） \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em width\+Dest} & 绘制的宽度 \\
+\hline
+{\em height\+Dest} & 绘制的高度 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度 \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度 \\
+\hline
+{\em smooth} & 是否使用平滑处理（抗锯齿），默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_gabfa951d87707dcfd74025fb6d345f97e}\label{group__putimage__functions_gabfa951d87707dcfd74025fb6d345f97e} 
+\index{putimage系列函数@{putimage系列函数}!putimage\_withalpha@{putimage\_withalpha}}
+\index{putimage\_withalpha@{putimage\_withalpha}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{putimage\_withalpha()}{putimage\_withalpha()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::putimage\+\_\+withalpha (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src = {\ttfamily 0},  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Alpha通道绘制函数 -\/ 使用图像自身的\+Alpha通道，基础版本 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Dest} & 目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 \\
+\hline
+{\em img\+Src} & 源 IMAGE 对象指针（必须包含\+Alpha通道数据） \\
+\hline
+{\em x\+Dest} & 绘制位置的 x 坐标 \\
+\hline
+{\em y\+Dest} & 绘制位置的 y 坐标 \\
+\hline
+{\em x\+Src} & 绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0 \\
+\hline
+{\em y\+Src} & 绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0 \\
+\hline
+{\em width\+Src} & 绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度） \\
+\hline
+{\em height\+Src} & 绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度） \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 gr\+Ok，失败返回相应错误码 
+\end{DoxyReturn}
+\Hypertarget{group__putimage__functions_ga213160e5a0b8998a632c678f21e5f14f}\label{group__putimage__functions_ga213160e5a0b8998a632c678f21e5f14f} 
+\index{putimage系列函数@{putimage系列函数}!savebmp@{savebmp}}
+\index{savebmp@{savebmp}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{savebmp()}{savebmp()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::savebmp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{bool}]{with\+Alpha\+Channel = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+将图像以 BMP 格式保存到文件（char\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要保存的图像对象指针 \\
+\hline
+{\em filename} & 保存的图像文件名 \\
+\hline
+{\em with\+Alpha\+Channel} & 是否保存图像的透明通道，true\+: 保存, false\+: 不保存，默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+强制以 BMP 格式保存，不受文件名后缀影响 
+
+如果文件已存在，会覆盖原文件 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__putimage__functions_ga9b0268233ff50f793694036e3a8112d6}{savebmp(\+PCIMAGE, const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, bool)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__putimage__functions_ga9b0268233ff50f793694036e3a8112d6}\label{group__putimage__functions_ga9b0268233ff50f793694036e3a8112d6} 
+\index{putimage系列函数@{putimage系列函数}!savebmp@{savebmp}}
+\index{savebmp@{savebmp}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{savebmp()}{savebmp()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::savebmp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{bool}]{with\+Alpha\+Channel = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+将图像以 BMP 格式保存到文件（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要保存的图像对象指针 \\
+\hline
+{\em filename} & 保存的图像文件名（宽字符版本） \\
+\hline
+{\em with\+Alpha\+Channel} & 是否保存图像的透明通道，true\+: 保存, false\+: 不保存，默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+强制以 BMP 格式保存，不受文件名后缀影响 
+
+如果文件已存在，会覆盖原文件 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__putimage__functions_ga213160e5a0b8998a632c678f21e5f14f}{savebmp(\+PCIMAGE, const char\texorpdfstring{$\ast$}{*}, bool)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__putimage__functions_ga61c7153ce621ca601d993bba1f127590}\label{group__putimage__functions_ga61c7153ce621ca601d993bba1f127590} 
+\index{putimage系列函数@{putimage系列函数}!saveimage@{saveimage}}
+\index{saveimage@{saveimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{saveimage()}{saveimage()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::saveimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{bool}]{with\+Alpha\+Channel = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+将图像保存到文件（char\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要保存的图像对象指针 \\
+\hline
+{\em filename} & 保存的图像文件名 \\
+\hline
+{\em with\+Alpha\+Channel} & 是否保存图像的透明通道，true\+: 保存, false\+: 不保存，默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+目前支持 BMP 和 PNG 格式 
+
+文件名以 .bmp 结尾保存为 BMP 格式，以 .png 结尾或无后缀名保存为 PNG 格式 
+
+如果文件已存在，会覆盖原文件 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__putimage__functions_ga37109cca92edba83d7cc7fcefbfddec2}{saveimage(\+PCIMAGE, const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, bool)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__putimage__functions_ga37109cca92edba83d7cc7fcefbfddec2}\label{group__putimage__functions_ga37109cca92edba83d7cc7fcefbfddec2} 
+\index{putimage系列函数@{putimage系列函数}!saveimage@{saveimage}}
+\index{saveimage@{saveimage}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{saveimage()}{saveimage()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::saveimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{bool}]{with\+Alpha\+Channel = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+将图像保存到文件（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要保存的图像对象指针 \\
+\hline
+{\em filename} & 保存的图像文件名（宽字符版本） \\
+\hline
+{\em with\+Alpha\+Channel} & 是否保存图像的透明通道，true\+: 保存, false\+: 不保存，默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 \doxylink{group__image__management_ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a}{gr\+Ok(0)}，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+目前支持 BMP 和 PNG 格式 
+
+文件名以 .bmp 结尾保存为 BMP 格式，以 .png 结尾或无后缀名保存为 PNG 格式 
+
+如果文件已存在，会覆盖原文件 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__putimage__functions_ga61c7153ce621ca601d993bba1f127590}{saveimage(\+PCIMAGE, const char\texorpdfstring{$\ast$}{*}, bool)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__putimage__functions_gaa44071ee7e219391718448560de01cbc}\label{group__putimage__functions_gaa44071ee7e219391718448560de01cbc} 
+\index{putimage系列函数@{putimage系列函数}!savepng@{savepng}}
+\index{savepng@{savepng}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{savepng()}{savepng()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::savepng (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{bool}]{with\+Alpha\+Channel = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+将图像以 PNG 格式保存到文件（char\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要保存的图像对象指针 \\
+\hline
+{\em filename} & 保存的图像文件名 \\
+\hline
+{\em with\+Alpha\+Channel} & 是否保存图像的透明通道，true\+: 保存, false\+: 不保存，默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+强制以 PNG 格式保存，不受文件名后缀影响 
+
+如果文件已存在，会覆盖原文件 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__putimage__functions_gaec5363aea592e7261d2d0a5362accd63}{savepng(\+PCIMAGE, const wchar\+\_\+t\texorpdfstring{$\ast$}{*}, bool)} 
+\end{DoxySeeAlso}
+\Hypertarget{group__putimage__functions_gaec5363aea592e7261d2d0a5362accd63}\label{group__putimage__functions_gaec5363aea592e7261d2d0a5362accd63} 
+\index{putimage系列函数@{putimage系列函数}!savepng@{savepng}}
+\index{savepng@{savepng}!putimage系列函数@{putimage系列函数}}
+\doxysubsubsubsubsubsection{\texorpdfstring{savepng()}{savepng()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::savepng (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{pimg,  }\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{bool}]{with\+Alpha\+Channel = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+将图像以 PNG 格式保存到文件（wchar\+\_\+t\texorpdfstring{$\ast$}{*} 版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 要保存的图像对象指针 \\
+\hline
+{\em filename} & 保存的图像文件名（宽字符版本） \\
+\hline
+{\em with\+Alpha\+Channel} & 是否保存图像的透明通道，true\+: 保存, false\+: 不保存，默认为 false \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{返回}
+成功返回 0，失败返回非 0 值 
+\end{DoxyReturn}
+\begin{DoxyNote}{注解}
+强制以 PNG 格式保存，不受文件名后缀影响 
+
+如果文件已存在，会覆盖原文件 
+\end{DoxyNote}
+\begin{DoxyWarning}{警告}
+如果 pimg 为无效指针，会引发运行时异常 
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{参见}
+\doxylink{group__putimage__functions_gaa44071ee7e219391718448560de01cbc}{savepng(\+PCIMAGE, const char\texorpdfstring{$\ast$}{*}, bool)} 
+\end{DoxySeeAlso}

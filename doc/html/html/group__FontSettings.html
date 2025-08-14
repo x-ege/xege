@@ -1,0 +1,905 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>EGE 图形库: 字体设置</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+  $(document).ready(function() { init_search(); });
+/* @license-end */
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="egelogo.jpg"/></td>
+  <td id="projectalign">
+   <div id="projectname">EGE 图形库<span id="projectnumber">&#160;24.04</span>
+   </div>
+   <div id="projectbrief">Easy Graphics Engine - 简单易用的图形库</div>
+  </td>
+    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect"                onmouseover="return searchBox.OnSearchSelectShow()"                onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>
+          <input type="text" id="MSearchField" value="" placeholder="搜索" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
+          </span>
+        </div>
+</td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('group__FontSettings.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">载入中...</div>
+<div class="SRStatus" id="Searching">搜索中...</div>
+<div class="SRStatus" id="NoMatches">未找到</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle"><div class="title">字体设置<div class="ingroups"><a class="el" href="group__EGEGDIPlus.html">EGE GDI+增强函数</a> &raquo; <a class="el" href="group__PathManagement.html">路径管理函数</a></div></div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>字体和文本对齐相关设置函数  
+<a href="#details">更多...</a></p>
+<div class="dynheader">
+字体设置 的协作图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__FontSettings.png" border="0" usemap="#agroup____FontSettings" alt=""/></div>
+<map name="agroup____FontSettings" id="agroup____FontSettings">
+<area shape="rect" title="字体和文本对齐相关设置函数" alt="" coords="177,5,268,31"/>
+<area shape="rect" href="group__PathManagement.html" title=" " alt="" coords="5,5,129,31"/>
+</map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:gafa738b43f39bbbc6398452da87a3bb84" id="r_gafa738b43f39bbbc6398452da87a3bb84"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#gafa738b43f39bbbc6398452da87a3bb84">ege::settextjustify</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> horiz, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> vert, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gafa738b43f39bbbc6398452da87a3bb84"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置文本对齐方式  <br /></td></tr>
+<tr class="separator:gafa738b43f39bbbc6398452da87a3bb84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf80e5fa4f7dc13dd539ea703decc108" id="r_gadf80e5fa4f7dc13dd539ea703decc108"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#gadf80e5fa4f7dc13dd539ea703decc108">ege::setfont</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> height, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> width, const char *typeface, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gadf80e5fa4f7dc13dd539ea703decc108"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置字体（简化版本）  <br /></td></tr>
+<tr class="separator:gadf80e5fa4f7dc13dd539ea703decc108"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga273ba0cf3ea22b882b4570a33451e0d4" id="r_ga273ba0cf3ea22b882b4570a33451e0d4"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#ga273ba0cf3ea22b882b4570a33451e0d4">ege::setfont</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> height, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> width, const wchar_t *typeface, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga273ba0cf3ea22b882b4570a33451e0d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置字体（简化版本，Unicode）  <br /></td></tr>
+<tr class="separator:ga273ba0cf3ea22b882b4570a33451e0d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaffac2a09e1dcd6394f5099e8a1ad0edb" id="r_gaffac2a09e1dcd6394f5099e8a1ad0edb"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#gaffac2a09e1dcd6394f5099e8a1ad0edb">ege::setfont</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> height, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> width, const char *typeface, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> escapement, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> orientation, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> weight, bool italic, bool underline, bool strikeOut, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gaffac2a09e1dcd6394f5099e8a1ad0edb"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置字体（完整版本）  <br /></td></tr>
+<tr class="separator:gaffac2a09e1dcd6394f5099e8a1ad0edb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3b4d914e639dd0ab6e6a2532214bdf63" id="r_ga3b4d914e639dd0ab6e6a2532214bdf63"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#ga3b4d914e639dd0ab6e6a2532214bdf63">ege::setfont</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> height, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> width, const wchar_t *typeface, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> escapement, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> orientation, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> weight, bool italic, bool underline, bool strikeOut, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga3b4d914e639dd0ab6e6a2532214bdf63"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置字体（完整版本，Unicode）  <br /></td></tr>
+<tr class="separator:ga3b4d914e639dd0ab6e6a2532214bdf63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1b8d000dc11b9dfae0dd2791e58b04a9" id="r_ga1b8d000dc11b9dfae0dd2791e58b04a9"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#ga1b8d000dc11b9dfae0dd2791e58b04a9">ege::setfont</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> height, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> width, const char *typeface, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> escapement, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> orientation, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> weight, bool italic, bool underline, bool strikeOut, BYTE charSet, BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga1b8d000dc11b9dfae0dd2791e58b04a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置字体（高级版本）  <br /></td></tr>
+<tr class="separator:ga1b8d000dc11b9dfae0dd2791e58b04a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga29da5ea478066591dea1a1d5f6742f81" id="r_ga29da5ea478066591dea1a1d5f6742f81"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#ga29da5ea478066591dea1a1d5f6742f81">ege::setfont</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> height, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> width, const wchar_t *typeface, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> escapement, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> orientation, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> weight, bool italic, bool underline, bool strikeOut, BYTE charSet, BYTE outPrecision, BYTE clipPrecision, BYTE quality, BYTE pitchAndFamily, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga29da5ea478066591dea1a1d5f6742f81"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置字体（高级版本，Unicode）  <br /></td></tr>
+<tr class="separator:ga29da5ea478066591dea1a1d5f6742f81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaffca07908252b871af6c6318e0e6ce72" id="r_gaffca07908252b871af6c6318e0e6ce72"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#gaffca07908252b871af6c6318e0e6ce72">ege::setfont</a> (const LOGFONTW *font, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gaffca07908252b871af6c6318e0e6ce72"><td class="mdescLeft">&#160;</td><td class="mdescRight">使用LOGFONTW结构设置字体  <br /></td></tr>
+<tr class="separator:gaffca07908252b871af6c6318e0e6ce72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga609182eb851f9c7c39b427cf9c3d642d" id="r_ga609182eb851f9c7c39b427cf9c3d642d"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#ga609182eb851f9c7c39b427cf9c3d642d">ege::getfont</a> (LOGFONTW *font, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga609182eb851f9c7c39b427cf9c3d642d"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取当前字体设置  <br /></td></tr>
+<tr class="separator:ga609182eb851f9c7c39b427cf9c3d642d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadb0ec063c1e461ac3439b3c2c06d241a" id="r_gadb0ec063c1e461ac3439b3c2c06d241a"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#gadb0ec063c1e461ac3439b3c2c06d241a">ege::setfont</a> (const LOGFONTA *font, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gadb0ec063c1e461ac3439b3c2c06d241a"><td class="mdescLeft">&#160;</td><td class="mdescRight">使用LOGFONTA结构设置字体  <br /></td></tr>
+<tr class="separator:gadb0ec063c1e461ac3439b3c2c06d241a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga63f578800f5af9cc8ebffb731166275f" id="r_ga63f578800f5af9cc8ebffb731166275f"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html#ga63f578800f5af9cc8ebffb731166275f">ege::getfont</a> (LOGFONTA *font, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga63f578800f5af9cc8ebffb731166275f"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取当前字体设置（ANSI版本）  <br /></td></tr>
+<tr class="separator:ga63f578800f5af9cc8ebffb731166275f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">详细描述</h2>
+<p>字体和文本对齐相关设置函数 </p>
+<h2 class="groupheader">函数说明</h2>
+<a id="ga63f578800f5af9cc8ebffb731166275f" name="ga63f578800f5af9cc8ebffb731166275f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga63f578800f5af9cc8ebffb731166275f">&#9670;&#160;</a></span>getfont() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::getfont </td>
+          <td>(</td>
+          <td class="paramtype">LOGFONTA *&#160;</td>
+          <td class="paramname"><em>font</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取当前字体设置（ANSI版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">font</td><td>用于接收字体信息的LOGFONTA结构指针 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">弃用:</a></b></dt><dd>建议使用带LOGFONTW参数的getfont函数 </dd></dl>
+
+</div>
+</div>
+<a id="ga609182eb851f9c7c39b427cf9c3d642d" name="ga609182eb851f9c7c39b427cf9c3d642d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga609182eb851f9c7c39b427cf9c3d642d">&#9670;&#160;</a></span>getfont() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::getfont </td>
+          <td>(</td>
+          <td class="paramtype">LOGFONTW *&#160;</td>
+          <td class="paramname"><em>font</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取当前字体设置 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">font</td><td>用于接收字体信息的LOGFONTW结构指针 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gadb0ec063c1e461ac3439b3c2c06d241a" name="gadb0ec063c1e461ac3439b3c2c06d241a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadb0ec063c1e461ac3439b3c2c06d241a">&#9670;&#160;</a></span>setfont() <span class="overload">[1/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype">const LOGFONTA *&#160;</td>
+          <td class="paramname"><em>font</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>使用LOGFONTA结构设置字体 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">font</td><td>指向LOGFONTA结构的指针 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">弃用:</a></b></dt><dd>建议使用带LOGFONTW参数的setfont函数 </dd></dl>
+
+</div>
+</div>
+<a id="gaffca07908252b871af6c6318e0e6ce72" name="gaffca07908252b871af6c6318e0e6ce72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaffca07908252b871af6c6318e0e6ce72">&#9670;&#160;</a></span>setfont() <span class="overload">[2/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype">const LOGFONTW *&#160;</td>
+          <td class="paramname"><em>font</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>使用LOGFONTW结构设置字体 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">font</td><td>指向LOGFONTW结构的指针 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga1b8d000dc11b9dfae0dd2791e58b04a9" name="ga1b8d000dc11b9dfae0dd2791e58b04a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1b8d000dc11b9dfae0dd2791e58b04a9">&#9670;&#160;</a></span>setfont() <span class="overload">[3/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>typeface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>escapement</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>italic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>underline</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>strikeOut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>charSet</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>outPrecision</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>clipPrecision</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>quality</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>pitchAndFamily</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置字体（高级版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">height</td><td>字体高度（像素） </td></tr>
+    <tr><td class="paramname">width</td><td>字体宽度（像素），0表示自动 </td></tr>
+    <tr><td class="paramname">typeface</td><td>字体名称 </td></tr>
+    <tr><td class="paramname">escapement</td><td>字体倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">orientation</td><td>字符倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">weight</td><td>字体粗细（100-900，400为正常，700为粗体） </td></tr>
+    <tr><td class="paramname">italic</td><td>是否斜体 </td></tr>
+    <tr><td class="paramname">underline</td><td>是否下划线 </td></tr>
+    <tr><td class="paramname">strikeOut</td><td>是否删除线 </td></tr>
+    <tr><td class="paramname">charSet</td><td>字符集 </td></tr>
+    <tr><td class="paramname">outPrecision</td><td>输出精度 </td></tr>
+    <tr><td class="paramname">clipPrecision</td><td>裁剪精度 </td></tr>
+    <tr><td class="paramname">quality</td><td>输出质量 </td></tr>
+    <tr><td class="paramname">pitchAndFamily</td><td>字体间距和族信息 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaffac2a09e1dcd6394f5099e8a1ad0edb" name="gaffac2a09e1dcd6394f5099e8a1ad0edb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaffac2a09e1dcd6394f5099e8a1ad0edb">&#9670;&#160;</a></span>setfont() <span class="overload">[4/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>typeface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>escapement</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>italic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>underline</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>strikeOut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置字体（完整版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">height</td><td>字体高度（像素） </td></tr>
+    <tr><td class="paramname">width</td><td>字体宽度（像素），0表示自动 </td></tr>
+    <tr><td class="paramname">typeface</td><td>字体名称 </td></tr>
+    <tr><td class="paramname">escapement</td><td>字体倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">orientation</td><td>字符倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">weight</td><td>字体粗细（100-900，400为正常，700为粗体） </td></tr>
+    <tr><td class="paramname">italic</td><td>是否斜体 </td></tr>
+    <tr><td class="paramname">underline</td><td>是否下划线 </td></tr>
+    <tr><td class="paramname">strikeOut</td><td>是否删除线 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gadf80e5fa4f7dc13dd539ea703decc108" name="gadf80e5fa4f7dc13dd539ea703decc108"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadf80e5fa4f7dc13dd539ea703decc108">&#9670;&#160;</a></span>setfont() <span class="overload">[5/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>typeface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置字体（简化版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">height</td><td>字体高度（像素） </td></tr>
+    <tr><td class="paramname">width</td><td>字体宽度（像素），0表示自动 </td></tr>
+    <tr><td class="paramname">typeface</td><td>字体名称 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga29da5ea478066591dea1a1d5f6742f81" name="ga29da5ea478066591dea1a1d5f6742f81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga29da5ea478066591dea1a1d5f6742f81">&#9670;&#160;</a></span>setfont() <span class="overload">[6/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const wchar_t *&#160;</td>
+          <td class="paramname"><em>typeface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>escapement</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>italic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>underline</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>strikeOut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>charSet</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>outPrecision</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>clipPrecision</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>quality</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BYTE&#160;</td>
+          <td class="paramname"><em>pitchAndFamily</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置字体（高级版本，Unicode） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">height</td><td>字体高度（像素） </td></tr>
+    <tr><td class="paramname">width</td><td>字体宽度（像素），0表示自动 </td></tr>
+    <tr><td class="paramname">typeface</td><td>字体名称 </td></tr>
+    <tr><td class="paramname">escapement</td><td>字体倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">orientation</td><td>字符倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">weight</td><td>字体粗细（100-900，400为正常，700为粗体） </td></tr>
+    <tr><td class="paramname">italic</td><td>是否斜体 </td></tr>
+    <tr><td class="paramname">underline</td><td>是否下划线 </td></tr>
+    <tr><td class="paramname">strikeOut</td><td>是否删除线 </td></tr>
+    <tr><td class="paramname">charSet</td><td>字符集 </td></tr>
+    <tr><td class="paramname">outPrecision</td><td>输出精度 </td></tr>
+    <tr><td class="paramname">clipPrecision</td><td>裁剪精度 </td></tr>
+    <tr><td class="paramname">quality</td><td>输出质量 </td></tr>
+    <tr><td class="paramname">pitchAndFamily</td><td>字体间距和族信息 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3b4d914e639dd0ab6e6a2532214bdf63" name="ga3b4d914e639dd0ab6e6a2532214bdf63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3b4d914e639dd0ab6e6a2532214bdf63">&#9670;&#160;</a></span>setfont() <span class="overload">[7/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const wchar_t *&#160;</td>
+          <td class="paramname"><em>typeface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>escapement</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>italic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>underline</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>strikeOut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置字体（完整版本，Unicode） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">height</td><td>字体高度（像素） </td></tr>
+    <tr><td class="paramname">width</td><td>字体宽度（像素），0表示自动 </td></tr>
+    <tr><td class="paramname">typeface</td><td>字体名称 </td></tr>
+    <tr><td class="paramname">escapement</td><td>字体倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">orientation</td><td>字符倾斜角度（十分之一度为单位） </td></tr>
+    <tr><td class="paramname">weight</td><td>字体粗细（100-900，400为正常，700为粗体） </td></tr>
+    <tr><td class="paramname">italic</td><td>是否斜体 </td></tr>
+    <tr><td class="paramname">underline</td><td>是否下划线 </td></tr>
+    <tr><td class="paramname">strikeOut</td><td>是否删除线 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga273ba0cf3ea22b882b4570a33451e0d4" name="ga273ba0cf3ea22b882b4570a33451e0d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga273ba0cf3ea22b882b4570a33451e0d4">&#9670;&#160;</a></span>setfont() <span class="overload">[8/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::setfont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const wchar_t *&#160;</td>
+          <td class="paramname"><em>typeface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置字体（简化版本，Unicode） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">height</td><td>字体高度（像素） </td></tr>
+    <tr><td class="paramname">width</td><td>字体宽度（像素），0表示自动 </td></tr>
+    <tr><td class="paramname">typeface</td><td>字体名称 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gafa738b43f39bbbc6398452da87a3bb84" name="gafa738b43f39bbbc6398452da87a3bb84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafa738b43f39bbbc6398452da87a3bb84">&#9670;&#160;</a></span>settextjustify()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::settextjustify </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>horiz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>vert</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置文本对齐方式 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">horiz</td><td>水平对齐方式（LEFT_TEXT、CENTER_TEXT、RIGHT_TEXT） </td></tr>
+    <tr><td class="paramname">vert</td><td>垂直对齐方式（TOP_TEXT、CENTER_TEXT、BOTTOM_TEXT） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>注解</dt><dd>影响后续所有文本输出函数的对齐效果 </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">制作者 <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

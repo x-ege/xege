@@ -1,0 +1,2737 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>EGE 图形库: EGE GDI+增强函数</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+  $(document).ready(function() { init_search(); });
+/* @license-end */
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="egelogo.jpg"/></td>
+  <td id="projectalign">
+   <div id="projectname">EGE 图形库<span id="projectnumber">&#160;24.04</span>
+   </div>
+   <div id="projectbrief">Easy Graphics Engine - 简单易用的图形库</div>
+  </td>
+    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect"                onmouseover="return searchBox.OnSearchSelectShow()"                onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>
+          <input type="text" id="MSearchField" value="" placeholder="搜索" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
+          </span>
+        </div>
+</td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('group__EGEGDIPlus.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">载入中...</div>
+<div class="SRStatus" id="Searching">搜索中...</div>
+<div class="SRStatus" id="NoMatches">未找到</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#groups">模块</a> &#124;
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle"><div class="title">EGE GDI+增强函数</div></div>
+</div><!--header-->
+<div class="contents">
+<div class="dynheader">
+EGE GDI+增强函数 的协作图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__EGEGDIPlus.png" border="0" usemap="#agroup____EGEGDIPlus" alt=""/></div>
+<map name="agroup____EGEGDIPlus" id="agroup____EGEGDIPlus">
+<area shape="rect" title=" " alt="" coords="5,5,160,31"/>
+<area shape="rect" href="group__PathManagement.html" title=" " alt="" coords="208,5,332,31"/>
+</map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="groups" name="groups"></a>
+模块</h2></td></tr>
+<tr class="memitem:group__PathManagement" id="r_group__PathManagement"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html">路径管理函数</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:ga7dd4a9061f4c0abd881dc1f185e3ecc6" id="r_ga7dd4a9061f4c0abd881dc1f185e3ecc6"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga7dd4a9061f4c0abd881dc1f185e3ecc6">ege::ege_enable_aa</a> (bool enable, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga7dd4a9061f4c0abd881dc1f185e3ecc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">启用或禁用抗锯齿  <br /></td></tr>
+<tr class="separator:ga7dd4a9061f4c0abd881dc1f185e3ecc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2c3a342daf65027ea6cce58d5a5716ba" id="r_ga2c3a342daf65027ea6cce58d5a5716ba"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga2c3a342daf65027ea6cce58d5a5716ba">ege::ege_setalpha</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> alpha, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga2c3a342daf65027ea6cce58d5a5716ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置全局Alpha透明度  <br /></td></tr>
+<tr class="separator:ga2c3a342daf65027ea6cce58d5a5716ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad6e3f4e1c6e7b68ba852dea6282b85c9" id="r_gad6e3f4e1c6e7b68ba852dea6282b85c9"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gad6e3f4e1c6e7b68ba852dea6282b85c9">ege::ege_line</a> (float x1, float y1, float x2, float y2, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gad6e3f4e1c6e7b68ba852dea6282b85c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制直线（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:gad6e3f4e1c6e7b68ba852dea6282b85c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga16f2e1112d9c03174aa26d4883de9645" id="r_ga16f2e1112d9c03174aa26d4883de9645"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga16f2e1112d9c03174aa26d4883de9645">ege::ege_drawpoly</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga16f2e1112d9c03174aa26d4883de9645"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制多边形（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga16f2e1112d9c03174aa26d4883de9645"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3ec4818dce32d802aa560bc5d37919b2" id="r_ga3ec4818dce32d802aa560bc5d37919b2"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga3ec4818dce32d802aa560bc5d37919b2">ege::ege_polyline</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga3ec4818dce32d802aa560bc5d37919b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制多条线段（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga3ec4818dce32d802aa560bc5d37919b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c87a0fa64955371315a4864dbae29dc" id="r_ga3c87a0fa64955371315a4864dbae29dc"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga3c87a0fa64955371315a4864dbae29dc">ege::ege_polygon</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga3c87a0fa64955371315a4864dbae29dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制多边形边框（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga3c87a0fa64955371315a4864dbae29dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7a9a97dc2fb1510ff614dcceb9ecce97" id="r_ga7a9a97dc2fb1510ff614dcceb9ecce97"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga7a9a97dc2fb1510ff614dcceb9ecce97">ege::ege_fillpoly</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga7a9a97dc2fb1510ff614dcceb9ecce97"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充多边形（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga7a9a97dc2fb1510ff614dcceb9ecce97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9d5a355e47dcfb0250527fec772dbab8" id="r_ga9d5a355e47dcfb0250527fec772dbab8"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga9d5a355e47dcfb0250527fec772dbab8">ege::ege_bezier</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga9d5a355e47dcfb0250527fec772dbab8"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制贝塞尔曲线（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga9d5a355e47dcfb0250527fec772dbab8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafb41ec190cd1c9b29955e7b3094798b4" id="r_gafb41ec190cd1c9b29955e7b3094798b4"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gafb41ec190cd1c9b29955e7b3094798b4">ege::ege_drawbezier</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gafb41ec190cd1c9b29955e7b3094798b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制贝塞尔曲线（同ege_bezier）  <br /></td></tr>
+<tr class="separator:gafb41ec190cd1c9b29955e7b3094798b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga27a965fcdf3f1e4c95d1a896d22fac94" id="r_ga27a965fcdf3f1e4c95d1a896d22fac94"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga27a965fcdf3f1e4c95d1a896d22fac94">ege::ege_drawcurve</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga27a965fcdf3f1e4c95d1a896d22fac94"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制基数样条曲线  <br /></td></tr>
+<tr class="separator:ga27a965fcdf3f1e4c95d1a896d22fac94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac89d39c3157c492bc9447c64785b8222" id="r_gac89d39c3157c492bc9447c64785b8222"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gac89d39c3157c492bc9447c64785b8222">ege::ege_drawclosedcurve</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gac89d39c3157c492bc9447c64785b8222"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制闭合基数样条曲线  <br /></td></tr>
+<tr class="separator:gac89d39c3157c492bc9447c64785b8222"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga222ed57bd5b0bbf96ac61693d6b4c8db" id="r_ga222ed57bd5b0bbf96ac61693d6b4c8db"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga222ed57bd5b0bbf96ac61693d6b4c8db">ege::ege_fillclosedcurve</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga222ed57bd5b0bbf96ac61693d6b4c8db"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充闭合基数样条曲线  <br /></td></tr>
+<tr class="separator:ga222ed57bd5b0bbf96ac61693d6b4c8db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab97675c4beb673d728be8423b4dd5e73" id="r_gab97675c4beb673d728be8423b4dd5e73"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gab97675c4beb673d728be8423b4dd5e73">ege::ege_drawcurve</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, float tension, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gab97675c4beb673d728be8423b4dd5e73"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制基数样条曲线（带张力参数）  <br /></td></tr>
+<tr class="separator:gab97675c4beb673d728be8423b4dd5e73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1be2cf0b183dbb9e0cb20fae373b2ece" id="r_ga1be2cf0b183dbb9e0cb20fae373b2ece"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga1be2cf0b183dbb9e0cb20fae373b2ece">ege::ege_drawclosedcurve</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, float tension, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga1be2cf0b183dbb9e0cb20fae373b2ece"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制闭合基数样条曲线（带张力参数）  <br /></td></tr>
+<tr class="separator:ga1be2cf0b183dbb9e0cb20fae373b2ece"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96f67986e678ef51354b6628946c95d9" id="r_ga96f67986e678ef51354b6628946c95d9"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga96f67986e678ef51354b6628946c95d9">ege::ege_fillclosedcurve</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> numOfPoints, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, float tension, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga96f67986e678ef51354b6628946c95d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充闭合基数样条曲线（带张力参数）  <br /></td></tr>
+<tr class="separator:ga96f67986e678ef51354b6628946c95d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga43405275d5f768de671a40508eea4300" id="r_ga43405275d5f768de671a40508eea4300"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga43405275d5f768de671a40508eea4300">ege::ege_rectangle</a> (float x, float y, float w, float h, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga43405275d5f768de671a40508eea4300"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制矩形边框（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga43405275d5f768de671a40508eea4300"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga935b2edcdba484943520ca4efbe38a38" id="r_ga935b2edcdba484943520ca4efbe38a38"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga935b2edcdba484943520ca4efbe38a38">ege::ege_fillrect</a> (float x, float y, float w, float h, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga935b2edcdba484943520ca4efbe38a38"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充矩形（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga935b2edcdba484943520ca4efbe38a38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf6fab386abf546f386e276d77e41906f" id="r_gaf6fab386abf546f386e276d77e41906f"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gaf6fab386abf546f386e276d77e41906f">ege::ege_circle</a> (float x, float y, float radius, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gaf6fab386abf546f386e276d77e41906f"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制圆形边框（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:gaf6fab386abf546f386e276d77e41906f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad3231e7f27de1794bc0844a1f2a21dd8" id="r_gad3231e7f27de1794bc0844a1f2a21dd8"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gad3231e7f27de1794bc0844a1f2a21dd8">ege::ege_fillcircle</a> (float x, float y, float radius, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gad3231e7f27de1794bc0844a1f2a21dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充圆形（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:gad3231e7f27de1794bc0844a1f2a21dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacfcb6e8042e458d250b9ecccfce175d9" id="r_gacfcb6e8042e458d250b9ecccfce175d9"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gacfcb6e8042e458d250b9ecccfce175d9">ege::ege_ellipse</a> (float x, float y, float w, float h, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gacfcb6e8042e458d250b9ecccfce175d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制椭圆边框（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:gacfcb6e8042e458d250b9ecccfce175d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafa3978e95c29361e169b9e1fc14eec56" id="r_gafa3978e95c29361e169b9e1fc14eec56"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gafa3978e95c29361e169b9e1fc14eec56">ege::ege_fillellipse</a> (float x, float y, float w, float h, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gafa3978e95c29361e169b9e1fc14eec56"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充椭圆（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:gafa3978e95c29361e169b9e1fc14eec56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga72853f3f7a137c4fbb5deede7f2d6857" id="r_ga72853f3f7a137c4fbb5deede7f2d6857"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga72853f3f7a137c4fbb5deede7f2d6857">ege::ege_arc</a> (float x, float y, float w, float h, float startAngle, float sweepAngle, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga72853f3f7a137c4fbb5deede7f2d6857"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制椭圆弧（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga72853f3f7a137c4fbb5deede7f2d6857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3deec00c584a1699bf69a85dee18f9e0" id="r_ga3deec00c584a1699bf69a85dee18f9e0"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga3deec00c584a1699bf69a85dee18f9e0">ege::ege_pie</a> (float x, float y, float w, float h, float startAngle, float sweepAngle, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga3deec00c584a1699bf69a85dee18f9e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制饼图边框（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga3deec00c584a1699bf69a85dee18f9e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga105be82d2840d06b979ed32f2aff0534" id="r_ga105be82d2840d06b979ed32f2aff0534"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga105be82d2840d06b979ed32f2aff0534">ege::ege_fillpie</a> (float x, float y, float w, float h, float startAngle, float sweepAngle, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga105be82d2840d06b979ed32f2aff0534"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充饼图（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga105be82d2840d06b979ed32f2aff0534"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gada21f6b3ec733f61efd75a3c4cdae7d2" id="r_gada21f6b3ec733f61efd75a3c4cdae7d2"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gada21f6b3ec733f61efd75a3c4cdae7d2">ege::ege_roundrect</a> (float x, float y, float w, float h, float radius, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gada21f6b3ec733f61efd75a3c4cdae7d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制圆角矩形边框（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:gada21f6b3ec733f61efd75a3c4cdae7d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga720e669c96a2313452cf2160f38562b0" id="r_ga720e669c96a2313452cf2160f38562b0"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga720e669c96a2313452cf2160f38562b0">ege::ege_fillroundrect</a> (float x, float y, float w, float h, float radius, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga720e669c96a2313452cf2160f38562b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充圆角矩形（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga720e669c96a2313452cf2160f38562b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae0cbb1312da21918e135844fc9748cf6" id="r_gae0cbb1312da21918e135844fc9748cf6"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gae0cbb1312da21918e135844fc9748cf6">ege::ege_roundrect</a> (float x, float y, float w, float h, float radius1, float radius2, float radius3, float radius4, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gae0cbb1312da21918e135844fc9748cf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制圆角矩形边框（各角不同半径）  <br /></td></tr>
+<tr class="separator:gae0cbb1312da21918e135844fc9748cf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacec05ae201d797e6e12ca4426e7e9249" id="r_gacec05ae201d797e6e12ca4426e7e9249"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gacec05ae201d797e6e12ca4426e7e9249">ege::ege_fillroundrect</a> (float x, float y, float w, float h, float radius1, float radius2, float radius3, float radius4, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gacec05ae201d797e6e12ca4426e7e9249"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充圆角矩形（各角不同半径）  <br /></td></tr>
+<tr class="separator:gacec05ae201d797e6e12ca4426e7e9249"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8a524a32a379ec7a4afdd0291fdde80d" id="r_ga8a524a32a379ec7a4afdd0291fdde80d"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga8a524a32a379ec7a4afdd0291fdde80d">ege::ege_setpattern_none</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga8a524a32a379ec7a4afdd0291fdde80d"><td class="mdescLeft">&#160;</td><td class="mdescRight">清除填充图案（设为无图案）  <br /></td></tr>
+<tr class="separator:ga8a524a32a379ec7a4afdd0291fdde80d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga704418817d7937975d26c2bfca132b96" id="r_ga704418817d7937975d26c2bfca132b96"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga704418817d7937975d26c2bfca132b96">ege::ege_setpattern_lineargradient</a> (float x1, float y1, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> c1, float x2, float y2, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> c2, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga704418817d7937975d26c2bfca132b96"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置线性渐变填充图案  <br /></td></tr>
+<tr class="separator:ga704418817d7937975d26c2bfca132b96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacfa8e28f2ce1b9acf412d93bb62e7796" id="r_gacfa8e28f2ce1b9acf412d93bb62e7796"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gacfa8e28f2ce1b9acf412d93bb62e7796">ege::ege_setpattern_pathgradient</a> (<a class="el" href="structege_1_1ege__point.html">ege_point</a> center, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> centerColor, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> count, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> colorCount, const <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> *pointColors, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gacfa8e28f2ce1b9acf412d93bb62e7796"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置路径渐变填充图案  <br /></td></tr>
+<tr class="separator:gacfa8e28f2ce1b9acf412d93bb62e7796"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadeb361fb00ea991c1621808cb274e958" id="r_gadeb361fb00ea991c1621808cb274e958"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gadeb361fb00ea991c1621808cb274e958">ege::ege_setpattern_ellipsegradient</a> (<a class="el" href="structege_1_1ege__point.html">ege_point</a> center, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> centerColor, float x, float y, float w, float h, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> color, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gadeb361fb00ea991c1621808cb274e958"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置椭圆渐变填充图案  <br /></td></tr>
+<tr class="separator:gadeb361fb00ea991c1621808cb274e958"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4e2d3181e3ed7107d5607eb9f857af18" id="r_ga4e2d3181e3ed7107d5607eb9f857af18"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga4e2d3181e3ed7107d5607eb9f857af18">ege::ege_setpattern_texture</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgSrc, float x, float y, float w, float h, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga4e2d3181e3ed7107d5607eb9f857af18"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置纹理填充图案  <br /></td></tr>
+<tr class="separator:ga4e2d3181e3ed7107d5607eb9f857af18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa039ab766709ffc707133220012b112a" id="r_gaa039ab766709ffc707133220012b112a"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gaa039ab766709ffc707133220012b112a">ege::ege_drawtext</a> (const char *text, float x, float y, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gaa039ab766709ffc707133220012b112a"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制文本（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:gaa039ab766709ffc707133220012b112a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab9dd24cbe739090c4f5ca742bcdd87e8" id="r_gab9dd24cbe739090c4f5ca742bcdd87e8"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gab9dd24cbe739090c4f5ca742bcdd87e8">ege::ege_drawtext</a> (const wchar_t *text, float x, float y, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gab9dd24cbe739090c4f5ca742bcdd87e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制文本（GDI+增强版本，Unicode）  <br /></td></tr>
+<tr class="separator:gab9dd24cbe739090c4f5ca742bcdd87e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae25a91c490dd8f6f99996dbd2e3e9c5a" id="r_gae25a91c490dd8f6f99996dbd2e3e9c5a"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gae25a91c490dd8f6f99996dbd2e3e9c5a">ege::ege_gentexture</a> (bool generate, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gae25a91c490dd8f6f99996dbd2e3e9c5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">生成纹理  <br /></td></tr>
+<tr class="separator:gae25a91c490dd8f6f99996dbd2e3e9c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac881bbb4291fb48fd2407212c5364f6b" id="r_gac881bbb4291fb48fd2407212c5364f6b"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gac881bbb4291fb48fd2407212c5364f6b">ege::ege_puttexture</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, float x, float y, float w, float h, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gac881bbb4291fb48fd2407212c5364f6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制纹理图像  <br /></td></tr>
+<tr class="separator:gac881bbb4291fb48fd2407212c5364f6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaca3aa3b6690a0d561f75a9fdafbb07a8" id="r_gaca3aa3b6690a0d561f75a9fdafbb07a8"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gaca3aa3b6690a0d561f75a9fdafbb07a8">ege::ege_puttexture</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="structege_1_1ege__rect.html">ege_rect</a> dest, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gaca3aa3b6690a0d561f75a9fdafbb07a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制纹理图像（指定目标矩形）  <br /></td></tr>
+<tr class="separator:gaca3aa3b6690a0d561f75a9fdafbb07a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga167a2cc22c1038a0aaa1748e1eed6a5e" id="r_ga167a2cc22c1038a0aaa1748e1eed6a5e"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga167a2cc22c1038a0aaa1748e1eed6a5e">ege::ege_puttexture</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="structege_1_1ege__rect.html">ege_rect</a> dest, <a class="el" href="structege_1_1ege__rect.html">ege_rect</a> src, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga167a2cc22c1038a0aaa1748e1eed6a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制纹理图像（指定源和目标矩形）  <br /></td></tr>
+<tr class="separator:ga167a2cc22c1038a0aaa1748e1eed6a5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ca29354f276239ea08aa93f5e521dd0" id="r_ga2ca29354f276239ea08aa93f5e521dd0"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga2ca29354f276239ea08aa93f5e521dd0">ege::ege_drawimage</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga2ca29354f276239ea08aa93f5e521dd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制图像（GDI+增强版本）  <br /></td></tr>
+<tr class="separator:ga2ca29354f276239ea08aa93f5e521dd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga25b9a89c29632eeb4c0acc8dd22677fb" id="r_ga25b9a89c29632eeb4c0acc8dd22677fb"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga25b9a89c29632eeb4c0acc8dd22677fb">ege::ege_drawimage</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga25b9a89c29632eeb4c0acc8dd22677fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制图像（GDI+增强版本，指定源和目标区域）  <br /></td></tr>
+<tr class="separator:ga25b9a89c29632eeb4c0acc8dd22677fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa68583e27c3966f9a2956c9ebae6747f" id="r_gaa68583e27c3966f9a2956c9ebae6747f"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gaa68583e27c3966f9a2956c9ebae6747f">ege::ege_drawpath</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gaa68583e27c3966f9a2956c9ebae6747f"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制路径边框  <br /></td></tr>
+<tr class="separator:gaa68583e27c3966f9a2956c9ebae6747f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafc426e3cb9b6fc9d743063d5881aca5c" id="r_gafc426e3cb9b6fc9d743063d5881aca5c"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#gafc426e3cb9b6fc9d743063d5881aca5c">ege::ege_fillpath</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gafc426e3cb9b6fc9d743063d5881aca5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充路径  <br /></td></tr>
+<tr class="separator:gafc426e3cb9b6fc9d743063d5881aca5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga00cdbcd57927491c27b72632934c275f" id="r_ga00cdbcd57927491c27b72632934c275f"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga00cdbcd57927491c27b72632934c275f">ege::ege_drawpath</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float x, float y, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga00cdbcd57927491c27b72632934c275f"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制路径边框（指定偏移）  <br /></td></tr>
+<tr class="separator:ga00cdbcd57927491c27b72632934c275f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0ec5d0f2e2c2075cd60b803e151ecf21" id="r_ga0ec5d0f2e2c2075cd60b803e151ecf21"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__EGEGDIPlus.html#ga0ec5d0f2e2c2075cd60b803e151ecf21">ege::ege_fillpath</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float x, float y, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga0ec5d0f2e2c2075cd60b803e151ecf21"><td class="mdescLeft">&#160;</td><td class="mdescRight">绘制填充路径（指定偏移）  <br /></td></tr>
+<tr class="separator:ga0ec5d0f2e2c2075cd60b803e151ecf21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">详细描述</h2>
+<p>需要定义EGE_GDIPLUS宏才能使用的增强绘图功能 </p>
+<h2 class="groupheader">函数说明</h2>
+<a id="ga72853f3f7a137c4fbb5deede7f2d6857" name="ga72853f3f7a137c4fbb5deede7f2d6857"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga72853f3f7a137c4fbb5deede7f2d6857">&#9670;&#160;</a></span>ege_arc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_arc </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>startAngle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>sweepAngle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制椭圆弧（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>椭圆边界矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>椭圆边界矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>椭圆边界矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>椭圆边界矩形高度 </td></tr>
+    <tr><td class="paramname">startAngle</td><td>起始角度（度） </td></tr>
+    <tr><td class="paramname">sweepAngle</td><td>扫描角度（度） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga9d5a355e47dcfb0250527fec772dbab8" name="ga9d5a355e47dcfb0250527fec772dbab8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9d5a355e47dcfb0250527fec772dbab8">&#9670;&#160;</a></span>ege_bezier()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_bezier </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制贝塞尔曲线（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaf6fab386abf546f386e276d77e41906f" name="gaf6fab386abf546f386e276d77e41906f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf6fab386abf546f386e276d77e41906f">&#9670;&#160;</a></span>ege_circle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_circle </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制圆形边框（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>圆心x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>圆心y坐标 </td></tr>
+    <tr><td class="paramname">radius</td><td>半径 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gafb41ec190cd1c9b29955e7b3094798b4" name="gafb41ec190cd1c9b29955e7b3094798b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafb41ec190cd1c9b29955e7b3094798b4">&#9670;&#160;</a></span>ege_drawbezier()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawbezier </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制贝塞尔曲线（同ege_bezier） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga1be2cf0b183dbb9e0cb20fae373b2ece" name="ga1be2cf0b183dbb9e0cb20fae373b2ece"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1be2cf0b183dbb9e0cb20fae373b2ece">&#9670;&#160;</a></span>ege_drawclosedcurve() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawclosedcurve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>tension</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制闭合基数样条曲线（带张力参数） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">tension</td><td>张力参数（0.0为直线，值越大曲线越弯曲） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gac89d39c3157c492bc9447c64785b8222" name="gac89d39c3157c492bc9447c64785b8222"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac89d39c3157c492bc9447c64785b8222">&#9670;&#160;</a></span>ege_drawclosedcurve() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawclosedcurve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制闭合基数样条曲线 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gab97675c4beb673d728be8423b4dd5e73" name="gab97675c4beb673d728be8423b4dd5e73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab97675c4beb673d728be8423b4dd5e73">&#9670;&#160;</a></span>ege_drawcurve() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawcurve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>tension</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制基数样条曲线（带张力参数） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">tension</td><td>张力参数（0.0为直线，值越大曲线越弯曲） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga27a965fcdf3f1e4c95d1a896d22fac94" name="ga27a965fcdf3f1e4c95d1a896d22fac94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga27a965fcdf3f1e4c95d1a896d22fac94">&#9670;&#160;</a></span>ege_drawcurve() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawcurve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制基数样条曲线 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga25b9a89c29632eeb4c0acc8dd22677fb" name="ga25b9a89c29632eeb4c0acc8dd22677fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga25b9a89c29632eeb4c0acc8dd22677fb">&#9670;&#160;</a></span>ege_drawimage() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制图像（GDI+增强版本，指定源和目标区域） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgSrc</td><td>源图像 </td></tr>
+    <tr><td class="paramname">xDest</td><td>目标区域左上角x坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>目标区域左上角y坐标 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>目标区域宽度 </td></tr>
+    <tr><td class="paramname">heightDest</td><td>目标区域高度 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>源区域左上角x坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>源区域左上角y坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>源区域宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>源区域高度 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga2ca29354f276239ea08aa93f5e521dd0" name="ga2ca29354f276239ea08aa93f5e521dd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2ca29354f276239ea08aa93f5e521dd0">&#9670;&#160;</a></span>ege_drawimage() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制图像（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgSrc</td><td>源图像 </td></tr>
+    <tr><td class="paramname">xDest</td><td>目标x坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>目标y坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga00cdbcd57927491c27b72632934c275f" name="ga00cdbcd57927491c27b72632934c275f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga00cdbcd57927491c27b72632934c275f">&#9670;&#160;</a></span>ege_drawpath() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawpath </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制路径边框（指定偏移） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">x</td><td>x方向偏移 </td></tr>
+    <tr><td class="paramname">y</td><td>y方向偏移 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaa68583e27c3966f9a2956c9ebae6747f" name="gaa68583e27c3966f9a2956c9ebae6747f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa68583e27c3966f9a2956c9ebae6747f">&#9670;&#160;</a></span>ege_drawpath() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawpath </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制路径边框 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga16f2e1112d9c03174aa26d4883de9645" name="ga16f2e1112d9c03174aa26d4883de9645"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga16f2e1112d9c03174aa26d4883de9645">&#9670;&#160;</a></span>ege_drawpoly()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawpoly </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制多边形（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>点的数量 </td></tr>
+    <tr><td class="paramname">points</td><td>点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaa039ab766709ffc707133220012b112a" name="gaa039ab766709ffc707133220012b112a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa039ab766709ffc707133220012b112a">&#9670;&#160;</a></span>ege_drawtext() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawtext </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>text</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制文本（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>要绘制的文本 </td></tr>
+    <tr><td class="paramname">x</td><td>文本左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>文本左上角y坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gab9dd24cbe739090c4f5ca742bcdd87e8" name="gab9dd24cbe739090c4f5ca742bcdd87e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab9dd24cbe739090c4f5ca742bcdd87e8">&#9670;&#160;</a></span>ege_drawtext() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_drawtext </td>
+          <td>(</td>
+          <td class="paramtype">const wchar_t *&#160;</td>
+          <td class="paramname"><em>text</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制文本（GDI+增强版本，Unicode） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>要绘制的文本 </td></tr>
+    <tr><td class="paramname">x</td><td>文本左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>文本左上角y坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gacfcb6e8042e458d250b9ecccfce175d9" name="gacfcb6e8042e458d250b9ecccfce175d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacfcb6e8042e458d250b9ecccfce175d9">&#9670;&#160;</a></span>ege_ellipse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_ellipse </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制椭圆边框（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>椭圆边界矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>椭圆边界矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>椭圆边界矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>椭圆边界矩形高度 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga7dd4a9061f4c0abd881dc1f185e3ecc6" name="ga7dd4a9061f4c0abd881dc1f185e3ecc6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7dd4a9061f4c0abd881dc1f185e3ecc6">&#9670;&#160;</a></span>ege_enable_aa()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_enable_aa </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>启用或禁用抗锯齿 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enable</td><td>true启用抗锯齿，false禁用 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gad3231e7f27de1794bc0844a1f2a21dd8" name="gad3231e7f27de1794bc0844a1f2a21dd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad3231e7f27de1794bc0844a1f2a21dd8">&#9670;&#160;</a></span>ege_fillcircle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillcircle </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充圆形（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>圆心x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>圆心y坐标 </td></tr>
+    <tr><td class="paramname">radius</td><td>半径 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga96f67986e678ef51354b6628946c95d9" name="ga96f67986e678ef51354b6628946c95d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga96f67986e678ef51354b6628946c95d9">&#9670;&#160;</a></span>ege_fillclosedcurve() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillclosedcurve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>tension</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充闭合基数样条曲线（带张力参数） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">tension</td><td>张力参数（0.0为直线，值越大曲线越弯曲） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga222ed57bd5b0bbf96ac61693d6b4c8db" name="ga222ed57bd5b0bbf96ac61693d6b4c8db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga222ed57bd5b0bbf96ac61693d6b4c8db">&#9670;&#160;</a></span>ege_fillclosedcurve() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillclosedcurve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充闭合基数样条曲线 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>控制点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gafa3978e95c29361e169b9e1fc14eec56" name="gafa3978e95c29361e169b9e1fc14eec56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafa3978e95c29361e169b9e1fc14eec56">&#9670;&#160;</a></span>ege_fillellipse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillellipse </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充椭圆（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>椭圆边界矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>椭圆边界矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>椭圆边界矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>椭圆边界矩形高度 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga0ec5d0f2e2c2075cd60b803e151ecf21" name="ga0ec5d0f2e2c2075cd60b803e151ecf21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0ec5d0f2e2c2075cd60b803e151ecf21">&#9670;&#160;</a></span>ege_fillpath() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillpath </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充路径（指定偏移） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">x</td><td>x方向偏移 </td></tr>
+    <tr><td class="paramname">y</td><td>y方向偏移 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gafc426e3cb9b6fc9d743063d5881aca5c" name="gafc426e3cb9b6fc9d743063d5881aca5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafc426e3cb9b6fc9d743063d5881aca5c">&#9670;&#160;</a></span>ege_fillpath() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillpath </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga105be82d2840d06b979ed32f2aff0534" name="ga105be82d2840d06b979ed32f2aff0534"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga105be82d2840d06b979ed32f2aff0534">&#9670;&#160;</a></span>ege_fillpie()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillpie </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>startAngle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>sweepAngle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充饼图（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>椭圆边界矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>椭圆边界矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>椭圆边界矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>椭圆边界矩形高度 </td></tr>
+    <tr><td class="paramname">startAngle</td><td>起始角度（度） </td></tr>
+    <tr><td class="paramname">sweepAngle</td><td>扫描角度（度） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga7a9a97dc2fb1510ff614dcceb9ecce97" name="ga7a9a97dc2fb1510ff614dcceb9ecce97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7a9a97dc2fb1510ff614dcceb9ecce97">&#9670;&#160;</a></span>ege_fillpoly()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillpoly </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充多边形（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>点的数量 </td></tr>
+    <tr><td class="paramname">points</td><td>点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga935b2edcdba484943520ca4efbe38a38" name="ga935b2edcdba484943520ca4efbe38a38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga935b2edcdba484943520ca4efbe38a38">&#9670;&#160;</a></span>ege_fillrect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillrect </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充矩形（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>矩形高度 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga720e669c96a2313452cf2160f38562b0" name="ga720e669c96a2313452cf2160f38562b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga720e669c96a2313452cf2160f38562b0">&#9670;&#160;</a></span>ege_fillroundrect() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillroundrect </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充圆角矩形（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>矩形高度 </td></tr>
+    <tr><td class="paramname">radius</td><td>圆角半径 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gacec05ae201d797e6e12ca4426e7e9249" name="gacec05ae201d797e6e12ca4426e7e9249"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacec05ae201d797e6e12ca4426e7e9249">&#9670;&#160;</a></span>ege_fillroundrect() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_fillroundrect </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius4</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制填充圆角矩形（各角不同半径） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>矩形高度 </td></tr>
+    <tr><td class="paramname">radius1</td><td>左上角圆角半径 </td></tr>
+    <tr><td class="paramname">radius2</td><td>右上角圆角半径 </td></tr>
+    <tr><td class="paramname">radius3</td><td>右下角圆角半径 </td></tr>
+    <tr><td class="paramname">radius4</td><td>左下角圆角半径 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gae25a91c490dd8f6f99996dbd2e3e9c5a" name="gae25a91c490dd8f6f99996dbd2e3e9c5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae25a91c490dd8f6f99996dbd2e3e9c5a">&#9670;&#160;</a></span>ege_gentexture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_gentexture </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>generate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>生成纹理 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">generate</td><td>是否生成纹理 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gad6e3f4e1c6e7b68ba852dea6282b85c9" name="gad6e3f4e1c6e7b68ba852dea6282b85c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad6e3f4e1c6e7b68ba852dea6282b85c9">&#9670;&#160;</a></span>ege_line()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_line </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制直线（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x1</td><td>起点x坐标 </td></tr>
+    <tr><td class="paramname">y1</td><td>起点y坐标 </td></tr>
+    <tr><td class="paramname">x2</td><td>终点x坐标 </td></tr>
+    <tr><td class="paramname">y2</td><td>终点y坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3deec00c584a1699bf69a85dee18f9e0" name="ga3deec00c584a1699bf69a85dee18f9e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3deec00c584a1699bf69a85dee18f9e0">&#9670;&#160;</a></span>ege_pie()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_pie </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>startAngle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>sweepAngle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制饼图边框（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>椭圆边界矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>椭圆边界矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>椭圆边界矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>椭圆边界矩形高度 </td></tr>
+    <tr><td class="paramname">startAngle</td><td>起始角度（度） </td></tr>
+    <tr><td class="paramname">sweepAngle</td><td>扫描角度（度） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3c87a0fa64955371315a4864dbae29dc" name="ga3c87a0fa64955371315a4864dbae29dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3c87a0fa64955371315a4864dbae29dc">&#9670;&#160;</a></span>ege_polygon()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_polygon </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制多边形边框（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>点的数量 </td></tr>
+    <tr><td class="paramname">points</td><td>点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3ec4818dce32d802aa560bc5d37919b2" name="ga3ec4818dce32d802aa560bc5d37919b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3ec4818dce32d802aa560bc5d37919b2">&#9670;&#160;</a></span>ege_polyline()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_polyline </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>numOfPoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制多条线段（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numOfPoints</td><td>点的数量 </td></tr>
+    <tr><td class="paramname">points</td><td>点坐标数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga167a2cc22c1038a0aaa1748e1eed6a5e" name="ga167a2cc22c1038a0aaa1748e1eed6a5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga167a2cc22c1038a0aaa1748e1eed6a5e">&#9670;&#160;</a></span>ege_puttexture() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_puttexture </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__rect.html">ege_rect</a>&#160;</td>
+          <td class="paramname"><em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__rect.html">ege_rect</a>&#160;</td>
+          <td class="paramname"><em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制纹理图像（指定源和目标矩形） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgSrc</td><td>源纹理图像 </td></tr>
+    <tr><td class="paramname">dest</td><td>目标矩形 </td></tr>
+    <tr><td class="paramname">src</td><td>源矩形 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaca3aa3b6690a0d561f75a9fdafbb07a8" name="gaca3aa3b6690a0d561f75a9fdafbb07a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaca3aa3b6690a0d561f75a9fdafbb07a8">&#9670;&#160;</a></span>ege_puttexture() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_puttexture </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__rect.html">ege_rect</a>&#160;</td>
+          <td class="paramname"><em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制纹理图像（指定目标矩形） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgSrc</td><td>源纹理图像 </td></tr>
+    <tr><td class="paramname">dest</td><td>目标矩形 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gac881bbb4291fb48fd2407212c5364f6b" name="gac881bbb4291fb48fd2407212c5364f6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac881bbb4291fb48fd2407212c5364f6b">&#9670;&#160;</a></span>ege_puttexture() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_puttexture </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制纹理图像 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgSrc</td><td>源纹理图像 </td></tr>
+    <tr><td class="paramname">x</td><td>目标区域左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>目标区域左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>目标区域宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>目标区域高度 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga43405275d5f768de671a40508eea4300" name="ga43405275d5f768de671a40508eea4300"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga43405275d5f768de671a40508eea4300">&#9670;&#160;</a></span>ege_rectangle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_rectangle </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制矩形边框（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>矩形高度 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gada21f6b3ec733f61efd75a3c4cdae7d2" name="gada21f6b3ec733f61efd75a3c4cdae7d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gada21f6b3ec733f61efd75a3c4cdae7d2">&#9670;&#160;</a></span>ege_roundrect() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_roundrect </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制圆角矩形边框（GDI+增强版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>矩形高度 </td></tr>
+    <tr><td class="paramname">radius</td><td>圆角半径 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gae0cbb1312da21918e135844fc9748cf6" name="gae0cbb1312da21918e135844fc9748cf6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae0cbb1312da21918e135844fc9748cf6">&#9670;&#160;</a></span>ege_roundrect() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_roundrect </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radius4</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>绘制圆角矩形边框（各角不同半径） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>矩形左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>矩形左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>矩形宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>矩形高度 </td></tr>
+    <tr><td class="paramname">radius1</td><td>左上角圆角半径 </td></tr>
+    <tr><td class="paramname">radius2</td><td>右上角圆角半径 </td></tr>
+    <tr><td class="paramname">radius3</td><td>右下角圆角半径 </td></tr>
+    <tr><td class="paramname">radius4</td><td>左下角圆角半径 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga2c3a342daf65027ea6cce58d5a5716ba" name="ga2c3a342daf65027ea6cce58d5a5716ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2c3a342daf65027ea6cce58d5a5716ba">&#9670;&#160;</a></span>ege_setalpha()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_setalpha </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置全局Alpha透明度 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">alpha</td><td>Alpha值（0-255，0完全透明，255完全不透明） </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gadeb361fb00ea991c1621808cb274e958" name="gadeb361fb00ea991c1621808cb274e958"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadeb361fb00ea991c1621808cb274e958">&#9670;&#160;</a></span>ege_setpattern_ellipsegradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_setpattern_ellipsegradient </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__point.html">ege_point</a>&#160;</td>
+          <td class="paramname"><em>center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>centerColor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>color</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置椭圆渐变填充图案 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">center</td><td>中心点 </td></tr>
+    <tr><td class="paramname">centerColor</td><td>中心颜色 </td></tr>
+    <tr><td class="paramname">x</td><td>椭圆左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>椭圆左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>椭圆宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>椭圆高度 </td></tr>
+    <tr><td class="paramname">color</td><td>边界颜色 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga704418817d7937975d26c2bfca132b96" name="ga704418817d7937975d26c2bfca132b96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga704418817d7937975d26c2bfca132b96">&#9670;&#160;</a></span>ege_setpattern_lineargradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_setpattern_lineargradient </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>c1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>c2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置线性渐变填充图案 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x1</td><td>起始点x坐标 </td></tr>
+    <tr><td class="paramname">y1</td><td>起始点y坐标 </td></tr>
+    <tr><td class="paramname">c1</td><td>起始点颜色 </td></tr>
+    <tr><td class="paramname">x2</td><td>结束点x坐标 </td></tr>
+    <tr><td class="paramname">y2</td><td>结束点y坐标 </td></tr>
+    <tr><td class="paramname">c2</td><td>结束点颜色 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga8a524a32a379ec7a4afdd0291fdde80d" name="ga8a524a32a379ec7a4afdd0291fdde80d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8a524a32a379ec7a4afdd0291fdde80d">&#9670;&#160;</a></span>ege_setpattern_none()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_setpattern_none </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>清除填充图案（设为无图案） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gacfa8e28f2ce1b9acf412d93bb62e7796" name="gacfa8e28f2ce1b9acf412d93bb62e7796"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacfa8e28f2ce1b9acf412d93bb62e7796">&#9670;&#160;</a></span>ege_setpattern_pathgradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_setpattern_pathgradient </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__point.html">ege_point</a>&#160;</td>
+          <td class="paramname"><em>center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>centerColor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>colorCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> *&#160;</td>
+          <td class="paramname"><em>pointColors</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置路径渐变填充图案 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">center</td><td>中心点 </td></tr>
+    <tr><td class="paramname">centerColor</td><td>中心颜色 </td></tr>
+    <tr><td class="paramname">count</td><td>边界点数量 </td></tr>
+    <tr><td class="paramname">points</td><td>边界点数组 </td></tr>
+    <tr><td class="paramname">colorCount</td><td>边界颜色数量 </td></tr>
+    <tr><td class="paramname">pointColors</td><td>边界颜色数组 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga4e2d3181e3ed7107d5607eb9f857af18" name="ga4e2d3181e3ed7107d5607eb9f857af18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e2d3181e3ed7107d5607eb9f857af18">&#9670;&#160;</a></span>ege_setpattern_texture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_setpattern_texture </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置纹理填充图案 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgSrc</td><td>源纹理图像 </td></tr>
+    <tr><td class="paramname">x</td><td>纹理区域左上角x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>纹理区域左上角y坐标 </td></tr>
+    <tr><td class="paramname">w</td><td>纹理区域宽度 </td></tr>
+    <tr><td class="paramname">h</td><td>纹理区域高度 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">制作者 <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

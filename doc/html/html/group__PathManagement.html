@@ -1,0 +1,1702 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>EGE 图形库: 路径管理函数</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+  $(document).ready(function() { init_search(); });
+/* @license-end */
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="egelogo.jpg"/></td>
+  <td id="projectalign">
+   <div id="projectname">EGE 图形库<span id="projectnumber">&#160;24.04</span>
+   </div>
+   <div id="projectbrief">Easy Graphics Engine - 简单易用的图形库</div>
+  </td>
+    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect"                onmouseover="return searchBox.OnSearchSelectShow()"                onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>
+          <input type="text" id="MSearchField" value="" placeholder="搜索" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
+          </span>
+        </div>
+</td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('group__PathManagement.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">载入中...</div>
+<div class="SRStatus" id="Searching">搜索中...</div>
+<div class="SRStatus" id="NoMatches">未找到</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#groups">模块</a> &#124;
+<a href="#define-members">宏定义</a> &#124;
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle"><div class="title">路径管理函数<div class="ingroups"><a class="el" href="group__EGEGDIPlus.html">EGE GDI+增强函数</a></div></div></div>
+</div><!--header-->
+<div class="contents">
+<div class="dynheader">
+路径管理函数 的协作图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__PathManagement.png" border="0" usemap="#agroup____PathManagement" alt=""/></div>
+<map name="agroup____PathManagement" id="agroup____PathManagement">
+<area shape="rect" href="group__Console.html" title=" " alt="" coords="414,5,521,31"/>
+<area shape="rect" href="group__EGEGDIPlus.html" title=" " alt="" coords="5,153,160,179"/>
+<area shape="rect" title=" " alt="" coords="208,153,332,179"/>
+<area shape="rect" href="group__FontSettings.html" title="字体和文本对齐相关设置函数" alt="" coords="422,55,513,80"/>
+<area shape="rect" href="group__PathAdd.html" title=" " alt="" coords="405,104,529,129"/>
+<area shape="rect" href="group__TextOutput.html" title="文本输出和显示相关函数" alt="" coords="422,153,513,179"/>
+<area shape="rect" href="group__Time.html" title=" " alt="" coords="405,203,529,228"/>
+<area shape="rect" href="group__Transform.html" title=" " alt="" coords="422,252,513,277"/>
+<area shape="rect" href="group__image__management.html" title="EGE图形库的图像创建、加载、保存和处理功能" alt="" coords="380,301,555,327"/>
+</map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="groups" name="groups"></a>
+模块</h2></td></tr>
+<tr class="memitem:group__PathAdd" id="r_group__PathAdd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathAdd.html">路径添加函数</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__Transform" id="r_group__Transform"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Transform.html">变换函数</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__Console" id="r_group__Console"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Console.html">控制台函数</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__Time" id="r_group__Time"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Time.html">时间相关函数</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__TextOutput" id="r_group__TextOutput"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TextOutput.html">文本输出</a></td></tr>
+<tr class="memdesc:group__TextOutput"><td class="mdescLeft">&#160;</td><td class="mdescRight">文本输出和显示相关函数 <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__FontSettings" id="r_group__FontSettings"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__FontSettings.html">字体设置</a></td></tr>
+<tr class="memdesc:group__FontSettings"><td class="mdescLeft">&#160;</td><td class="mdescRight">字体和文本对齐相关设置函数 <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__image__management" id="r_group__image__management"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__image__management.html">图像管理和处理函数</a></td></tr>
+<tr class="memdesc:group__image__management"><td class="mdescLeft">&#160;</td><td class="mdescRight">EGE图形库的图像创建、加载、保存和处理功能 <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+宏定义</h2></td></tr>
+<tr class="memitem:ga0c1206607ea2d18a82dee6c93946e217" id="r_ga0c1206607ea2d18a82dee6c93946e217"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga0c1206607ea2d18a82dee6c93946e217">getmaxx</a>&#160;&#160;&#160;getwidth</td></tr>
+<tr class="separator:ga0c1206607ea2d18a82dee6c93946e217"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga45497f44559806e348d55fe8709bd913" id="r_ga45497f44559806e348d55fe8709bd913"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga45497f44559806e348d55fe8709bd913">getmaxy</a>&#160;&#160;&#160;getheight</td></tr>
+<tr class="separator:ga45497f44559806e348d55fe8709bd913"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:gadc1e998d750f3dda57087a5f229987cd" id="r_gadc1e998d750f3dda57087a5f229987cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gadc1e998d750f3dda57087a5f229987cd">ege::ege_path_create</a> ()</td></tr>
+<tr class="memdesc:gadc1e998d750f3dda57087a5f229987cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">创建新的路径对象  <br /></td></tr>
+<tr class="separator:gadc1e998d750f3dda57087a5f229987cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga176ad468baf45a542004bc4c1a8fba6f" id="r_ga176ad468baf45a542004bc4c1a8fba6f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga176ad468baf45a542004bc4c1a8fba6f">ege::ege_path_createfrom</a> (const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, const <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char *types, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> count)</td></tr>
+<tr class="memdesc:ga176ad468baf45a542004bc4c1a8fba6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">从点数组和类型数组创建路径  <br /></td></tr>
+<tr class="separator:ga176ad468baf45a542004bc4c1a8fba6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga36d9c9d4f2774bcafbdc99986b19b360" id="r_ga36d9c9d4f2774bcafbdc99986b19b360"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga36d9c9d4f2774bcafbdc99986b19b360">ege::ege_path_clone</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga36d9c9d4f2774bcafbdc99986b19b360"><td class="mdescLeft">&#160;</td><td class="mdescRight">克隆路径  <br /></td></tr>
+<tr class="separator:ga36d9c9d4f2774bcafbdc99986b19b360"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadcdc333ae9b2c32faee073e02f88250c" id="r_gadcdc333ae9b2c32faee073e02f88250c"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gadcdc333ae9b2c32faee073e02f88250c">ege::ege_path_destroy</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:gadcdc333ae9b2c32faee073e02f88250c"><td class="mdescLeft">&#160;</td><td class="mdescRight">销毁路径对象  <br /></td></tr>
+<tr class="separator:gadcdc333ae9b2c32faee073e02f88250c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga095a24e94dc04f6b1356c1afc673d839" id="r_ga095a24e94dc04f6b1356c1afc673d839"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga095a24e94dc04f6b1356c1afc673d839">ege::ege_path_start</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga095a24e94dc04f6b1356c1afc673d839"><td class="mdescLeft">&#160;</td><td class="mdescRight">开始新的子路径  <br /></td></tr>
+<tr class="separator:ga095a24e94dc04f6b1356c1afc673d839"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9572eed2ddca4ac032104fde59ae352d" id="r_ga9572eed2ddca4ac032104fde59ae352d"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga9572eed2ddca4ac032104fde59ae352d">ege::ege_path_close</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga9572eed2ddca4ac032104fde59ae352d"><td class="mdescLeft">&#160;</td><td class="mdescRight">关闭当前子路径  <br /></td></tr>
+<tr class="separator:ga9572eed2ddca4ac032104fde59ae352d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga745671fda2ac95ab984987373b8950d2" id="r_ga745671fda2ac95ab984987373b8950d2"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga745671fda2ac95ab984987373b8950d2">ege::ege_path_closeall</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga745671fda2ac95ab984987373b8950d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">关闭所有打开的子路径  <br /></td></tr>
+<tr class="separator:ga745671fda2ac95ab984987373b8950d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadfe54316411474df9822a5c34c6a4405" id="r_gadfe54316411474df9822a5c34c6a4405"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gadfe54316411474df9822a5c34c6a4405">ege::ege_path_setfillmode</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, <a class="el" href="namespaceege.html#aca9d4732ee03a3c85dd07df2987ed783">fill_mode</a> mode)</td></tr>
+<tr class="memdesc:gadfe54316411474df9822a5c34c6a4405"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置路径填充模式  <br /></td></tr>
+<tr class="separator:gadfe54316411474df9822a5c34c6a4405"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5382c7180c12445f45aea408329d6581" id="r_ga5382c7180c12445f45aea408329d6581"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga5382c7180c12445f45aea408329d6581">ege::ege_path_reset</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga5382c7180c12445f45aea408329d6581"><td class="mdescLeft">&#160;</td><td class="mdescRight">重置路径（清空所有子路径）  <br /></td></tr>
+<tr class="separator:ga5382c7180c12445f45aea408329d6581"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga29231fca805295f2930264e047f11619" id="r_ga29231fca805295f2930264e047f11619"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga29231fca805295f2930264e047f11619">ege::ege_path_reverse</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga29231fca805295f2930264e047f11619"><td class="mdescLeft">&#160;</td><td class="mdescRight">反转路径方向  <br /></td></tr>
+<tr class="separator:ga29231fca805295f2930264e047f11619"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9504498f41791e5a746469eae33588f3" id="r_ga9504498f41791e5a746469eae33588f3"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga9504498f41791e5a746469eae33588f3">ege::ege_path_widen</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float lineWidth, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix=NULL)</td></tr>
+<tr class="memdesc:ga9504498f41791e5a746469eae33588f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">扩展路径（生成轮廓）  <br /></td></tr>
+<tr class="separator:ga9504498f41791e5a746469eae33588f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae3cd1073042da8c18e5b31718e0ae244" id="r_gae3cd1073042da8c18e5b31718e0ae244"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gae3cd1073042da8c18e5b31718e0ae244">ege::ege_path_widen</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float lineWidth, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix, float flatness)</td></tr>
+<tr class="memdesc:gae3cd1073042da8c18e5b31718e0ae244"><td class="mdescLeft">&#160;</td><td class="mdescRight">扩展路径（生成轮廓，指定平坦度）  <br /></td></tr>
+<tr class="separator:gae3cd1073042da8c18e5b31718e0ae244"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga94212d9476b4f911d42b83e343f182e7" id="r_ga94212d9476b4f911d42b83e343f182e7"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga94212d9476b4f911d42b83e343f182e7">ege::ege_path_flatten</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix=NULL)</td></tr>
+<tr class="memdesc:ga94212d9476b4f911d42b83e343f182e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">平坦化路径（将曲线转换为直线段）  <br /></td></tr>
+<tr class="separator:ga94212d9476b4f911d42b83e343f182e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b86748de6c24b291acb9c1a56b1774b" id="r_ga4b86748de6c24b291acb9c1a56b1774b"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga4b86748de6c24b291acb9c1a56b1774b">ege::ege_path_flatten</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix, float flatness)</td></tr>
+<tr class="memdesc:ga4b86748de6c24b291acb9c1a56b1774b"><td class="mdescLeft">&#160;</td><td class="mdescRight">平坦化路径（指定平坦度）  <br /></td></tr>
+<tr class="separator:ga4b86748de6c24b291acb9c1a56b1774b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga030f3f5992cae5764c7777f86a49c93b" id="r_ga030f3f5992cae5764c7777f86a49c93b"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga030f3f5992cae5764c7777f86a49c93b">ege::ege_path_warp</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> count, const <a class="el" href="structege_1_1ege__rect.html">ege_rect</a> *rect, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix=NULL)</td></tr>
+<tr class="memdesc:ga030f3f5992cae5764c7777f86a49c93b"><td class="mdescLeft">&#160;</td><td class="mdescRight">扭曲路径  <br /></td></tr>
+<tr class="separator:ga030f3f5992cae5764c7777f86a49c93b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga73072c0e33673b2f75f0574f1b59d665" id="r_ga73072c0e33673b2f75f0574f1b59d665"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga73072c0e33673b2f75f0574f1b59d665">ege::ege_path_warp</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> count, const <a class="el" href="structege_1_1ege__rect.html">ege_rect</a> *rect, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix, float flatness)</td></tr>
+<tr class="memdesc:ga73072c0e33673b2f75f0574f1b59d665"><td class="mdescLeft">&#160;</td><td class="mdescRight">扭曲路径（指定平坦度）  <br /></td></tr>
+<tr class="separator:ga73072c0e33673b2f75f0574f1b59d665"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga42ebad254e5b892210c57c888aec3a38" id="r_ga42ebad254e5b892210c57c888aec3a38"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga42ebad254e5b892210c57c888aec3a38">ege::ege_path_outline</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix=NULL)</td></tr>
+<tr class="memdesc:ga42ebad254e5b892210c57c888aec3a38"><td class="mdescLeft">&#160;</td><td class="mdescRight">生成路径轮廓  <br /></td></tr>
+<tr class="separator:ga42ebad254e5b892210c57c888aec3a38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac1a07c0a076c4242b54d61aa862114cc" id="r_gac1a07c0a076c4242b54d61aa862114cc"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gac1a07c0a076c4242b54d61aa862114cc">ege::ege_path_outline</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix, float flatness)</td></tr>
+<tr class="memdesc:gac1a07c0a076c4242b54d61aa862114cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">生成路径轮廓（指定平坦度）  <br /></td></tr>
+<tr class="separator:gac1a07c0a076c4242b54d61aa862114cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4530d2e8bcb1067564b298864b72160c" id="r_ga4530d2e8bcb1067564b298864b72160c"><td class="memItemLeft" align="right" valign="top">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga4530d2e8bcb1067564b298864b72160c">ege::ege_path_inpath</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float x, float y)</td></tr>
+<tr class="memdesc:ga4530d2e8bcb1067564b298864b72160c"><td class="mdescLeft">&#160;</td><td class="mdescRight">检测点是否在路径内部  <br /></td></tr>
+<tr class="separator:ga4530d2e8bcb1067564b298864b72160c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9ca765d8c98bab00e01572fbe9ba6880" id="r_ga9ca765d8c98bab00e01572fbe9ba6880"><td class="memItemLeft" align="right" valign="top">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga9ca765d8c98bab00e01572fbe9ba6880">ege::ege_path_inpath</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float x, float y, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg)</td></tr>
+<tr class="memdesc:ga9ca765d8c98bab00e01572fbe9ba6880"><td class="mdescLeft">&#160;</td><td class="mdescRight">检测点是否在路径内部（指定图像上下文）  <br /></td></tr>
+<tr class="separator:ga9ca765d8c98bab00e01572fbe9ba6880"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacf096ecbefa98fb2dbf3abc718cba8a6" id="r_gacf096ecbefa98fb2dbf3abc718cba8a6"><td class="memItemLeft" align="right" valign="top">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gacf096ecbefa98fb2dbf3abc718cba8a6">ege::ege_path_instroke</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float x, float y)</td></tr>
+<tr class="memdesc:gacf096ecbefa98fb2dbf3abc718cba8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">检测点是否在路径边框上  <br /></td></tr>
+<tr class="separator:gacf096ecbefa98fb2dbf3abc718cba8a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac2951e6c271cb1518c6e41d09b1693ec" id="r_gac2951e6c271cb1518c6e41d09b1693ec"><td class="memItemLeft" align="right" valign="top">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gac2951e6c271cb1518c6e41d09b1693ec">ege::ege_path_instroke</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, float x, float y, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg)</td></tr>
+<tr class="memdesc:gac2951e6c271cb1518c6e41d09b1693ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">检测点是否在路径边框上（指定图像上下文）  <br /></td></tr>
+<tr class="separator:gac2951e6c271cb1518c6e41d09b1693ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga184cdb7895e655efeef42623bd375d28" id="r_ga184cdb7895e655efeef42623bd375d28"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__point.html">ege_point</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga184cdb7895e655efeef42623bd375d28">ege::ege_path_lastpoint</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga184cdb7895e655efeef42623bd375d28"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取路径最后一个点的坐标  <br /></td></tr>
+<tr class="separator:ga184cdb7895e655efeef42623bd375d28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ad6ab88e7abafed911b67ac09f80ac3" id="r_ga2ad6ab88e7abafed911b67ac09f80ac3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga2ad6ab88e7abafed911b67ac09f80ac3">ege::ege_path_pointcount</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path)</td></tr>
+<tr class="memdesc:ga2ad6ab88e7abafed911b67ac09f80ac3"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取路径中点的数量  <br /></td></tr>
+<tr class="separator:ga2ad6ab88e7abafed911b67ac09f80ac3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafe03fa705ad4a814d4d62790020674c1" id="r_gafe03fa705ad4a814d4d62790020674c1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__rect.html">ege_rect</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gafe03fa705ad4a814d4d62790020674c1">ege::ege_path_getbounds</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix=NULL)</td></tr>
+<tr class="memdesc:gafe03fa705ad4a814d4d62790020674c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取路径边界矩形  <br /></td></tr>
+<tr class="separator:gafe03fa705ad4a814d4d62790020674c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga91dab88fe8364619c450a0850f15ddea" id="r_ga91dab88fe8364619c450a0850f15ddea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__rect.html">ege_rect</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga91dab88fe8364619c450a0850f15ddea">ege::ege_path_getbounds</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg)</td></tr>
+<tr class="memdesc:ga91dab88fe8364619c450a0850f15ddea"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取路径边界矩形（指定图像上下文）  <br /></td></tr>
+<tr class="separator:ga91dab88fe8364619c450a0850f15ddea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga674378484bd1482940ca61b9b2cb67d9" id="r_ga674378484bd1482940ca61b9b2cb67d9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__point.html">ege_point</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga674378484bd1482940ca61b9b2cb67d9">ege::ege_path_getpathpoints</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, <a class="el" href="structege_1_1ege__point.html">ege_point</a> *points=NULL)</td></tr>
+<tr class="memdesc:ga674378484bd1482940ca61b9b2cb67d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取路径中的所有点  <br /></td></tr>
+<tr class="separator:ga674378484bd1482940ca61b9b2cb67d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae49cae4c57718f54cc0fd82071a408ee" id="r_gae49cae4c57718f54cc0fd82071a408ee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gae49cae4c57718f54cc0fd82071a408ee">ege::ege_path_getpathtypes</a> (const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char *types=NULL)</td></tr>
+<tr class="memdesc:gae49cae4c57718f54cc0fd82071a408ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取路径中的所有点类型  <br /></td></tr>
+<tr class="separator:gae49cae4c57718f54cc0fd82071a408ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaebaf3aa3a32809d0b09515f9a3f24a85" id="r_gaebaf3aa3a32809d0b09515f9a3f24a85"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gaebaf3aa3a32809d0b09515f9a3f24a85">ege::ege_path_transform</a> (<a class="el" href="structege_1_1ege__path.html">ege_path</a> *path, const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *matrix)</td></tr>
+<tr class="memdesc:gaebaf3aa3a32809d0b09515f9a3f24a85"><td class="mdescLeft">&#160;</td><td class="mdescRight">变换路径  <br /></td></tr>
+<tr class="separator:gaebaf3aa3a32809d0b09515f9a3f24a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga140404527b1f018bf12d5d6ac650469a" id="r_ga140404527b1f018bf12d5d6ac650469a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structege_1_1ege__point.html">ege_point</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga140404527b1f018bf12d5d6ac650469a">ege::ege_transform_calc</a> (float x, float y, <a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga140404527b1f018bf12d5d6ac650469a"><td class="mdescLeft">&#160;</td><td class="mdescRight">计算点经过变换后的坐标（坐标版本）  <br /></td></tr>
+<tr class="separator:ga140404527b1f018bf12d5d6ac650469a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafc4f9d5671efe4bd9b808af3058c3cdf" id="r_gafc4f9d5671efe4bd9b808af3058c3cdf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gafc4f9d5671efe4bd9b808af3058c3cdf">ege::getwidth</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gafc4f9d5671efe4bd9b808af3058c3cdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取窗口或图像的宽度  <br /></td></tr>
+<tr class="separator:gafc4f9d5671efe4bd9b808af3058c3cdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96d1e8fbbb2aebb629f844585d2453c3" id="r_ga96d1e8fbbb2aebb629f844585d2453c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga96d1e8fbbb2aebb629f844585d2453c3">ege::getheight</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga96d1e8fbbb2aebb629f844585d2453c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取窗口或图像的高度  <br /></td></tr>
+<tr class="separator:ga96d1e8fbbb2aebb629f844585d2453c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac5f6de0f5eafda10b6c0539c5d06e049" id="r_gac5f6de0f5eafda10b6c0539c5d06e049"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gac5f6de0f5eafda10b6c0539c5d06e049">ege::getx</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:gac5f6de0f5eafda10b6c0539c5d06e049"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取当前画笔位置的x坐标  <br /></td></tr>
+<tr class="separator:gac5f6de0f5eafda10b6c0539c5d06e049"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4e7bbfaf3786da53980fea2749c135ef" id="r_ga4e7bbfaf3786da53980fea2749c135ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga4e7bbfaf3786da53980fea2749c135ef">ege::gety</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg=NULL)</td></tr>
+<tr class="memdesc:ga4e7bbfaf3786da53980fea2749c135ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取当前画笔位置的y坐标  <br /></td></tr>
+<tr class="separator:ga4e7bbfaf3786da53980fea2749c135ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa9325eb9f6d8949a22cbbd425a3a3492" id="r_gaa9325eb9f6d8949a22cbbd425a3a3492"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gaa9325eb9f6d8949a22cbbd425a3a3492">ege::newimage</a> ()</td></tr>
+<tr class="memdesc:gaa9325eb9f6d8949a22cbbd425a3a3492"><td class="mdescLeft">&#160;</td><td class="mdescRight">创建一个新的图像对象（1x1像素）  <br /></td></tr>
+<tr class="separator:gaa9325eb9f6d8949a22cbbd425a3a3492"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaba0b1d1bec191047e5186d3de8c5b54b" id="r_gaba0b1d1bec191047e5186d3de8c5b54b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#gaba0b1d1bec191047e5186d3de8c5b54b">ege::newimage</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> width, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> height)</td></tr>
+<tr class="memdesc:gaba0b1d1bec191047e5186d3de8c5b54b"><td class="mdescLeft">&#160;</td><td class="mdescRight">创建指定大小的新图像对象  <br /></td></tr>
+<tr class="separator:gaba0b1d1bec191047e5186d3de8c5b54b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga01c26169236846da49de52ed3af8f1d5" id="r_ga01c26169236846da49de52ed3af8f1d5"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PathManagement.html#ga01c26169236846da49de52ed3af8f1d5">ege::delimage</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg)</td></tr>
+<tr class="memdesc:ga01c26169236846da49de52ed3af8f1d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">销毁图像对象并释放内存  <br /></td></tr>
+<tr class="separator:ga01c26169236846da49de52ed3af8f1d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">详细描述</h2>
+<h2 class="groupheader">宏定义说明</h2>
+<a id="ga0c1206607ea2d18a82dee6c93946e217" name="ga0c1206607ea2d18a82dee6c93946e217"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0c1206607ea2d18a82dee6c93946e217">&#9670;&#160;</a></span>getmaxx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define getmaxx&#160;&#160;&#160;getwidth</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ga45497f44559806e348d55fe8709bd913" name="ga45497f44559806e348d55fe8709bd913"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga45497f44559806e348d55fe8709bd913">&#9670;&#160;</a></span>getmaxy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define getmaxy&#160;&#160;&#160;getheight</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">函数说明</h2>
+<a id="ga01c26169236846da49de52ed3af8f1d5" name="ga01c26169236846da49de52ed3af8f1d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga01c26169236846da49de52ed3af8f1d5">&#9670;&#160;</a></span>delimage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::delimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>销毁图像对象并释放内存 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>要销毁的图像对象指针，如果为NULL则忽略</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>销毁由newimage()函数创建的图像对象，释放相关的内存和系统资源。 销毁后的图像指针不应再被使用。</p>
+<dl class="section note"><dt>注解</dt><dd>传入NULL指针是安全的，函数会忽略NULL参数 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>销毁图像后，不要再使用该图像指针，否则可能导致程序崩溃</dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__PathManagement.html#gaa9325eb9f6d8949a22cbbd425a3a3492" title="创建一个新的图像对象（1x1像素）">newimage()</a> 创建图像对象 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#gaba0b1d1bec191047e5186d3de8c5b54b" title="创建指定大小的新图像对象">newimage(int, int)</a> 创建指定大小的图像对象 </dd></dl>
+
+</div>
+</div>
+<a id="ga36d9c9d4f2774bcafbdc99986b19b360" name="ga36d9c9d4f2774bcafbdc99986b19b360"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga36d9c9d4f2774bcafbdc99986b19b360">&#9670;&#160;</a></span>ege_path_clone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_clone </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>克隆路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>源路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>新的路径对象指针 </dd></dl>
+
+</div>
+</div>
+<a id="ga9572eed2ddca4ac032104fde59ae352d" name="ga9572eed2ddca4ac032104fde59ae352d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9572eed2ddca4ac032104fde59ae352d">&#9670;&#160;</a></span>ege_path_close()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_close </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>关闭当前子路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga745671fda2ac95ab984987373b8950d2" name="ga745671fda2ac95ab984987373b8950d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga745671fda2ac95ab984987373b8950d2">&#9670;&#160;</a></span>ege_path_closeall()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_closeall </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>关闭所有打开的子路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gadc1e998d750f3dda57087a5f229987cd" name="gadc1e998d750f3dda57087a5f229987cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadc1e998d750f3dda57087a5f229987cd">&#9670;&#160;</a></span>ege_path_create()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_create </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>创建新的路径对象 </p>
+<dl class="section return"><dt>返回</dt><dd>路径对象指针 </dd></dl>
+
+</div>
+</div>
+<a id="ga176ad468baf45a542004bc4c1a8fba6f" name="ga176ad468baf45a542004bc4c1a8fba6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga176ad468baf45a542004bc4c1a8fba6f">&#9670;&#160;</a></span>ege_path_createfrom()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_createfrom </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char *&#160;</td>
+          <td class="paramname"><em>types</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>从点数组和类型数组创建路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">points</td><td>点坐标数组 </td></tr>
+    <tr><td class="paramname">types</td><td>点类型数组 </td></tr>
+    <tr><td class="paramname">count</td><td>点的数量 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>路径对象指针 </dd></dl>
+
+</div>
+</div>
+<a id="gadcdc333ae9b2c32faee073e02f88250c" name="gadcdc333ae9b2c32faee073e02f88250c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadcdc333ae9b2c32faee073e02f88250c">&#9670;&#160;</a></span>ege_path_destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_destroy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>销毁路径对象 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga4b86748de6c24b291acb9c1a56b1774b" name="ga4b86748de6c24b291acb9c1a56b1774b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4b86748de6c24b291acb9c1a56b1774b">&#9670;&#160;</a></span>ege_path_flatten() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_flatten </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>flatness</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>平坦化路径（指定平坦度） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵 </td></tr>
+    <tr><td class="paramname">flatness</td><td>平坦度 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga94212d9476b4f911d42b83e343f182e7" name="ga94212d9476b4f911d42b83e343f182e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga94212d9476b4f911d42b83e343f182e7">&#9670;&#160;</a></span>ege_path_flatten() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_flatten </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>平坦化路径（将曲线转换为直线段） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵（可选） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga91dab88fe8364619c450a0850f15ddea" name="ga91dab88fe8364619c450a0850f15ddea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga91dab88fe8364619c450a0850f15ddea">&#9670;&#160;</a></span>ege_path_getbounds() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__rect.html">ege_rect</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_getbounds </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取路径边界矩形（指定图像上下文） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵 </td></tr>
+    <tr><td class="paramname">pimg</td><td>图像上下文指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>路径的边界矩形 </dd></dl>
+
+</div>
+</div>
+<a id="gafe03fa705ad4a814d4d62790020674c1" name="gafe03fa705ad4a814d4d62790020674c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafe03fa705ad4a814d4d62790020674c1">&#9670;&#160;</a></span>ege_path_getbounds() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__rect.html">ege_rect</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_getbounds </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取路径边界矩形 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵，NULL表示不进行变换 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>路径的边界矩形 </dd></dl>
+
+</div>
+</div>
+<a id="ga674378484bd1482940ca61b9b2cb67d9" name="ga674378484bd1482940ca61b9b2cb67d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga674378484bd1482940ca61b9b2cb67d9">&#9670;&#160;</a></span>ege_path_getpathpoints()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__point.html">ege_point</a> *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_getpathpoints </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取路径中的所有点 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">points</td><td>点数组缓冲区，NULL表示自动分配 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>指向点数组的指针 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>如果points为NULL，函数会分配内存，调用者需要负责释放 </dd></dl>
+
+</div>
+</div>
+<a id="gae49cae4c57718f54cc0fd82071a408ee" name="gae49cae4c57718f54cc0fd82071a408ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae49cae4c57718f54cc0fd82071a408ee">&#9670;&#160;</a></span>ege_path_getpathtypes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char *<a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_getpathtypes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char *&#160;</td>
+          <td class="paramname"><em>types</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取路径中的所有点类型 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">types</td><td>类型数组缓冲区，NULL表示自动分配 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>指向类型数组的指针 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>如果types为NULL，函数会分配内存，调用者需要负责释放 </dd></dl>
+
+</div>
+</div>
+<a id="ga4530d2e8bcb1067564b298864b72160c" name="ga4530d2e8bcb1067564b298864b72160c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4530d2e8bcb1067564b298864b72160c">&#9670;&#160;</a></span>ege_path_inpath() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_inpath </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>检测点是否在路径内部 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">x</td><td>检测点x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>检测点y坐标 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>如果点在路径内部返回true，否则返回false </dd></dl>
+
+</div>
+</div>
+<a id="ga9ca765d8c98bab00e01572fbe9ba6880" name="ga9ca765d8c98bab00e01572fbe9ba6880"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9ca765d8c98bab00e01572fbe9ba6880">&#9670;&#160;</a></span>ege_path_inpath() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_inpath </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>检测点是否在路径内部（指定图像上下文） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">x</td><td>检测点x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>检测点y坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>图像上下文指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>如果点在路径内部返回true，否则返回false </dd></dl>
+
+</div>
+</div>
+<a id="gacf096ecbefa98fb2dbf3abc718cba8a6" name="gacf096ecbefa98fb2dbf3abc718cba8a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacf096ecbefa98fb2dbf3abc718cba8a6">&#9670;&#160;</a></span>ege_path_instroke() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_instroke </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>检测点是否在路径边框上 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">x</td><td>检测点x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>检测点y坐标 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>如果点在路径边框上返回true，否则返回false </dd></dl>
+
+</div>
+</div>
+<a id="gac2951e6c271cb1518c6e41d09b1693ec" name="gac2951e6c271cb1518c6e41d09b1693ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac2951e6c271cb1518c6e41d09b1693ec">&#9670;&#160;</a></span>ege_path_instroke() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_instroke </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>检测点是否在路径边框上（指定图像上下文） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">x</td><td>检测点x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>检测点y坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>图像上下文指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>如果点在路径边框上返回true，否则返回false </dd></dl>
+
+</div>
+</div>
+<a id="ga184cdb7895e655efeef42623bd375d28" name="ga184cdb7895e655efeef42623bd375d28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga184cdb7895e655efeef42623bd375d28">&#9670;&#160;</a></span>ege_path_lastpoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__point.html">ege_point</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_lastpoint </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取路径最后一个点的坐标 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>最后一个点的坐标 </dd></dl>
+
+</div>
+</div>
+<a id="gac1a07c0a076c4242b54d61aa862114cc" name="gac1a07c0a076c4242b54d61aa862114cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac1a07c0a076c4242b54d61aa862114cc">&#9670;&#160;</a></span>ege_path_outline() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_outline </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>flatness</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>生成路径轮廓（指定平坦度） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵 </td></tr>
+    <tr><td class="paramname">flatness</td><td>平坦度 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga42ebad254e5b892210c57c888aec3a38" name="ga42ebad254e5b892210c57c888aec3a38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga42ebad254e5b892210c57c888aec3a38">&#9670;&#160;</a></span>ege_path_outline() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_outline </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>生成路径轮廓 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵（可选） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga2ad6ab88e7abafed911b67ac09f80ac3" name="ga2ad6ab88e7abafed911b67ac09f80ac3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2ad6ab88e7abafed911b67ac09f80ac3">&#9670;&#160;</a></span>ege_path_pointcount()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_pointcount </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取路径中点的数量 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>路径中点的数量 </dd></dl>
+
+</div>
+</div>
+<a id="ga5382c7180c12445f45aea408329d6581" name="ga5382c7180c12445f45aea408329d6581"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5382c7180c12445f45aea408329d6581">&#9670;&#160;</a></span>ege_path_reset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_reset </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>重置路径（清空所有子路径） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga29231fca805295f2930264e047f11619" name="ga29231fca805295f2930264e047f11619"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga29231fca805295f2930264e047f11619">&#9670;&#160;</a></span>ege_path_reverse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_reverse </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>反转路径方向 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gadfe54316411474df9822a5c34c6a4405" name="gadfe54316411474df9822a5c34c6a4405"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadfe54316411474df9822a5c34c6a4405">&#9670;&#160;</a></span>ege_path_setfillmode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_setfillmode </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aca9d4732ee03a3c85dd07df2987ed783">fill_mode</a>&#160;</td>
+          <td class="paramname"><em>mode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置路径填充模式 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">mode</td><td>填充模式 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga095a24e94dc04f6b1356c1afc673d839" name="ga095a24e94dc04f6b1356c1afc673d839"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga095a24e94dc04f6b1356c1afc673d839">&#9670;&#160;</a></span>ege_path_start()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_start </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>开始新的子路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaebaf3aa3a32809d0b09515f9a3f24a85" name="gaebaf3aa3a32809d0b09515f9a3f24a85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaebaf3aa3a32809d0b09515f9a3f24a85">&#9670;&#160;</a></span>ege_path_transform()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_transform </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>变换路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga73072c0e33673b2f75f0574f1b59d665" name="ga73072c0e33673b2f75f0574f1b59d665"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga73072c0e33673b2f75f0574f1b59d665">&#9670;&#160;</a></span>ege_path_warp() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_warp </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__rect.html">ege_rect</a> *&#160;</td>
+          <td class="paramname"><em>rect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>flatness</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>扭曲路径（指定平坦度） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">points</td><td>扭曲控制点数组 </td></tr>
+    <tr><td class="paramname">count</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">rect</td><td>扭曲矩形区域 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵 </td></tr>
+    <tr><td class="paramname">flatness</td><td>平坦度 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga030f3f5992cae5764c7777f86a49c93b" name="ga030f3f5992cae5764c7777f86a49c93b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga030f3f5992cae5764c7777f86a49c93b">&#9670;&#160;</a></span>ege_path_warp() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_warp </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__point.html">ege_point</a> *&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__rect.html">ege_rect</a> *&#160;</td>
+          <td class="paramname"><em>rect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>扭曲路径 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">points</td><td>扭曲控制点数组 </td></tr>
+    <tr><td class="paramname">count</td><td>控制点数量 </td></tr>
+    <tr><td class="paramname">rect</td><td>扭曲矩形区域 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵（可选） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gae3cd1073042da8c18e5b31718e0ae244" name="gae3cd1073042da8c18e5b31718e0ae244"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae3cd1073042da8c18e5b31718e0ae244">&#9670;&#160;</a></span>ege_path_widen() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_widen </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>lineWidth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>flatness</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>扩展路径（生成轮廓，指定平坦度） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">lineWidth</td><td>线条宽度 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵 </td></tr>
+    <tr><td class="paramname">flatness</td><td>平坦度 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga9504498f41791e5a746469eae33588f3" name="ga9504498f41791e5a746469eae33588f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9504498f41791e5a746469eae33588f3">&#9670;&#160;</a></span>ege_path_widen() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_path_widen </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structege_1_1ege__path.html">ege_path</a> *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>lineWidth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structege_1_1ege__transform__matrix.html">ege_transform_matrix</a> *&#160;</td>
+          <td class="paramname"><em>matrix</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>扩展路径（生成轮廓） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>路径对象指针 </td></tr>
+    <tr><td class="paramname">lineWidth</td><td>线条宽度 </td></tr>
+    <tr><td class="paramname">matrix</td><td>变换矩阵（可选） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga140404527b1f018bf12d5d6ac650469a" name="ga140404527b1f018bf12d5d6ac650469a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga140404527b1f018bf12d5d6ac650469a">&#9670;&#160;</a></span>ege_transform_calc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structege_1_1ege__point.html">ege_point</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::ege_transform_calc </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>计算点经过变换后的坐标（坐标版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>原始点x坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>原始点y坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>目标图像指针，NULL 表示当前ege窗口 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>变换后的点坐标 </dd></dl>
+
+</div>
+</div>
+<a id="ga96d1e8fbbb2aebb629f844585d2453c3" name="ga96d1e8fbbb2aebb629f844585d2453c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga96d1e8fbbb2aebb629f844585d2453c3">&#9670;&#160;</a></span>getheight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::getheight </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取窗口或图像的高度 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>图像对象指针，NULL 表示获取当前绘图窗口的高度 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>返回窗口或图像的高度（像素），如果图像对象无效则返回0</dd></dl>
+<p>这个函数用于获取指定图像或窗口的高度。当pimg为NULL时， 返回当前EGE绘图窗口的高度；当pimg指向有效图像时，返回该图像的高度。</p>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__PathManagement.html#gafc4f9d5671efe4bd9b808af3058c3cdf" title="获取窗口或图像的宽度">getwidth()</a> 获取宽度 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#gac5f6de0f5eafda10b6c0539c5d06e049" title="获取当前画笔位置的x坐标">getx()</a> 获取当前x坐标 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#ga4e7bbfaf3786da53980fea2749c135ef" title="获取当前画笔位置的y坐标">gety()</a> 获取当前y坐标 </dd></dl>
+
+</div>
+</div>
+<a id="gafc4f9d5671efe4bd9b808af3058c3cdf" name="gafc4f9d5671efe4bd9b808af3058c3cdf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafc4f9d5671efe4bd9b808af3058c3cdf">&#9670;&#160;</a></span>getwidth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::getwidth </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取窗口或图像的宽度 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>图像对象指针，NULL 表示获取当前绘图窗口的宽度 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>返回窗口或图像的宽度（像素），如果图像对象无效则返回0</dd></dl>
+<p>这个函数用于获取指定图像或窗口的宽度。当pimg为NULL时， 返回当前EGE绘图窗口的宽度；当pimg指向有效图像时，返回该图像的宽度。</p>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__PathManagement.html#ga96d1e8fbbb2aebb629f844585d2453c3" title="获取窗口或图像的高度">getheight()</a> 获取高度 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#gac5f6de0f5eafda10b6c0539c5d06e049" title="获取当前画笔位置的x坐标">getx()</a> 获取当前x坐标 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#ga4e7bbfaf3786da53980fea2749c135ef" title="获取当前画笔位置的y坐标">gety()</a> 获取当前y坐标 </dd></dl>
+
+</div>
+</div>
+<a id="gac5f6de0f5eafda10b6c0539c5d06e049" name="gac5f6de0f5eafda10b6c0539c5d06e049"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac5f6de0f5eafda10b6c0539c5d06e049">&#9670;&#160;</a></span>getx()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::getx </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取当前画笔位置的x坐标 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>图像对象指针，NULL 表示获取当前绘图窗口的画笔位置 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>返回当前画笔位置的x坐标，如果图像对象无效则返回-1</dd></dl>
+<p>获取当前绘图位置的x坐标。画笔位置通常由moveto()、lineto()等函数设置， 或者由绘图函数（如line()）的执行而改变。</p>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__PathManagement.html#ga4e7bbfaf3786da53980fea2749c135ef" title="获取当前画笔位置的y坐标">gety()</a> 获取当前y坐标 </dd>
+<dd>
+<a class="el" href="namespaceege.html#a4e091754f26f2ad8371b6a2a044d8cdf" title="移动当前绘图位置">moveto()</a> 移动画笔到指定位置 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#gafc4f9d5671efe4bd9b808af3058c3cdf" title="获取窗口或图像的宽度">getwidth()</a> 获取宽度 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#ga96d1e8fbbb2aebb629f844585d2453c3" title="获取窗口或图像的高度">getheight()</a> 获取高度 </dd></dl>
+
+</div>
+</div>
+<a id="ga4e7bbfaf3786da53980fea2749c135ef" name="ga4e7bbfaf3786da53980fea2749c135ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e7bbfaf3786da53980fea2749c135ef">&#9670;&#160;</a></span>gety()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::gety </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em> = <code>NULL</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取当前画笔位置的y坐标 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>图像对象指针，NULL 表示获取当前绘图窗口的画笔位置 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>返回当前画笔位置的y坐标，如果图像对象无效则返回-1</dd></dl>
+<p>获取当前绘图位置的y坐标。画笔位置通常由moveto()、lineto()等函数设置， 或者由绘图函数（如line()）的执行而改变。</p>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__PathManagement.html#gac5f6de0f5eafda10b6c0539c5d06e049" title="获取当前画笔位置的x坐标">getx()</a> 获取当前x坐标 </dd>
+<dd>
+<a class="el" href="namespaceege.html#a4e091754f26f2ad8371b6a2a044d8cdf" title="移动当前绘图位置">moveto()</a> 移动画笔到指定位置 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#gafc4f9d5671efe4bd9b808af3058c3cdf" title="获取窗口或图像的宽度">getwidth()</a> 获取宽度 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#ga96d1e8fbbb2aebb629f844585d2453c3" title="获取窗口或图像的高度">getheight()</a> 获取高度 </dd></dl>
+
+</div>
+</div>
+<a id="gaa9325eb9f6d8949a22cbbd425a3a3492" name="gaa9325eb9f6d8949a22cbbd425a3a3492"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa9325eb9f6d8949a22cbbd425a3a3492">&#9670;&#160;</a></span>newimage() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::newimage </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>创建一个新的图像对象（1x1像素） </p>
+<dl class="section return"><dt>返回</dt><dd>返回新创建的图像对象指针，失败时返回NULL</dd></dl>
+<p>创建一个大小为1x1像素的图像对象，背景色为黑色。 创建后的图像需要使用delimage()函数销毁以防止内存泄漏。</p>
+<dl class="section note"><dt>注解</dt><dd>这个函数创建的是最小尺寸的图像，通常用于后续调整大小或作为占位符 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>必须使用delimage()销毁创建的图像，否则会造成内存泄漏</dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__PathManagement.html#gaba0b1d1bec191047e5186d3de8c5b54b" title="创建指定大小的新图像对象">newimage(int, int)</a> 创建指定大小的图像 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#ga01c26169236846da49de52ed3af8f1d5" title="销毁图像对象并释放内存">delimage()</a> 销毁图像对象 </dd>
+<dd>
+<a class="el" href="group__image__management.html#ga3204728337b9279c0af3dddf30a301d1" title="调整图像尺寸（标准版本）">resize()</a> 调整图像大小 </dd></dl>
+
+</div>
+</div>
+<a id="gaba0b1d1bec191047e5186d3de8c5b54b" name="gaba0b1d1bec191047e5186d3de8c5b54b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaba0b1d1bec191047e5186d3de8c5b54b">&#9670;&#160;</a></span>newimage() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::newimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>height</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>创建指定大小的新图像对象 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">width</td><td>图像宽度（像素），小于1时自动调整为1 </td></tr>
+    <tr><td class="paramname">height</td><td>图像高度（像素），小于1时自动调整为1 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>返回新创建的图像对象指针，失败时返回NULL</dd></dl>
+<p>创建一个指定大小的图像对象，背景色为黑色。 如果指定的宽度或高度小于1，会自动调整为1。 创建后的图像需要使用delimage()函数销毁以防止内存泄漏。</p>
+<dl class="section warning"><dt>警告</dt><dd>必须使用delimage()销毁创建的图像，否则会造成内存泄漏</dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__PathManagement.html#gaa9325eb9f6d8949a22cbbd425a3a3492" title="创建一个新的图像对象（1x1像素）">newimage()</a> 创建1x1像素的图像 </dd>
+<dd>
+<a class="el" href="group__PathManagement.html#ga01c26169236846da49de52ed3af8f1d5" title="销毁图像对象并释放内存">delimage()</a> 销毁图像对象 </dd>
+<dd>
+<a class="el" href="group__image__management.html#ga3204728337b9279c0af3dddf30a301d1" title="调整图像尺寸（标准版本）">resize()</a> 调整图像大小 </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">制作者 <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

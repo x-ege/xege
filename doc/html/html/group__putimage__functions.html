@@ -1,0 +1,2269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>EGE 图形库: putimage系列函数</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+  $(document).ready(function() { init_search(); });
+/* @license-end */
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="egelogo.jpg"/></td>
+  <td id="projectalign">
+   <div id="projectname">EGE 图形库<span id="projectnumber">&#160;24.04</span>
+   </div>
+   <div id="projectbrief">Easy Graphics Engine - 简单易用的图形库</div>
+  </td>
+    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect"                onmouseover="return searchBox.OnSearchSelectShow()"                onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>
+          <input type="text" id="MSearchField" value="" placeholder="搜索" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
+          </span>
+        </div>
+</td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('group__putimage__functions.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">载入中...</div>
+<div class="SRStatus" id="Searching">搜索中...</div>
+<div class="SRStatus" id="NoMatches">未找到</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle"><div class="title">putimage系列函数<div class="ingroups"><a class="el" href="group__EGEGDIPlus.html">EGE GDI+增强函数</a> &raquo; <a class="el" href="group__PathManagement.html">路径管理函数</a> &raquo; <a class="el" href="group__image__management.html">图像管理和处理函数</a></div></div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>EGE图形库的核心图像绘制功能  
+<a href="#details">更多...</a></p>
+<div class="dynheader">
+putimage系列函数 的协作图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__putimage__functions.png" border="0" usemap="#agroup____putimage____functions" alt=""/></div>
+<map name="agroup____putimage____functions" id="agroup____putimage____functions">
+<area shape="rect" href="group__image__management.html" title="EGE图形库的图像创建、加载、保存和处理功能" alt="" coords="5,5,180,31"/>
+<area shape="rect" title="EGE图形库的核心图像绘制功能" alt="" coords="228,5,380,31"/>
+</map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:ga7791d716354dc11d1629225b2268a704" id="r_ga7791d716354dc11d1629225b2268a704"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga7791d716354dc11d1629225b2268a704">ege::putimage</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> x, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> y, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg, DWORD dwRop=SRCCOPY)</td></tr>
+<tr class="memdesc:ga7791d716354dc11d1629225b2268a704"><td class="mdescLeft">&#160;</td><td class="mdescRight">基础图像绘制函数 - 在指定位置绘制整个图像  <br /></td></tr>
+<tr class="separator:ga7791d716354dc11d1629225b2268a704"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga23560a27bd6925bceadfea08812ef359" id="r_ga23560a27bd6925bceadfea08812ef359"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga23560a27bd6925bceadfea08812ef359">ege::putimage</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, DWORD dwRop=SRCCOPY)</td></tr>
+<tr class="memdesc:ga23560a27bd6925bceadfea08812ef359"><td class="mdescLeft">&#160;</td><td class="mdescRight">区域图像绘制函数 - 绘制图像的指定区域  <br /></td></tr>
+<tr class="separator:ga23560a27bd6925bceadfea08812ef359"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabbc92eabe7abc3527a6e3902b9bbcf8d" id="r_gabbc92eabe7abc3527a6e3902b9bbcf8d"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#gabbc92eabe7abc3527a6e3902b9bbcf8d">ege::putimage</a> (<a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc, DWORD dwRop=SRCCOPY)</td></tr>
+<tr class="memdesc:gabbc92eabe7abc3527a6e3902b9bbcf8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">拉伸图像绘制函数 - 将源图像区域拉伸到目标区域  <br /></td></tr>
+<tr class="separator:gabbc92eabe7abc3527a6e3902b9bbcf8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1c0719a9132921761719016905a2af04" id="r_ga1c0719a9132921761719016905a2af04"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga1c0719a9132921761719016905a2af04">ege::putimage</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, DWORD dwRop=SRCCOPY)</td></tr>
+<tr class="memdesc:ga1c0719a9132921761719016905a2af04"><td class="mdescLeft">&#160;</td><td class="mdescRight">图像到图像绘制函数 - 在另一个图像上绘制图像  <br /></td></tr>
+<tr class="separator:ga1c0719a9132921761719016905a2af04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9386009271cf2064a2ed23be2d82d5b4" id="r_ga9386009271cf2064a2ed23be2d82d5b4"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga9386009271cf2064a2ed23be2d82d5b4">ege::putimage</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, DWORD dwRop=SRCCOPY)</td></tr>
+<tr class="memdesc:ga9386009271cf2064a2ed23be2d82d5b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">图像到图像区域绘制函数 - 在另一个图像上绘制图像的指定区域  <br /></td></tr>
+<tr class="separator:ga9386009271cf2064a2ed23be2d82d5b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0e915ece1d3eadbec6ff4b64be83922e" id="r_ga0e915ece1d3eadbec6ff4b64be83922e"><td class="memItemLeft" align="right" valign="top">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga0e915ece1d3eadbec6ff4b64be83922e">ege::putimage</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc, DWORD dwRop=SRCCOPY)</td></tr>
+<tr class="memdesc:ga0e915ece1d3eadbec6ff4b64be83922e"><td class="mdescLeft">&#160;</td><td class="mdescRight">图像到图像拉伸绘制函数 - 在另一个图像上拉伸绘制图像  <br /></td></tr>
+<tr class="separator:ga0e915ece1d3eadbec6ff4b64be83922e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga61c7153ce621ca601d993bba1f127590" id="r_ga61c7153ce621ca601d993bba1f127590"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga61c7153ce621ca601d993bba1f127590">ege::saveimage</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg, const char *filename, bool withAlphaChannel=false)</td></tr>
+<tr class="memdesc:ga61c7153ce621ca601d993bba1f127590"><td class="mdescLeft">&#160;</td><td class="mdescRight">将图像保存到文件（char* 版本）  <br /></td></tr>
+<tr class="separator:ga61c7153ce621ca601d993bba1f127590"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga37109cca92edba83d7cc7fcefbfddec2" id="r_ga37109cca92edba83d7cc7fcefbfddec2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga37109cca92edba83d7cc7fcefbfddec2">ege::saveimage</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg, const wchar_t *filename, bool withAlphaChannel=false)</td></tr>
+<tr class="memdesc:ga37109cca92edba83d7cc7fcefbfddec2"><td class="mdescLeft">&#160;</td><td class="mdescRight">将图像保存到文件（wchar_t* 版本）  <br /></td></tr>
+<tr class="separator:ga37109cca92edba83d7cc7fcefbfddec2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa44071ee7e219391718448560de01cbc" id="r_gaa44071ee7e219391718448560de01cbc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#gaa44071ee7e219391718448560de01cbc">ege::savepng</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg, const char *filename, bool withAlphaChannel=false)</td></tr>
+<tr class="memdesc:gaa44071ee7e219391718448560de01cbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">将图像以 PNG 格式保存到文件（char* 版本）  <br /></td></tr>
+<tr class="separator:gaa44071ee7e219391718448560de01cbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaec5363aea592e7261d2d0a5362accd63" id="r_gaec5363aea592e7261d2d0a5362accd63"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#gaec5363aea592e7261d2d0a5362accd63">ege::savepng</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg, const wchar_t *filename, bool withAlphaChannel=false)</td></tr>
+<tr class="memdesc:gaec5363aea592e7261d2d0a5362accd63"><td class="mdescLeft">&#160;</td><td class="mdescRight">将图像以 PNG 格式保存到文件（wchar_t* 版本）  <br /></td></tr>
+<tr class="separator:gaec5363aea592e7261d2d0a5362accd63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga213160e5a0b8998a632c678f21e5f14f" id="r_ga213160e5a0b8998a632c678f21e5f14f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga213160e5a0b8998a632c678f21e5f14f">ege::savebmp</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg, const char *filename, bool withAlphaChannel=false)</td></tr>
+<tr class="memdesc:ga213160e5a0b8998a632c678f21e5f14f"><td class="mdescLeft">&#160;</td><td class="mdescRight">将图像以 BMP 格式保存到文件（char* 版本）  <br /></td></tr>
+<tr class="separator:ga213160e5a0b8998a632c678f21e5f14f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9b0268233ff50f793694036e3a8112d6" id="r_ga9b0268233ff50f793694036e3a8112d6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga9b0268233ff50f793694036e3a8112d6">ege::savebmp</a> (<a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> pimg, const wchar_t *filename, bool withAlphaChannel=false)</td></tr>
+<tr class="memdesc:ga9b0268233ff50f793694036e3a8112d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">将图像以 BMP 格式保存到文件（wchar_t* 版本）  <br /></td></tr>
+<tr class="separator:ga9b0268233ff50f793694036e3a8112d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4fc498fa59b058399a640f841de6a9c8" id="r_ga4fc498fa59b058399a640f841de6a9c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga4fc498fa59b058399a640f841de6a9c8">ege::putimage_transparent</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> transparentColor, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc=0)</td></tr>
+<tr class="memdesc:ga4fc498fa59b058399a640f841de6a9c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">透明色绘制函数 - 指定颜色变为透明的图像绘制  <br /></td></tr>
+<tr class="separator:ga4fc498fa59b058399a640f841de6a9c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaddd5501a4b12fe9515e21dcbb042fa70" id="r_gaddd5501a4b12fe9515e21dcbb042fa70"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#gaddd5501a4b12fe9515e21dcbb042fa70">ege::putimage_alphablend</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char alpha, <a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a> alphaType=<a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a>)</td></tr>
+<tr class="memdesc:gaddd5501a4b12fe9515e21dcbb042fa70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha混合绘制函数 - 基础版本，指定整体透明度  <br /></td></tr>
+<tr class="separator:gaddd5501a4b12fe9515e21dcbb042fa70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9cb448dbf74466bf29eec60f31571ead" id="r_ga9cb448dbf74466bf29eec60f31571ead"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga9cb448dbf74466bf29eec60f31571ead">ege::putimage_alphablend</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char alpha, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a> alphaType=<a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a>)</td></tr>
+<tr class="memdesc:ga9cb448dbf74466bf29eec60f31571ead"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha混合绘制函数 - 指定源图像起始位置  <br /></td></tr>
+<tr class="separator:ga9cb448dbf74466bf29eec60f31571ead"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga80c89a74e11223bd3073138e8fb41c11" id="r_ga80c89a74e11223bd3073138e8fb41c11"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga80c89a74e11223bd3073138e8fb41c11">ege::putimage_alphablend</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char alpha, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc, <a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a> alphaType=<a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a>)</td></tr>
+<tr class="memdesc:ga80c89a74e11223bd3073138e8fb41c11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha混合绘制函数 - 指定源图像区域  <br /></td></tr>
+<tr class="separator:ga80c89a74e11223bd3073138e8fb41c11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1d652d76e766940c68ff0a8be43cfdc9" id="r_ga1d652d76e766940c68ff0a8be43cfdc9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga1d652d76e766940c68ff0a8be43cfdc9">ege::putimage_alphablend</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest, <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char alpha, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc, bool smooth=false, <a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a> alphaType=<a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a>)</td></tr>
+<tr class="memdesc:ga1d652d76e766940c68ff0a8be43cfdc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha混合绘制函数 - 完整版本，支持拉伸和平滑处理  <br /></td></tr>
+<tr class="separator:ga1d652d76e766940c68ff0a8be43cfdc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga10a4a3ff3051d3851e5a8973559b952c" id="r_ga10a4a3ff3051d3851e5a8973559b952c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga10a4a3ff3051d3851e5a8973559b952c">ege::putimage_alphatransparent</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> transparentColor, <a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char alpha, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc=0)</td></tr>
+<tr class="memdesc:ga10a4a3ff3051d3851e5a8973559b952c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha透明色混合绘制函数 - 结合透明色和Alpha混合  <br /></td></tr>
+<tr class="separator:ga10a4a3ff3051d3851e5a8973559b952c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabfa951d87707dcfd74025fb6d345f97e" id="r_gabfa951d87707dcfd74025fb6d345f97e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#gabfa951d87707dcfd74025fb6d345f97e">ege::putimage_withalpha</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc=0)</td></tr>
+<tr class="memdesc:gabfa951d87707dcfd74025fb6d345f97e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha通道绘制函数 - 使用图像自身的Alpha通道，基础版本  <br /></td></tr>
+<tr class="separator:gabfa951d87707dcfd74025fb6d345f97e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c2b89051658e1f14d000f094b19325d" id="r_ga8c2b89051658e1f14d000f094b19325d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga8c2b89051658e1f14d000f094b19325d">ege::putimage_withalpha</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc, bool smooth=false)</td></tr>
+<tr class="memdesc:ga8c2b89051658e1f14d000f094b19325d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha通道绘制函数 - 使用图像自身的Alpha通道，支持拉伸和平滑处理  <br /></td></tr>
+<tr class="separator:ga8c2b89051658e1f14d000f094b19325d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga64ab75c02417b7bf4680172ca791a801" id="r_ga64ab75c02417b7bf4680172ca791a801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga64ab75c02417b7bf4680172ca791a801">ege::putimage_alphafilter</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgAlpha, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc)</td></tr>
+<tr class="memdesc:ga64ab75c02417b7bf4680172ca791a801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha滤镜绘制函数 - 使用另一图像作为Alpha遮罩  <br /></td></tr>
+<tr class="separator:ga64ab75c02417b7bf4680172ca791a801"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad9a7f816e333bb238d13ee3f6722a7e2" id="r_gad9a7f816e333bb238d13ee3f6722a7e2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#gad9a7f816e333bb238d13ee3f6722a7e2">ege::imagefilter_blurring</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> intensity, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> alpha, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthDest=0, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightDest=0)</td></tr>
+<tr class="memdesc:gad9a7f816e333bb238d13ee3f6722a7e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">图像模糊滤镜函数 - 对图像进行模糊处理  <br /></td></tr>
+<tr class="separator:gad9a7f816e333bb238d13ee3f6722a7e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga53d84af9513cc8e4bbfac2e07fdccf1d" id="r_ga53d84af9513cc8e4bbfac2e07fdccf1d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga53d84af9513cc8e4bbfac2e07fdccf1d">ege::putimage_rotate</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgTexture, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, float xCenter, float yCenter, float radian, bool transparent=false, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> alpha=-1, bool smooth=false)</td></tr>
+<tr class="memdesc:ga53d84af9513cc8e4bbfac2e07fdccf1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">旋转绘制函数 - 围绕中心点旋转图像  <br /></td></tr>
+<tr class="separator:ga53d84af9513cc8e4bbfac2e07fdccf1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac9e5123fe64c4acbaf28b8d38dd33a88" id="r_gac9e5123fe64c4acbaf28b8d38dd33a88"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#gac9e5123fe64c4acbaf28b8d38dd33a88">ege::putimage_rotatezoom</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgTexture, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yDest, float xCenter, float yCenter, float radian, float zoom, bool transparent=false, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> alpha=-1, bool smooth=false)</td></tr>
+<tr class="memdesc:gac9e5123fe64c4acbaf28b8d38dd33a88"><td class="mdescLeft">&#160;</td><td class="mdescRight">旋转缩放绘制函数 - 同时进行旋转和缩放  <br /></td></tr>
+<tr class="separator:gac9e5123fe64c4acbaf28b8d38dd33a88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6fc0966df910129130301cb4c051da47" id="r_ga6fc0966df910129130301cb4c051da47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga6fc0966df910129130301cb4c051da47">ege::putimage_rotatetransparent</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xCenterDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yCenterDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xCenterSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yCenterSrc, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> transparentColor, float radian, float zoom=1.0f)</td></tr>
+<tr class="memdesc:ga6fc0966df910129130301cb4c051da47"><td class="mdescLeft">&#160;</td><td class="mdescRight">旋转透明绘制函数 - 旋转时指定透明色，基础版本  <br /></td></tr>
+<tr class="separator:ga6fc0966df910129130301cb4c051da47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga84afbeb0fc905fe7539e77273abb2bd4" id="r_ga84afbeb0fc905fe7539e77273abb2bd4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__putimage__functions.html#ga84afbeb0fc905fe7539e77273abb2bd4">ege::putimage_rotatetransparent</a> (<a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a> imgDest, <a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a> imgSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xCenterDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yCenterDest, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> ySrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> widthSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> heightSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> xCenterSrc, <a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> yCenterSrc, <a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a> transparentColor, float radian, float zoom=1.0f)</td></tr>
+<tr class="memdesc:ga84afbeb0fc905fe7539e77273abb2bd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">旋转透明绘制函数 - 旋转时指定透明色，完整版本  <br /></td></tr>
+<tr class="separator:ga84afbeb0fc905fe7539e77273abb2bd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">详细描述</h2>
+<p>EGE图形库的核心图像绘制功能 </p>
+<p>putimage系列函数提供了丰富的图像绘制和处理能力，包括：</p><ul>
+<li>基础图像绘制：putimage() 系列重载函数</li>
+<li>透明效果：putimage_transparent(), <a class="el" href="group__putimage__functions.html#gaddd5501a4b12fe9515e21dcbb042fa70" title="Alpha混合绘制函数 - 基础版本，指定整体透明度">putimage_alphablend()</a>, <a class="el" href="group__putimage__functions.html#gabfa951d87707dcfd74025fb6d345f97e" title="Alpha通道绘制函数 - 使用图像自身的Alpha通道，基础版本">putimage_withalpha()</a></li>
+<li>混合效果：putimage_alphatransparent(), <a class="el" href="group__putimage__functions.html#ga64ab75c02417b7bf4680172ca791a801" title="Alpha滤镜绘制函数 - 使用另一图像作为Alpha遮罩">putimage_alphafilter()</a></li>
+<li>变换效果：putimage_rotate(), <a class="el" href="group__putimage__functions.html#gac9e5123fe64c4acbaf28b8d38dd33a88" title="旋转缩放绘制函数 - 同时进行旋转和缩放">putimage_rotatezoom()</a>, <a class="el" href="group__putimage__functions.html#ga6fc0966df910129130301cb4c051da47" title="旋转透明绘制函数 - 旋转时指定透明色，基础版本">putimage_rotatetransparent()</a></li>
+</ul>
+<p>这些函数支持多种绘制模式：</p><ul>
+<li>绘制到屏幕（imgDest = NULL）或另一个图像</li>
+<li>支持区域裁剪、拉伸缩放、旋转变换</li>
+<li>支持多种透明和混合模式</li>
+<li>支持光栅操作码（SRCCOPY, SRCAND, SRCPAINT等）</li>
+<li>支持平滑处理（抗锯齿） </li>
+</ul>
+<h2 class="groupheader">函数说明</h2>
+<a id="gad9a7f816e333bb238d13ee3f6722a7e2" name="gad9a7f816e333bb238d13ee3f6722a7e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad9a7f816e333bb238d13ee3f6722a7e2">&#9670;&#160;</a></span>imagefilter_blurring()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::imagefilter_blurring </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>intensity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>图像模糊滤镜函数 - 对图像进行模糊处理 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，要进行模糊处理的图像 </td></tr>
+    <tr><td class="paramname">intensity</td><td>模糊强度，值越大模糊效果越强 </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-255)，255为完全不透明 </td></tr>
+    <tr><td class="paramname">xDest</td><td>处理区域的左上角 x 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">yDest</td><td>处理区域的左上角 y 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>处理区域的宽度，默认为 0（使用整个图像宽度） </td></tr>
+    <tr><td class="paramname">heightDest</td><td>处理区域的高度，默认为 0（使用整个图像高度） </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga7791d716354dc11d1629225b2268a704" name="ga7791d716354dc11d1629225b2268a704"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7791d716354dc11d1629225b2268a704">&#9670;&#160;</a></span>putimage() <span class="overload">[1/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>dwRop</em> = <code>SRCCOPY</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>基础图像绘制函数 - 在指定位置绘制整个图像 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">y</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">pimg</td><td>要绘制的 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">dwRop</td><td>三元光栅操作码，默认为 SRCCOPY（直接复制） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga23560a27bd6925bceadfea08812ef359" name="ga23560a27bd6925bceadfea08812ef359"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga23560a27bd6925bceadfea08812ef359">&#9670;&#160;</a></span>putimage() <span class="overload">[2/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>dwRop</em> = <code>SRCCOPY</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>区域图像绘制函数 - 绘制图像的指定区域 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>绘制的宽度 </td></tr>
+    <tr><td class="paramname">heightDest</td><td>绘制的高度 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>要绘制的 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">dwRop</td><td>三元光栅操作码，默认为 SRCCOPY（直接复制） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gabbc92eabe7abc3527a6e3902b9bbcf8d" name="gabbc92eabe7abc3527a6e3902b9bbcf8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabbc92eabe7abc3527a6e3902b9bbcf8d">&#9670;&#160;</a></span>putimage() <span class="overload">[3/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>dwRop</em> = <code>SRCCOPY</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>拉伸图像绘制函数 - 将源图像区域拉伸到目标区域 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>绘制的宽度 </td></tr>
+    <tr><td class="paramname">heightDest</td><td>绘制的高度 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>要绘制的 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度 </td></tr>
+    <tr><td class="paramname">dwRop</td><td>三元光栅操作码，默认为 SRCCOPY（直接复制） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga9386009271cf2064a2ed23be2d82d5b4" name="ga9386009271cf2064a2ed23be2d82d5b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9386009271cf2064a2ed23be2d82d5b4">&#9670;&#160;</a></span>putimage() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>dwRop</em> = <code>SRCCOPY</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>图像到图像区域绘制函数 - 在另一个图像上绘制图像的指定区域 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>绘制的宽度 </td></tr>
+    <tr><td class="paramname">heightDest</td><td>绘制的高度 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">dwRop</td><td>三元光栅操作码，默认为 SRCCOPY（直接复制） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga0e915ece1d3eadbec6ff4b64be83922e" name="ga0e915ece1d3eadbec6ff4b64be83922e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0e915ece1d3eadbec6ff4b64be83922e">&#9670;&#160;</a></span>putimage() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>dwRop</em> = <code>SRCCOPY</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>图像到图像拉伸绘制函数 - 在另一个图像上拉伸绘制图像 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>绘制的宽度 </td></tr>
+    <tr><td class="paramname">heightDest</td><td>绘制的高度 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度 </td></tr>
+    <tr><td class="paramname">dwRop</td><td>三元光栅操作码，默认为 SRCCOPY（直接复制） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga1c0719a9132921761719016905a2af04" name="ga1c0719a9132921761719016905a2af04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1c0719a9132921761719016905a2af04">&#9670;&#160;</a></span>putimage() <span class="overload">[6/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>dwRop</em> = <code>SRCCOPY</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>图像到图像绘制函数 - 在另一个图像上绘制图像 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">dwRop</td><td>三元光栅操作码，默认为 SRCCOPY（直接复制） </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga1d652d76e766940c68ff0a8be43cfdc9" name="ga1d652d76e766940c68ff0a8be43cfdc9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1d652d76e766940c68ff0a8be43cfdc9">&#9670;&#160;</a></span>putimage_alphablend() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_alphablend </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>smooth</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a>&#160;</td>
+          <td class="paramname"><em>alphaType</em> = <code><a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha混合绘制函数 - 完整版本，支持拉伸和平滑处理 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>绘制的宽度 </td></tr>
+    <tr><td class="paramname">heightDest</td><td>绘制的高度 </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-255)，0为完全透明，255为完全不透明 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度 </td></tr>
+    <tr><td class="paramname">smooth</td><td>是否使用平滑处理（抗锯齿），默认为 false </td></tr>
+    <tr><td class="paramname">alphaType</td><td>源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="gaddd5501a4b12fe9515e21dcbb042fa70" name="gaddd5501a4b12fe9515e21dcbb042fa70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaddd5501a4b12fe9515e21dcbb042fa70">&#9670;&#160;</a></span>putimage_alphablend() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_alphablend </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a>&#160;</td>
+          <td class="paramname"><em>alphaType</em> = <code><a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha混合绘制函数 - 基础版本，指定整体透明度 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-255)，0为完全透明，255为完全不透明 </td></tr>
+    <tr><td class="paramname">alphaType</td><td>源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga9cb448dbf74466bf29eec60f31571ead" name="ga9cb448dbf74466bf29eec60f31571ead"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9cb448dbf74466bf29eec60f31571ead">&#9670;&#160;</a></span>putimage_alphablend() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_alphablend </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a>&#160;</td>
+          <td class="paramname"><em>alphaType</em> = <code><a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha混合绘制函数 - 指定源图像起始位置 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-255)，0为完全透明，255为完全不透明 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">alphaType</td><td>源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga80c89a74e11223bd3073138e8fb41c11" name="ga80c89a74e11223bd3073138e8fb41c11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga80c89a74e11223bd3073138e8fb41c11">&#9670;&#160;</a></span>putimage_alphablend() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_alphablend </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a21db7737ccb90e8280f370869bce9b9a">alpha_type</a>&#160;</td>
+          <td class="paramname"><em>alphaType</em> = <code><a class="el" href="group__image__management.html#ga21db7737ccb90e8280f370869bce9b9aa8d51804d3e482a3b26358d21487e2fc2">ALPHATYPE_STRAIGHT</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha混合绘制函数 - 指定源图像区域 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-255)，0为完全透明，255为完全不透明 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度 </td></tr>
+    <tr><td class="paramname">alphaType</td><td>源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga64ab75c02417b7bf4680172ca791a801" name="ga64ab75c02417b7bf4680172ca791a801"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga64ab75c02417b7bf4680172ca791a801">&#9670;&#160;</a></span>putimage_alphafilter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_alphafilter </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgAlpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha滤镜绘制函数 - 使用另一图像作为Alpha遮罩 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">imgAlpha</td><td>用作Alpha遮罩的 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga10a4a3ff3051d3851e5a8973559b952c" name="ga10a4a3ff3051d3851e5a8973559b952c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga10a4a3ff3051d3851e5a8973559b952c">&#9670;&#160;</a></span>putimage_alphatransparent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_alphatransparent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>transparentColor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a603d426ff263a0ca867a61ab9da82f03">unsigned</a> char&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha透明色混合绘制函数 - 结合透明色和Alpha混合 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">transparentColor</td><td>要变为透明的像素颜色 </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-255)，0为完全透明，255为完全不透明 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度） </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度） </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga53d84af9513cc8e4bbfac2e07fdccf1d" name="ga53d84af9513cc8e4bbfac2e07fdccf1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga53d84af9513cc8e4bbfac2e07fdccf1d">&#9670;&#160;</a></span>putimage_rotate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_rotate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgTexture</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>xCenter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>yCenter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>transparent</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>alpha</em> = <code>-1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>smooth</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>旋转绘制函数 - 围绕中心点旋转图像 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgTexture</td><td>源纹理 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">xCenter</td><td>旋转中心点的 x 坐标（相对于源图像） </td></tr>
+    <tr><td class="paramname">yCenter</td><td>旋转中心点的 y 坐标（相对于源图像） </td></tr>
+    <tr><td class="paramname">radian</td><td>旋转角度（弧度制，顺时针方向） </td></tr>
+    <tr><td class="paramname">transparent</td><td>是否使用图像的透明通道，默认为 false </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-256)，-1表示不使用alpha，默认为 -1 </td></tr>
+    <tr><td class="paramname">smooth</td><td>是否使用平滑处理（抗锯齿），默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga6fc0966df910129130301cb4c051da47" name="ga6fc0966df910129130301cb4c051da47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6fc0966df910129130301cb4c051da47">&#9670;&#160;</a></span>putimage_rotatetransparent() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_rotatetransparent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xCenterDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yCenterDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xCenterSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yCenterSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>transparentColor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>zoom</em> = <code>1.0f</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>旋转透明绘制函数 - 旋转时指定透明色，基础版本 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xCenterDest</td><td>旋转中心点在目标图像中的 x 坐标 </td></tr>
+    <tr><td class="paramname">yCenterDest</td><td>旋转中心点在目标图像中的 y 坐标 </td></tr>
+    <tr><td class="paramname">xCenterSrc</td><td>旋转中心点在源图像中的 x 坐标 </td></tr>
+    <tr><td class="paramname">yCenterSrc</td><td>旋转中心点在源图像中的 y 坐标 </td></tr>
+    <tr><td class="paramname">transparentColor</td><td>要变为透明的像素颜色 </td></tr>
+    <tr><td class="paramname">radian</td><td>旋转角度（弧度制，顺时针方向） </td></tr>
+    <tr><td class="paramname">zoom</td><td>缩放比例，1.0为原始大小，默认为 1.0f </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga84afbeb0fc905fe7539e77273abb2bd4" name="ga84afbeb0fc905fe7539e77273abb2bd4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga84afbeb0fc905fe7539e77273abb2bd4">&#9670;&#160;</a></span>putimage_rotatetransparent() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_rotatetransparent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xCenterDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yCenterDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xCenterSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yCenterSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>transparentColor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>zoom</em> = <code>1.0f</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>旋转透明绘制函数 - 旋转时指定透明色，完整版本 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xCenterDest</td><td>旋转中心点在目标图像中的 x 坐标 </td></tr>
+    <tr><td class="paramname">yCenterDest</td><td>旋转中心点在目标图像中的 y 坐标 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度 </td></tr>
+    <tr><td class="paramname">xCenterSrc</td><td>旋转中心点在源图像中的 x 坐标 </td></tr>
+    <tr><td class="paramname">yCenterSrc</td><td>旋转中心点在源图像中的 y 坐标 </td></tr>
+    <tr><td class="paramname">transparentColor</td><td>要变为透明的像素颜色 </td></tr>
+    <tr><td class="paramname">radian</td><td>旋转角度（弧度制，顺时针方向） </td></tr>
+    <tr><td class="paramname">zoom</td><td>缩放比例，1.0为原始大小，默认为 1.0f </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="gac9e5123fe64c4acbaf28b8d38dd33a88" name="gac9e5123fe64c4acbaf28b8d38dd33a88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac9e5123fe64c4acbaf28b8d38dd33a88">&#9670;&#160;</a></span>putimage_rotatezoom()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_rotatezoom </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgTexture</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>xCenter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>yCenter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>radian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>zoom</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>transparent</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>alpha</em> = <code>-1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>smooth</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>旋转缩放绘制函数 - 同时进行旋转和缩放 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgTexture</td><td>源纹理 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">xCenter</td><td>旋转中心点的 x 坐标（相对于源图像） </td></tr>
+    <tr><td class="paramname">yCenter</td><td>旋转中心点的 y 坐标（相对于源图像） </td></tr>
+    <tr><td class="paramname">radian</td><td>旋转角度（弧度制，顺时针方向） </td></tr>
+    <tr><td class="paramname">zoom</td><td>缩放比例，1.0为原始大小 </td></tr>
+    <tr><td class="paramname">transparent</td><td>是否使用图像的透明通道，默认为 false </td></tr>
+    <tr><td class="paramname">alpha</td><td>图像整体透明度 (0-256)，-1表示不使用alpha，默认为 -1 </td></tr>
+    <tr><td class="paramname">smooth</td><td>是否使用平滑处理（抗锯齿），默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga4fc498fa59b058399a640f841de6a9c8" name="ga4fc498fa59b058399a640f841de6a9c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4fc498fa59b058399a640f841de6a9c8">&#9670;&#160;</a></span>putimage_transparent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_transparent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a2aaa6b084ffbccdc8b354e2b1e95da1f">color_t</a>&#160;</td>
+          <td class="paramname"><em>transparentColor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>透明色绘制函数 - 指定颜色变为透明的图像绘制 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针 </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">transparentColor</td><td>要变为透明的像素颜色 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度） </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度） </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga8c2b89051658e1f14d000f094b19325d" name="ga8c2b89051658e1f14d000f094b19325d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8c2b89051658e1f14d000f094b19325d">&#9670;&#160;</a></span>putimage_withalpha() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_withalpha </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>smooth</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha通道绘制函数 - 使用图像自身的Alpha通道，支持拉伸和平滑处理 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针（必须包含Alpha通道数据） </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">widthDest</td><td>绘制的宽度 </td></tr>
+    <tr><td class="paramname">heightDest</td><td>绘制的高度 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度 </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度 </td></tr>
+    <tr><td class="paramname">smooth</td><td>是否使用平滑处理（抗锯齿），默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="gabfa951d87707dcfd74025fb6d345f97e" name="gabfa951d87707dcfd74025fb6d345f97e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabfa951d87707dcfd74025fb6d345f97e">&#9670;&#160;</a></span>putimage_withalpha() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::putimage_withalpha </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#a72e07306fee47bc08f1baf842cb681fb">PIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>imgSrc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>yDest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>xSrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>ySrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>widthSrc</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a>&#160;</td>
+          <td class="paramname"><em>heightSrc</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alpha通道绘制函数 - 使用图像自身的Alpha通道，基础版本 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imgDest</td><td>目标 IMAGE 对象指针，如果为 NULL 则绘制到屏幕 </td></tr>
+    <tr><td class="paramname">imgSrc</td><td>源 IMAGE 对象指针（必须包含Alpha通道数据） </td></tr>
+    <tr><td class="paramname">xDest</td><td>绘制位置的 x 坐标 </td></tr>
+    <tr><td class="paramname">yDest</td><td>绘制位置的 y 坐标 </td></tr>
+    <tr><td class="paramname">xSrc</td><td>绘制内容在源 IMAGE 对象中的左上角 x 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">ySrc</td><td>绘制内容在源 IMAGE 对象中的左上角 y 坐标，默认为 0 </td></tr>
+    <tr><td class="paramname">widthSrc</td><td>绘制内容在源 IMAGE 对象中的宽度，默认为 0（使用整个图像宽度） </td></tr>
+    <tr><td class="paramname">heightSrc</td><td>绘制内容在源 IMAGE 对象中的高度，默认为 0（使用整个图像高度） </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 grOk，失败返回相应错误码 </dd></dl>
+
+</div>
+</div>
+<a id="ga213160e5a0b8998a632c678f21e5f14f" name="ga213160e5a0b8998a632c678f21e5f14f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga213160e5a0b8998a632c678f21e5f14f">&#9670;&#160;</a></span>savebmp() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::savebmp </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>withAlphaChannel</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将图像以 BMP 格式保存到文件（char* 版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>要保存的图像对象指针 </td></tr>
+    <tr><td class="paramname">filename</td><td>保存的图像文件名 </td></tr>
+    <tr><td class="paramname">withAlphaChannel</td><td>是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 0，失败返回非 0 值 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>强制以 BMP 格式保存，不受文件名后缀影响 </dd>
+<dd>
+如果文件已存在，会覆盖原文件 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>如果 pimg 为无效指针，会引发运行时异常 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__putimage__functions.html#ga9b0268233ff50f793694036e3a8112d6" title="将图像以 BMP 格式保存到文件（wchar_t* 版本）">savebmp(PCIMAGE, const wchar_t*, bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga9b0268233ff50f793694036e3a8112d6" name="ga9b0268233ff50f793694036e3a8112d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9b0268233ff50f793694036e3a8112d6">&#9670;&#160;</a></span>savebmp() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::savebmp </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const wchar_t *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>withAlphaChannel</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将图像以 BMP 格式保存到文件（wchar_t* 版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>要保存的图像对象指针 </td></tr>
+    <tr><td class="paramname">filename</td><td>保存的图像文件名（宽字符版本） </td></tr>
+    <tr><td class="paramname">withAlphaChannel</td><td>是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 0，失败返回非 0 值 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>强制以 BMP 格式保存，不受文件名后缀影响 </dd>
+<dd>
+如果文件已存在，会覆盖原文件 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>如果 pimg 为无效指针，会引发运行时异常 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__putimage__functions.html#ga213160e5a0b8998a632c678f21e5f14f" title="将图像以 BMP 格式保存到文件（char* 版本）">savebmp(PCIMAGE, const char*, bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga61c7153ce621ca601d993bba1f127590" name="ga61c7153ce621ca601d993bba1f127590"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga61c7153ce621ca601d993bba1f127590">&#9670;&#160;</a></span>saveimage() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::saveimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>withAlphaChannel</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将图像保存到文件（char* 版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>要保存的图像对象指针 </td></tr>
+    <tr><td class="paramname">filename</td><td>保存的图像文件名 </td></tr>
+    <tr><td class="paramname">withAlphaChannel</td><td>是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 <a class="el" href="group__image__management.html#ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a" title="操作成功">grOk(0)</a>，失败返回非 0 值 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>目前支持 BMP 和 PNG 格式 </dd>
+<dd>
+文件名以 .bmp 结尾保存为 BMP 格式，以 .png 结尾或无后缀名保存为 PNG 格式 </dd>
+<dd>
+如果文件已存在，会覆盖原文件 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>如果 pimg 为无效指针，会引发运行时异常 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__putimage__functions.html#ga37109cca92edba83d7cc7fcefbfddec2" title="将图像保存到文件（wchar_t* 版本）">saveimage(PCIMAGE, const wchar_t*, bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga37109cca92edba83d7cc7fcefbfddec2" name="ga37109cca92edba83d7cc7fcefbfddec2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga37109cca92edba83d7cc7fcefbfddec2">&#9670;&#160;</a></span>saveimage() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::saveimage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const wchar_t *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>withAlphaChannel</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将图像保存到文件（wchar_t* 版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>要保存的图像对象指针 </td></tr>
+    <tr><td class="paramname">filename</td><td>保存的图像文件名（宽字符版本） </td></tr>
+    <tr><td class="paramname">withAlphaChannel</td><td>是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 <a class="el" href="group__image__management.html#ga350e4ebd7b092a99c23f0c4fa632b384ae0738d4cba071ace49cc7821f911677a" title="操作成功">grOk(0)</a>，失败返回非 0 值 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>目前支持 BMP 和 PNG 格式 </dd>
+<dd>
+文件名以 .bmp 结尾保存为 BMP 格式，以 .png 结尾或无后缀名保存为 PNG 格式 </dd>
+<dd>
+如果文件已存在，会覆盖原文件 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>如果 pimg 为无效指针，会引发运行时异常 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__putimage__functions.html#ga61c7153ce621ca601d993bba1f127590" title="将图像保存到文件（char* 版本）">saveimage(PCIMAGE, const char*, bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="gaa44071ee7e219391718448560de01cbc" name="gaa44071ee7e219391718448560de01cbc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa44071ee7e219391718448560de01cbc">&#9670;&#160;</a></span>savepng() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::savepng </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>withAlphaChannel</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将图像以 PNG 格式保存到文件（char* 版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>要保存的图像对象指针 </td></tr>
+    <tr><td class="paramname">filename</td><td>保存的图像文件名 </td></tr>
+    <tr><td class="paramname">withAlphaChannel</td><td>是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 0，失败返回非 0 值 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>强制以 PNG 格式保存，不受文件名后缀影响 </dd>
+<dd>
+如果文件已存在，会覆盖原文件 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>如果 pimg 为无效指针，会引发运行时异常 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__putimage__functions.html#gaec5363aea592e7261d2d0a5362accd63" title="将图像以 PNG 格式保存到文件（wchar_t* 版本）">savepng(PCIMAGE, const wchar_t*, bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="gaec5363aea592e7261d2d0a5362accd63" name="gaec5363aea592e7261d2d0a5362accd63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaec5363aea592e7261d2d0a5362accd63">&#9670;&#160;</a></span>savepng() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceege.html#aba294a2edf0dcd44b03d897fad90ce90">int</a> <a class="el" href="ege_8zh__CN_8h.html#a03e09e6519dfab7deb4a9ac211920318">EGEAPI</a> ege::savepng </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceege.html#ae72ed204f750f80e081444406eb74a31">PCIMAGE</a>&#160;</td>
+          <td class="paramname"><em>pimg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const wchar_t *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>withAlphaChannel</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将图像以 PNG 格式保存到文件（wchar_t* 版本） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pimg</td><td>要保存的图像对象指针 </td></tr>
+    <tr><td class="paramname">filename</td><td>保存的图像文件名（宽字符版本） </td></tr>
+    <tr><td class="paramname">withAlphaChannel</td><td>是否保存图像的透明通道，true: 保存, false: 不保存，默认为 false </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功返回 0，失败返回非 0 值 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>强制以 PNG 格式保存，不受文件名后缀影响 </dd>
+<dd>
+如果文件已存在，会覆盖原文件 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>如果 pimg 为无效指针，会引发运行时异常 </dd></dl>
+<dl class="section see"><dt>参见</dt><dd><a class="el" href="group__putimage__functions.html#gaa44071ee7e219391718448560de01cbc" title="将图像以 PNG 格式保存到文件（char* 版本）">savepng(PCIMAGE, const char*, bool)</a> </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">制作者 <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['saddlebrown_0',['SADDLEBROWN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a8343df79701761041058212d55435a22',1,'ege']]],
+  ['salmon_1',['SALMON',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a81482269cc84a006f181cd3c80589f4c',1,'ege']]],
+  ['sandybrown_2',['SANDYBROWN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a1aa0af8ec3e22fb709570e84ad28c5a6',1,'ege']]],
+  ['seagreen_3',['SEAGREEN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a8b082014e25ef65da7b54b843b6a7232',1,'ege']]],
+  ['seashell_4',['SEASHELL',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a9c82e29abcf4ff391f9785c4057bdf34',1,'ege']]],
+  ['sienna_5',['SIENNA',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4aa5f70cb7f4a51438baff560be0b9a912',1,'ege']]],
+  ['silver_6',['SILVER',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a74f079391e892abd9466cb1e8c81c1e3',1,'ege']]],
+  ['skyblue_7',['SKYBLUE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a7e0c234f926e633be4056ace5fb95000',1,'ege']]],
+  ['slash_5ffill_8',['SLASH_FILL',['../group__image__management.html#gac113152c6abd88fcf5ee6350afa4fe3da51d80012121a9c6f5f5f58f910fb5f11',1,'ege']]],
+  ['slateblue_9',['SLATEBLUE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a5ff52f8046e1fac1ff42dc747bf125b5',1,'ege']]],
+  ['slategray_10',['SLATEGRAY',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a5ba050db76bd5f45b86fa6538769b871',1,'ege']]],
+  ['snow_11',['SNOW',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4aaf7aa6a0cf50fa9a025319c8328c4cc0',1,'ege']]],
+  ['solid_5ffill_12',['SOLID_FILL',['../group__image__management.html#gac113152c6abd88fcf5ee6350afa4fe3da157ad4c576dbb1d56b11cd6f6a390ea6',1,'ege']]],
+  ['solid_5fline_13',['SOLID_LINE',['../group__image__management.html#gaf8bcf97c6b2fb7e17aae57a3a7753f29af4110d924e7073c0f5d51f3138d27898',1,'ege']]],
+  ['springgreen_14',['SPRINGGREEN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a3c75abc04093359bd46cbd6038b540bf',1,'ege']]],
+  ['steelblue_15',['STEELBLUE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4aa0658aadc5731bae51de7bbfb8465985',1,'ege']]]
+];

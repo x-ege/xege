@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['darkblue_0',['DARKBLUE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4aa9a9116556403e691839e97e21518f11',1,'ege']]],
+  ['darkcyan_1',['DARKCYAN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4aa4cd3cd39b6e29c3e72e059e295d5f81',1,'ege']]],
+  ['darkgoldenrod_2',['DARKGOLDENROD',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4af72f4011cd29bf71751462783f9a521a',1,'ege']]],
+  ['darkgray_3',['DARKGRAY',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a8ea2b4f48ac79d9a6e1502239d9fa53f',1,'ege']]],
+  ['darkgreen_4',['DARKGREEN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4af28e45ab8bc91ce1c68107893cb51500',1,'ege']]],
+  ['darkkhaki_5',['DARKKHAKI',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a53d0377e04069a429b8590db01114f0c',1,'ege']]],
+  ['darkmagenta_6',['DARKMAGENTA',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4ae95453ec905a0841256ebd27009edca7',1,'ege']]],
+  ['darkolivegreen_7',['DARKOLIVEGREEN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a703d6dc303955215548eddc68ed5861d',1,'ege']]],
+  ['darkorange_8',['DARKORANGE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a7211fc2d124544999d302851782656d5',1,'ege']]],
+  ['darkorchid_9',['DARKORCHID',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a5c8b6bf38b5192524ba9731055483bf2',1,'ege']]],
+  ['darkred_10',['DARKRED',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a117a655016e7471ad201005a0e1aac4a',1,'ege']]],
+  ['darksalmon_11',['DARKSALMON',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4aa4b18819ba5c21dfc4b715e6cf573725',1,'ege']]],
+  ['darkseagreen_12',['DARKSEAGREEN',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4abcf8bd8e210cab671bed99395cd246ac',1,'ege']]],
+  ['darkslateblue_13',['DARKSLATEBLUE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a2c637e676772be24a0f59323eb3c2c27',1,'ege']]],
+  ['darkslategray_14',['DARKSLATEGRAY',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a99a1e3a32e6f58e05269985521c5a360',1,'ege']]],
+  ['darkturquoise_15',['DARKTURQUOISE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4ab601232ca9187c81d10680b38a8568ea',1,'ege']]],
+  ['darkviolet_16',['DARKVIOLET',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4aeb222e186c124855b740ee0f9f44d810',1,'ege']]],
+  ['dashed_5fline_17',['DASHED_LINE',['../group__image__management.html#gaf8bcf97c6b2fb7e17aae57a3a7753f29af2dc207611fedc3e6f5cd461e7eb913c',1,'ege']]],
+  ['deeppink_18',['DEEPPINK',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a991d1cd37c0b2f8023802ed49b129ed9',1,'ege']]],
+  ['deepskyblue_19',['DEEPSKYBLUE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a74bd33b96687e0e0e9b502585ff648ea',1,'ege']]],
+  ['detect_20',['DETECT',['../group__image__management.html#gaf884a3499f2f6c8fae4b68ef3c3f67c3a774240bc0eb81739c93de0425e21d033',1,'ege']]],
+  ['dimgray_21',['DIMGRAY',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4a1c9e211d77c280038015073af710c887',1,'ege']]],
+  ['dodgerblue_22',['DODGERBLUE',['../group__image__management.html#ga40c2177dd36b3972c778af2b1b9e70f4ab47376c5167c47139af6dd074b40f8f4',1,'ege']]],
+  ['dotted_5fline_23',['DOTTED_LINE',['../group__image__management.html#gaf8bcf97c6b2fb7e17aae57a3a7753f29aebd702df2c1a18febe95974a0af95497',1,'ege']]]
+];

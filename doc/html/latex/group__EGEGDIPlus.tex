@@ -1,0 +1,1110 @@
+\doxysection{EGE GDI+增强函数}
+\hypertarget{group__EGEGDIPlus}{}\label{group__EGEGDIPlus}\index{EGE GDI+增强函数@{EGE GDI+增强函数}}
+EGE GDI+增强函数 的协作图\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=325pt]{group__EGEGDIPlus}
+\end{center}
+\end{figure}
+\doxysubsubsection*{模块}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group__PathManagement}{路径管理函数}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga7dd4a9061f4c0abd881dc1f185e3ecc6}{ege\+::ege\+\_\+enable\+\_\+aa}} (bool enable, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 启用或禁用抗锯齿 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga2c3a342daf65027ea6cce58d5a5716ba}{ege\+::ege\+\_\+setalpha}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} alpha, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 设置全局\+Alpha透明度 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gad6e3f4e1c6e7b68ba852dea6282b85c9}{ege\+::ege\+\_\+line}} (float x1, float y1, float x2, float y2, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制直线（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga16f2e1112d9c03174aa26d4883de9645}{ege\+::ege\+\_\+drawpoly}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制多边形（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga3ec4818dce32d802aa560bc5d37919b2}{ege\+::ege\+\_\+polyline}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制多条线段（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga3c87a0fa64955371315a4864dbae29dc}{ege\+::ege\+\_\+polygon}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制多边形边框（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga7a9a97dc2fb1510ff614dcceb9ecce97}{ege\+::ege\+\_\+fillpoly}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充多边形（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga9d5a355e47dcfb0250527fec772dbab8}{ege\+::ege\+\_\+bezier}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制贝塞尔曲线（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gafb41ec190cd1c9b29955e7b3094798b4}{ege\+::ege\+\_\+drawbezier}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制贝塞尔曲线（同ege\+\_\+bezier） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga27a965fcdf3f1e4c95d1a896d22fac94}{ege\+::ege\+\_\+drawcurve}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制基数样条曲线 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gac89d39c3157c492bc9447c64785b8222}{ege\+::ege\+\_\+drawclosedcurve}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制闭合基数样条曲线 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga222ed57bd5b0bbf96ac61693d6b4c8db}{ege\+::ege\+\_\+fillclosedcurve}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充闭合基数样条曲线 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gab97675c4beb673d728be8423b4dd5e73}{ege\+::ege\+\_\+drawcurve}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, float tension, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制基数样条曲线（带张力参数） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga1be2cf0b183dbb9e0cb20fae373b2ece}{ege\+::ege\+\_\+drawclosedcurve}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, float tension, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制闭合基数样条曲线（带张力参数） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga96f67986e678ef51354b6628946c95d9}{ege\+::ege\+\_\+fillclosedcurve}} (\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} num\+Of\+Points, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, float tension, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充闭合基数样条曲线（带张力参数） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga43405275d5f768de671a40508eea4300}{ege\+::ege\+\_\+rectangle}} (float x, float y, float w, float h, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制矩形边框（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga935b2edcdba484943520ca4efbe38a38}{ege\+::ege\+\_\+fillrect}} (float x, float y, float w, float h, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充矩形（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gaf6fab386abf546f386e276d77e41906f}{ege\+::ege\+\_\+circle}} (float x, float y, float radius, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制圆形边框（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gad3231e7f27de1794bc0844a1f2a21dd8}{ege\+::ege\+\_\+fillcircle}} (float x, float y, float radius, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充圆形（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gacfcb6e8042e458d250b9ecccfce175d9}{ege\+::ege\+\_\+ellipse}} (float x, float y, float w, float h, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制椭圆边框（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gafa3978e95c29361e169b9e1fc14eec56}{ege\+::ege\+\_\+fillellipse}} (float x, float y, float w, float h, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充椭圆（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga72853f3f7a137c4fbb5deede7f2d6857}{ege\+::ege\+\_\+arc}} (float x, float y, float w, float h, float start\+Angle, float sweep\+Angle, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制椭圆弧（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga3deec00c584a1699bf69a85dee18f9e0}{ege\+::ege\+\_\+pie}} (float x, float y, float w, float h, float start\+Angle, float sweep\+Angle, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制饼图边框（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga105be82d2840d06b979ed32f2aff0534}{ege\+::ege\+\_\+fillpie}} (float x, float y, float w, float h, float start\+Angle, float sweep\+Angle, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充饼图（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gada21f6b3ec733f61efd75a3c4cdae7d2}{ege\+::ege\+\_\+roundrect}} (float x, float y, float w, float h, float radius, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制圆角矩形边框（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga720e669c96a2313452cf2160f38562b0}{ege\+::ege\+\_\+fillroundrect}} (float x, float y, float w, float h, float radius, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充圆角矩形（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gae0cbb1312da21918e135844fc9748cf6}{ege\+::ege\+\_\+roundrect}} (float x, float y, float w, float h, float radius1, float radius2, float radius3, float radius4, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制圆角矩形边框（各角不同半径） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gacec05ae201d797e6e12ca4426e7e9249}{ege\+::ege\+\_\+fillroundrect}} (float x, float y, float w, float h, float radius1, float radius2, float radius3, float radius4, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充圆角矩形（各角不同半径） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga8a524a32a379ec7a4afdd0291fdde80d}{ege\+::ege\+\_\+setpattern\+\_\+none}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 清除填充图案（设为无图案） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga704418817d7937975d26c2bfca132b96}{ege\+::ege\+\_\+setpattern\+\_\+lineargradient}} (float x1, float y1, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} c1, float x2, float y2, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} c2, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 设置线性渐变填充图案 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gacfa8e28f2ce1b9acf412d93bb62e7796}{ege\+::ege\+\_\+setpattern\+\_\+pathgradient}} (\mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} center, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} center\+Color, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} count, const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}points, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} color\+Count, const \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} \texorpdfstring{$\ast$}{*}point\+Colors, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 设置路径渐变填充图案 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gadeb361fb00ea991c1621808cb274e958}{ege\+::ege\+\_\+setpattern\+\_\+ellipsegradient}} (\mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} center, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} center\+Color, float x, float y, float w, float h, \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} color, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 设置椭圆渐变填充图案 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga4e2d3181e3ed7107d5607eb9f857af18}{ege\+::ege\+\_\+setpattern\+\_\+texture}} (\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} img\+Src, float x, float y, float w, float h, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 设置纹理填充图案 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gaa039ab766709ffc707133220012b112a}{ege\+::ege\+\_\+drawtext}} (const char \texorpdfstring{$\ast$}{*}text, float x, float y, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制文本（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gab9dd24cbe739090c4f5ca742bcdd87e8}{ege\+::ege\+\_\+drawtext}} (const wchar\+\_\+t \texorpdfstring{$\ast$}{*}text, float x, float y, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制文本（\+GDI+增强版本，\+Unicode） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gae25a91c490dd8f6f99996dbd2e3e9c5a}{ege\+::ege\+\_\+gentexture}} (bool generate, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 生成纹理 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gac881bbb4291fb48fd2407212c5364f6b}{ege\+::ege\+\_\+puttexture}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, float x, float y, float w, float h, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制纹理图像 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gaca3aa3b6690a0d561f75a9fdafbb07a8}{ege\+::ege\+\_\+puttexture}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{structege_1_1ege__rect}{ege\+\_\+rect}} dest, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制纹理图像（指定目标矩形） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga167a2cc22c1038a0aaa1748e1eed6a5e}{ege\+::ege\+\_\+puttexture}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{structege_1_1ege__rect}{ege\+\_\+rect}} dest, \mbox{\hyperlink{structege_1_1ege__rect}{ege\+\_\+rect}} src, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制纹理图像（指定源和目标矩形） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga2ca29354f276239ea08aa93f5e521dd0}{ege\+::ege\+\_\+drawimage}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制图像（\+GDI+增强版本） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga25b9a89c29632eeb4c0acc8dd22677fb}{ege\+::ege\+\_\+drawimage}} (\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}} img\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Dest, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} x\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} y\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} width\+Src, \mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}} height\+Src, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制图像（\+GDI+增强版本，指定源和目标区域） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gaa68583e27c3966f9a2956c9ebae6747f}{ege\+::ege\+\_\+drawpath}} (const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制路径边框 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_gafc426e3cb9b6fc9d743063d5881aca5c}{ege\+::ege\+\_\+fillpath}} (const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充路径 \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga00cdbcd57927491c27b72632934c275f}{ege\+::ege\+\_\+drawpath}} (const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制路径边框（指定偏移） \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} \mbox{\hyperlink{group__EGEGDIPlus_ga0ec5d0f2e2c2075cd60b803e151ecf21}{ege\+::ege\+\_\+fillpath}} (const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}path, float x, float y, \mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}} pimg=NULL)
+\begin{DoxyCompactList}\small\item\em 绘制填充路径（指定偏移） \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{详细描述}
+需要定义\+EGE\+\_\+\+GDIPLUS宏才能使用的增强绘图功能 
+
+\doxysubsection{函数说明}
+\Hypertarget{group__EGEGDIPlus_ga72853f3f7a137c4fbb5deede7f2d6857}\label{group__EGEGDIPlus_ga72853f3f7a137c4fbb5deede7f2d6857} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_arc@{ege\_arc}}
+\index{ege\_arc@{ege\_arc}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_arc()}{ege\_arc()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+arc (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{float}]{start\+Angle,  }\item[{float}]{sweep\+Angle,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制椭圆弧（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 椭圆边界矩形左上角x坐标 \\
+\hline
+{\em y} & 椭圆边界矩形左上角y坐标 \\
+\hline
+{\em w} & 椭圆边界矩形宽度 \\
+\hline
+{\em h} & 椭圆边界矩形高度 \\
+\hline
+{\em start\+Angle} & 起始角度（度） \\
+\hline
+{\em sweep\+Angle} & 扫描角度（度） \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga9d5a355e47dcfb0250527fec772dbab8}\label{group__EGEGDIPlus_ga9d5a355e47dcfb0250527fec772dbab8} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_bezier@{ege\_bezier}}
+\index{ege\_bezier@{ege\_bezier}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_bezier()}{ege\_bezier()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+bezier (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制贝塞尔曲线（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gaf6fab386abf546f386e276d77e41906f}\label{group__EGEGDIPlus_gaf6fab386abf546f386e276d77e41906f} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_circle@{ege\_circle}}
+\index{ege\_circle@{ege\_circle}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_circle()}{ege\_circle()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+circle (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{radius,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制圆形边框（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 圆心x坐标 \\
+\hline
+{\em y} & 圆心y坐标 \\
+\hline
+{\em radius} & 半径 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gafb41ec190cd1c9b29955e7b3094798b4}\label{group__EGEGDIPlus_gafb41ec190cd1c9b29955e7b3094798b4} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawbezier@{ege\_drawbezier}}
+\index{ege\_drawbezier@{ege\_drawbezier}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawbezier()}{ege\_drawbezier()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawbezier (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制贝塞尔曲线（同ege\+\_\+bezier） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga1be2cf0b183dbb9e0cb20fae373b2ece}\label{group__EGEGDIPlus_ga1be2cf0b183dbb9e0cb20fae373b2ece} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawclosedcurve@{ege\_drawclosedcurve}}
+\index{ege\_drawclosedcurve@{ege\_drawclosedcurve}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawclosedcurve()}{ege\_drawclosedcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawclosedcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{float}]{tension,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制闭合基数样条曲线（带张力参数） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em tension} & 张力参数（0.0为直线，值越大曲线越弯曲） \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gac89d39c3157c492bc9447c64785b8222}\label{group__EGEGDIPlus_gac89d39c3157c492bc9447c64785b8222} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawclosedcurve@{ege\_drawclosedcurve}}
+\index{ege\_drawclosedcurve@{ege\_drawclosedcurve}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawclosedcurve()}{ege\_drawclosedcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawclosedcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制闭合基数样条曲线 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gab97675c4beb673d728be8423b4dd5e73}\label{group__EGEGDIPlus_gab97675c4beb673d728be8423b4dd5e73} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawcurve@{ege\_drawcurve}}
+\index{ege\_drawcurve@{ege\_drawcurve}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawcurve()}{ege\_drawcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{float}]{tension,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制基数样条曲线（带张力参数） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em tension} & 张力参数（0.0为直线，值越大曲线越弯曲） \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga27a965fcdf3f1e4c95d1a896d22fac94}\label{group__EGEGDIPlus_ga27a965fcdf3f1e4c95d1a896d22fac94} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawcurve@{ege\_drawcurve}}
+\index{ege\_drawcurve@{ege\_drawcurve}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawcurve()}{ege\_drawcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制基数样条曲线 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga25b9a89c29632eeb4c0acc8dd22677fb}\label{group__EGEGDIPlus_ga25b9a89c29632eeb4c0acc8dd22677fb} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawimage@{ege\_drawimage}}
+\index{ege\_drawimage@{ege\_drawimage}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawimage()}{ege\_drawimage()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{width\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{height\+Src,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制图像（\+GDI+增强版本，指定源和目标区域） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Src} & 源图像 \\
+\hline
+{\em x\+Dest} & 目标区域左上角x坐标 \\
+\hline
+{\em y\+Dest} & 目标区域左上角y坐标 \\
+\hline
+{\em width\+Dest} & 目标区域宽度 \\
+\hline
+{\em height\+Dest} & 目标区域高度 \\
+\hline
+{\em x\+Src} & 源区域左上角x坐标 \\
+\hline
+{\em y\+Src} & 源区域左上角y坐标 \\
+\hline
+{\em width\+Src} & 源区域宽度 \\
+\hline
+{\em height\+Src} & 源区域高度 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga2ca29354f276239ea08aa93f5e521dd0}\label{group__EGEGDIPlus_ga2ca29354f276239ea08aa93f5e521dd0} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawimage@{ege\_drawimage}}
+\index{ege\_drawimage@{ege\_drawimage}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawimage()}{ege\_drawimage()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawimage (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{x\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{y\+Dest,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制图像（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Src} & 源图像 \\
+\hline
+{\em x\+Dest} & 目标x坐标 \\
+\hline
+{\em y\+Dest} & 目标y坐标 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga00cdbcd57927491c27b72632934c275f}\label{group__EGEGDIPlus_ga00cdbcd57927491c27b72632934c275f} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawpath@{ege\_drawpath}}
+\index{ege\_drawpath@{ege\_drawpath}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawpath()}{ege\_drawpath()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawpath (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制路径边框（指定偏移） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & x方向偏移 \\
+\hline
+{\em y} & y方向偏移 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gaa68583e27c3966f9a2956c9ebae6747f}\label{group__EGEGDIPlus_gaa68583e27c3966f9a2956c9ebae6747f} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawpath@{ege\_drawpath}}
+\index{ege\_drawpath@{ege\_drawpath}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawpath()}{ege\_drawpath()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawpath (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制路径边框 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga16f2e1112d9c03174aa26d4883de9645}\label{group__EGEGDIPlus_ga16f2e1112d9c03174aa26d4883de9645} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawpoly@{ege\_drawpoly}}
+\index{ege\_drawpoly@{ege\_drawpoly}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawpoly()}{ege\_drawpoly()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawpoly (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制多边形（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 点的数量 \\
+\hline
+{\em points} & 点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gaa039ab766709ffc707133220012b112a}\label{group__EGEGDIPlus_gaa039ab766709ffc707133220012b112a} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawtext@{ege\_drawtext}}
+\index{ege\_drawtext@{ege\_drawtext}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawtext()}{ege\_drawtext()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawtext (\begin{DoxyParamCaption}\item[{const char \texorpdfstring{$\ast$}{*}}]{text,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制文本（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em text} & 要绘制的文本 \\
+\hline
+{\em x} & 文本左上角x坐标 \\
+\hline
+{\em y} & 文本左上角y坐标 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gab9dd24cbe739090c4f5ca742bcdd87e8}\label{group__EGEGDIPlus_gab9dd24cbe739090c4f5ca742bcdd87e8} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_drawtext@{ege\_drawtext}}
+\index{ege\_drawtext@{ege\_drawtext}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_drawtext()}{ege\_drawtext()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+drawtext (\begin{DoxyParamCaption}\item[{const wchar\+\_\+t \texorpdfstring{$\ast$}{*}}]{text,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制文本（\+GDI+增强版本，\+Unicode） 
+
+
+\begin{DoxyParams}{参数}
+{\em text} & 要绘制的文本 \\
+\hline
+{\em x} & 文本左上角x坐标 \\
+\hline
+{\em y} & 文本左上角y坐标 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gacfcb6e8042e458d250b9ecccfce175d9}\label{group__EGEGDIPlus_gacfcb6e8042e458d250b9ecccfce175d9} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_ellipse@{ege\_ellipse}}
+\index{ege\_ellipse@{ege\_ellipse}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_ellipse()}{ege\_ellipse()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+ellipse (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制椭圆边框（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 椭圆边界矩形左上角x坐标 \\
+\hline
+{\em y} & 椭圆边界矩形左上角y坐标 \\
+\hline
+{\em w} & 椭圆边界矩形宽度 \\
+\hline
+{\em h} & 椭圆边界矩形高度 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga7dd4a9061f4c0abd881dc1f185e3ecc6}\label{group__EGEGDIPlus_ga7dd4a9061f4c0abd881dc1f185e3ecc6} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_enable\_aa@{ege\_enable\_aa}}
+\index{ege\_enable\_aa@{ege\_enable\_aa}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_enable\_aa()}{ege\_enable\_aa()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+enable\+\_\+aa (\begin{DoxyParamCaption}\item[{bool}]{enable,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+启用或禁用抗锯齿 
+
+
+\begin{DoxyParams}{参数}
+{\em enable} & true启用抗锯齿，false禁用 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gad3231e7f27de1794bc0844a1f2a21dd8}\label{group__EGEGDIPlus_gad3231e7f27de1794bc0844a1f2a21dd8} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillcircle@{ege\_fillcircle}}
+\index{ege\_fillcircle@{ege\_fillcircle}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillcircle()}{ege\_fillcircle()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillcircle (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{radius,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充圆形（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 圆心x坐标 \\
+\hline
+{\em y} & 圆心y坐标 \\
+\hline
+{\em radius} & 半径 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga96f67986e678ef51354b6628946c95d9}\label{group__EGEGDIPlus_ga96f67986e678ef51354b6628946c95d9} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillclosedcurve@{ege\_fillclosedcurve}}
+\index{ege\_fillclosedcurve@{ege\_fillclosedcurve}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillclosedcurve()}{ege\_fillclosedcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillclosedcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{float}]{tension,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充闭合基数样条曲线（带张力参数） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em tension} & 张力参数（0.0为直线，值越大曲线越弯曲） \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga222ed57bd5b0bbf96ac61693d6b4c8db}\label{group__EGEGDIPlus_ga222ed57bd5b0bbf96ac61693d6b4c8db} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillclosedcurve@{ege\_fillclosedcurve}}
+\index{ege\_fillclosedcurve@{ege\_fillclosedcurve}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillclosedcurve()}{ege\_fillclosedcurve()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillclosedcurve (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充闭合基数样条曲线 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 控制点数量 \\
+\hline
+{\em points} & 控制点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gafa3978e95c29361e169b9e1fc14eec56}\label{group__EGEGDIPlus_gafa3978e95c29361e169b9e1fc14eec56} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillellipse@{ege\_fillellipse}}
+\index{ege\_fillellipse@{ege\_fillellipse}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillellipse()}{ege\_fillellipse()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillellipse (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充椭圆（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 椭圆边界矩形左上角x坐标 \\
+\hline
+{\em y} & 椭圆边界矩形左上角y坐标 \\
+\hline
+{\em w} & 椭圆边界矩形宽度 \\
+\hline
+{\em h} & 椭圆边界矩形高度 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga0ec5d0f2e2c2075cd60b803e151ecf21}\label{group__EGEGDIPlus_ga0ec5d0f2e2c2075cd60b803e151ecf21} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillpath@{ege\_fillpath}}
+\index{ege\_fillpath@{ege\_fillpath}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillpath()}{ege\_fillpath()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillpath (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充路径（指定偏移） 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em x} & x方向偏移 \\
+\hline
+{\em y} & y方向偏移 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gafc426e3cb9b6fc9d743063d5881aca5c}\label{group__EGEGDIPlus_gafc426e3cb9b6fc9d743063d5881aca5c} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillpath@{ege\_fillpath}}
+\index{ege\_fillpath@{ege\_fillpath}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillpath()}{ege\_fillpath()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillpath (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structege_1_1ege__path}{ege\+\_\+path}} \texorpdfstring{$\ast$}{*}}]{path,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充路径 
+
+
+\begin{DoxyParams}{参数}
+{\em path} & 路径对象指针 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga105be82d2840d06b979ed32f2aff0534}\label{group__EGEGDIPlus_ga105be82d2840d06b979ed32f2aff0534} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillpie@{ege\_fillpie}}
+\index{ege\_fillpie@{ege\_fillpie}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillpie()}{ege\_fillpie()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillpie (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{float}]{start\+Angle,  }\item[{float}]{sweep\+Angle,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充饼图（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 椭圆边界矩形左上角x坐标 \\
+\hline
+{\em y} & 椭圆边界矩形左上角y坐标 \\
+\hline
+{\em w} & 椭圆边界矩形宽度 \\
+\hline
+{\em h} & 椭圆边界矩形高度 \\
+\hline
+{\em start\+Angle} & 起始角度（度） \\
+\hline
+{\em sweep\+Angle} & 扫描角度（度） \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga7a9a97dc2fb1510ff614dcceb9ecce97}\label{group__EGEGDIPlus_ga7a9a97dc2fb1510ff614dcceb9ecce97} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillpoly@{ege\_fillpoly}}
+\index{ege\_fillpoly@{ege\_fillpoly}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillpoly()}{ege\_fillpoly()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillpoly (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充多边形（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 点的数量 \\
+\hline
+{\em points} & 点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga935b2edcdba484943520ca4efbe38a38}\label{group__EGEGDIPlus_ga935b2edcdba484943520ca4efbe38a38} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillrect@{ege\_fillrect}}
+\index{ege\_fillrect@{ege\_fillrect}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillrect()}{ege\_fillrect()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillrect (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充矩形（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 矩形左上角x坐标 \\
+\hline
+{\em y} & 矩形左上角y坐标 \\
+\hline
+{\em w} & 矩形宽度 \\
+\hline
+{\em h} & 矩形高度 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga720e669c96a2313452cf2160f38562b0}\label{group__EGEGDIPlus_ga720e669c96a2313452cf2160f38562b0} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillroundrect@{ege\_fillroundrect}}
+\index{ege\_fillroundrect@{ege\_fillroundrect}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillroundrect()}{ege\_fillroundrect()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillroundrect (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{float}]{radius,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充圆角矩形（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 矩形左上角x坐标 \\
+\hline
+{\em y} & 矩形左上角y坐标 \\
+\hline
+{\em w} & 矩形宽度 \\
+\hline
+{\em h} & 矩形高度 \\
+\hline
+{\em radius} & 圆角半径 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gacec05ae201d797e6e12ca4426e7e9249}\label{group__EGEGDIPlus_gacec05ae201d797e6e12ca4426e7e9249} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_fillroundrect@{ege\_fillroundrect}}
+\index{ege\_fillroundrect@{ege\_fillroundrect}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_fillroundrect()}{ege\_fillroundrect()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+fillroundrect (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{float}]{radius1,  }\item[{float}]{radius2,  }\item[{float}]{radius3,  }\item[{float}]{radius4,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制填充圆角矩形（各角不同半径） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 矩形左上角x坐标 \\
+\hline
+{\em y} & 矩形左上角y坐标 \\
+\hline
+{\em w} & 矩形宽度 \\
+\hline
+{\em h} & 矩形高度 \\
+\hline
+{\em radius1} & 左上角圆角半径 \\
+\hline
+{\em radius2} & 右上角圆角半径 \\
+\hline
+{\em radius3} & 右下角圆角半径 \\
+\hline
+{\em radius4} & 左下角圆角半径 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gae25a91c490dd8f6f99996dbd2e3e9c5a}\label{group__EGEGDIPlus_gae25a91c490dd8f6f99996dbd2e3e9c5a} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_gentexture@{ege\_gentexture}}
+\index{ege\_gentexture@{ege\_gentexture}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_gentexture()}{ege\_gentexture()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+gentexture (\begin{DoxyParamCaption}\item[{bool}]{generate,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+生成纹理 
+
+
+\begin{DoxyParams}{参数}
+{\em generate} & 是否生成纹理 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gad6e3f4e1c6e7b68ba852dea6282b85c9}\label{group__EGEGDIPlus_gad6e3f4e1c6e7b68ba852dea6282b85c9} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_line@{ege\_line}}
+\index{ege\_line@{ege\_line}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_line()}{ege\_line()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+line (\begin{DoxyParamCaption}\item[{float}]{x1,  }\item[{float}]{y1,  }\item[{float}]{x2,  }\item[{float}]{y2,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制直线（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x1} & 起点x坐标 \\
+\hline
+{\em y1} & 起点y坐标 \\
+\hline
+{\em x2} & 终点x坐标 \\
+\hline
+{\em y2} & 终点y坐标 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga3deec00c584a1699bf69a85dee18f9e0}\label{group__EGEGDIPlus_ga3deec00c584a1699bf69a85dee18f9e0} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_pie@{ege\_pie}}
+\index{ege\_pie@{ege\_pie}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_pie()}{ege\_pie()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+pie (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{float}]{start\+Angle,  }\item[{float}]{sweep\+Angle,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制饼图边框（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 椭圆边界矩形左上角x坐标 \\
+\hline
+{\em y} & 椭圆边界矩形左上角y坐标 \\
+\hline
+{\em w} & 椭圆边界矩形宽度 \\
+\hline
+{\em h} & 椭圆边界矩形高度 \\
+\hline
+{\em start\+Angle} & 起始角度（度） \\
+\hline
+{\em sweep\+Angle} & 扫描角度（度） \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga3c87a0fa64955371315a4864dbae29dc}\label{group__EGEGDIPlus_ga3c87a0fa64955371315a4864dbae29dc} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_polygon@{ege\_polygon}}
+\index{ege\_polygon@{ege\_polygon}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_polygon()}{ege\_polygon()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+polygon (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制多边形边框（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 点的数量 \\
+\hline
+{\em points} & 点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga3ec4818dce32d802aa560bc5d37919b2}\label{group__EGEGDIPlus_ga3ec4818dce32d802aa560bc5d37919b2} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_polyline@{ege\_polyline}}
+\index{ege\_polyline@{ege\_polyline}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_polyline()}{ege\_polyline()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+polyline (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{num\+Of\+Points,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制多条线段（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em num\+Of\+Points} & 点的数量 \\
+\hline
+{\em points} & 点坐标数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga167a2cc22c1038a0aaa1748e1eed6a5e}\label{group__EGEGDIPlus_ga167a2cc22c1038a0aaa1748e1eed6a5e} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_puttexture@{ege\_puttexture}}
+\index{ege\_puttexture@{ege\_puttexture}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_puttexture()}{ege\_puttexture()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+puttexture (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{structege_1_1ege__rect}{ege\+\_\+rect}}}]{dest,  }\item[{\mbox{\hyperlink{structege_1_1ege__rect}{ege\+\_\+rect}}}]{src,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制纹理图像（指定源和目标矩形） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Src} & 源纹理图像 \\
+\hline
+{\em dest} & 目标矩形 \\
+\hline
+{\em src} & 源矩形 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gaca3aa3b6690a0d561f75a9fdafbb07a8}\label{group__EGEGDIPlus_gaca3aa3b6690a0d561f75a9fdafbb07a8} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_puttexture@{ege\_puttexture}}
+\index{ege\_puttexture@{ege\_puttexture}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_puttexture()}{ege\_puttexture()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+puttexture (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{\mbox{\hyperlink{structege_1_1ege__rect}{ege\+\_\+rect}}}]{dest,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制纹理图像（指定目标矩形） 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Src} & 源纹理图像 \\
+\hline
+{\em dest} & 目标矩形 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gac881bbb4291fb48fd2407212c5364f6b}\label{group__EGEGDIPlus_gac881bbb4291fb48fd2407212c5364f6b} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_puttexture@{ege\_puttexture}}
+\index{ege\_puttexture@{ege\_puttexture}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_puttexture()}{ege\_puttexture()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+puttexture (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_ae72ed204f750f80e081444406eb74a31}{PCIMAGE}}}]{img\+Src,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制纹理图像 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Src} & 源纹理图像 \\
+\hline
+{\em x} & 目标区域左上角x坐标 \\
+\hline
+{\em y} & 目标区域左上角y坐标 \\
+\hline
+{\em w} & 目标区域宽度 \\
+\hline
+{\em h} & 目标区域高度 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga43405275d5f768de671a40508eea4300}\label{group__EGEGDIPlus_ga43405275d5f768de671a40508eea4300} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_rectangle@{ege\_rectangle}}
+\index{ege\_rectangle@{ege\_rectangle}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_rectangle()}{ege\_rectangle()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+rectangle (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制矩形边框（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 矩形左上角x坐标 \\
+\hline
+{\em y} & 矩形左上角y坐标 \\
+\hline
+{\em w} & 矩形宽度 \\
+\hline
+{\em h} & 矩形高度 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gada21f6b3ec733f61efd75a3c4cdae7d2}\label{group__EGEGDIPlus_gada21f6b3ec733f61efd75a3c4cdae7d2} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_roundrect@{ege\_roundrect}}
+\index{ege\_roundrect@{ege\_roundrect}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_roundrect()}{ege\_roundrect()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+roundrect (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{float}]{radius,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制圆角矩形边框（\+GDI+增强版本） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 矩形左上角x坐标 \\
+\hline
+{\em y} & 矩形左上角y坐标 \\
+\hline
+{\em w} & 矩形宽度 \\
+\hline
+{\em h} & 矩形高度 \\
+\hline
+{\em radius} & 圆角半径 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gae0cbb1312da21918e135844fc9748cf6}\label{group__EGEGDIPlus_gae0cbb1312da21918e135844fc9748cf6} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_roundrect@{ege\_roundrect}}
+\index{ege\_roundrect@{ege\_roundrect}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_roundrect()}{ege\_roundrect()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+roundrect (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{float}]{radius1,  }\item[{float}]{radius2,  }\item[{float}]{radius3,  }\item[{float}]{radius4,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+绘制圆角矩形边框（各角不同半径） 
+
+
+\begin{DoxyParams}{参数}
+{\em x} & 矩形左上角x坐标 \\
+\hline
+{\em y} & 矩形左上角y坐标 \\
+\hline
+{\em w} & 矩形宽度 \\
+\hline
+{\em h} & 矩形高度 \\
+\hline
+{\em radius1} & 左上角圆角半径 \\
+\hline
+{\em radius2} & 右上角圆角半径 \\
+\hline
+{\em radius3} & 右下角圆角半径 \\
+\hline
+{\em radius4} & 左下角圆角半径 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga2c3a342daf65027ea6cce58d5a5716ba}\label{group__EGEGDIPlus_ga2c3a342daf65027ea6cce58d5a5716ba} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_setalpha@{ege\_setalpha}}
+\index{ege\_setalpha@{ege\_setalpha}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_setalpha()}{ege\_setalpha()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+setalpha (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{alpha,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+设置全局\+Alpha透明度 
+
+
+\begin{DoxyParams}{参数}
+{\em alpha} & Alpha值（0-\/255，0完全透明，255完全不透明） \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gadeb361fb00ea991c1621808cb274e958}\label{group__EGEGDIPlus_gadeb361fb00ea991c1621808cb274e958} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_setpattern\_ellipsegradient@{ege\_setpattern\_ellipsegradient}}
+\index{ege\_setpattern\_ellipsegradient@{ege\_setpattern\_ellipsegradient}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_setpattern\_ellipsegradient()}{ege\_setpattern\_ellipsegradient()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+setpattern\+\_\+ellipsegradient (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}}}]{center,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{center\+Color,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{color,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+设置椭圆渐变填充图案 
+
+
+\begin{DoxyParams}{参数}
+{\em center} & 中心点 \\
+\hline
+{\em center\+Color} & 中心颜色 \\
+\hline
+{\em x} & 椭圆左上角x坐标 \\
+\hline
+{\em y} & 椭圆左上角y坐标 \\
+\hline
+{\em w} & 椭圆宽度 \\
+\hline
+{\em h} & 椭圆高度 \\
+\hline
+{\em color} & 边界颜色 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga704418817d7937975d26c2bfca132b96}\label{group__EGEGDIPlus_ga704418817d7937975d26c2bfca132b96} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_setpattern\_lineargradient@{ege\_setpattern\_lineargradient}}
+\index{ege\_setpattern\_lineargradient@{ege\_setpattern\_lineargradient}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_setpattern\_lineargradient()}{ege\_setpattern\_lineargradient()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+setpattern\+\_\+lineargradient (\begin{DoxyParamCaption}\item[{float}]{x1,  }\item[{float}]{y1,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{c1,  }\item[{float}]{x2,  }\item[{float}]{y2,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{c2,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+设置线性渐变填充图案 
+
+
+\begin{DoxyParams}{参数}
+{\em x1} & 起始点x坐标 \\
+\hline
+{\em y1} & 起始点y坐标 \\
+\hline
+{\em c1} & 起始点颜色 \\
+\hline
+{\em x2} & 结束点x坐标 \\
+\hline
+{\em y2} & 结束点y坐标 \\
+\hline
+{\em c2} & 结束点颜色 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga8a524a32a379ec7a4afdd0291fdde80d}\label{group__EGEGDIPlus_ga8a524a32a379ec7a4afdd0291fdde80d} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_setpattern\_none@{ege\_setpattern\_none}}
+\index{ege\_setpattern\_none@{ege\_setpattern\_none}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_setpattern\_none()}{ege\_setpattern\_none()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+setpattern\+\_\+none (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+清除填充图案（设为无图案） 
+
+
+\begin{DoxyParams}{参数}
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_gacfa8e28f2ce1b9acf412d93bb62e7796}\label{group__EGEGDIPlus_gacfa8e28f2ce1b9acf412d93bb62e7796} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_setpattern\_pathgradient@{ege\_setpattern\_pathgradient}}
+\index{ege\_setpattern\_pathgradient@{ege\_setpattern\_pathgradient}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_setpattern\_pathgradient()}{ege\_setpattern\_pathgradient()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+setpattern\+\_\+pathgradient (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}}}]{center,  }\item[{\mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}}}]{center\+Color,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{count,  }\item[{const \mbox{\hyperlink{structege_1_1ege__point}{ege\+\_\+point}} \texorpdfstring{$\ast$}{*}}]{points,  }\item[{\mbox{\hyperlink{namespaceege_aba294a2edf0dcd44b03d897fad90ce90}{int}}}]{color\+Count,  }\item[{const \mbox{\hyperlink{namespaceege_a2aaa6b084ffbccdc8b354e2b1e95da1f}{color\+\_\+t}} \texorpdfstring{$\ast$}{*}}]{point\+Colors,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+设置路径渐变填充图案 
+
+
+\begin{DoxyParams}{参数}
+{\em center} & 中心点 \\
+\hline
+{\em center\+Color} & 中心颜色 \\
+\hline
+{\em count} & 边界点数量 \\
+\hline
+{\em points} & 边界点数组 \\
+\hline
+{\em color\+Count} & 边界颜色数量 \\
+\hline
+{\em point\+Colors} & 边界颜色数组 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__EGEGDIPlus_ga4e2d3181e3ed7107d5607eb9f857af18}\label{group__EGEGDIPlus_ga4e2d3181e3ed7107d5607eb9f857af18} 
+\index{EGE GDI+增强函数@{EGE GDI+增强函数}!ege\_setpattern\_texture@{ege\_setpattern\_texture}}
+\index{ege\_setpattern\_texture@{ege\_setpattern\_texture}!EGE GDI+增强函数@{EGE GDI+增强函数}}
+\doxysubsubsection{\texorpdfstring{ege\_setpattern\_texture()}{ege\_setpattern\_texture()}}
+{\footnotesize\ttfamily void \mbox{\hyperlink{ege_8zh__CN_8h_a03e09e6519dfab7deb4a9ac211920318}{EGEAPI}} ege\+::ege\+\_\+setpattern\+\_\+texture (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{img\+Src,  }\item[{float}]{x,  }\item[{float}]{y,  }\item[{float}]{w,  }\item[{float}]{h,  }\item[{\mbox{\hyperlink{namespaceege_a72e07306fee47bc08f1baf842cb681fb}{PIMAGE}}}]{pimg = {\ttfamily NULL} }\end{DoxyParamCaption})}
+
+
+
+设置纹理填充图案 
+
+
+\begin{DoxyParams}{参数}
+{\em img\+Src} & 源纹理图像 \\
+\hline
+{\em x} & 纹理区域左上角x坐标 \\
+\hline
+{\em y} & 纹理区域左上角y坐标 \\
+\hline
+{\em w} & 纹理区域宽度 \\
+\hline
+{\em h} & 纹理区域高度 \\
+\hline
+{\em pimg} & 目标图像指针，\+NULL 表示当前ege窗口 \\
+\hline
+\end{DoxyParams}
+\input{group__PathManagement}
