@@ -18,6 +18,10 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
+#ifndef CLAMP
+#define CLAMP(a, min, max)  (((a) < (min)) ? (min) : ((a) > (max) ? (max) : (a)))
+#endif
+
 
 namespace ege
 {
