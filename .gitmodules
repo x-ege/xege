@@ -1,9 +1,3 @@
-[submodule "3rdparty/zlib"]
-	path = 3rdparty/zlib
-	url = https://github.com/Easy-Graphics-Engine/zlib.git
-[submodule "3rdparty/libpng"]
-	path = 3rdparty/libpng
-	url = https://github.com/Easy-Graphics-Engine/libpng.git
 [submodule "3rdparty/ccap"]
 	path = 3rdparty/ccap
 	url = https://github.com/wysaid/CameraCapture.git

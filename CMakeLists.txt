@@ -115,92 +115,54 @@ add_library(xege STATIC ${EGE_CPP_SRC})
 
 target_include_directories(xege PUBLIC include)
 
-# 是否使用 libpng 和 zlib 处理 PNG 图片。
-# 目前只能为 ON，未来或允许选择使用 WIC。
-option(USE_LIBPNG_AND_ZLIB "Use libpng and zlib to process PNG images" ON)
+# 自动检查并拉取缺失的子模块
+if(EXISTS "${PROJECT_SOURCE_DIR}/.gitmodules")
+    message(STATUS "Submodule checking...")
+    file(READ "${PROJECT_SOURCE_DIR}/.gitmodules" GITMODULES_CONTENT)
+    string(REGEX MATCHALL "path[ \t]*=[ \t]*([^\n\r]+)" SUBMODULE_PATHS "${GITMODULES_CONTENT}")
+    find_package(Git QUIET)
 
-# 是否将 libpng 和 zlib 合并入最终的 EGE 静态库
-# 如果为 OFF，将寻找已有的库进行编译
-option(MERGE_LIBPNG_AND_ZLIB "Merge libpng and zlib into EGE library" ON)
+    set(SUBMODULE_UNABLE_TO_UPDATE OFF)
 
-if(USE_LIBPNG_AND_ZLIB)
-    set(EGE_ZLIB_PATH_SUBFIX 3rdparty/zlib)
-    set(EGE_ZLIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${EGE_ZLIB_PATH_SUBFIX})
-    set(EGE_ZLIB_BINARY_DIR ${PROJECT_BINARY_DIR}/${EGE_ZLIB_PATH_SUBFIX})
-    set(EGE_LIBPNG_PATH_SUBFIX 3rdparty/libpng)
-    set(EGE_LIBPNG_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${EGE_LIBPNG_PATH_SUBFIX})
-    set(EGE_LIBPNG_BINARY_DIR ${PROJECT_BINARY_DIR}/${EGE_LIBPNG_PATH_SUBFIX})
+    foreach(SUBMODULE_LINE ${SUBMODULE_PATHS})
+        string(REGEX REPLACE "path *= *" "" SUBMODULE_PATH ${SUBMODULE_LINE})
+        string(STRIP "${SUBMODULE_PATH}" SUBMODULE_PATH)
+        set(SUBMODULE_DIR "${PROJECT_SOURCE_DIR}/${SUBMODULE_PATH}")
 
-    if(MERGE_LIBPNG_AND_ZLIB)
-        # 如果子目录下没有源代码，则自动更新 git submodule
-        if(
-            NOT EXISTS ${EGE_ZLIB_SOURCE_DIR}/CMakeLists.txt OR
-            NOT EXISTS ${EGE_LIBPNG_SOURCE_DIR}/CMakeLists.txt
-        )
-            find_package(Git REQUIRED)
-            execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive)
-        endif()
+        if(NOT EXISTS "${SUBMODULE_DIR}/.git")
+            message(STATUS "Submodule '${SUBMODULE_PATH}' not found, updating...")
 
-        set(ZLIB_BUILD_EXAMPLES OFF CACHE INTERNAL "")
-
-        add_subdirectory(${EGE_ZLIB_SOURCE_DIR} EXCLUDE_FROM_ALL)
-
-        set(PNG_BUILD_ZLIB ON CACHE INTERNAL "")
-        set(PNG_SHARED OFF CACHE INTERNAL "")
-        set(PNG_STATIC ON CACHE INTERNAL "")
-        set(PNG_TESTS OFF CACHE INTERNAL "")
-
-        set(ZLIB_INCLUDE_DIR ${EGE_ZLIB_BINARY_DIR} ${EGE_ZLIB_SOURCE_DIR})
-        add_subdirectory(${EGE_LIBPNG_SOURCE_DIR} EXCLUDE_FROM_ALL)
-
-        # zlib 的 CMake 执行过程会重命名其 zconf.h 文件，这里改回来
-        if(EXISTS ${EGE_ZLIB_SOURCE_DIR}/zconf.h.included)
-            file(RENAME ${EGE_ZLIB_SOURCE_DIR}/zconf.h.included ${EGE_ZLIB_SOURCE_DIR}/zconf.h)
-        endif()
-
-        if(MSVC)
-            target_compile_options(png_static PRIVATE
-                /MP
-                /Zl)
-            target_compile_options(zlibstatic PRIVATE
-                /MP
-                /Zl)
+            if (Git_FOUND)
+                execute_process(
+                    COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive ${SUBMODULE_PATH}
+                    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                    RESULT_VARIABLE result_submodule
+                    TIMEOUT 120
+                )
+                if(NOT result_submodule EQUAL 0)
+                    set(SUBMODULE_UNABLE_TO_UPDATE ON)
+                    message(WARNING "Failed to update submodule: ${SUBMODULE_PATH}")
+                endif()
+            else()
+                set(SUBMODULE_UNABLE_TO_UPDATE ON)
+                message(WARNING "Git is not installed, unable to update submodule: ${SUBMODULE_PATH};")
+            endif()
         else()
-            target_compile_options(png_static PRIVATE
-                -fPIC -fno-exceptions)
-            target_compile_options(zlibstatic PRIVATE
-                -fPIC -fno-exceptions)
-            target_compile_options(xege PRIVATE
-                -fPIC -fno-exceptions)
+            message(STATUS "Submodule '${SUBMODULE_PATH}' already exists.")
         endif()
 
-        target_include_directories(xege
-            PRIVATE ${EGE_ZLIB_BINARY_DIR}
-            PRIVATE ${EGE_ZLIB_SOURCE_DIR}
-        )
-        target_include_directories(xege
-            PRIVATE ${EGE_LIBPNG_BINARY_DIR}
-            PRIVATE ${EGE_LIBPNG_SOURCE_DIR}
-        )
+    endforeach()
 
-        target_sources(xege
-            PRIVATE $<TARGET_OBJECTS:png_static>
-            PRIVATE $<TARGET_OBJECTS:zlibstatic>
-        )
-        target_include_directories(png_static
-            PRIVATE ${EGE_ZLIB_BINARY_DIR}
-            PRIVATE ${EGE_ZLIB_SOURCE_DIR}
-        )
-    else()
-        find_package(ZLIB REQUIRED)
-        find_package(PNG REQUIRED)
-        target_link_libraries(xege
-            PRIVATE ZLIB::ZLIB
-            PRIVATE PNG::PNG
-        )
+    # 检查到有未拉取的子模块但无法更新，通知用户自行拉取
+    if (SUBMODULE_UNABLE_TO_UPDATE)
+        message(WARNING "Unable to update submodule, please manually execute: git submodule update --init --recursive")
     endif()
-else()
-    message(FATAL_ERROR "EGE MUST BE COMPILED WITH LIBPNG AND ZLIB!")
+
+endif()
+
+# 将3rdparty 添加到包含目录
+if(EXISTS "${PROJECT_SOURCE_DIR}/.gitmodules")
+    target_include_directories(xege PRIVATE 3rdparty)
 endif()
 
 if(EGE_ENABLE_CPP17)
