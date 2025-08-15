@@ -2,13 +2,9 @@
 
 EGE 源码使用 CMake 构建编译系统，以支持各种编译器和 IDE。
 
-EGE 在编译时默认链接 zlib 和 libpng 源代码并将之编译为库的一部分，在编译前需要将
-zlib 和 libpng 的源代码准备在 `3rdparty` 文件夹下，这部分已使用 git submodule 进行
-管理，在克隆源代码后运行 `git submodule update --init --recursive` 来同步源代码，或者
-直接执行 CMake 构建步骤，CMake 中已配置了自动同步子模块的指令。
-
-如果不想合并 zlib 和 libpng 的源代码，例如要在 MSYS2 中使用系统安装的库，可在生成编译
-配置文件时添加 `-DMERGE_LIBPNG_AND_ZLIB=OFF` 参数选择不合并。
+EGE 的子模块已使用 git submodule 进行管理，在克隆源代码后运行 `git submodule update --init --recursive` 来同步源代码，或者
+直接执行 CMake 构建步骤，CMake 中已配置了自动同步子模块的指令。同步后的子模块被放置在 3rdparty 子目录下。当然，同步功能是由 [Git](https://git-scm.com/) 
+支持的，用户需要预先安装好 Git 。
 
 请在 [cmake.org](https://cmake.org) 下载最新版 CMake，并在安装时选择将 CMake
 目录添加到 `PATH` 环境变量中。本指南默认在 CMD 或者 PowerShell 命令行下进行编译，
@@ -46,7 +42,7 @@ windows端可以通过运行根目录下的`build_commands.bat`批处理脚本�
 
 ```sh
 # Ubuntu 16.04及以上发行版
-sudo apt-get install mignw-w64 wine
+sudo apt-get install mingw-w64 wine
 
 # Arch Linux
 sudo pacman -S mingw-w64 wine
@@ -119,8 +115,8 @@ set PATH="C:\Dev-Cpp\MinGW64\bin";%PATH%
 $env:PATH="C:\Dev-Cpp\MinGW64\bin;$env:PATH"
 ```
 
-注意，CodeBloks 附带的 MinGW 只能在
-[MSYS Makefiles 配置](<#-msys-makefiles-配置>)
+注意，CodeBlocks 附带的 MinGW 只能在
+[MSYS Makefiles 配置](#msys-makefiles-配置)
 下编译。在此建议您下载不附带 MinGW 的 CodeBlocks 并单独安装最新版 TDM-GCC64，
 CodeBlocks 会自动识别已安装的 TDM-GCC。
 
