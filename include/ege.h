@@ -5225,10 +5225,12 @@ private:
     PVOID m_dwCallBack; ///< Callback handle
 };
 
-int           EGEAPI ege_compress  (void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen);
-int           EGEAPI ege_compress2 (void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen, int level);
-int           EGEAPI ege_uncompress(void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen);
-unsigned long EGEAPI ege_uncompress_size(const void *source, unsigned long sourceLen);
+uint32_t EGEAPI ege_compress_bound(uint32_t dataSize);
+int      EGEAPI ege_compress (void* compressData, uint32_t* compressSize, const void* data, uint32_t size);
+int      EGEAPI ege_compress2(void* compressData, uint32_t* compressSize, const void* data, uint32_t size, int level);
+
+int      EGEAPI ege_uncompress(void* buffer, uint32_t* bufferSize, const void* compressData, uint32_t compressSize);
+uint32_t EGEAPI ege_uncompress_size(const void* compressData, uint32_t compressSize);
 
 }
 
