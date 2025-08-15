@@ -1066,21 +1066,15 @@ struct msg_createwindow
 /// @brief 通用回调函数类型
 typedef void (CALLBACK_PROC)();
 
-/// @brief 键盘消息处理回调函数类型
-/// @param userdata 用户数据指针
-/// @param message 消息类型
-/// @param key 键码
-/// @return 处理结果
-typedef int (__stdcall MSG_KEY_PROC  )(void*, unsigned, int);
+/**
+ * @brief 键盘消息处理回调函数类型
+ */
+typedef int (__stdcall MSG_KEY_PROC  )(void* userdata, unsigned message, int key);
 
-/// @brief 鼠标消息处理回调函数类型
-/// @param userdata 用户数据指针
-/// @param message 消息类型
-/// @param x x坐标
-/// @param y y坐标
-/// @param flags 标志位
-/// @return 处理结果
-typedef int (__stdcall MSG_MOUSE_PROC)(void*, unsigned, int, int, int);
+/**
+ * @brief 鼠标消息处理回调函数类型
+ */
+typedef int (__stdcall MSG_MOUSE_PROC)(void* userdata, unsigned message, int x, int y, int flags);
 
 /// @brief 回调函数指针类型
 typedef CALLBACK_PROC       * LPCALLBACK_PROC;
