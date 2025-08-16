@@ -17,7 +17,7 @@
 <font color=#0000FF>void </font><font color=#008080>ege_transform_translate</font>(
     <font color=#0000FF>float </font>x,              <font color=#008000>//X轴平移的距离（单位为像素）</font>
     <font color=#0000FF>float </font>y,              <font color=#008000>//Y轴平移的距离（单位为像素）</font>
-    <font color=#800080>PCIMAGE </font>pimg = <font color=#800080>NULL  </font><font color=#008000>//目标图像指针，NULL表示绘制到屏幕</font>
+    <font color=#800080>PIMAGE </font>pimg = <font color=#800080>NULL  </font><font color=#008000>//目标图像指针，NULL表示绘制到屏幕</font>
 );
 </pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
@@ -28,15 +28,17 @@
 （无）
 
 <font size="4" color="#0000FF"><strong>示例：</strong></font>
-下面的代码将图片img沿中心点顺时针旋转45度后，复制到屏幕的中心：
+下面的代码将图片 img 围绕中心点缩放 1.5 倍并顺时针旋转 45 度后，绘制到屏幕中心：
 <pre>
 <font color=#800080>ege_transform_matrix</font> m;
 //保存旧的坐标变换矩阵
 <font color=#008080>ege_get_transform</font>(&m);
-<font color=#008080>ege_transform_translate</font>(<font color=#008080>getwidth</font>(),<font color=#008080>getheight</font>()); //平移到屏幕中心
-<font color=#008080>ege_transform_rotate</font>(45.0); // 顺时针旋转45度
-<font color=#008080>ege_transform_translate</font>(-<font color=#008080>getwidth</font>(img)/2, -<font color=#008080>getheight</font>(img)/2); // 平移图片img中心
-<font color=#008080>ege_drawimage</font>(img,0,0); 
+<font color=#008080>ege_transform_reset</font>(); // 重置坐标变换
+<font color=#008080>ege_transform_translate</font>(<font color=#008080>getwidth</font>()/2.0f,<font color=#008080>getheight</font>()/2.0f); //平移到屏幕中心
+<font color=#008080>ege_transform_scale</font>(1.5f, 1.5f); // 缩放 1.5 倍（以屏幕中心为基准）
+<font color=#008080>ege_transform_rotate</font>(45.0f); // 顺时针旋转 45 度
+<font color=#008080>ege_transform_translate</font>(-<font color=#008080>getwidth</font>(img)/2.0f, -<font color=#008080>getheight</font>(img)/2.0f); // 平移图片img中心
+<font color=#008080>ege_drawimage</font>(img, 0, 0);
 //恢复原有坐标变换
 <font color=#008080>ege_set_transform</font>(&m);
 </pre>
