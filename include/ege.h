@@ -112,6 +112,20 @@
 #   endif
 #endif
 
+#ifndef EGE_ENUM
+#   ifdef _MSC_VER
+#       if (_MSC_VER >= 1700) // VS2012 and later
+#           define EGE_ENUM(enum_name, enum_base_type) enum enum_name : enum_base_type
+#       else
+#           define EGE_ENUM(enum_name, enum_base_type) enum enum_name
+#       endif
+#   elif __cplusplus >= 201103L // C++11
+#       define EGE_ENUM(enum_name, enum_base_type) enum enum_name : enum_base_type
+#   else
+#       define EGE_ENUM(enum_name, enum_base_type) enum enum_name
+#   endif
+#endif
+
 #ifdef _MSC_VER
 #   if defined(_WIN64)
 #       define EGEAPI
@@ -368,7 +382,7 @@ struct ege_colpoint
  * Provides commonly used color constants, defined based on web-safe color standards
  * Color values use RGB format and can be used directly in drawing functions
  */
-enum COLORS
+EGE_ENUM(COLORS, color_t)
 {
     ALICEBLUE            = EGERGB(0xF0, 0xF8, 0xFF),
     ANTIQUEWHITE         = EGERGB(0xFA, 0xEB, 0xD7),
