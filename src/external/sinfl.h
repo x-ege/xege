@@ -142,6 +142,10 @@ extern int zsinflate(void *out, int cap, const void *in, int size);
 #include <string.h> /* memcpy, memset */
 #include <assert.h> /* assert */
 
+#ifdef _MSC_VER
+#include <intrin.h> /* _BitScanReverse */
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -190,9 +194,7 @@ sinfl_read64(const void *p) {
 }
 static void
 sinfl_copy64(unsigned char **dst, unsigned char **src) {
-  unsigned long long n;
-  memcpy(&n, *src, 8);
-  memcpy(*dst, &n, 8);
+  memcpy(*dst, *src, 8);
   *dst += 8, *src += 8;
 }
 static unsigned char*
@@ -414,7 +416,7 @@ sinfl_decompress(unsigned char *out, int cap, const unsigned char *in, int size)
 
       if ((unsigned short)len != (unsigned short)~nlen)
         return (int)(out-o);
-      if ((int)len > (e - s.bitptr))
+      if (len > (unsigned int)(e - s.bitptr))
         return (int)(out-o);
 
       if (sinfl_unlikely(out + len > oe)) return -2;
