@@ -61,10 +61,6 @@ int ege_compress2(void* compressData, uint32_t* compressSize, const void* data, 
         return grOutOfMemory;
     }
 
-    /* sdefl 内部部分成员缺少初始化 */
-    sd->seq_cnt = 0;
-    memset(&sd->freq, 0, sizeof(sdefl_freq));
-
     /* 前4个字节存储原数据长度 */
     memcpy(compressData, &size, sizeof(uint32_t));
 
