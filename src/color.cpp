@@ -374,7 +374,7 @@ color_t alphablend(color_t dst, color_t src, unsigned char srcAlphaFactor)
 
 color_t alphablend_premultiplied(color_t dst, color_t src)
 {
-    return alphablend_premultiplied_inline(dst, src);
+    return alphablend_premul_inline(dst, src);
 }
 
 color_t alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor)
@@ -384,7 +384,7 @@ color_t alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlph
     byte green = DIVIDE_255_FAST(EGEGET_G(src) * srcAlphaFactor + 255/2);
     byte blue  = DIVIDE_255_FAST(EGEGET_B(src) * srcAlphaFactor + 255/2);
 
-    return alphablend_premultiplied_inline(dst, EGEARGB(alpha, red, green, blue));
+    return alphablend_premul_inline(dst, EGEARGB(alpha, red, green, blue));
 }
 
 void ARGBToABGR(color_t* dst, const color_t* src, int count)

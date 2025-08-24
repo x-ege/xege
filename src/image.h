@@ -203,7 +203,7 @@ public:
         int                        ySrc = 0,                // y-coord of source upper-left corner
         int                        widthSrc   = 0,          // width of source rectangle
         int                        heightSrc  = 0,          // height of source rectangle
-        alpha_type                 alphaType  = ALPHATYPE_STRAIGHT  // alpha mode(straight alpha or premultiplied alpha)
+        color_type                 colorType  = COLORTYPE_PRGB32  // alpha mode(straight alpha or premultiplied alpha)
     ) const;
 
     int putimage_alphablend(PIMAGE imgDest,                 // handle to dest
@@ -217,7 +217,7 @@ public:
         int                        widthSrc,                // width of source rectangle
         int                        heightSrc,               // height of source rectangle
         bool                       smooth = false,
-        alpha_type                 alphaType  = ALPHATYPE_STRAIGHT  // alpha mode(straight alpha or premultiplied alpha)
+        color_type                 colorType  = COLORTYPE_PRGB32  // alpha mode(straight alpha or premultiplied alpha)
     ) const;
 
     int putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
@@ -310,6 +310,26 @@ public:
 graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
 
 int savebmp(PCIMAGE pimg, FILE* file, bool alpha = false);
+
+int image_premultiply(PIMAGE pimg);
+
+int image_premultiply(color_t* pixels, int width, int height);
+
+int image_premultiply(color_t* dst, const color_t* src, int width, int height);
+
+// 图像做预乘 alpha 处理，像素颜色由 (a, R, G, B) 转换为 (a, a*R, a*G, a*B) (这里 a 归一化为 0.0~1.0)
+// dstStride 和 srcStride 是以像素为单位
+int image_premultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride);
+
+int image_unpremultiply(PIMAGE pimg);
+
+int image_unpremultiply(color_t* pixels, int width, int height);
+
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height);
+
+// 图像去预乘 alpha 处理，像素颜色由 (a, a*R, a*G, a*B) 转换为 (a, R, G, B) (这里 a 归一化为 0.0~1.0)
+// dstStride 和 srcStride 是以像素为单位
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride);
 
 ImageFormat checkImageFormatByFileName(const wchar_t* fileName);
 

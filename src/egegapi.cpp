@@ -2157,7 +2157,7 @@ void EGEAPI ege_drawimage(PCIMAGE srcimg, int xDest, int yDest, PIMAGE pimg)
         Gdiplus::Bitmap bitmap(srcimg->getwidth(),
             srcimg->getheight(),
             4 * srcimg->getwidth(),
-            PixelFormat32bppARGB,
+            PixelFormat32bppPARGB,
             (BYTE*)(srcimg->m_pBuffer));
         Gdiplus::Point p(xDest, yDest);
         graphics->DrawImage(&bitmap, p);
@@ -2182,7 +2182,7 @@ void EGEAPI ege_drawimage(PCIMAGE srcimg,
         Gdiplus::Bitmap bitmap(srcimg->getwidth(),
             srcimg->getheight(),
             4 * srcimg->getwidth(),
-            PixelFormat32bppARGB,
+            PixelFormat32bppPARGB,
             (BYTE*)(srcimg->m_pBuffer));
         Gdiplus::Point destPoints[3] = {
             Gdiplus::Point(xDest, yDest), Gdiplus::Point(xDest + widthDest, yDest), Gdiplus::Point(xDest, yDest + heightDest)};
