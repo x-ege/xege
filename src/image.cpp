@@ -3347,12 +3347,12 @@ const uint32_t ege_unpremultiplyRcp[256] = {
     0x0001073Au, 0x0001062Cu, 0x0001051Fu, 0x00010415u, 0x0001030Du, 0x00010207u, 0x00010103u, 0x00010001u
     };
 
-int image_unpremultiply(PIMAGE pimg)
+int image_unpremultiply(PIMAGE pimg, bool opaque)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     int error = grOk;
     if (img && img->m_hDC) {
-        error = image_unpremultiply((color_t*)img->m_pBuffer, img->m_width, img->m_height);
+        error = image_unpremultiply((color_t*)img->m_pBuffer, img->m_width, img->m_height, opaque);
     } else {
         error = grNoInitGraph;
     }
@@ -3360,17 +3360,17 @@ int image_unpremultiply(PIMAGE pimg)
     return error;
 }
 
-int image_unpremultiply(color_t* pixels, int width, int height)
+int image_unpremultiply(color_t* pixels, int width, int height, bool opaque)
 {
-    return image_unpremultiply(pixels, pixels, width, height);
+    return image_unpremultiply(pixels, pixels, width, height, opaque);
 }
 
-int image_unpremultiply(color_t* dst, const color_t* src, int width, int height)
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, bool opaque)
 {
-    return image_unpremultiply(dst, src, width, height, width, width);
+    return image_unpremultiply(dst, src, width, height, width, width, opaque);
 }
 
-int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride)
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride, bool opaque)
 {
     if (dst == NULL || src == NULL) {
         return grNullPointer;
@@ -3378,12 +3378,14 @@ int image_unpremultiply(color_t* dst, const color_t* src, int width, int height,
         return grParamError;
     }
 
+    uint32_t fillMask = opaque ? 0xFF000000u : 0u;
+
     for (int y = 0; y < height; y++) {
         color_t* dstPixel = dst;
         const color_t* srcPixel = src;
 
         for (int x = 0; x < width; x++) {
-            *dstPixel++ = color_unpremultiply(*srcPixel++);
+            *dstPixel++ = color_unpremultiply(*srcPixel++) | fillMask;
         }
 
         dst += dstStride;
@@ -3391,6 +3393,32 @@ int image_unpremultiply(color_t* dst, const color_t* src, int width, int height,
     }
 
     return grOk;
+}
+
+void image_convertcolor(PIMAGE pimg, color_type src, color_type dst)
+{
+    if (src == dst)
+        return;
+
+    // RGB32 --> ARGB32, RGB32 --> PRGB32
+    if (src == COLORTYPE_RGB32) {
+        ege_setalpha(0xFF, pimg);
+        return;
+    }
+
+    if (dst == COLORTYPE_PRGB32) {  // ARGB32 --> PRGB32
+        image_premultiply(pimg);
+    } else {
+        if (src == COLORTYPE_PRGB32) {  // PRGB32 --> ARGB32
+            if (dst == COLORTYPE_ARGB32) {
+                image_unpremultiply(pimg);
+            } else { // PRGB32 --> RGB32
+                image_unpremultiply(pimg, true);
+            }
+        } else { // ARGB32 --> RGB32
+            ege_setalpha(0xFF, pimg);
+        }
+    }
 }
 
 ImageFormat checkImageFormatByFileName(const wchar_t* fileName)

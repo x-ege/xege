@@ -321,15 +321,16 @@ int image_premultiply(color_t* dst, const color_t* src, int width, int height);
 // dstStride 和 srcStride 是以像素为单位
 int image_premultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride);
 
-int image_unpremultiply(PIMAGE pimg);
+int image_unpremultiply(PIMAGE pimg, bool opaque = false);
 
-int image_unpremultiply(color_t* pixels, int width, int height);
+int image_unpremultiply(color_t* pixels, int width, int height, bool opaque = false);
 
-int image_unpremultiply(color_t* dst, const color_t* src, int width, int height);
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, bool opaque = false);
 
-// 图像去预乘 alpha 处理，像素颜色由 (a, a*R, a*G, a*B) 转换为 (a, R, G, B) (这里 a 归一化为 0.0~1.0)
+// 图像的 RGB 去预乘 alpha 处理，像素颜色由 (a, a*R, a*G, a*B) 转换为 (a, R, G, B) (这里 a 归一化为 0.0~1.0)
 // dstStride 和 srcStride 是以像素为单位
-int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride);
+// 如果 opaque 为 true，RGB 通道去预乘 alpha 后还会将 alpha通道设置为 0xFF
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride, bool opaque = false);
 
 ImageFormat checkImageFormatByFileName(const wchar_t* fileName);
 
