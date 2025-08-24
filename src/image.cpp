@@ -164,7 +164,7 @@ void IMAGE::gentexture(bool gen)
             gentexture(false);
         }
         Gdiplus::Bitmap* bitmap =
-            new Gdiplus::Bitmap(getwidth(), getheight(), getwidth() * 4, PixelFormat32bppARGB, (BYTE*)getbuffer());
+            new Gdiplus::Bitmap(getwidth(), getheight(), getwidth() * 4, PixelFormat32bppPARGB, (BYTE*)getbuffer());
         m_texture = bitmap;
     }
 }
@@ -494,7 +494,7 @@ graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     bitmapData.Width       = width;
     bitmapData.Height      = height;
     bitmapData.Stride      = width * sizeof(color_t);    // 至下一行像素的偏移量(字节)
-    bitmapData.PixelFormat = PixelFormat32bppARGB;       // 像素颜色格式: 32 位 ARGB
+    bitmapData.PixelFormat = PixelFormat32bppPARGB;      // 像素颜色格式: 32 位 PRGB
     bitmapData.Scan0       = getbuffer(pimg);            // 图像首行像素的首地址
 
     /* 读取区域设置为整个图像 */
@@ -506,8 +506,8 @@ graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     /* 重置 Bitmap 错误状态为 Ok */
     (void)bitmap.GetLastStatus();
 
-    /* 读取 Bitmap 图像内容，以 32 位 ARGB 的像素格式写入缓冲区 */
-    bitmap.LockBits(&rect, imageLockMode, PixelFormat32bppARGB, &bitmapData);
+    /* 读取 Bitmap 图像内容，以 32 位 PARGB 的像素格式写入缓冲区 */
+    bitmap.LockBits(&rect, imageLockMode, PixelFormat32bppPARGB, &bitmapData);
 
     /* 解除锁定(如果设置了 ImageLockModeWrite 模式，还会将缓冲区内容复制到 Bitmap) */
     bitmap.UnlockBits(&bitmapData);
@@ -540,6 +540,7 @@ int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
         if (this->resize_f(width, height) == grOk) {
             /* stb_image 返回的像素颜色存储按字节从高到低依次为 ABGR，和 ege 的存储顺序 ARGB 不一致，需要交换 R 和 B 通道. */
             ABGRToARGB((color_t*)m_pBuffer, pixels, pixelCount);
+            image_premultiply((color_t*)m_pBuffer,  width, height);
             error = grOk;
         } else {
             error = grAllocError;
@@ -597,18 +598,20 @@ int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
 
     if (withAlphaChannel) {
         // 像素格式转换 (BGRABGRA --> RGBARGBA)
-        ARGBToABGR((color_t*)buffer, (color_t*)m_pBuffer, pixelCount);
+        image_unpremultiply((color_t*)buffer, (color_t*)m_pBuffer, m_width, m_height);
+        ARGBToABGR((color_t*)buffer, (color_t*)buffer, pixelCount);
     } else {
         // 像素格式转换 (BGRABGRA --> RGBRGB)
         uint8_t* dst = buffer;
-        const uint8_t* src = (uint8_t*)m_pBuffer;
+        const color_t* src = (color_t*)m_pBuffer;
         for (int i = 0; i < pixelCount; i++) {
-            dst[0] = src[2];
-            dst[1] = src[1];
-            dst[2] = src[0];
+            const color_t color = color_unpremultiply(*src);
+            dst[0] = EGEGET_R(color);
+            dst[1] = EGEGET_G(color);
+            dst[2] = EGEGET_B(color);
 
             dst += channels;
-            src += sizeof(color_t);
+            src++;
         }
     }
 
@@ -829,7 +832,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
     int                               ySrc,     // y-coord of source upper-left corner
     int                               widthSrc, // width of source rectangle
     int                               heightSrc,// height of source rectangle
-    alpha_type                        alphaType // alpha mode(straight alpha or premultiplied alpha)
+    color_type                        colorType // color type (PRGB32, ARGB32 or RGB32)
 ) const
 {
     inittest(L"IMAGE::putimage_alphablend");
@@ -844,7 +847,43 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
         if ((widthSrc == 0) || (heightSrc == 0))
             return grOk;
 
-        if (alphaType == ALPHATYPE_PREMULTIPLIED) {
+        if (colorType == COLORTYPE_RGB32 || colorType == COLORTYPE_ARGB32) {
+            DWORD* pdp = img->m_pBuffer + yDest * img->m_width + xDest;
+            DWORD* psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
+            DWORD  ddx = img->m_width - widthSrc;
+            DWORD  dsx = imgSrc->m_width - widthSrc;
+
+            if (colorType == COLORTYPE_RGB32) {
+                for (int y = 0; y < heightSrc; ++y) {
+                    for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
+                        DWORD d = *pdp, s = *psp;
+                        *pdp = alphablend_specify_inline(d, s, alpha);
+                    }
+                    pdp += ddx;
+                    psp += dsx;
+                }
+            } else if (colorType == COLORTYPE_ARGB32) {
+                if (alpha == 0xFF) {
+                    for (int y = 0; y < heightSrc; ++y) {
+                        for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
+                            DWORD d = *pdp, s = *psp;
+                            *pdp = alphablend_inline(d, s);
+                        }
+                        pdp += ddx;
+                        psp += dsx;
+                    }
+                } else {
+                    for (int y = 0; y < heightSrc; ++y) {
+                        for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
+                            DWORD d = *pdp, s = *psp;
+                            *pdp = alphablend_inline(d, s, alpha);
+                        }
+                        pdp += ddx;
+                        psp += dsx;
+                    }
+                }
+            }
+        } else { // COLORTYPE_PRGB32 or other
             BLENDFUNCTION bf;
             bf.BlendOp             = AC_SRC_OVER;
             bf.BlendFlags          = 0;
@@ -853,31 +892,6 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
             // draw
             dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc,
                 imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
-        } else {
-            DWORD* pdp = img->m_pBuffer + yDest * img->m_width + xDest;
-            DWORD* psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
-            DWORD  ddx = img->m_width - widthSrc;
-            DWORD  dsx = imgSrc->m_width - widthSrc;
-
-            if (alpha == 0xFF) {
-                for (int y = 0; y < heightSrc; ++y) {
-                    for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
-                        DWORD d = *pdp, s = *psp;
-                        *pdp = alphablend_inline(d, s);
-                    }
-                    pdp += ddx;
-                    psp += dsx;
-                }
-            } else {
-                for (int y = 0; y < heightSrc; ++y) {
-                    for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
-                        DWORD d = *pdp, s = *psp;
-                        *pdp = alphablend_inline(d, s, alpha);
-                    }
-                    pdp += ddx;
-                    psp += dsx;
-                }
-            }
         }
     }
     CONVERT_IMAGE_END;
@@ -895,7 +909,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
     int                               widthSrc,   // width of source rectangle
     int                               heightSrc,  // height of source rectangle
     bool                              smooth,
-    alpha_type                        alphaType   // alpha mode(straight alpha or premultiplied alpha)
+    color_type                        colorType   // color type (PRGB32, ARGB32 or RGB32)
 ) const
 {
     inittest(L"IMAGE::putimage_alphablend");
@@ -911,7 +925,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
         if (widthDest  <= 0) widthDest  = widthSrc;
         if (heightDest <= 0) heightDest = heightSrc;
 
-        if ((alphaType == ALPHATYPE_PREMULTIPLIED) && !smooth) {
+        if ((colorType == COLORTYPE_PRGB32) && !smooth) {
             BLENDFUNCTION bf;
             bf.BlendOp             = AC_SRC_OVER;
             bf.BlendFlags          = 0;
@@ -937,10 +951,12 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
                 graphics->SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
             }
 
-            Gdiplus::PixelFormat pixelFormat = PixelFormat32bppARGB;
+            Gdiplus::PixelFormat pixelFormat = PixelFormat32bppPARGB;
 
-            if (alphaType == ALPHATYPE_PREMULTIPLIED) {
-                pixelFormat = PixelFormat32bppPARGB;
+            switch (colorType) {
+            case COLORTYPE_PRGB32: pixelFormat = PixelFormat32bppPARGB; break;
+            case COLORTYPE_ARGB32: pixelFormat = PixelFormat32bppARGB;  break;
+            case COLORTYPE_RGB32:  pixelFormat = PixelFormat32bppRGB;   break;
             }
 
             // Create an ImageAttributes object and set its color matrix.
@@ -1147,7 +1163,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
 
         Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, sizeof(color_t) * imgSrc->m_width,
-        PixelFormat32bppARGB, (BYTE*)imgSrc->m_pBuffer);
+        PixelFormat32bppPARGB, (BYTE*)imgSrc->m_pBuffer);
         graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
         graphics->SetTransform(&matrix);
     }
@@ -2835,10 +2851,10 @@ int EGEAPI putimage_alphablend(
     PCIMAGE imgSrc,
     int xDest, int yDest,
     unsigned char alpha,
-    alpha_type alphaType
+    color_type colorType
 )
 {
-    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, 0, 0, 0, 0, alphaType);
+    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, 0, 0, 0, 0, colorType);
 }
 
 int EGEAPI putimage_alphablend(
@@ -2847,10 +2863,10 @@ int EGEAPI putimage_alphablend(
     int xDest, int yDest,
     unsigned char alpha,
     int xSrc, int ySrc,
-    alpha_type alphaType
+    color_type colorType
 )
 {
-    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, xSrc, ySrc, 0, 0, alphaType);
+    return putimage_alphablend(imgDest, imgSrc, xDest, yDest, alpha, xSrc, ySrc, 0, 0, colorType);
 }
 
 int putimage_alphablend(PIMAGE imgDest,     // handle to dest
@@ -2862,11 +2878,11 @@ int putimage_alphablend(PIMAGE imgDest,     // handle to dest
     int                        ySrc,        // y-coord of source upper-left corner
     int                        widthSrc,    // width of source rectangle
     int                        heightSrc,   // height of source rectangle
-    alpha_type                 alphaType    // alpha mode(straight alpha or premultiplied alpha)
+    color_type                 colorType    // color type (PRGB32, ARGB32 or RGB32)
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
-    return imgSrc->putimage_alphablend(imgDest, xDest, yDest, alpha, xSrc, ySrc, widthSrc, heightSrc, alphaType);
+    return imgSrc->putimage_alphablend(imgDest, xDest, yDest, alpha, xSrc, ySrc, widthSrc, heightSrc, colorType);
 }
 
 int EGEAPI putimage_alphablend(
@@ -2876,7 +2892,7 @@ int EGEAPI putimage_alphablend(
     unsigned char alpha,
     int xSrc, int ySrc, int widthSrc, int heightSrc,
     bool smooth,
-    alpha_type alphaType
+    color_type colorType
 )
 {
     imgSrc = CONVERT_IMAGE_CONST(imgSrc);
@@ -2886,7 +2902,7 @@ int EGEAPI putimage_alphablend(
                 alpha,
                 xSrc, ySrc, widthSrc, heightSrc,
                 smooth,
-                alphaType
+                colorType
            );
 }
 
@@ -3179,10 +3195,17 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
     const int rowCnt = getheight(pimg);
     const int colCnt = getwidth(pimg);
 
+    color_t* rowBuffer = (color_t*)malloc(sizeof(color_t) * colCnt);
+    if (rowBuffer == NULL) {
+        return grOutOfMemory;
+    }
     // 3. 写入图像数据(从下到上进行存储)
     if (bytesPerPixel == 4) {
         for (int row = rowCnt-1; row >= 0; row--) {
-            if (fwrite(&buffer[row * colCnt], bytesPerRow, 1, file) != 1) {
+            // 将像素由 PRGB32 格式转为 ARGB32 格式，存入行缓冲中
+            image_unpremultiply(rowBuffer, &buffer[row * colCnt], colCnt, 1);
+            if (fwrite(rowBuffer, bytesPerRow, 1, file) != 1) {
+                free(rowBuffer);
                 return grIOerror;
             }
         }
@@ -3190,10 +3213,13 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
         const unsigned char zeroPadding[4] = {0, 0, 0, 0};
 
         for (int row = rowCnt-1; row >= 0; row--) {
-            const color_t* pixels = &buffer[row * colCnt];   // 每行像素首地址
+            // 将像素由 PRGB32 格式转为 ARGB32 格式，存入行缓冲中
+            image_unpremultiply(rowBuffer, &buffer[row * colCnt], colCnt, 1);
+            const color_t* pixels = rowBuffer;   // ARGB32 格式的每行像素首地址
 
             for(int col = 0; col < colCnt; col++) {
                 if (fwrite(&pixels[col], bytesPerPixel, 1, file) != 1) {
+                    free(rowBuffer);
                     return grIOerror;
                 }
             }
@@ -3201,11 +3227,14 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
             // 每行末尾填充对齐 4 字节
             if (paddingBytes != 0) {
                 if (fwrite(zeroPadding, paddingBytes,1, file) != 1) {
+                    free(rowBuffer);
                     return grIOerror;
                 }
             }
         }
     }
+
+    free(rowBuffer);
 
     return grOk;
 }
@@ -3216,6 +3245,152 @@ void ege_enable_aa(bool enable, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->enable_anti_alias(enable);
     CONVERT_IMAGE_END;
+}
+
+int image_premultiply(PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    int error = grOk;
+    if (img && img->m_hDC) {
+        error = image_premultiply((color_t*)img->m_pBuffer, (color_t*)img->m_pBuffer, img->m_width, img->m_height);
+    } else {
+        error = grNoInitGraph;
+    }
+    CONVERT_IMAGE_END;
+    return error;
+}
+
+int image_premultiply(color_t* pixels, int width, int height)
+{
+    return image_premultiply(pixels, pixels, width, height);
+}
+
+int image_premultiply(color_t* dst, const color_t* src, int width, int height)
+{
+    return image_premultiply(dst, src, width, height, width, width);
+}
+
+int image_premultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride)
+{
+    if (dst == NULL || src == NULL) {
+        return grNullPointer;
+    } else if (width <= 0 || height <= 0) {
+        return grParamError;
+    }
+
+    for (int y = 0; y < height; y++) {
+        color_t* dstPixel = dst;
+        const color_t* srcPixel = src;
+
+        for (int x = 0; x < width; x++) {
+            *dstPixel++ = color_premultiply(*srcPixel++);
+        }
+
+        dst += dstStride;
+        src += srcStride;
+    }
+
+    return grOk;
+}
+
+//! Table, which can be used to turn integer division into multiplication and shift that is used by PRGB to ARGB
+//! (unpremultiply) pixel conversion. It supports division by 0 (multiplies by zero) up to 255 using 24 bits of
+//! precision. The multiplied product has to be shifted to the right by 16 bits to receive the final result.
+//!
+//! The unpremultiply function:
+//!
+//!   `if (b) ? (a * 255) / b : 0`
+//!
+//! can be rewritten as
+//!
+//!   `(a * unpremultiplyRcp[b] + 0x8000u) >> 16`
+const uint32_t ege_unpremultiplyRcp[256] = {
+    // Could be also generated by:
+    //
+    // struct BLUnpremultiplyTableGen {
+    //   //! Calculates the reciprocal for `CommonTable::unpremultiply` table.
+    //   static constexpr uint32_t value(size_t i) noexcept {
+    //     return i ? uint32_t(0xFF00FF / i) : uint32_t(0);
+    //   }
+    // };
+    0x00000000u, 0x00FF00FFu, 0x007F807Fu, 0x00550055u, 0x003FC03Fu, 0x00330033u, 0x002A802Au, 0x00246DDBu,
+    0x001FE01Fu, 0x001C5571u, 0x00198019u, 0x00172EA2u, 0x00154015u, 0x00139D9Du, 0x001236EDu, 0x00110011u,
+    0x000FF00Fu, 0x000F000Fu, 0x000E2AB8u, 0x000D6BD7u, 0x000CC00Cu, 0x000C249Eu, 0x000B9751u, 0x000B164Du,
+    0x000AA00Au, 0x000A333Du, 0x0009CECEu, 0x000971D0u, 0x00091B76u, 0x0008CB11u, 0x00088008u, 0x000839D6u,
+    0x0007F807u, 0x0007BA36u, 0x00078007u, 0x0007492Bu, 0x0007155Cu, 0x0006E459u, 0x0006B5EBu, 0x000689DFu,
+    0x00066006u, 0x00063838u, 0x0006124Fu, 0x0005EE29u, 0x0005CBA8u, 0x0005AAB0u, 0x00058B26u, 0x00056CF5u,
+    0x00055005u, 0x00053443u, 0x0005199Eu, 0x00050005u, 0x0004E767u, 0x0004CFB7u, 0x0004B8E8u, 0x0004A2EDu,
+    0x00048DBBu, 0x00047947u, 0x00046588u, 0x00045275u, 0x00044004u, 0x00042E2Eu, 0x00041CEBu, 0x00040C34u,
+    0x0003FC03u, 0x0003EC52u, 0x0003DD1Bu, 0x0003CE57u, 0x0003C003u, 0x0003B219u, 0x0003A495u, 0x00039773u,
+    0x00038AAEu, 0x00037E42u, 0x0003722Cu, 0x00036669u, 0x00035AF5u, 0x00034FCEu, 0x000344EFu, 0x00033A57u,
+    0x00033003u, 0x000325F0u, 0x00031C1Cu, 0x00031284u, 0x00030927u, 0x00030003u, 0x0002F714u, 0x0002EE5Bu,
+    0x0002E5D4u, 0x0002DD7Eu, 0x0002D558u, 0x0002CD5Fu, 0x0002C593u, 0x0002BDF2u, 0x0002B67Au, 0x0002AF2Bu,
+    0x0002A802u, 0x0002A0FFu, 0x00029A21u, 0x00029367u, 0x00028CCFu, 0x00028658u, 0x00028002u, 0x000279CBu,
+    0x000273B3u, 0x00026DB9u, 0x000267DBu, 0x0002621Au, 0x00025C74u, 0x000256E8u, 0x00025176u, 0x00024C1Du,
+    0x000246DDu, 0x000241B5u, 0x00023CA3u, 0x000237A9u, 0x000232C4u, 0x00022DF5u, 0x0002293Au, 0x00022494u,
+    0x00022002u, 0x00021B83u, 0x00021717u, 0x000212BDu, 0x00020E75u, 0x00020A3Fu, 0x0002061Au, 0x00020206u,
+    0x0001FE01u, 0x0001FA0Du, 0x0001F629u, 0x0001F254u, 0x0001EE8Du, 0x0001EAD5u, 0x0001E72Bu, 0x0001E390u,
+    0x0001E001u, 0x0001DC80u, 0x0001D90Cu, 0x0001D5A5u, 0x0001D24Au, 0x0001CEFCu, 0x0001CBB9u, 0x0001C882u,
+    0x0001C557u, 0x0001C236u, 0x0001BF21u, 0x0001BC16u, 0x0001B916u, 0x0001B620u, 0x0001B334u, 0x0001B053u,
+    0x0001AD7Au, 0x0001AAACu, 0x0001A7E7u, 0x0001A52Au, 0x0001A277u, 0x00019FCDu, 0x00019D2Bu, 0x00019A92u,
+    0x00019801u, 0x00019578u, 0x000192F8u, 0x0001907Fu, 0x00018E0Eu, 0x00018BA4u, 0x00018942u, 0x000186E7u,
+    0x00018493u, 0x00018247u, 0x00018001u, 0x00017DC2u, 0x00017B8Au, 0x00017958u, 0x0001772Du, 0x00017508u,
+    0x000172EAu, 0x000170D1u, 0x00016EBFu, 0x00016CB2u, 0x00016AACu, 0x000168ABu, 0x000166AFu, 0x000164BAu,
+    0x000162C9u, 0x000160DEu, 0x00015EF9u, 0x00015D18u, 0x00015B3Du, 0x00015966u, 0x00015795u, 0x000155C9u,
+    0x00015401u, 0x0001523Eu, 0x0001507Fu, 0x00014EC6u, 0x00014D10u, 0x00014B60u, 0x000149B3u, 0x0001480Bu,
+    0x00014667u, 0x000144C7u, 0x0001432Cu, 0x00014194u, 0x00014001u, 0x00013E71u, 0x00013CE5u, 0x00013B5Du,
+    0x000139D9u, 0x00013859u, 0x000136DCu, 0x00013563u, 0x000133EDu, 0x0001327Bu, 0x0001310Du, 0x00012FA1u,
+    0x00012E3Au, 0x00012CD5u, 0x00012B74u, 0x00012A16u, 0x000128BBu, 0x00012763u, 0x0001260Eu, 0x000124BDu,
+    0x0001236Eu, 0x00012223u, 0x000120DAu, 0x00011F94u, 0x00011E51u, 0x00011D11u, 0x00011BD4u, 0x00011A9Au,
+    0x00011962u, 0x0001182Du, 0x000116FAu, 0x000115CAu, 0x0001149Du, 0x00011372u, 0x0001124Au, 0x00011124u,
+    0x00011001u, 0x00010EE0u, 0x00010DC1u, 0x00010CA5u, 0x00010B8Bu, 0x00010A73u, 0x0001095Eu, 0x0001084Bu,
+    0x0001073Au, 0x0001062Cu, 0x0001051Fu, 0x00010415u, 0x0001030Du, 0x00010207u, 0x00010103u, 0x00010001u
+    };
+
+int image_unpremultiply(PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    int error = grOk;
+    if (img && img->m_hDC) {
+        error = image_unpremultiply((color_t*)img->m_pBuffer, img->m_width, img->m_height);
+    } else {
+        error = grNoInitGraph;
+    }
+    CONVERT_IMAGE_END;
+    return error;
+}
+
+int image_unpremultiply(color_t* pixels, int width, int height)
+{
+    return image_unpremultiply(pixels, pixels, width, height);
+}
+
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height)
+{
+    return image_unpremultiply(dst, src, width, height, width, width);
+}
+
+int image_unpremultiply(color_t* dst, const color_t* src, int width, int height, int dstStride, int srcStride)
+{
+    if (dst == NULL || src == NULL) {
+        return grNullPointer;
+    } else if (width <= 0 || height <= 0) {
+        return grParamError;
+    }
+
+    for (int y = 0; y < height; y++) {
+        color_t* dstPixel = dst;
+        const color_t* srcPixel = src;
+
+        for (int x = 0; x < width; x++) {
+            *dstPixel++ = color_unpremultiply(*srcPixel++);
+        }
+
+        dst += dstStride;
+        src += srcStride;
+    }
+
+    return grOk;
 }
 
 ImageFormat checkImageFormatByFileName(const wchar_t* fileName)

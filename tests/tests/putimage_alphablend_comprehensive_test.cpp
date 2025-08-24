@@ -12,18 +12,18 @@
  * === 实际实现分支 ===
  * 基础实现 (IMAGE::putimage_alphablend 方法1):
  *   Branch A: alpha == 0 → 直接返回 (优化)
- *   Branch B: ALPHATYPE_PREMULTIPLIED → Windows AlphaBlend API
- *   Branch C: ALPHATYPE_STRAIGHT + alpha == 255 → 软件实现 (优化路径)
- *   Branch D: ALPHATYPE_STRAIGHT + alpha < 255 → 软件实现 (通用路径)
+ *   Branch B: COLORTYPE_PRGB32 → Windows AlphaBlend API
+ *   Branch C: COLORTYPE_ARGB32 + alpha == 255 → 软件实现 (优化路径)
+ *   Branch D: COLORTYPE_ARGB32 + alpha < 255 → 软件实现 (通用路径)
  * 
  * 缩放实现 (IMAGE::putimage_alphablend 方法2):
  *   Branch E: alpha == 0 → 直接返回 (优化)
- *   Branch F: ALPHATYPE_PREMULTIPLIED + !smooth → Windows AlphaBlend API + 缩放
+ *   Branch F: COLORTYPE_PRGB32 + !smooth → Windows AlphaBlend API + 缩放
  *   Branch G: 其他情况 → GDI+ 实现:
  *     G1: smooth=true → 高质量双三次插值
  *     G2: smooth=false → 最近邻插值
  *     G3: alpha != 255 → ColorMatrix alpha 混合
- *     G4: ALPHATYPE_PREMULTIPLIED → PixelFormat32bppPARGB
+ *     G4: COLORTYPE_PRGB32 → PixelFormat32bppPARGB
  */
 
 #define SHOW_CONSOLE 1
@@ -120,21 +120,21 @@ int main() {
         "6参数版本 (基础)",
         "参数转发→Branch C/D",
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, COLORTYPE_ARGB32);
         }, iterations));
     
     results.push_back(testFunction(
         "8参数版本 (指定源位置)", 
         "参数转发→Branch C/D",
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, COLORTYPE_ARGB32);
         }, iterations));
     
     results.push_back(testFunction(
         "10参数版本 (指定源矩形)",
         "Branch C/D",
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, testWidth2, testHeight2, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, testWidth2, testHeight2, COLORTYPE_ARGB32);
         }, iterations));
         
     results.push_back(testFunction(
@@ -142,7 +142,7 @@ int main() {
         "Branch G",
         [&]() {
             ege::putimage_alphablend(nullptr, srcImg, testX, testY, testWidth2, testHeight2, testAlpha, 
-                                   testSrcX, testSrcY, testWidth2, testHeight2, false, ALPHATYPE_STRAIGHT);
+                                   testSrcX, testSrcY, testWidth2, testHeight2, false, COLORTYPE_ARGB32);
         }, iterations));
 
     std::cout << "\n[第二部分] 基础实现分支性能测试" << std::endl;
@@ -154,31 +154,31 @@ int main() {
         "Alpha=0 早期返回",
         "Branch A",
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, testX, testY, (unsigned char)0, testSrcX, testSrcY, testWidth2, testHeight2, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, testX, testY, (unsigned char)0, testSrcX, testSrcY, testWidth2, testHeight2, COLORTYPE_ARGB32);
         }, iterations));
     
-    // Branch B: ALPHATYPE_PREMULTIPLIED (Windows AlphaBlend API)
+    // Branch B: COLORTYPE_PRGB32 (Windows AlphaBlend API)
     results.push_back(testFunction(
         "预乘Alpha (Windows API)",
         "Branch B",
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, testWidth2, testHeight2, ALPHATYPE_PREMULTIPLIED);
+            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, testWidth2, testHeight2, COLORTYPE_PRGB32);
         }, iterations));
     
-    // Branch C: ALPHATYPE_STRAIGHT + alpha == 255 (软件实现优化路径)
+    // Branch C: COLORTYPE_ARGB32 + alpha == 255 (软件实现优化路径)
     results.push_back(testFunction(
         "直通Alpha=255 (软件优化)", 
         "Branch C",
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, testX, testY, (unsigned char)255, testSrcX, testSrcY, testWidth2, testHeight2, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, testX, testY, (unsigned char)255, testSrcX, testSrcY, testWidth2, testHeight2, COLORTYPE_ARGB32);
         }, iterations));
     
-    // Branch D: ALPHATYPE_STRAIGHT + alpha < 255 (软件实现通用路径)
+    // Branch D: COLORTYPE_ARGB32 + alpha < 255 (软件实现通用路径)
     results.push_back(testFunction(
         "直通Alpha<255 (软件通用)",
         "Branch D", 
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, testWidth2, testHeight2, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, testX, testY, testAlpha, testSrcX, testSrcY, testWidth2, testHeight2, COLORTYPE_ARGB32);
         }, iterations));
 
     std::cout << "\n[第三部分] 缩放实现分支性能测试" << std::endl;
@@ -191,16 +191,16 @@ int main() {
         "Branch E",
         [&]() {
             ege::putimage_alphablend(nullptr, srcImg, testX, testY, testWidth2, testHeight2, (unsigned char)0, 
-                                   testSrcX, testSrcY, testWidth2, testHeight2, false, ALPHATYPE_STRAIGHT);
+                                   testSrcX, testSrcY, testWidth2, testHeight2, false, COLORTYPE_ARGB32);
         }, iterations));
     
-    // Branch F: ALPHATYPE_PREMULTIPLIED + !smooth (Windows AlphaBlend API with scaling)
+    // Branch F: COLORTYPE_PRGB32 + !smooth (Windows AlphaBlend API with scaling)
     results.push_back(testFunction(
         "预乘Alpha 无平滑缩放",
         "Branch F",
         [&]() {
             ege::putimage_alphablend(nullptr, smallSrcImg, testX, testY, testWidth2, testHeight2, testAlpha,
-                                   0, 0, testWidth/4, testHeight/4, false, ALPHATYPE_PREMULTIPLIED);
+                                   0, 0, testWidth/4, testHeight/4, false, COLORTYPE_PRGB32);
         }, iterations));
     
     // Branch G1: smooth=true (GDI+ 高质量插值)
@@ -209,7 +209,7 @@ int main() {
         "Branch G1",
         [&]() {
             ege::putimage_alphablend(nullptr, smallSrcImg, testX, testY, testWidth2, testHeight2, testAlpha,
-                                   0, 0, testWidth/4, testHeight/4, true, ALPHATYPE_STRAIGHT);
+                                   0, 0, testWidth/4, testHeight/4, true, COLORTYPE_ARGB32);
         }, iterations));
     
     // Branch G2: smooth=false (GDI+ 最近邻插值)
@@ -218,7 +218,7 @@ int main() {
         "Branch G2", 
         [&]() {
             ege::putimage_alphablend(nullptr, smallSrcImg, testX, testY, testWidth2, testHeight2, testAlpha,
-                                   0, 0, testWidth/4, testHeight/4, false, ALPHATYPE_STRAIGHT);
+                                   0, 0, testWidth/4, testHeight/4, false, COLORTYPE_ARGB32);
         }, iterations));
     
     // Branch G3: alpha != 255 (GDI+ with ColorMatrix)
@@ -227,16 +227,16 @@ int main() {
         "Branch G3",
         [&]() {
             ege::putimage_alphablend(nullptr, srcImg, testX, testY, testWidth2, testHeight2, testAlpha,
-                                   testSrcX, testSrcY, testWidth2, testHeight2, false, ALPHATYPE_STRAIGHT);
+                                   testSrcX, testSrcY, testWidth2, testHeight2, false, COLORTYPE_ARGB32);
         }, iterations));
     
-    // Branch G4: ALPHATYPE_PREMULTIPLIED with smooth (GDI+ PARGB)
+    // Branch G4: COLORTYPE_PRGB32 with smooth (GDI+ PARGB)
     results.push_back(testFunction(
         "GDI+ 预乘Alpha+平滑",
         "Branch G4",
         [&]() {
             ege::putimage_alphablend(nullptr, srcImg, testX, testY, testWidth2, testHeight2, testAlpha,
-                                   testSrcX, testSrcY, testWidth2, testHeight2, true, ALPHATYPE_PREMULTIPLIED);
+                                   testSrcX, testSrcY, testWidth2, testHeight2, true, COLORTYPE_PRGB32);
         }, iterations));
 
     std::cout << "\n[第四部分] 不同Alpha值性能分析" << std::endl;
@@ -251,7 +251,7 @@ int main() {
             branchType,
             [&]() {
                 ege::putimage_alphablend(nullptr, srcImg, testX, testY, (unsigned char)alpha, 
-                                       testSrcX, testSrcY, testWidth2, testHeight2, ALPHATYPE_STRAIGHT);
+                                       testSrcX, testSrcY, testWidth2, testHeight2, COLORTYPE_ARGB32);
             }, iterations));
     }
 
@@ -265,7 +265,7 @@ int main() {
         "Branch D",
         [&]() {
             for (int i = 0; i < 10; i++) {
-                ege::putimage_alphablend(nullptr, smallSrcImg, i * 60, i * 40, testAlpha, ALPHATYPE_STRAIGHT);
+                ege::putimage_alphablend(nullptr, smallSrcImg, i * 60, i * 40, testAlpha, COLORTYPE_ARGB32);
             }
         }, iterations/10)); // 降低迭代次数因为内部循环
     
@@ -274,7 +274,7 @@ int main() {
         "大图像Alpha混合 (背景)",
         "Branch D",
         [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, 0, 0, testAlpha, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, 0, 0, testAlpha, COLORTYPE_ARGB32);
         }, iterations));
     
     // UI元素缩放 (界面适配)
@@ -283,7 +283,7 @@ int main() {
         "Branch G1",
         [&]() {
             ege::putimage_alphablend(nullptr, smallSrcImg, testX, testY, testWidth2, testHeight2, testAlpha,
-                                   0, 0, testWidth/4, testHeight/4, true, ALPHATYPE_STRAIGHT);
+                                   0, 0, testWidth/4, testHeight/4, true, COLORTYPE_ARGB32);
         }, iterations));
 
     std::cout << "\n==================================================================" << std::endl;
@@ -331,8 +331,8 @@ int main() {
     
     std::cout << "\n优化建议：" << std::endl;
     std::cout << "------------------------------------------------------------------" << std::endl;
-    std::cout << "1. 对于不透明图像 (Alpha=255)，优先使用 ALPHATYPE_STRAIGHT" << std::endl;
-    std::cout << "2. 对于预乘Alpha数据，使用 ALPHATYPE_PREMULTIPLIED 获得硬件加速" << std::endl;
+    std::cout << "1. 对于不透明图像 (Alpha=255)，优先使用 COLORTYPE_ARGB32" << std::endl;
+    std::cout << "2. 对于预乘Alpha数据，使用 COLORTYPE_PRGB32 获得硬件加速" << std::endl;
     std::cout << "3. 需要缩放时，只在质量要求高时使用 smooth=true" << std::endl;
     std::cout << "4. 高频小图像绘制应考虑批处理或纹理打包优化" << std::endl;
     std::cout << "5. Alpha=0 的早期返回是有效优化，可在调用前预检查" << std::endl;

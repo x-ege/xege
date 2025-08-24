@@ -332,8 +332,21 @@ typedef uint32_t color_t;
  */
 enum alpha_type
 {
-    ALPHATYPE_STRAIGHT      = 0,    ///< Straight alpha (non-premultiplied alpha)
-    ALPHATYPE_PREMULTIPLIED = 1     ///< Premultiplied alpha
+    ALPHATYPE_PREMULTIPLIED = 0,    ///< Premultiplied alpha
+    ALPHATYPE_STRAIGHT      = 1     ///< Straight alpha (non-premultiplied alpha)
+};
+
+/**
+ * @enum color_type
+ * @brief Color types
+ *
+ * Defines the color type of the pixel
+ */
+enum color_type
+{
+    COLORTYPE_PRGB32 = 0,   ///< RGB color with premultiplied alpha channel. (32-bit, 8-bit per channel)
+    COLORTYPE_ARGB32 = 1,   ///< RGB color with alpha channel. (32-bit, 8-bit per channel)
+    COLORTYPE_RGB32  = 2    ///< RGB color. (32-bit, 8-bit per channel, alpha channel is ignored and forced to be opaque)
 };
 
 /**
@@ -4443,7 +4456,7 @@ int EGEAPI putimage_transparent(
  * @param xDest X coordinate of drawing position
  * @param yDest Y coordinate of drawing position
  * @param alpha Overall image transparency (0-255), 0 is completely transparent, 255 is completely opaque
- * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @param colorType Color type of source image pixels, default is COLORTYPE_PRGB32
  * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
@@ -4452,7 +4465,7 @@ int EGEAPI putimage_alphablend(
     int xDest,
     int yDest,
     unsigned char alpha,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**
@@ -4464,7 +4477,7 @@ int EGEAPI putimage_alphablend(
  * @param alpha Overall image transparency (0-255), 0 is completely transparent, 255 is completely opaque
  * @param xSrc X coordinate of top-left corner of drawing content in source IMAGE object
  * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
- * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @param colorType Color type of source image pixels, default is COLORTYPE_PRGB32
  * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
@@ -4475,7 +4488,7 @@ int EGEAPI putimage_alphablend(
     unsigned char alpha,
     int xSrc,
     int ySrc,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**
@@ -4489,7 +4502,7 @@ int EGEAPI putimage_alphablend(
  * @param ySrc Y coordinate of top-left corner of drawing content in source IMAGE object
  * @param widthSrc Width of drawing content in source IMAGE object
  * @param heightSrc Height of drawing content in source IMAGE object
- * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @param colorType Color type of source image pixels, default is COLORTYPE_PRGB32
  * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
@@ -4502,7 +4515,7 @@ int EGEAPI putimage_alphablend(
     int ySrc,
     int widthSrc,
     int heightSrc,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**
@@ -4519,7 +4532,7 @@ int EGEAPI putimage_alphablend(
  * @param widthSrc Width of drawing content in source IMAGE object
  * @param heightSrc Height of drawing content in source IMAGE object
  * @param smooth Whether to use smooth processing (anti-aliasing), default is false
- * @param alphaType Alpha type of source image pixels, default is ALPHATYPE_STRAIGHT
+ * @param colorType Color type of source image pixels, default is COLORTYPE_PRGB32
  * @return Returns grOk on success, corresponding error code on failure
  */
 int EGEAPI putimage_alphablend(
@@ -4535,7 +4548,7 @@ int EGEAPI putimage_alphablend(
     int widthSrc,
     int heightSrc,
     bool smooth = false,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**

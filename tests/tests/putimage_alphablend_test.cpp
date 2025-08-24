@@ -2,8 +2,8 @@
  * putimage_alphablend 透明混合性能测试
  *
  * 测试不同版本的 putimage_alphablend 函数，以及它们对应的不同代码路径：
- * 1. 软件 alphablend_inline 实现（ALPHATYPE_STRAIGHT）
- * 2. Windows AlphaBlend API 实现（ALPHATYPE_PREMULTIPLIED）
+ * 1. 软件 alphablend_inline 实现（COLORTYPE_ARGB32）
+ * 2. Windows AlphaBlend API 实现（COLORTYPE_PRGB32）
  * 3. GDI+ 实现（缩放和平滑处理）
  */
 
@@ -72,7 +72,7 @@ int main() {
         std::vector<int> alphaValues = { 64, 128, 192, 255 };
         for (int alpha : alphaValues) {
             std::string testName = "Alpha=" + std::to_string(alpha) + " (基础版本)";
-            testFunction(testName, [&]() { ege::putimage_alphablend(nullptr, srcImg, 0, 0, (unsigned char)alpha, ALPHATYPE_STRAIGHT); });
+            testFunction(testName, [&]() { ege::putimage_alphablend(nullptr, srcImg, 0, 0, (unsigned char)alpha, COLORTYPE_ARGB32); });
         }
 
         // 测试不同的函数版本（避免重复的实现）
@@ -82,15 +82,15 @@ int main() {
         unsigned char testAlpha = 128;
 
         // 版本1：基础版本 - 只有位置
-        testFunction("版本1: 只有位置参数", [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, ALPHATYPE_STRAIGHT); });
+        testFunction("版本1: 只有位置参数", [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, COLORTYPE_ARGB32); });
 
         // 版本2：指定源起始位置
         testFunction("版本2: 指定源位置",
-                     [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, ALPHATYPE_STRAIGHT); });
+                     [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, COLORTYPE_ARGB32); });
 
         // 版本3：指定源矩形
         testFunction("版本3: 指定源矩形", [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, res.width / 2, res.height / 2, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, res.width / 2, res.height / 2, COLORTYPE_ARGB32);
         });
 
         // 测试核心实现路径差异
@@ -99,17 +99,17 @@ int main() {
 
         // 路径1：软件实现 - alpha=255（优化路径）
         testFunction("软件实现 alpha=255", [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, 10, 10, (unsigned char)255, 0, 0, res.width / 2, res.height / 2, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, 10, 10, (unsigned char)255, 0, 0, res.width / 2, res.height / 2, COLORTYPE_ARGB32);
         });
 
         // 路径2：软件实现 - alpha<255
         testFunction("软件实现 alpha<255", [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, res.width / 2, res.height / 2, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, res.width / 2, res.height / 2, COLORTYPE_ARGB32);
         });
 
         // 路径3：Windows AlphaBlend API
         testFunction("Windows AlphaBlend API", [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, res.width / 2, res.height / 2, ALPHATYPE_PREMULTIPLIED);
+            ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, res.width / 2, res.height / 2, COLORTYPE_PRGB32);
         });
 
         // 测试高级版本（缩放和平滑）
@@ -119,25 +119,25 @@ int main() {
         // 无缩放 - 基础GDI+路径
         testFunction("GDI+ 无缩放", [&]() {
             ege::putimage_alphablend(nullptr, srcImg, 10, 10, res.width / 2, res.height / 2, testAlpha, 0, 0, res.width / 2, res.height / 2,
-                                     false, ALPHATYPE_STRAIGHT);
+                                     false, COLORTYPE_ARGB32);
         });
 
         // 缩放 - GDI+缩放
         testFunction("GDI+ 2x缩放", [&]() {
             ege::putimage_alphablend(nullptr, smallSrcImg, 10, 10, res.width / 2, res.height / 2, testAlpha, 0, 0, res.width / 4,
-                                     res.height / 4, false, ALPHATYPE_STRAIGHT);
+                                     res.height / 4, false, COLORTYPE_ARGB32);
         });
 
         // 平滑缩放
         testFunction("GDI+ 2x缩放+平滑", [&]() {
             ege::putimage_alphablend(nullptr, smallSrcImg, 10, 10, res.width / 2, res.height / 2, testAlpha, 0, 0, res.width / 4,
-                                     res.height / 4, true, ALPHATYPE_STRAIGHT);
+                                     res.height / 4, true, COLORTYPE_ARGB32);
         });
 
         // 预乘Alpha + 平滑（强制使用GDI+）
         testFunction("GDI+ 预乘Alpha+平滑", [&]() {
             ege::putimage_alphablend(nullptr, srcImg, 10, 10, res.width / 2, res.height / 2, testAlpha, 0, 0, res.width / 2, res.height / 2,
-                                     true, ALPHATYPE_PREMULTIPLIED);
+                                     true, COLORTYPE_PRGB32);
         });
 
         // 测试极端情况
@@ -146,15 +146,15 @@ int main() {
 
         // Alpha=0（应该直接返回）
         testFunction("Alpha=0 (直接返回)",
-                     [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, (unsigned char)0, ALPHATYPE_STRAIGHT); });
+                     [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, (unsigned char)0, COLORTYPE_ARGB32); });
 
         // 小矩形复制
         testFunction("小矩形 (100x100)",
-                     [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, 100, 100, ALPHATYPE_STRAIGHT); });
+                     [&]() { ege::putimage_alphablend(nullptr, srcImg, 10, 10, testAlpha, 0, 0, 100, 100, COLORTYPE_ARGB32); });
 
         // 大矩形复制
         testFunction("大矩形 (整个图像)", [&]() {
-            ege::putimage_alphablend(nullptr, srcImg, 0, 0, testAlpha, 0, 0, res.width, res.height, ALPHATYPE_STRAIGHT);
+            ege::putimage_alphablend(nullptr, srcImg, 0, 0, testAlpha, 0, 0, res.width, res.height, COLORTYPE_ARGB32);
         });
 
         // 性能总结
@@ -168,7 +168,7 @@ int main() {
             "多次小图像绘制 (10次)",
             [&]() {
                 for (int i = 0; i < 10; i++) {
-                    ege::putimage_alphablend(nullptr, smallSrcImg, i * 50, i * 40, testAlpha, ALPHATYPE_STRAIGHT);
+                    ege::putimage_alphablend(nullptr, smallSrcImg, i * 50, i * 40, testAlpha, COLORTYPE_ARGB32);
                 }
             },
             batchIterations);
@@ -178,7 +178,7 @@ int main() {
             "多次大图像绘制 (10次)",
             [&]() {
                 for (int i = 0; i < 10; i++) {
-                    ege::putimage_alphablend(nullptr, srcImg, (i % 3) * 100, (i % 3) * 100, testAlpha, ALPHATYPE_STRAIGHT);
+                    ege::putimage_alphablend(nullptr, srcImg, (i % 3) * 100, (i % 3) * 100, testAlpha, COLORTYPE_ARGB32);
                 }
             },
             batchIterations);

@@ -154,7 +154,7 @@ EGE_FORCEINLINE color_t alphablend_inline(color_t dst, color_t src, uint8_t srcA
  * G = G(src) + (1.0 - alpha) * G(dst);
  * B = B(src) + (1.0 - alpha) * B(dst);
  */
-EGE_FORCEINLINE color_t alphablend_premultiplied_inline(color_t dst, color_t src)
+EGE_FORCEINLINE color_t alphablend_premul_inline(color_t dst, color_t src)
 {
     const uint8_t a = DIVIDE_255_FAST(255 * EGEGET_A(src) + (255 - EGEGET_A(src)) * EGEGET_A(dst));
     const uint8_t r = DIVIDE_255_FAST(255 * EGEGET_R(src) + (255 - EGEGET_A(src)) * EGEGET_R(dst));
@@ -171,6 +171,40 @@ void ARGBToABGR(color_t* dst, const color_t* src, int count);
 inline void ABGRToARGB(color_t* dst, const color_t* src, int count)
 {
     ARGBToABGR(dst, src, count);
+}
+
+extern const uint32_t ege_unpremultiplyRcp[256];
+
+EGE_FORCEINLINE color_t color_premultiply(color_t color)
+{
+    uint32_t a = EGEGET_A(color);
+    color |= 0xFF000000u;
+
+    uint32_t c0 = ((color     ) & 0x00FF00FFu) * a + 0x00800080u;
+    uint32_t c1 = ((color >> 8) & 0x00FF00FFu) * a + 0x00800080u;
+
+    c0 = (c0 + ((c0 >> 8) & 0x00FF00FFu)) & 0xFF00FF00u;
+    c1 = (c1 + ((c1 >> 8) & 0x00FF00FFu)) & 0xFF00FF00u;
+    return (c0 >> 8) | c1;
+}
+
+EGE_FORCEINLINE color_t color_unpremultiply(uint32_t b, uint32_t g, uint32_t r, uint32_t a)
+{
+    const uint32_t recip = ege_unpremultiplyRcp[a];
+    r = (r * recip + 0x8000u) >> 16;
+    g = (g * recip + 0x8000u) >> 16;
+    b = (b * recip + 0x8000u) >> 16;
+    return  EGEARGB(a, r, g, b);
+}
+
+EGE_FORCEINLINE color_t color_unpremultiply(color_t color)
+{
+    uint32_t b = EGEGET_B(color);
+    uint32_t g = EGEGET_G(color);
+    uint32_t r = EGEGET_R(color);
+    uint32_t a = EGEGET_A(color);
+
+    return color_unpremultiply(b, g, r, a);
 }
 } //namespace ege
 
