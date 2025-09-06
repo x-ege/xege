@@ -195,6 +195,7 @@ struct _graph_setting
     std::wstring window_caption;
     HICON        window_hicon;
     color_t      window_initial_color;
+    int          init_option;
     int          exit_flag;
     int          exit_window;
     int          update_mark_count; // 更新标记

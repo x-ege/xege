@@ -1450,8 +1450,13 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 
 void setrendermode(rendermode_e mode)
 {
+    struct _graph_setting* pg = &graph_setting;
+    /* INIT_EVENTLOOP 模式下，固定为 RENDER_MANUAL 模式*/
+    if (pg->init_option & INIT_EVENTLOOP) {
+        return;
+    }
+
     if (mode == RENDER_MANUAL) {
-        struct _graph_setting* pg = &graph_setting;
         if (pg->lock_window) {
             ;
         } else {
@@ -1459,12 +1464,12 @@ void setrendermode(rendermode_e mode)
             pg->timer_stop_mark = true;
             PostMessageW(pg->hwnd, WM_TIMER, RENDER_TIMER_ID, 0);
             pg->lock_window = true;
+
             while (pg->timer_stop_mark) {
                 ::Sleep(1);
             }
         }
     } else {
-        struct _graph_setting* pg = &graph_setting;
         delay_ms(0);
         SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
         pg->skip_timer_mark = false;
