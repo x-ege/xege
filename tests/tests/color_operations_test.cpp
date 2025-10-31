@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 
 using namespace ege;
 
@@ -110,7 +111,7 @@ bool testRGBOperations() {
 
 // 辅助函数：比较浮点数（带容差）
 bool floatEqual(float a, float b, float epsilon = 0.01f) {
-    return fabs(a - b) < epsilon;
+    return std::fabs(a - b) < epsilon;
 }
 
 // 测试HSV颜色空间转换

@@ -11,15 +11,16 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 
 using namespace ege;
 
 // 辅助函数：验证像素颜色（容差比较）
 bool verifyPixelColor(PCIMAGE img, int x, int y, color_t expectedColor, int tolerance = 5) {
     color_t actualColor = getpixel(x, y, img);
-    int rDiff = abs(EGEGET_R(actualColor) - EGEGET_R(expectedColor));
-    int gDiff = abs(EGEGET_G(actualColor) - EGEGET_G(expectedColor));
-    int bDiff = abs(EGEGET_B(actualColor) - EGEGET_B(expectedColor));
+    int rDiff = std::abs(static_cast<int>(EGEGET_R(actualColor)) - static_cast<int>(EGEGET_R(expectedColor)));
+    int gDiff = std::abs(static_cast<int>(EGEGET_G(actualColor)) - static_cast<int>(EGEGET_G(expectedColor)));
+    int bDiff = std::abs(static_cast<int>(EGEGET_B(actualColor)) - static_cast<int>(EGEGET_B(expectedColor)));
     
     return (rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance);
 }
