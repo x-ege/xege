@@ -83,15 +83,15 @@ bool testRectangleDrawing() {
     bool outlineOk = verifyPixelColor(img, 20, 20, RED, 10);
     bool insideEmpty = verifyPixelColor(img, 100, 100, WHITE, 10);
     
-    // 测试填充矩形
+    // 测试填充矩形 (使用bar函数)
     setfillcolor(BLUE);
-    fillrectangle(30, 30, 80, 80, img);
+    bar(30, 30, 80, 80, img);
     
     bool fillOk = verifyPixelColor(img, 55, 55, BLUE, 10);
     
-    // 测试浮点版本
+    // 测试浮点版本 (使用ege_rectangle)
     setcolor(GREEN);
-    rectangle_f(100.5f, 100.5f, 150.5f, 150.5f, img);
+    ege_rectangle(100.5f, 100.5f, 50.0f, 50.0f, img);
     
     bool floatRectOk = verifyPixelColor(img, 100, 100, GREEN, 10);
     
@@ -128,9 +128,9 @@ bool testCircleDrawing() {
     
     bool fillOk = verifyPixelColor(img, 100, 100, BLUE, 10);
     
-    // 测试浮点版本
+    // 测试浮点版本 (使用circlef)
     setcolor(GREEN);
-    circle_f(150.5f, 150.5f, 20.5f, img);
+    circlef(150.5f, 150.5f, 20.5f, img);
     
     bool floatCircleOk = verifyPixelColor(img, 171, 150, GREEN, 10);
     

@@ -70,9 +70,6 @@ bool testRGBOperations() {
     color_t blue = RGB(0, 0, 255);
     color_t custom = RGB(128, 64, 192);
     
-    // 测试RGBTOBGR
-    color_t bgrRed = RGBTOBGR(red);
-    
     // 测试EGERGB
     color_t egered = EGERGB(255, 0, 0);
     bool egergbOk = (egered == red);
@@ -83,8 +80,8 @@ bool testRGBOperations() {
     // 测试EGEARGB
     color_t argbColor = EGEARGB(128, 255, 0, 0);
     
-    // 测试EGEACOLOR (从颜色提取alpha)
-    int alpha = EGEACOLOR(colorWithAlpha);
+    // 测试颜色分量提取 (alpha)
+    int alpha = EGEGET_A(colorWithAlpha);
     bool alphaOk = (alpha == 128);
     
     // 测试颜色分量提取
@@ -120,24 +117,26 @@ bool testHSVConversion() {
     
     // 测试纯红色 RGB(255, 0, 0) -> HSV(0, 1, 1)
     float h, s, v;
-    ege::rgb2hsv(255, 0, 0, &h, &s, &v);
+    ege::rgb2hsv(RGB(255, 0, 0), &h, &s, &v);
     bool redHSVOk = floatEqual(h, 0.0f) && floatEqual(s, 1.0f) && floatEqual(v, 1.0f);
     
     // 测试纯绿色 RGB(0, 255, 0) -> HSV(120, 1, 1)
-    ege::rgb2hsv(0, 255, 0, &h, &s, &v);
+    ege::rgb2hsv(RGB(0, 255, 0), &h, &s, &v);
     bool greenHSVOk = floatEqual(h, 120.0f) && floatEqual(s, 1.0f) && floatEqual(v, 1.0f);
     
     // 测试纯蓝色 RGB(0, 0, 255) -> HSV(240, 1, 1)
-    ege::rgb2hsv(0, 0, 255, &h, &s, &v);
+    ege::rgb2hsv(RGB(0, 0, 255), &h, &s, &v);
     bool blueHSVOk = floatEqual(h, 240.0f) && floatEqual(s, 1.0f) && floatEqual(v, 1.0f);
     
     // 测试灰色 RGB(128, 128, 128) -> HSV(0, 0, ~0.5)
-    ege::rgb2hsv(128, 128, 128, &h, &s, &v);
+    ege::rgb2hsv(RGB(128, 128, 128), &h, &s, &v);
     bool grayHSVOk = floatEqual(s, 0.0f);
     
     // 测试逆转换 HSV -> RGB
-    int r, g, b;
-    ege::hsv2rgb(0.0f, 1.0f, 1.0f, &r, &g, &b);
+    color_t rgbColor = ege::hsv2rgb(0.0f, 1.0f, 1.0f);
+    int r = EGEGET_R(rgbColor);
+    int g = EGEGET_G(rgbColor);
+    int b = EGEGET_B(rgbColor);
     bool hsvToRgbOk = (r == 255 && g == 0 && b == 0);
     
     bool result = redHSVOk && greenHSVOk && blueHSVOk && grayHSVOk && hsvToRgbOk;
@@ -157,25 +156,33 @@ bool testHSLConversion() {
     
     // 测试纯红色 RGB(255, 0, 0) -> HSL(0, 1, 0.5)
     float h, s, l;
-    ege::rgb2hsl(255, 0, 0, &h, &s, &l);
+    ege::rgb2hsl(RGB(255, 0, 0), &h, &s, &l);
     bool redHSLOk = floatEqual(h, 0.0f) && floatEqual(s, 1.0f) && floatEqual(l, 0.5f);
     
     // 测试灰色 RGB(128, 128, 128) -> HSL(0, 0, 0.5)
-    ege::rgb2hsl(128, 128, 128, &h, &s, &l);
+    ege::rgb2hsl(RGB(128, 128, 128), &h, &s, &l);
     bool grayHSLOk = floatEqual(s, 0.0f) && floatEqual(l, 0.5f, 0.05f);
     
     // 测试逆转换 HSL -> RGB
-    int r, g, b;
-    ege::hsl2rgb(0.0f, 1.0f, 0.5f, &r, &g, &b);
-    bool hslToRgbOk = (r == 255 && g == 0 && b == 0);
+    color_t rgbColor1 = ege::hsl2rgb(0.0f, 1.0f, 0.5f);
+    int r1 = EGEGET_R(rgbColor1);
+    int g1 = EGEGET_G(rgbColor1);
+    int b1 = EGEGET_B(rgbColor1);
+    bool hslToRgbOk = (r1 == 255 && g1 == 0 && b1 == 0);
     
     // 测试白色
-    ege::hsl2rgb(0.0f, 0.0f, 1.0f, &r, &g, &b);
-    bool whiteOk = (r == 255 && g == 255 && b == 255);
+    color_t rgbColor2 = ege::hsl2rgb(0.0f, 0.0f, 1.0f);
+    int r2 = EGEGET_R(rgbColor2);
+    int g2 = EGEGET_G(rgbColor2);
+    int b2 = EGEGET_B(rgbColor2);
+    bool whiteOk = (r2 == 255 && g2 == 255 && b2 == 255);
     
     // 测试黑色
-    ege::hsl2rgb(0.0f, 0.0f, 0.0f, &r, &g, &b);
-    bool blackOk = (r == 0 && g == 0 && b == 0);
+    color_t rgbColor3 = ege::hsl2rgb(0.0f, 0.0f, 0.0f);
+    int r3 = EGEGET_R(rgbColor3);
+    int g3 = EGEGET_G(rgbColor3);
+    int b3 = EGEGET_B(rgbColor3);
+    bool blackOk = (r3 == 0 && g3 == 0 && b3 == 0);
     
     bool result = redHSLOk && grayHSLOk && hslToRgbOk && whiteOk && blackOk;
     std::cout << "  HSL conversion: " << (result ? "PASS" : "FAIL") << std::endl;
