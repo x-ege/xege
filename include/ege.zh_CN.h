@@ -241,7 +241,7 @@ enum rendermode_e
 /**
  * @enum graphics_errors
  * @brief 图形操作错误码
- * 
+ *
  * 定义了图形操作可能返回的各种错误代码
  */
 enum graphics_errors
@@ -277,7 +277,7 @@ enum graphics_errors
 /**
  * @enum message_event
  * @brief 消息事件类型
- * 
+ *
  * 定义了鼠标和键盘消息的事件类型，用于消息处理
  */
 enum message_event
@@ -293,7 +293,7 @@ enum message_event
 /**
  * @enum message_mouse
  * @brief 鼠标按钮标识
- * 
+ *
  * 定义了不同的鼠标按钮，可以通过位或操作组合使用
  */
 enum message_mouse
@@ -313,7 +313,7 @@ typedef uint32_t color_t;
 /**
  * @enum alpha_type
  * @brief Alpha通道类型
- * 
+ *
  * 定义了图像Alpha通道的不同处理方式
  */
 enum alpha_type
@@ -325,7 +325,7 @@ enum alpha_type
 /**
  * @struct ege_point
  * @brief 浮点坐标点结构
- * 
+ *
  * 用于表示二维空间中的一个点，坐标使用浮点数
  */
 struct ege_point
@@ -337,7 +337,7 @@ struct ege_point
 /**
  * @struct ege_rect
  * @brief 矩形区域结构
- * 
+ *
  * 用于表示矩形区域，包含位置和尺寸信息
  */
 struct ege_rect
@@ -351,7 +351,7 @@ struct ege_rect
 /**
  * @struct ege_colpoint
  * @brief 带颜色的坐标点结构
- * 
+ *
  * 用于表示带有颜色信息的二维坐标点，常用于渐变效果
  */
 struct ege_colpoint
@@ -364,7 +364,7 @@ struct ege_colpoint
 /**
  * @enum COLORS
  * @brief 预定义颜色常量
- * 
+ *
  * 提供了常用的颜色常量，基于Web安全色彩标准定义
  * 颜色值使用RGB格式，可以直接用于绘图函数
  */
@@ -517,7 +517,7 @@ enum COLORS
 /**
  * @enum line_styles
  * @brief 线条样式
- * 
+ *
  * 定义了绘制线条时可以使用的不同样式
  */
 enum line_styles
@@ -533,7 +533,7 @@ enum line_styles
 /**
  * @struct line_style_type
  * @brief 线条样式结构
- * 
+ *
  * 描述线条的详细样式属性
  */
 struct line_style_type
@@ -546,20 +546,20 @@ struct line_style_type
 /**
  * @enum line_cap_type
  * @brief 线条端点样式
- * 
+ *
  * 定义了线条两端的绘制样式
  */
 enum line_cap_type
 {
     LINECAP_FLAT   = 0,     ///< 平直端点
-    LINECAP_SQUARE,         ///< 方形端点  
+    LINECAP_SQUARE,         ///< 方形端点
     LINECAP_ROUND           ///< 圆形端点
 };
 
 /**
  * @enum line_join_type
  * @brief 线条连接样式
- * 
+ *
  * 定义了多条线连接处的绘制样式
  */
 enum line_join_type
@@ -572,7 +572,7 @@ enum line_join_type
 /**
  * @enum fill_patterns
  * @brief 填充图案
- * 
+ *
  * 定义了几何图形填充时可以使用的不同图案样式
  */
 enum fill_patterns
@@ -595,7 +595,7 @@ enum fill_patterns
 /**
  * @enum fill_mode
  * @brief 填充模式
- * 
+ *
  * 定义了复杂图形的填充算法
  */
 enum fill_mode
@@ -608,7 +608,7 @@ enum fill_mode
 /**
  * @enum text_just
  * @brief 文本对齐方式
- * 
+ *
  * 定义了文本的水平和垂直对齐方式
  */
 enum text_just
@@ -625,7 +625,7 @@ enum text_just
 /**
  * @struct textsettingstype
  * @brief 文本设置结构
- * 
+ *
  * 包含文本的字体、方向、大小和对齐方式等设置
  */
 struct textsettingstype
@@ -640,13 +640,13 @@ struct textsettingstype
 /**
  * @enum font_styles
  * @brief 字体样式
- * 
+ *
  * 定义了字体的各种样式，可以通过位或操作组合使用
  */
 enum font_styles
 {
     FONTSTYLE_BOLD       = 1,   ///< 粗体
-    FONTSTYLE_ITALIC     = 2,   ///< 斜体  
+    FONTSTYLE_ITALIC     = 2,   ///< 斜体
     FONTSTYLE_UNDERLINE  = 4,   ///< 下划线
     FONTSTYLE_STRIKEOUT  = 8    ///< 删除线
 };
@@ -654,7 +654,7 @@ enum font_styles
 /**
  * @enum music_state_flag
  * @brief 音乐播放状态标志
- * 
+ *
  * 定义了音乐播放器的各种状态
  */
 enum music_state_flag
@@ -674,7 +674,7 @@ enum music_state_flag
 /**
  * @enum key_msg_flag
  * @brief 按键消息标志
- * 
+ *
  * 定义了按键消息的类型和状态标志
  */
 enum key_msg_flag
@@ -692,7 +692,7 @@ enum key_msg_flag
 /**
  * @enum key_code_e
  * @brief 键盘和鼠标键码
- * 
+ *
  * 定义了所有可以检测的键盘按键和鼠标按钮的键码值
  * 键码值基于Windows虚拟键码(Virtual Key Codes)
  */
@@ -704,7 +704,7 @@ enum key_code_e
     key_mouse_m         = 0x04,     ///< 鼠标中键
     key_mouse_x1        = 0x05,     ///< 鼠标X1键
     key_mouse_x2        = 0x06,     ///< 鼠标X2键
-    
+
     // 特殊功能键
     key_back            = 0x08,     ///< 退格键 (Backspace)
     key_tab             = 0x09,     ///< 制表键 (Tab)
@@ -774,7 +774,7 @@ enum key_code_e
     key_X               = 0x58,     ///< 字母键X
     key_Y               = 0x59,     ///< 字母键Y
     key_Z               = 0x5a,     ///< 字母键Z
-    
+
     // Windows键
     key_win_l           = 0x5b,     ///< 左Windows键
     key_win_r           = 0x5c,     ///< 右Windows键
@@ -846,7 +846,7 @@ enum key_code_e
 /**
  * @enum key_msg_e
  * @brief 按键消息类型
- * 
+ *
  * 定义了按键事件的具体类型
  */
 enum key_msg_e
@@ -859,7 +859,7 @@ enum key_msg_e
 /**
  * @enum key_flag_e
  * @brief 按键状态标志
- * 
+ *
  * 定义了按键事件的修饰键状态和特殊标志
  */
 enum key_flag_e
@@ -872,7 +872,7 @@ enum key_flag_e
 /**
  * @struct key_msg
  * @brief 按键消息结构
- * 
+ *
  * 包含完整的按键事件信息
  */
 struct key_msg
@@ -885,7 +885,7 @@ struct key_msg
 /**
  * @enum mouse_msg_e
  * @brief 鼠标消息类型
- * 
+ *
  * 定义了鼠标事件的具体类型
  */
 enum mouse_msg_e
@@ -899,7 +899,7 @@ enum mouse_msg_e
 /**
  * @enum mouse_flag_e
  * @brief 鼠标状态标志
- * 
+ *
  * 定义了鼠标事件中各按钮和修饰键的状态
  */
 enum mouse_flag_e
@@ -917,7 +917,7 @@ enum mouse_flag_e
 /**
  * @struct mouse_msg
  * @brief 鼠标消息结构
- * 
+ *
  * 包含完整的鼠标事件信息，提供了便捷的状态查询方法
  */
 struct mouse_msg
@@ -952,7 +952,7 @@ struct mouse_msg
 /**
  * @struct MOUSEMSG
  * @brief 传统鼠标消息结构（兼容性）
- * 
+ *
  * 提供与旧版本兼容的鼠标消息格式
  */
 struct MOUSEMSG
@@ -973,13 +973,13 @@ struct MOUSEMSG
 /**
  * @struct viewporttype
  * @brief 视口类型结构
- * 
+ *
  * 定义了绘图视口的边界矩形
  */
 /**
  * @struct viewporttype
  * @brief 视口类型结构
- * 
+ *
  * 定义了绘图视口的边界矩形
  */
 struct viewporttype
@@ -994,7 +994,7 @@ struct viewporttype
 /**
  * @struct ege_transform_matrix
  * @brief 2D变换矩阵
- * 
+ *
  * 用于2D图形变换的3x2矩阵，支持平移、旋转、缩放等变换
  */
 struct ege_transform_matrix
@@ -1007,7 +1007,7 @@ struct ege_transform_matrix
 /**
  * @struct ege_path
  * @brief 图形路径
- * 
+ *
  * 用于定义复杂的图形路径，支持直线、曲线等图形元素的组合
  */
 struct ege_path
@@ -1018,28 +1018,28 @@ private:
 public:
     /// @brief 默认构造函数
     ege_path();
-    
+
     /// @brief 从点数组和类型数组构造路径
     /// @param points 点数组
     /// @param types 路径类型数组
     /// @param count 点的数量
     ege_path(const ege_point* points, const unsigned char* types, int count);
-    
+
     /// @brief 拷贝构造函数
     /// @param path 要拷贝的路径
     ege_path(const ege_path& path);
-    
+
     /// @brief 析构函数
     virtual ~ege_path();
 
     /// @brief 获取只读数据指针
     /// @return 常量数据指针
     const void* data() const;
-    
+
     /// @brief 获取可写数据指针
     /// @return 数据指针
     void* data();
-    
+
     /// @brief 赋值操作符
     /// @param path 要赋值的路径
     /// @return 路径引用
@@ -1049,7 +1049,7 @@ public:
 /**
  * @struct msg_createwindow
  * @brief 创建窗口消息结构
- * 
+ *
  * 用于窗口创建时传递参数的消息结构
  */
 struct msg_createwindow
@@ -1109,7 +1109,7 @@ void EGEAPI rotate_point3d_z(VECTOR3D* point, float rad);
 /**
  * @struct VECTOR3D
  * @brief 3D向量结构
- * 
+ *
  * 表示三维空间中的向量或点，提供了基本的3D图形运算功能
  */
 struct VECTOR3D
@@ -1118,7 +1118,7 @@ struct VECTOR3D
 
     /// @brief 默认构造函数，初始化为原点
     VECTOR3D() : x(0.0f), y(0.0f), z(0.0f) {}
-    
+
     /// @brief 构造函数
     /// @param x x坐标
     /// @param y y坐标
@@ -1152,7 +1152,7 @@ struct VECTOR3D
     VECTOR3D  operator& (const VECTOR3D& vector) const;
     /// @brief 向量叉积赋值操作符
     VECTOR3D& operator&=(const VECTOR3D& vector);
-    
+
     /// @brief 获取向量模长
     /// @return 向量的模长
     float     GetModule() const;
@@ -1194,7 +1194,7 @@ struct VECTOR3D
     /// @param s 起始向量（默认为z轴正方向）
     /// @return 向量引用
     VECTOR3D&    Rotate  (const VECTOR3D& e, const VECTOR3D& s = VECTOR3D(0.0f, 0.0f, 1.0f));
-    
+
     /// @brief 计算两个向量之间的夹角
     /// @param e 第一个向量
     /// @param s 第二个向量（默认为z轴正方向）
@@ -1211,7 +1211,7 @@ typedef const IMAGE *PCIMAGE;
 
 /**
  * @brief 设置代码页
- * 
+ *
  * 设置字符编码，影响文本处理和显示
  * @param codepage 代码页，应使用 EGE_CODEPAGE_XXX 常量，默认为 EGE_CODEPAGE_ANSI
  */
@@ -1219,14 +1219,14 @@ void EGEAPI setcodepage(unsigned int codepage);
 
 /**
  * @brief 获取当前代码页
- * 
+ *
  * @return 当前设置的代码页
  */
 unsigned int EGEAPI getcodepage();
 
 /**
  * @brief 设置是否启用Unicode字符消息
- * 
+ *
  * 控制 getkey() 函数是否使用UTF-16编码的字符消息
  * @param enable true启用UTF-16，false使用ANSI
  */
@@ -1234,14 +1234,14 @@ void EGEAPI setunicodecharmessage(bool enable);
 
 /**
  * @brief 获取Unicode字符消息设置状态
- * 
+ *
  * @return true表示启用UTF-16，false表示使用ANSI
  */
 bool EGEAPI getunicodecharmessage();
 
 /**
  * @brief 设置初始化模式
- * 
+ *
  * 设置窗口创建时的默认参数
  * @param mode 初始化模式标志
  * @param x 窗口初始x坐标（默认为CW_USEDEFAULT）
@@ -1255,24 +1255,24 @@ inline void setinitmode(int mode, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT)
 
 /**
  * @brief 获取当前初始化模式
- * 
+ *
  * @return 当前设置的初始化模式标志
  */
 initmode_flag  EGEAPI getinitmode();
 
 /**
  * @brief 创建 EGE 图形化窗口，并进行环境初始化
- * 
+ *
  * 这是EGE图形库的主要初始化函数，执行后会创建并显示图形窗口
- * 
+ *
  * @param width 窗口宽度（像素）
  * @param height 窗口高度（像素）
  * @param mode 初始化模式标志，控制窗口的各种属性
- * 
+ *
  * @code
  * // 创建一个800x600的默认窗口
  * initgraph(800, 600, INIT_DEFAULT);
- * 
+ *
  * // 创建一个无边框的置顶窗口
  * initgraph(640, 480, INIT_NOBORDER | INIT_TOPMOST);
  * @endcode
@@ -1285,10 +1285,10 @@ inline void initgraph(int width, int height, int mode)
 
 /**
  * @brief 创建 EGE 图形化窗口（简化版本）
- * 
+ *
  * 使用当前设置的初始化模式创建图形窗口
  * 在调试版本中使用默认模式，在发布版本中显示EGE标志
- * 
+ *
  * @param width 窗口宽度（像素）
  * @param height 窗口高度（像素）
  */
@@ -1303,9 +1303,9 @@ inline void EGEAPI initgraph(int width, int height)
 
 /**
  * @brief 初始化图形系统（BGI兼容版本）
- * 
+ *
  * 提供与传统BGI图形库的兼容接口
- * 
+ *
  * @param graphdriver 图形驱动类型指针，通常传入DETECT以自动检测
  * @param graphmode 图形模式指针，通常传入0以自动选择
  * @param pathtodriver BGI驱动文件路径，若驱动文件在当前目录可传空字符串""
@@ -1314,7 +1314,7 @@ void initgraph(int *graphdriver, int *graphmode, const char *pathtodriver);
 
 /**
  * @brief 关闭图形系统
- * 
+ *
  * 逻辑上关闭图形系统
  * 执行后EGE窗口会隐藏，但资源不会被全部释放，is_run()函数仍然返回true (需注意)
  * 如果需要释放 IMAGE 对象资源，仍需调用 delimage 函数
@@ -1323,7 +1323,7 @@ void EGEAPI closegraph();
 
 /**
  * @brief 检查图形环境是否正在运行
- * 
+ *
  * @return true 当EGE图形环境存在且窗口未被关闭时
  * @return false 当EGE图形环境不存在或用户点击关闭按钮后
  */
@@ -3944,10 +3944,10 @@ void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
  * @brief 获取窗口或图像的宽度
  * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的宽度
  * @return 返回窗口或图像的宽度（像素），如果图像对象无效则返回0
- * 
+ *
  * 这个函数用于获取指定图像或窗口的宽度。当pimg为NULL时，
  * 返回当前EGE绘图窗口的宽度；当pimg指向有效图像时，返回该图像的宽度。
- * 
+ *
  * @see getheight() 获取高度
  * @see getx() 获取当前x坐标
  * @see gety() 获取当前y坐标
@@ -3958,10 +3958,10 @@ int EGEAPI getwidth(PCIMAGE pimg = NULL);
  * @brief 获取窗口或图像的高度
  * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的高度
  * @return 返回窗口或图像的高度（像素），如果图像对象无效则返回0
- * 
+ *
  * 这个函数用于获取指定图像或窗口的高度。当pimg为NULL时，
  * 返回当前EGE绘图窗口的高度；当pimg指向有效图像时，返回该图像的高度。
- * 
+ *
  * @see getwidth() 获取宽度
  * @see getx() 获取当前x坐标
  * @see gety() 获取当前y坐标
@@ -3972,10 +3972,10 @@ int EGEAPI getheight(PCIMAGE pimg = NULL);
  * @brief 获取当前画笔位置的x坐标
  * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的画笔位置
  * @return 返回当前画笔位置的x坐标，如果图像对象无效则返回-1
- * 
+ *
  * 获取当前绘图位置的x坐标。画笔位置通常由moveto()、lineto()等函数设置，
  * 或者由绘图函数（如line()）的执行而改变。
- * 
+ *
  * @see gety() 获取当前y坐标
  * @see moveto() 移动画笔到指定位置
  * @see getwidth() 获取宽度
@@ -3987,10 +3987,10 @@ int EGEAPI getx(PCIMAGE pimg = NULL);
  * @brief 获取当前画笔位置的y坐标
  * @param pimg 图像对象指针，NULL 表示获取当前绘图窗口的画笔位置
  * @return 返回当前画笔位置的y坐标，如果图像对象无效则返回-1
- * 
+ *
  * 获取当前绘图位置的y坐标。画笔位置通常由moveto()、lineto()等函数设置，
  * 或者由绘图函数（如line()）的执行而改变。
- * 
+ *
  * @see getx() 获取当前x坐标
  * @see moveto() 移动画笔到指定位置
  * @see getwidth() 获取宽度
@@ -4001,13 +4001,13 @@ int EGEAPI gety(PCIMAGE pimg = NULL);
 /**
  * @brief 创建一个新的图像对象（1x1像素）
  * @return 返回新创建的图像对象指针，失败时返回NULL
- * 
+ *
  * 创建一个大小为1x1像素的图像对象，背景色为黑色。
  * 创建后的图像需要使用delimage()函数销毁以防止内存泄漏。
- * 
+ *
  * @note 这个函数创建的是最小尺寸的图像，通常用于后续调整大小或作为占位符
  * @warning 必须使用delimage()销毁创建的图像，否则会造成内存泄漏
- * 
+ *
  * @see newimage(int, int) 创建指定大小的图像
  * @see delimage() 销毁图像对象
  * @see resize() 调整图像大小
@@ -4019,13 +4019,13 @@ PIMAGE         EGEAPI newimage();
  * @param width 图像宽度（像素），小于1时自动调整为1
  * @param height 图像高度（像素），小于1时自动调整为1
  * @return 返回新创建的图像对象指针，失败时返回NULL
- * 
+ *
  * 创建一个指定大小的图像对象，背景色为黑色。
  * 如果指定的宽度或高度小于1，会自动调整为1。
  * 创建后的图像需要使用delimage()函数销毁以防止内存泄漏。
- * 
+ *
  * @warning 必须使用delimage()销毁创建的图像，否则会造成内存泄漏
- * 
+ *
  * @see newimage() 创建1x1像素的图像
  * @see delimage() 销毁图像对象
  * @see resize() 调整图像大小
@@ -4035,13 +4035,13 @@ PIMAGE         EGEAPI newimage(int width, int height);
 /**
  * @brief 销毁图像对象并释放内存
  * @param pimg 要销毁的图像对象指针，如果为NULL则忽略
- * 
+ *
  * 销毁由newimage()函数创建的图像对象，释放相关的内存和系统资源。
  * 销毁后的图像指针不应再被使用。
- * 
+ *
  * @note 传入NULL指针是安全的，函数会忽略NULL参数
  * @warning 销毁图像后，不要再使用该图像指针，否则可能导致程序崩溃
- * 
+ *
  * @see newimage() 创建图像对象
  * @see newimage(int, int) 创建指定大小的图像对象
  */
@@ -4052,13 +4052,13 @@ void           EGEAPI delimage(PCIMAGE pimg);
 /**
  * @defgroup image_management 图像管理和处理函数
  * @brief EGE图形库的图像创建、加载、保存和处理功能
- * 
+ *
  * 图像管理模块提供了完整的图像操作能力，包括：
  * - 图像缓冲区操作：getbuffer() 获取像素缓冲区
  * - 图像尺寸调整：resize(), resize_f() 调整图像大小
  * - 图像获取：getimage() 系列函数从不同源获取图像数据
  * - 图像保存：saveimage(), savepng(), savebmp() 保存图像到文件
- * 
+ *
  * 支持的图像格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
  * 支持从窗口、文件、资源、其他IMAGE对象获取图像
  * @{
@@ -4217,13 +4217,13 @@ int  EGEAPI getimage_pngfile(PIMAGE pimg, const wchar_t* filename);
 /**
  * @defgroup putimage_functions putimage系列函数
  * @brief EGE图形库的核心图像绘制功能
- * 
+ *
  * putimage系列函数提供了丰富的图像绘制和处理能力，包括：
  * - 基础图像绘制：putimage() 系列重载函数
  * - 透明效果：putimage_transparent(), putimage_alphablend(), putimage_withalpha()
  * - 混合效果：putimage_alphatransparent(), putimage_alphafilter()
  * - 变换效果：putimage_rotate(), putimage_rotatezoom(), putimage_rotatetransparent()
- * 
+ *
  * 这些函数支持多种绘制模式：
  * - 绘制到屏幕（imgDest = NULL）或另一个图像
  * - 支持区域裁剪、拉伸缩放、旋转变换
@@ -4411,7 +4411,7 @@ int EGEAPI putimage_transparent(
     color_t transparentColor,   // color to make transparent
     int xSrc = 0,               // x-coord of source upper-left corner
     int ySrc = 0,               // y-coord of source upper-left corner
-    int widthSrc = 0,           // width of source rectangle    
+    int widthSrc = 0,           // width of source rectangle
     int heightSrc = 0           // height of source rectangle
 );
 
@@ -4922,8 +4922,32 @@ int     EGEAPI kbhitEx(int flag);
  * @see key_code_e
  */
 int     EGEAPI keystate(int key);
+
+/**
+ * @brief 返回按键自上次检测之后按下的次数
+ * @param key 要检测的按键键码，参见 key_code_e 枚举
+ * @return 按键按下的次数
+ * @note 检测之后，对应按键的按下计数将清零
+ * @see key_code_e
+ */
 int     EGEAPI keypress(int key);
+
+/**
+ * @brief 返回按键自上次检测之后松开的次数
+ * @param key 要检测的按键键码，参见 key_code_e 枚举
+ * @return 按键松开的次数
+ * @note 检测之后，对应按键的松开计数将清零
+ * @see key_code_e
+ */
 int     EGEAPI keyrelease(int key);
+
+/**
+ * @brief 返回按键自上次检测之后，因长按而触发的按键重复次数
+ * @param key 要检测的按键键码，参见 key_code_e 枚举
+ * @return 按键因长按而触发的按键重复次数
+ * @note 检测之后，对应按键的重复计数将清零
+ * @see key_code_e
+ */
 int     EGEAPI keyrepeat(int key);
 
 
@@ -5061,10 +5085,10 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 
 /**
  * @brief 音乐播放类
- * 
+ *
  * MUSIC 类提供了基于 Windows Media Control Interface (MCI) 的音乐播放功能，
  * 支持播放 WAV、MP3、MIDI 等多种音频格式。
- * 
+ *
  * @note 该类基于 Windows MCI 实现，仅支持 Windows 平台
  * @note 支持的音频格式包括：WAV, MP3, MIDI 等
  * @see music_state_flag, MUSIC_ERROR
@@ -5077,7 +5101,7 @@ public:
      * @note 初始化音乐播放器，设置初始状态为未打开
      */
     MUSIC();
-    
+
     /**
      * @brief 析构函数
      * @note 自动关闭已打开的音乐文件并清理资源
@@ -5108,7 +5132,7 @@ public:
      * @see OpenFile(const wchar_t*), Close()
      */
     DWORD OpenFile(const char* filepath);
-    
+
     /**
      * @brief 打开音乐文件（Unicode 版本）
      * @param filepath 音乐文件路径（包含文件名）
@@ -5118,7 +5142,7 @@ public:
      * @see OpenFile(const char*), Close()
      */
     DWORD OpenFile(const wchar_t* filepath);
-    
+
     /**
      * @brief 播放音乐
      * @param dwFrom 播放开始位置（毫秒），默认为 MUSIC_ERROR（继续播放）
@@ -5129,7 +5153,7 @@ public:
      * @see Pause(), Stop(), RepeatPlay()
      */
     DWORD Play(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
-    
+
     /**
      * @brief 循环播放音乐
      * @param dwFrom 播放开始位置（毫秒），默认为 MUSIC_ERROR
@@ -5139,7 +5163,7 @@ public:
      * @see Play(), Pause(), Stop()
      */
     DWORD RepeatPlay(DWORD dwFrom = MUSIC_ERROR, DWORD dwTo = MUSIC_ERROR);
-    
+
     /**
      * @brief 暂停播放
      * @return 操作成功返回 0，操作失败返回非 0
@@ -5147,7 +5171,7 @@ public:
      * @see Play(), Stop()
      */
     DWORD Pause();
-    
+
     /**
      * @brief 定位播放位置
      * @param dwTo 目标播放位置（毫秒）
@@ -5157,7 +5181,7 @@ public:
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);
-    
+
     /**
      * @brief 设置播放音量
      * @param value 音量大小，范围 0.0~1.0
@@ -5165,7 +5189,7 @@ public:
      * @note 0.0 为静音，1.0 为最大音量
      */
     DWORD SetVolume(float value);
-    
+
     /**
      * @brief 关闭音乐文件
      * @return 操作成功返回 0，操作失败返回非 0
@@ -5173,7 +5197,7 @@ public:
      * @see OpenFile()
      */
     DWORD Close();
-    
+
     /**
      * @brief 停止播放
      * @return 操作成功返回 0，操作失败返回非 0
@@ -5181,7 +5205,7 @@ public:
      * @see Play(), Pause()
      */
     DWORD Stop();
-    
+
     /**
      * @brief 获取当前播放位置
      * @return 当前播放位置（毫秒）
@@ -5189,7 +5213,7 @@ public:
      * @see GetLength(), GetPlayStatus()
      */
     DWORD GetPosition();
-    
+
     /**
      * @brief 获取音乐总时长
      * @return 音乐总时长（毫秒）
