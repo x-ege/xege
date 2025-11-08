@@ -813,6 +813,13 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
     if (img->m_texttype.horiz != LEFT_TEXT) {
         format->SetFormatFlags(format->GetFormatFlags() | Gdiplus::StringFormatFlagsMeasureTrailingSpaces);
     }
+    
+    switch (img->m_texttype.vert) {
+        case TOP_TEXT:    format->SetLineAlignment(Gdiplus::StringAlignmentNear);         break;
+        case CENTER_TEXT: format->SetLineAlignment(Gdiplus::StringAlignmentCenter);       break;
+        case BOTTOM_TEXT: format->SetLineAlignment(Gdiplus::StringAlignmentFar);          break;
+        default:                                                                          break;
+    }
 
     float xScale = 1.0f, angle = 0.0f;
 
