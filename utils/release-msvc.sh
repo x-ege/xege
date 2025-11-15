@@ -10,6 +10,7 @@ declare -a FAILED_TASKS=()
 # 环境变量默认值
 HAS_ARCH_X86_64="${HAS_ARCH_X86_64:-true}"
 HAS_ARCH_X86="${HAS_ARCH_X86:-true}"
+BUILD_MSVC2026="${BUILD_MSVC2026:-true}"
 BUILD_MSVC2022="${BUILD_MSVC2022:-true}"
 BUILD_MSVC2019="${BUILD_MSVC2019:-true}"
 BUILD_MSVC2017="${BUILD_MSVC2017:-true}"
@@ -77,6 +78,7 @@ function msvcBuild() {
 }
 
 # 构建各个版本
+msvcBuild "vs2026" "v145" "$BUILD_MSVC2026"
 msvcBuild "vs2022" "v143" "$BUILD_MSVC2022"
 msvcBuild "vs2019" "v142" "$BUILD_MSVC2019"
 msvcBuild "vs2017" "v141" "$BUILD_MSVC2017"

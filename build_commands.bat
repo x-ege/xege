@@ -75,6 +75,13 @@ cmake --build build\vs2022 --config Release -j
 cmake -G "Visual Studio 17 2022" -A x64 -S . -B build\vs2022_64 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2022\x64"
 cmake --build build\vs2022_64 --config Release -j
 
+:: Visual Studio 2026 32bit
+cmake -G "Visual Studio 18 2026" -A Win32 -S . -B build\vs2026 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2026\x86"
+cmake --build build\vs2026 --config Release -j
+
+:: Visual Studio 2026 64bit
+cmake -G "Visual Studio 18 2026" -A x64 -S . -B build\vs2026_64 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2026\x64"
+cmake --build build\vs2026_64 --config Release -j
 :: Visual C++ 6.0
 :: 请使用 CMD 执行
 :: 执行命令前请确保按 BUILD.md 中 `编译配置 -- Visual C++ 6.0` 一节做好设置

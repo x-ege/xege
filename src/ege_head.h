@@ -45,7 +45,9 @@
 #define SYSBITS_W EGE_L(SYSBITS)
 
 #ifdef _MSC_VER
-#   if (_MSC_VER >= 1930)
+#   if (_MSC_VER >= 1950)
+#       define MSVC_VER "VC2026"
+#   elif (_MSC_VER >= 1930)
 #       define MSVC_VER "VC2022"
 #   elif (_MSC_VER >= 1920)
 #       define MSVC_VER "VC2019"
