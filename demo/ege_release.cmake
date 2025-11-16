@@ -6,7 +6,14 @@ if(MSVC)
     # 设置 MSVC 编译选项, 当版本大于 vs2019 时, 使用 c++17 标准.
     set(CPP_COMPILE_OPTIONS "/std:c++17")
 
-    if(MSVC_VERSION GREATER_EQUAL 1930)
+    if(MSVC_VERSION GREATER_EQUAL 1950)
+        # vs2026 以上, 静态库是兼容的.
+        if(CMAKE_CL_64)
+            set(osLibDir "vs2026/x64")
+        else()
+            set(osLibDir "vs2026/x86")
+        endif()
+    elseif(MSVC_VERSION GREATER_EQUAL 1930)
         # vs2022 以上, 静态库是兼容的.
         if(CMAKE_CL_64)
             set(osLibDir "vs2022/x64")
