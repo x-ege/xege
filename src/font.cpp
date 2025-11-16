@@ -803,10 +803,22 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
     Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic()->Clone();
 
     switch (img->m_texttype.horiz) {
-        case LEFT_TEXT:   format->SetAlignment(Gdiplus::StringAlignmentNear);   break;
-        case CENTER_TEXT: format->SetAlignment(Gdiplus::StringAlignmentCenter); break;
-        case RIGHT_TEXT:  format->SetAlignment(Gdiplus::StringAlignmentFar);    break;
-        default:                                                                break;
+        case LEFT_TEXT:   format->SetAlignment(Gdiplus::StringAlignmentNear);             break;
+        case CENTER_TEXT: format->SetAlignment(Gdiplus::StringAlignmentCenter);           break;
+        case RIGHT_TEXT:  format->SetAlignment(Gdiplus::StringAlignmentFar);              break;
+        default:                                                                          break;
+    }
+
+    // 水平居中对齐和右对齐不能忽略末尾空格
+    if (img->m_texttype.horiz != LEFT_TEXT) {
+        format->SetFormatFlags(format->GetFormatFlags() | Gdiplus::StringFormatFlagsMeasureTrailingSpaces);
+    }
+    
+    switch (img->m_texttype.vert) {
+        case TOP_TEXT:    format->SetLineAlignment(Gdiplus::StringAlignmentNear);         break;
+        case CENTER_TEXT: format->SetLineAlignment(Gdiplus::StringAlignmentCenter);       break;
+        case BOTTOM_TEXT: format->SetLineAlignment(Gdiplus::StringAlignmentFar);          break;
+        default:                                                                          break;
     }
 
     float xScale = 1.0f, angle = 0.0f;
