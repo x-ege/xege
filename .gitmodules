@@ -1,3 +1,9 @@
 [submodule "3rdparty/ccap"]
 	path = 3rdparty/ccap
 	url = https://github.com/wysaid/CameraCapture.git
+[submodule "3rdparty/glfw"]
+	path = 3rdparty/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "3rdparty/glad"]
+	path = 3rdparty/glad
+	url = https://github.com/Dav1dde/glad.git

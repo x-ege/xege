@@ -53,6 +53,45 @@ brew install mingw-w64 wine
 
 ## 基本编译步骤
 
+### OpenGL 渲染后端支持
+
+从 EGE 24.04 开始，支持 OpenGL 渲染后端，以实现真正的跨平台。OpenGL 后端默认启用。
+
+#### 启用 OpenGL 后端（默认）
+
+```sh
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+#### 禁用 OpenGL 后端
+
+如果只需要传统的 GDI 后端：
+
+```sh
+mkdir build
+cd build
+cmake -DEGE_ENABLE_OPENGL=OFF ..
+cmake --build .
+```
+
+#### 生成 GLAD（如需要）
+
+GLAD 文件已预生成在 `3rdparty/glad_generated/` 目录。如果需要重新生成：
+
+```sh
+# 确保已安装 Python 和 glad 模块
+pip install glad2
+
+# 生成 OpenGL 3.3 Core 的 GLAD 加载器
+cd 3rdparty/glad
+python -m glad --api gl:core=3.3 --out-path ../glad_generated c
+```
+
+### 基本编译流程
+
 1. 创建 build 文件夹并设为当前目录
 
   ```sh
