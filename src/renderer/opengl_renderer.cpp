@@ -60,8 +60,12 @@ OpenGLRenderer::OpenGLRenderer()
     , m_vao(0)
     , m_vbo(0)
     , m_shaderProgram(0)
+    , m_pboIndex(0)
+    , m_usePBO(true)
     , m_bufferDirty(false)
 {
+    m_pbo[0] = 0;
+    m_pbo[1] = 0;
 }
 
 OpenGLRenderer::~OpenGLRenderer()
@@ -86,6 +90,7 @@ bool OpenGLRenderer::initialize(int width, int height)
     m_pixelBuffer.resize(width * height, 0xFF000000); // Black with full alpha
     
     createFramebuffer();
+    initializePBO();
     
     return true;
 }
@@ -93,6 +98,7 @@ bool OpenGLRenderer::initialize(int width, int height)
 void OpenGLRenderer::shutdown()
 {
     if (m_window) {
+        cleanupPBO();
         deleteFramebuffer();
         glfwDestroyWindow(m_window);
         glfwTerminate();
@@ -246,11 +252,71 @@ void OpenGLRenderer::deleteFramebuffer()
     }
 }
 
+void OpenGLRenderer::initializePBO()
+{
+    if (!m_usePBO) return;
+    
+    // Create double-buffered PBOs for async texture updates
+    glGenBuffers(2, m_pbo);
+    
+    int bufferSize = m_width * m_height * 4; // RGBA
+    
+    for (int i = 0; i < 2; i++) {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo[i]);
+        glBufferData(GL_PIXEL_UNPACK_BUFFER, bufferSize, nullptr, GL_STREAM_DRAW);
+    }
+    
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    
+    printf("PBO initialized for %dx%d (%d bytes per buffer)\n", m_width, m_height, bufferSize);
+}
+
+void OpenGLRenderer::cleanupPBO()
+{
+    if (m_pbo[0] || m_pbo[1]) {
+        glDeleteBuffers(2, m_pbo);
+        m_pbo[0] = 0;
+        m_pbo[1] = 0;
+    }
+}
+
 void OpenGLRenderer::updateTexture()
 {
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, m_pixelBuffer.data());
-    glBindTexture(GL_TEXTURE_2D, 0);
+    if (m_usePBO && m_pbo[0]) {
+        // Use PBO for async texture update
+        
+        // Bind PBO to update texture
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo[m_pboIndex]);
+        
+        // Update texture from PBO (async transfer from PBO to texture)
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, 
+                       GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        
+        // Switch to next PBO
+        m_pboIndex = (m_pboIndex + 1) % 2;
+        
+        // Map next PBO for writing
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo[m_pboIndex]);
+        glBufferData(GL_PIXEL_UNPACK_BUFFER, m_width * m_height * 4, 
+                    nullptr, GL_STREAM_DRAW);
+        
+        // Copy pixel data to PBO
+        void* pboMemory = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        if (pboMemory) {
+            memcpy(pboMemory, m_pixelBuffer.data(), m_width * m_height * 4);
+            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        }
+        
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    } else {
+        // Fallback to direct texture update (no PBO)
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, 
+                       GL_RGBA, GL_UNSIGNED_BYTE, m_pixelBuffer.data());
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 }
 
 void OpenGLRenderer::beginFrame()

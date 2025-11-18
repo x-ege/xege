@@ -143,13 +143,13 @@ python -m glad --api gl:core=3.3 --out-path ../glad_generated c
 - Polygon outline (drawPolygon with closing edge)
 - Filled polygon (fillPolygon using scanline algorithm)
 
-### Planned Features (Future Phases)
+✅ **Performance Optimization (Phase 5)**
+- PBO (Pixel Buffer Objects) for async texture updates
+- Double-buffered PBO for improved throughput
+- Reduced CPU-GPU synchronization overhead
+- Optimized texture upload pipeline
 
-🔄 **Phase 5: Performance Optimization**
-- Batch rendering for improved performance
-- PBO (Pixel Buffer Objects) for faster texture updates
-- Vertex buffer optimization for shapes
-- GPU-accelerated operations
+### Planned Features (Future Phases)
 
 🔄 **Phase 6-7: Image Operations**
 - putimage/getimage support
@@ -274,10 +274,10 @@ The OpenGL backend is under active development. Contributions are welcome!
 ### Development Priorities
 1. ✅ Complete basic drawing functions (circle, ellipse) - **DONE in Phase 3**
 2. ✅ Implement polygon and arc drawing - **DONE in Phase 4**
-3. Implement putimage/getimage and image operations
-4. Add text rendering support (FreeType)
-5. Port input handling (keyboard/mouse)
-6. Optimize performance (PBO, batching, GPU acceleration)
+3. ✅ Optimize performance with PBO - **DONE in Phase 5**
+4. Implement putimage/getimage and image operations
+5. Add text rendering support (FreeType)
+6. Port input handling (keyboard/mouse)
 7. Test on Linux and macOS
 
 ### Code Structure
@@ -300,6 +300,12 @@ The OpenGL backend is under active development. Contributions are welcome!
 - ✅ `drawPolygon()` - Closed polygon outline
 - ✅ `fillPolygon()` - Scanline polygon fill algorithm
 
+**Phase 5 - Performance Optimization:**
+- ✅ Double-buffered PBO implementation
+- ✅ Async CPU-GPU texture transfers
+- ✅ Reduced synchronization overhead
+- ✅ Memory mapping for efficient data upload
+
 ## References
 
 - [GLFW Documentation](https://www.glfw.org/documentation.html)
@@ -309,6 +315,7 @@ The OpenGL backend is under active development. Contributions are welcome!
 - [Bresenham's Circle Algorithm](https://en.wikipedia.org/wiki/Midpoint_circle_algorithm)
 - [Midpoint Ellipse Algorithm](https://en.wikipedia.org/wiki/Midpoint_ellipse_algorithm)
 - [Scanline Polygon Fill Algorithm](https://en.wikipedia.org/wiki/Scanline_rendering)
+- [OpenGL Pixel Buffer Objects (PBO)](https://www.khronos.org/opengl/wiki/Pixel_Buffer_Object)
 - [Computer Graphics: Principles and Practice](https://www.pearson.com/en-us/subject-catalog/p/computer-graphics-principles-and-practice/P200000003280)
 
 ## License

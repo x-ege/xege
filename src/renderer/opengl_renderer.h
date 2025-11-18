@@ -62,6 +62,8 @@ private:
     void createFramebuffer();
     void deleteFramebuffer();
     void updateTexture();
+    void initializePBO();
+    void cleanupPBO();
 
     GLFWwindow* m_window;
     int m_width;
@@ -73,6 +75,11 @@ private:
     unsigned int m_vao;           // Vertex array object
     unsigned int m_vbo;           // Vertex buffer object
     unsigned int m_shaderProgram; // Shader program
+    
+    // PBO (Pixel Buffer Objects) for async transfer
+    unsigned int m_pbo[2];        // Double-buffered PBO
+    int m_pboIndex;               // Current PBO index
+    bool m_usePBO;                // Whether PBO is available and enabled
     
     // Pixel buffer for CPU-side operations
     std::vector<uint32_t> m_pixelBuffer;
