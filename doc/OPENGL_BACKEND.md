@@ -137,27 +137,33 @@ python -m glad --api gl:core=3.3 --out-path ../glad_generated c
 - Ellipse drawing (drawEllipse using Midpoint algorithm)
 - Filled ellipse (fillEllipse with horizontal line fill)
 
+✅ **Polygons and Arcs (Phase 4)**
+- Arc drawing (drawArc with parametric equations)
+- Polyline drawing (drawPolyline for connected segments)
+- Polygon outline (drawPolygon with closing edge)
+- Filled polygon (fillPolygon using scanline algorithm)
+
 ### Planned Features (Future Phases)
 
-🔄 **Phase 4: More Shapes & Optimization**
-- Polygon drawing
-- Arc drawing
-- Bezier curves
-- Performance optimization (batching, PBO)
+🔄 **Phase 5: Performance Optimization**
+- Batch rendering for improved performance
+- PBO (Pixel Buffer Objects) for faster texture updates
+- Vertex buffer optimization for shapes
+- GPU-accelerated operations
 
-🔄 **Phase 5-6: Image Operations**
+🔄 **Phase 6-7: Image Operations**
 - putimage/getimage support
 - Image scaling and rotation
 - Alpha blending and transparency
 - Image filters
 
-🔄 **Phase 7-8: Advanced Graphics**
+🔄 **Phase 8-9: Advanced Graphics**
 - Anti-aliasing (MSAA)
 - Text rendering (FreeType integration)
-- Complex paths and gradients
-- Texture brushes
+- Bezier curves and splines
+- Gradients and texture brushes
 
-🔄 **Phase 9: Input and Window Management**
+🔄 **Phase 10: Input and Window Management**
 - GLFW keyboard event mapping
 - GLFW mouse event mapping
 - Window styles and resize support
@@ -202,11 +208,11 @@ Native macOS support planned with OpenGL backend:
 
 ## Known Limitations
 
-### Current Phase (1-3)
+### Current Phase (1-4)
 - Text rendering not yet implemented
 - Image operations (putimage) not yet implemented
 - No anti-aliasing or advanced effects
-- Polygon and arc drawing not yet implemented
+- Bezier curves not yet implemented
 - Only tested on Windows (mingw-w64 cross-compilation)
 
 ### Platform Support
@@ -218,10 +224,11 @@ Native macOS support planned with OpenGL backend:
 
 ### Test Programs
 
-Two test programs are provided:
+Three test programs are provided:
 
 1. **Basic Test**: `demo/test_opengl_backend.cpp` - Tests all basic shapes
 2. **Advanced Shapes**: `demo/test_opengl_shapes.cpp` - Showcases circles and ellipses
+3. **Polygons & Arcs**: `demo/test_opengl_polygons.cpp` - Demonstrates polygons, arcs, and polylines
 
 ```bash
 # Build with demos enabled
@@ -232,6 +239,7 @@ cmake --build .
 # Run the OpenGL tests
 ./demo/test_opengl_backend.exe
 ./demo/test_opengl_shapes.exe
+./demo/test_opengl_polygons.exe
 ```
 
 ### Compatibility
@@ -265,11 +273,11 @@ The OpenGL backend is under active development. Contributions are welcome!
 
 ### Development Priorities
 1. ✅ Complete basic drawing functions (circle, ellipse) - **DONE in Phase 3**
-2. Implement polygon and arc drawing
-3. Implement putimage/getimage
+2. ✅ Implement polygon and arc drawing - **DONE in Phase 4**
+3. Implement putimage/getimage and image operations
 4. Add text rendering support (FreeType)
 5. Port input handling (keyboard/mouse)
-6. Optimize performance (PBO, batching)
+6. Optimize performance (PBO, batching, GPU acceleration)
 7. Test on Linux and macOS
 
 ### Code Structure
@@ -278,11 +286,19 @@ The OpenGL backend is under active development. Contributions are welcome!
 - `src/renderer/opengl_renderer.*`: OpenGL backend implementation
 - `src/renderer/renderer_factory.cpp`: Renderer creation
 
-### Implemented Drawing Functions (Phase 3)
+### Implemented Drawing Functions
+
+**Phase 3 - Circles and Ellipses:**
 - ✅ `drawCircle()` - Midpoint circle algorithm
 - ✅ `fillCircle()` - Horizontal line fill method
 - ✅ `drawEllipse()` - Midpoint ellipse algorithm
 - ✅ `fillEllipse()` - Ellipse equation-based fill
+
+**Phase 4 - Polygons and Arcs:**
+- ✅ `drawArc()` - Parametric arc drawing with line segments
+- ✅ `drawPolyline()` - Connected line segments
+- ✅ `drawPolygon()` - Closed polygon outline
+- ✅ `fillPolygon()` - Scanline polygon fill algorithm
 
 ## References
 
@@ -292,6 +308,8 @@ The OpenGL backend is under active development. Contributions are welcome!
 - [EGE API Documentation](../man/api.md)
 - [Bresenham's Circle Algorithm](https://en.wikipedia.org/wiki/Midpoint_circle_algorithm)
 - [Midpoint Ellipse Algorithm](https://en.wikipedia.org/wiki/Midpoint_ellipse_algorithm)
+- [Scanline Polygon Fill Algorithm](https://en.wikipedia.org/wiki/Scanline_rendering)
+- [Computer Graphics: Principles and Practice](https://www.pearson.com/en-us/subject-catalog/p/computer-graphics-principles-and-practice/P200000003280)
 
 ## License
 

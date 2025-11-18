@@ -157,6 +157,41 @@ public:
     virtual void fillEllipse(int x, int y, int xRadius, int yRadius, uint32_t color) = 0;
 
     /**
+     * @brief Draw a circular arc
+     * @param x Center X coordinate
+     * @param y Center Y coordinate
+     * @param startAngle Starting angle in degrees
+     * @param endAngle Ending angle in degrees
+     * @param radius Arc radius
+     * @param color Line color
+     */
+    virtual void drawArc(int x, int y, int startAngle, int endAngle, int radius, uint32_t color) = 0;
+
+    /**
+     * @brief Draw a polyline (connected line segments)
+     * @param numPoints Number of points
+     * @param points Array of x,y coordinates (x1,y1,x2,y2,...)
+     * @param color Line color
+     */
+    virtual void drawPolyline(int numPoints, const int* points, uint32_t color) = 0;
+
+    /**
+     * @brief Draw a polygon outline
+     * @param numPoints Number of points
+     * @param points Array of x,y coordinates (x1,y1,x2,y2,...)
+     * @param color Line color
+     */
+    virtual void drawPolygon(int numPoints, const int* points, uint32_t color) = 0;
+
+    /**
+     * @brief Fill a polygon
+     * @param numPoints Number of points
+     * @param points Array of x,y coordinates (x1,y1,x2,y2,...)
+     * @param color Fill color
+     */
+    virtual void fillPolygon(int numPoints, const int* points, uint32_t color) = 0;
+
+    /**
      * @brief Resize the rendering surface
      * @param width New width
      * @param height New height

@@ -454,6 +454,112 @@ void OpenGLRenderer::fillEllipse(int x, int y, int xRadius, int yRadius, uint32_
     }
 }
 
+void OpenGLRenderer::drawArc(int x, int y, int startAngle, int endAngle, int radius, uint32_t color)
+{
+    // Convert angles from degrees to radians
+    // EGE uses degrees, 0 degrees is at 3 o'clock, counter-clockwise
+    const double PI = 3.14159265358979323846;
+    double startRad = startAngle * PI / 180.0;
+    double endRad = endAngle * PI / 180.0;
+    
+    // Normalize angles
+    while (endRad < startRad) {
+        endRad += 2 * PI;
+    }
+    
+    // Calculate number of points based on arc length
+    double arcLength = endRad - startRad;
+    int numPoints = static_cast<int>(std::ceil(arcLength * radius / 2.0));
+    if (numPoints < 2) numPoints = 2;
+    
+    // Draw arc as connected line segments
+    double angleStep = arcLength / (numPoints - 1);
+    int prevX = x + static_cast<int>(radius * std::cos(startRad));
+    int prevY = y - static_cast<int>(radius * std::sin(startRad)); // Y is inverted
+    
+    for (int i = 1; i < numPoints; i++) {
+        double angle = startRad + i * angleStep;
+        int currX = x + static_cast<int>(radius * std::cos(angle));
+        int currY = y - static_cast<int>(radius * std::sin(angle));
+        drawLine(prevX, prevY, currX, currY, color);
+        prevX = currX;
+        prevY = currY;
+    }
+}
+
+void OpenGLRenderer::drawPolyline(int numPoints, const int* points, uint32_t color)
+{
+    // Draw connected line segments
+    if (numPoints < 2 || !points) return;
+    
+    for (int i = 0; i < numPoints - 1; i++) {
+        int x1 = points[i * 2];
+        int y1 = points[i * 2 + 1];
+        int x2 = points[(i + 1) * 2];
+        int y2 = points[(i + 1) * 2 + 1];
+        drawLine(x1, y1, x2, y2, color);
+    }
+}
+
+void OpenGLRenderer::drawPolygon(int numPoints, const int* points, uint32_t color)
+{
+    // Draw polygon outline (polyline + closing line)
+    if (numPoints < 2 || !points) return;
+    
+    drawPolyline(numPoints, points, color);
+    
+    // Close the polygon
+    int x1 = points[(numPoints - 1) * 2];
+    int y1 = points[(numPoints - 1) * 2 + 1];
+    int x2 = points[0];
+    int y2 = points[1];
+    drawLine(x1, y1, x2, y2, color);
+}
+
+void OpenGLRenderer::fillPolygon(int numPoints, const int* points, uint32_t color)
+{
+    // Scanline polygon fill algorithm
+    if (numPoints < 3 || !points) return;
+    
+    // Find bounding box
+    int minY = points[1], maxY = points[1];
+    for (int i = 1; i < numPoints; i++) {
+        int y = points[i * 2 + 1];
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    }
+    
+    // Scanline fill
+    for (int scanY = minY; scanY <= maxY; scanY++) {
+        std::vector<int> intersections;
+        
+        // Find intersections with polygon edges
+        for (int i = 0; i < numPoints; i++) {
+            int x1 = points[i * 2];
+            int y1 = points[i * 2 + 1];
+            int x2 = points[((i + 1) % numPoints) * 2];
+            int y2 = points[((i + 1) % numPoints) * 2 + 1];
+            
+            // Check if scanline intersects this edge
+            if ((y1 <= scanY && y2 > scanY) || (y2 <= scanY && y1 > scanY)) {
+                // Calculate intersection x coordinate
+                int x = x1 + (scanY - y1) * (x2 - x1) / (y2 - y1);
+                intersections.push_back(x);
+            }
+        }
+        
+        // Sort intersections
+        std::sort(intersections.begin(), intersections.end());
+        
+        // Fill between pairs of intersections
+        for (size_t i = 0; i + 1 < intersections.size(); i += 2) {
+            for (int x = intersections[i]; x <= intersections[i + 1]; x++) {
+                setPixel(x, scanY, color);
+            }
+        }
+    }
+}
+
 void OpenGLRenderer::resize(int width, int height)
 {
     m_width = width;

@@ -48,6 +48,10 @@ public:
     virtual void fillCircle(int x, int y, int radius, uint32_t color) override;
     virtual void drawEllipse(int x, int y, int xRadius, int yRadius, uint32_t color) override;
     virtual void fillEllipse(int x, int y, int xRadius, int yRadius, uint32_t color) override;
+    virtual void drawArc(int x, int y, int startAngle, int endAngle, int radius, uint32_t color) override;
+    virtual void drawPolyline(int numPoints, const int* points, uint32_t color) override;
+    virtual void drawPolygon(int numPoints, const int* points, uint32_t color) override;
+    virtual void fillPolygon(int numPoints, const int* points, uint32_t color) override;
     virtual void resize(int width, int height) override;
     virtual uint32_t* getPixelBuffer() override;
     virtual void syncPixelBuffer() override;

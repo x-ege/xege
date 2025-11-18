@@ -95,6 +95,26 @@ void GDIRenderer::fillEllipse(int x, int y, int xRadius, int yRadius, uint32_t c
     // Delegate to existing filled ellipse implementation
 }
 
+void GDIRenderer::drawArc(int x, int y, int startAngle, int endAngle, int radius, uint32_t color)
+{
+    // Delegate to existing arc implementation
+}
+
+void GDIRenderer::drawPolyline(int numPoints, const int* points, uint32_t color)
+{
+    // Delegate to existing polyline implementation
+}
+
+void GDIRenderer::drawPolygon(int numPoints, const int* points, uint32_t color)
+{
+    // Delegate to existing polygon implementation
+}
+
+void GDIRenderer::fillPolygon(int numPoints, const int* points, uint32_t color)
+{
+    // Delegate to existing filled polygon implementation
+}
+
 void GDIRenderer::resize(int width, int height)
 {
     m_width = width;
