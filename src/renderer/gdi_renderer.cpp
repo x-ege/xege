@@ -75,6 +75,26 @@ void GDIRenderer::fillRectangle(int x, int y, int w, int h, uint32_t color)
     // Delegate to existing filled rectangle implementation
 }
 
+void GDIRenderer::drawCircle(int x, int y, int radius, uint32_t color)
+{
+    // Delegate to existing circle implementation
+}
+
+void GDIRenderer::fillCircle(int x, int y, int radius, uint32_t color)
+{
+    // Delegate to existing filled circle implementation
+}
+
+void GDIRenderer::drawEllipse(int x, int y, int xRadius, int yRadius, uint32_t color)
+{
+    // Delegate to existing ellipse implementation
+}
+
+void GDIRenderer::fillEllipse(int x, int y, int xRadius, int yRadius, uint32_t color)
+{
+    // Delegate to existing filled ellipse implementation
+}
+
 void GDIRenderer::resize(int width, int height)
 {
     m_width = width;

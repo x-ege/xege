@@ -38,6 +38,10 @@ public:
     virtual void drawLine(int x1, int y1, int x2, int y2, uint32_t color) override;
     virtual void drawRectangle(int x, int y, int w, int h, uint32_t color) override;
     virtual void fillRectangle(int x, int y, int w, int h, uint32_t color) override;
+    virtual void drawCircle(int x, int y, int radius, uint32_t color) override;
+    virtual void fillCircle(int x, int y, int radius, uint32_t color) override;
+    virtual void drawEllipse(int x, int y, int xRadius, int yRadius, uint32_t color) override;
+    virtual void fillEllipse(int x, int y, int xRadius, int yRadius, uint32_t color) override;
     virtual void resize(int width, int height) override;
     virtual uint32_t* getPixelBuffer() override;
     virtual void syncPixelBuffer() override;

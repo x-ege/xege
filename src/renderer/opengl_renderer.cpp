@@ -13,6 +13,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <cmath>
 #include <algorithm>
 
 namespace ege {
@@ -339,6 +340,116 @@ void OpenGLRenderer::fillRectangle(int x, int y, int w, int h, uint32_t color)
     for (int j = y; j < y + h; j++) {
         for (int i = x; i < x + w; i++) {
             setPixel(i, j, color);
+        }
+    }
+}
+
+void OpenGLRenderer::drawCircle(int x, int y, int radius, uint32_t color)
+{
+    // Midpoint circle algorithm (Bresenham's circle)
+    int cx = 0;
+    int cy = radius;
+    int d = 1 - radius;
+    
+    auto plotCirclePoints = [&](int cx, int cy) {
+        setPixel(x + cx, y + cy, color);
+        setPixel(x - cx, y + cy, color);
+        setPixel(x + cx, y - cy, color);
+        setPixel(x - cx, y - cy, color);
+        setPixel(x + cy, y + cx, color);
+        setPixel(x - cy, y + cx, color);
+        setPixel(x + cy, y - cx, color);
+        setPixel(x - cy, y - cx, color);
+    };
+    
+    plotCirclePoints(cx, cy);
+    
+    while (cx < cy) {
+        if (d < 0) {
+            d += 2 * cx + 3;
+        } else {
+            d += 2 * (cx - cy) + 5;
+            cy--;
+        }
+        cx++;
+        plotCirclePoints(cx, cy);
+    }
+}
+
+void OpenGLRenderer::fillCircle(int x, int y, int radius, uint32_t color)
+{
+    // Fill circle by drawing horizontal lines
+    for (int dy = -radius; dy <= radius; dy++) {
+        int dx = static_cast<int>(std::sqrt(radius * radius - dy * dy));
+        for (int i = x - dx; i <= x + dx; i++) {
+            setPixel(i, y + dy, color);
+        }
+    }
+}
+
+void OpenGLRenderer::drawEllipse(int x, int y, int xRadius, int yRadius, uint32_t color)
+{
+    // Midpoint ellipse algorithm
+    int x1 = 0;
+    int y1 = yRadius;
+    
+    // Region 1
+    int dx = 2 * yRadius * yRadius * x1;
+    int dy = 2 * xRadius * xRadius * y1;
+    int d1 = yRadius * yRadius - xRadius * xRadius * yRadius + (xRadius * xRadius) / 4;
+    
+    auto plotEllipsePoints = [&](int px, int py) {
+        setPixel(x + px, y + py, color);
+        setPixel(x - px, y + py, color);
+        setPixel(x + px, y - py, color);
+        setPixel(x - px, y - py, color);
+    };
+    
+    while (dx < dy) {
+        plotEllipsePoints(x1, y1);
+        
+        if (d1 < 0) {
+            x1++;
+            dx += 2 * yRadius * yRadius;
+            d1 += dx + yRadius * yRadius;
+        } else {
+            x1++;
+            y1--;
+            dx += 2 * yRadius * yRadius;
+            dy -= 2 * xRadius * xRadius;
+            d1 += dx - dy + yRadius * yRadius;
+        }
+    }
+    
+    // Region 2
+    int d2 = yRadius * yRadius * (x1 + 1) * (x1 + 1) + 
+             xRadius * xRadius * (y1 - 1) * (y1 - 1) - 
+             xRadius * xRadius * yRadius * yRadius;
+    
+    while (y1 >= 0) {
+        plotEllipsePoints(x1, y1);
+        
+        if (d2 > 0) {
+            y1--;
+            dy -= 2 * xRadius * xRadius;
+            d2 += xRadius * xRadius - dy;
+        } else {
+            y1--;
+            x1++;
+            dx += 2 * yRadius * yRadius;
+            dy -= 2 * xRadius * xRadius;
+            d2 += dx - dy + xRadius * xRadius;
+        }
+    }
+}
+
+void OpenGLRenderer::fillEllipse(int x, int y, int xRadius, int yRadius, uint32_t color)
+{
+    // Fill ellipse by drawing horizontal lines
+    for (int dy = -yRadius; dy <= yRadius; dy++) {
+        int dx = static_cast<int>(xRadius * std::sqrt(1.0 - (dy * dy) / (double)(yRadius * yRadius)));
+        for (int i = x - dx; i <= x + dx; i++) {
+            setPixel(i, y + dy, color);
         }
     }
 }

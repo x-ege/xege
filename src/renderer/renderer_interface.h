@@ -119,6 +119,44 @@ public:
     virtual void fillRectangle(int x, int y, int w, int h, uint32_t color) = 0;
 
     /**
+     * @brief Draw a circle outline
+     * @param x Center X coordinate
+     * @param y Center Y coordinate
+     * @param radius Circle radius
+     * @param color Line color
+     */
+    virtual void drawCircle(int x, int y, int radius, uint32_t color) = 0;
+
+    /**
+     * @brief Fill a circle
+     * @param x Center X coordinate
+     * @param y Center Y coordinate
+     * @param radius Circle radius
+     * @param color Fill color
+     */
+    virtual void fillCircle(int x, int y, int radius, uint32_t color) = 0;
+
+    /**
+     * @brief Draw an ellipse outline
+     * @param x Center X coordinate
+     * @param y Center Y coordinate
+     * @param xRadius X-axis radius
+     * @param yRadius Y-axis radius
+     * @param color Line color
+     */
+    virtual void drawEllipse(int x, int y, int xRadius, int yRadius, uint32_t color) = 0;
+
+    /**
+     * @brief Fill an ellipse
+     * @param x Center X coordinate
+     * @param y Center Y coordinate
+     * @param xRadius X-axis radius
+     * @param yRadius Y-axis radius
+     * @param color Fill color
+     */
+    virtual void fillEllipse(int x, int y, int xRadius, int yRadius, uint32_t color) = 0;
+
+    /**
      * @brief Resize the rendering surface
      * @param width New width
      * @param height New height

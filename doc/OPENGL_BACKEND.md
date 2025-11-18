@@ -115,7 +115,7 @@ python -m glad --api gl:core=3.3 --out-path ../glad_generated c
 
 ## Features
 
-### Current Implementation (Phase 1-2)
+### Current Implementation (Phase 1-3)
 
 ✅ **Infrastructure**
 - INIT_OPENGL flag added to initmode_flag enum
@@ -131,27 +131,39 @@ python -m glad --api gl:core=3.3 --out-path ../glad_generated c
 - Clear screen
 - Direct pixel buffer access
 
+✅ **Advanced Shapes (Phase 3)**
+- Circle drawing (drawCircle using Midpoint algorithm)
+- Filled circle (fillCircle with horizontal line fill)
+- Ellipse drawing (drawEllipse using Midpoint algorithm)
+- Filled ellipse (fillEllipse with horizontal line fill)
+
 ### Planned Features (Future Phases)
 
-🔄 **Phase 3-4: Image Operations**
+🔄 **Phase 4: More Shapes & Optimization**
+- Polygon drawing
+- Arc drawing
+- Bezier curves
+- Performance optimization (batching, PBO)
+
+🔄 **Phase 5-6: Image Operations**
 - putimage/getimage support
 - Image scaling and rotation
 - Alpha blending and transparency
 - Image filters
 
-🔄 **Phase 5-6: Advanced Graphics**
+🔄 **Phase 7-8: Advanced Graphics**
 - Anti-aliasing (MSAA)
 - Text rendering (FreeType integration)
-- Complex paths and polygons
-- Gradients and texture brushes
+- Complex paths and gradients
+- Texture brushes
 
-🔄 **Phase 7: Input and Window Management**
+🔄 **Phase 9: Input and Window Management**
 - GLFW keyboard event mapping
 - GLFW mouse event mapping
 - Window styles and resize support
 - Multi-window support
 
-🔄 **Phase 8: Testing and Optimization**
+🔄 **Phase 10-11: Testing and Optimization**
 - Performance optimization (PBO, texture atlases, batching)
 - Compatibility testing with all 31 demos
 - Memory leak checks
@@ -190,12 +202,12 @@ Native macOS support planned with OpenGL backend:
 
 ## Known Limitations
 
-### Current Phase (1-2)
-- Only basic shapes implemented in OpenGL renderer
+### Current Phase (1-3)
 - Text rendering not yet implemented
 - Image operations (putimage) not yet implemented
 - No anti-aliasing or advanced effects
-- Only tested on Windows
+- Polygon and arc drawing not yet implemented
+- Only tested on Windows (mingw-w64 cross-compilation)
 
 ### Platform Support
 - Linux: Requires native port (in progress)
@@ -204,9 +216,12 @@ Native macOS support planned with OpenGL backend:
 
 ## Testing
 
-### Test Program
+### Test Programs
 
-A test program is provided: `demo/test_opengl_backend.cpp`
+Two test programs are provided:
+
+1. **Basic Test**: `demo/test_opengl_backend.cpp` - Tests all basic shapes
+2. **Advanced Shapes**: `demo/test_opengl_shapes.cpp` - Showcases circles and ellipses
 
 ```bash
 # Build with demos enabled
@@ -214,8 +229,9 @@ mkdir build && cd build
 cmake -DEGE_BUILD_DEMO=ON ..
 cmake --build .
 
-# Run the OpenGL test
-./demo/test_opengl_backend
+# Run the OpenGL tests
+./demo/test_opengl_backend.exe
+./demo/test_opengl_shapes.exe
 ```
 
 ### Compatibility
@@ -248,11 +264,13 @@ cmake --build . --target demos
 The OpenGL backend is under active development. Contributions are welcome!
 
 ### Development Priorities
-1. Complete basic drawing functions (circle, ellipse, polygon)
-2. Implement putimage/getimage
-3. Add text rendering support
-4. Port input handling (keyboard/mouse)
-5. Test on Linux and macOS
+1. ✅ Complete basic drawing functions (circle, ellipse) - **DONE in Phase 3**
+2. Implement polygon and arc drawing
+3. Implement putimage/getimage
+4. Add text rendering support (FreeType)
+5. Port input handling (keyboard/mouse)
+6. Optimize performance (PBO, batching)
+7. Test on Linux and macOS
 
 ### Code Structure
 - `src/renderer/renderer_interface.h`: Abstract renderer interface
@@ -260,12 +278,20 @@ The OpenGL backend is under active development. Contributions are welcome!
 - `src/renderer/opengl_renderer.*`: OpenGL backend implementation
 - `src/renderer/renderer_factory.cpp`: Renderer creation
 
+### Implemented Drawing Functions (Phase 3)
+- ✅ `drawCircle()` - Midpoint circle algorithm
+- ✅ `fillCircle()` - Horizontal line fill method
+- ✅ `drawEllipse()` - Midpoint ellipse algorithm
+- ✅ `fillEllipse()` - Ellipse equation-based fill
+
 ## References
 
 - [GLFW Documentation](https://www.glfw.org/documentation.html)
 - [GLAD Generator](https://glad.dav1d.de/)
 - [OpenGL 3.3 Core Specification](https://www.khronos.org/registry/OpenGL/specs/gl/glspec33.core.pdf)
 - [EGE API Documentation](../man/api.md)
+- [Bresenham's Circle Algorithm](https://en.wikipedia.org/wiki/Midpoint_circle_algorithm)
+- [Midpoint Ellipse Algorithm](https://en.wikipedia.org/wiki/Midpoint_ellipse_algorithm)
 
 ## License
 
