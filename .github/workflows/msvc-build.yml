@@ -8,6 +8,36 @@ on:
   workflow_dispatch:
 
 jobs:
+  vs2026-build:
+    name: MSVC 2026 Build (${{ matrix.build_type }})
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build_type: >-
+          ${{
+            github.event_name == 'pull_request' && fromJson('["Release"]') ||
+            fromJson('["Release", "Debug"]')
+          }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Visual Studio environment
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Install latest CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure CMake
+        run: |
+          mkdir build-vs2026
+          cd build-vs2026
+          cmake .. -T v144 # vs2026
+      - name: Build
+        run: |
+          cd build-vs2026
+          cmake --build . --config ${{ matrix.build_type }} --parallel
+
   vs2022-build:
     name: MSVC 2022 Build (${{ matrix.build_type }})
     runs-on: windows-latest
