@@ -116,18 +116,16 @@ function cmakeBuildAll() {
 
     set -x
 
-    if ls *.sln >/dev/null 2>&1; then
+    if compgen -G "*.sln" > /dev/null 2>&1 || compgen -G "*.slnx" > /dev/null 2>&1; then
         # MSVC 专属逻辑
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
         fi
 
         # ref: https://stackoverflow.com/questions/11865085/out-of-a-git-console-how-do-i-execute-a-batch-file-and-then-return-to-git-conso
-        cmd "/C cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE --parallel $(nproc)"
-
+        cmd //C "cmake.exe --build . $TARGET_RULE $WIN_CMAKE_BUILD_DEFINE --parallel $(getconf _NPROCESSORS_ONLN)"
     else
-
-        cmake --build . $TARGET_RULE $(test -n "$CMAKE_BUILD_TYPE" && echo --config $CMAKE_BUILD_TYPE) -- -j $(nproc)
+        cmake --build . $TARGET_RULE $(test -n "$CMAKE_BUILD_TYPE" && echo --config $CMAKE_BUILD_TYPE) --parallel "$(getconf _NPROCESSORS_ONLN)"
     fi
 
     set +x
