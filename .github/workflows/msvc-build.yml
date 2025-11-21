@@ -25,6 +25,28 @@ jobs:
       - name: Setup Visual Studio environment
         uses: microsoft/setup-msbuild@v1.1
 
+      - name: Print CMake version
+        run: cmake --version
+
+      - name: Print available CMake generators
+        run: cmake --help
+
+      - name: Print Visual Studio installations
+        run: |
+          echo "=== Visual Studio Installations ==="
+          Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -ErrorAction SilentlyContinue | Select-Object Name
+          Get-ChildItem "C:\Program Files (x86)\Microsoft Visual Studio" -ErrorAction SilentlyContinue | Select-Object Name
+          echo ""
+          echo "=== VS 2022 Build Tools ==="
+          Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022" -ErrorAction SilentlyContinue | Select-Object Name
+          echo ""
+          echo "=== VS 2022 VC Tools ==="
+          Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" -ErrorAction SilentlyContinue | Select-Object Name
+          echo ""
+          echo "=== MSBuild Toolsets ==="
+          Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC" -ErrorAction SilentlyContinue | Select-Object Name
+        shell: powershell
+
       - name: Configure CMake
         run: |
           mkdir build-vs2026
