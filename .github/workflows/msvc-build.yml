@@ -26,7 +26,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.1
 
       - name: Install latest CMake
-        uses: lukka/get-cmake@latest
+        uses: lukka/get-cmake@v4
 
       - name: Configure CMake
         run: |
