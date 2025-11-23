@@ -7,15 +7,20 @@ cd utils
 
 # 解析命令行参数
 FORCE_RELEASE=false
+SKIP_BRANCH_SWITCH=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         -f|--force)
             FORCE_RELEASE=true
             shift
             ;;
+        -s|--skip-checkout)
+            SKIP_BRANCH_SWITCH=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1" >&2
-            echo "Usage: $0 [-f|--force]" >&2
+            echo "Usage: $0 [-f|--force] [-s|--skip-checkout]" >&2
             exit 1
             ;;
     esac
@@ -65,11 +70,15 @@ if ! cd "$LIBS_DIR"; then
 fi
 
 # 保存当前的修改，防止接下来的拷贝覆盖操作丢失数据
-git add .
-git stash -m "Auto stash before deploy"
-git checkout master
-git reset --hard origin/master
-git pull
+if [[ $SKIP_BRANCH_SWITCH == false ]]; then
+    git add .
+    git stash -m "Auto stash before deploy"
+    git checkout master
+    git reset --hard origin/master
+    git pull
+else
+    echo "Skipping branch checkout and pull (current branch: $(git branch --show-current))"
+fi
 
 ### Copy files
 
