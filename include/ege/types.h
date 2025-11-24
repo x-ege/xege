@@ -203,6 +203,7 @@ inline bool operator!= (const PointF& a, const PointF& b)
 //------------------------------------------------------------------------------
 //                                    Size
 //------------------------------------------------------------------------------
+struct SizeF;
 struct Size
 {
     int width;
@@ -211,6 +212,7 @@ struct Size
 public:
     Size() : width(0), height(0) {}
     Size(int width, int height) : width(width), height(height) {}
+    explicit Size(const SizeF& size);
 
     void set(int width, int height);
     void setEmpty();
@@ -220,7 +222,7 @@ public:
     bool isValid()      const;
     bool isNormalized() const;
 
-    void tranpose();
+    void transpose();
     void normalize();
 };  // Size
 
@@ -240,6 +242,7 @@ struct SizeF
 public:
     SizeF() : width(0.0f), height(0.0f) {}
     SizeF(float width, float height) : width(width), height(height) {}
+    explicit SizeF(const Size& size);
 
     void set(float width, float height);
     void setEmpty();
@@ -251,7 +254,7 @@ public:
 
     bool nearEquals(const SizeF& size, float error = 1E-5f) const;
 
-    void tranpose();
+    void transpose();
     void normalize();
 }; // SizeF
 
@@ -261,6 +264,7 @@ bool operator!= (const SizeF& a, const SizeF& b);
 SizeF normalize(const SizeF& size);
 
 //---------------------------------- Size ----------------------------------
+inline Size::Size(const SizeF& size) : width((int)size.width), height((int)size.height) {}
 
 inline bool Size::isNull()       const { return (width == 0) && (height == 0); }
 inline bool Size::isEmpty()      const { return (width == 0) || (height == 0); }
@@ -288,7 +292,7 @@ inline bool operator!= (const Size& a, const Size& b)
     return !(a == b);
 }
 
-inline void Size::tranpose()
+inline void Size::transpose()
 {
     int temp = width;
     width = height;
@@ -314,6 +318,7 @@ inline Size normalize(const Size& size)
 }
 
 //---------------------------------- SizeF ----------------------------------
+inline SizeF::SizeF(const Size& size) : width((float)size.width), height((float)size.height) {}
 
 inline bool SizeF::isNull()       const { return (width == 0.0f) && (height == 0.0f); }
 inline bool SizeF::isEmpty()      const { return (width == 0.0f) || (height == 0.0f); }
@@ -347,7 +352,7 @@ inline bool SizeF::nearEquals(const SizeF& size, float error) const
         && (EGE_TEMP_DIFF(height, size.height) <= error);
 }
 
-inline void SizeF::tranpose()
+inline void SizeF::transpose()
 {
     float temp = width;
     width = height;
@@ -459,13 +464,13 @@ public:
     bool isHeightOutOfRange() const;
     bool isOutOfRange()       const;
 
-    bool isContains(int x, int y)       const;
-    bool isContains(const Point& point) const;
-    bool isContains(const Bound& bound) const;
-    bool isContains(int left, int top, int right, int bottom) const;
+    bool contains(int x, int y)       const;
+    bool contains(const Point& point) const;
+    bool contains(const Bound& bound) const;
+    bool contains(int left, int top, int right, int bottom) const;
 
-    bool isOverlaps(const Bound& bound) const;
-    bool isOverlaps(int left, int top, int right, int bottom) const;
+    bool overlaps(const Bound& bound) const;
+    bool overlaps(int left, int top, int right, int bottom) const;
 
     void transpose();
     void offset  (int dx, int dy);
@@ -475,7 +480,7 @@ public:
     bool normalize();
     bool fixedNormalize();
 
-    void flipHorizonal();
+    void flipHorizontal();
     void flipVertical();
 
     void inset (int margin);
@@ -608,13 +613,13 @@ public:
     bool isValid()        const;
     bool isNormalized()   const;
 
-    bool isContains(int x, int y)       const;
-    bool isContains(const Point& point) const;
-    bool isContains(const Rect& rect)   const;
-    bool isContains(int x, int y, int width, int height) const;
+    bool contains(int x, int y)       const;
+    bool contains(const Point& point) const;
+    bool contains(const Rect& rect)   const;
+    bool contains(int x, int y, int width, int height) const;
 
-    bool isOverlaps(const Rect& rect)   const;
-    bool isOverlaps(int x, int y, int width, int height) const;
+    bool overlaps(const Rect& rect)   const;
+    bool overlaps(int x, int y, int width, int height) const;
 
     void transpose();
     void offset  (int dx, int dy);
@@ -757,13 +762,13 @@ public:
     bool isValid()        const;
     bool isNormalized()   const;
 
-    bool isContains(float x, float y)         const;
-    bool isContains(const PointF& point)      const;
-    bool isContains(const RectF& rect)        const;
-    bool isContains(float x, float y, float width, float height) const;
+    bool contains(float x, float y)         const;
+    bool contains(const PointF& point)      const;
+    bool contains(const RectF& rect)        const;
+    bool contains(float x, float y, float width, float height) const;
 
-    bool isOverlaps(const RectF& rect)        const;
-    bool isOverlaps(float x, float y, float width, float height) const;
+    bool overlaps(const RectF& rect)        const;
+    bool overlaps(float x, float y, float width, float height) const;
 
     void transpose();
     void offset  (float dx, float dy);
@@ -905,7 +910,7 @@ inline void Bound::topAlign   (int top)      { setY(top);                  }
 inline void Bound::rightAlign (int right)    { setX(right  - width());     }
 inline void Bound::bottomAlign(int bottom)   { setY(bottom - height());    }
 inline void Bound::horizontalAlign(int x)    { setX(x + left - centerX()); }
-inline void Bound::verticalAlign  (int y)    { setY(y - top  - centerY()); }
+inline void Bound::verticalAlign  (int y)    { setY(y + top  - centerY()); }
 inline void Bound::centerAlign(int x, int y) { centerAlign(Point(x, y));   }
 
 inline void Bound::centerAlign(const Point& point)
@@ -974,37 +979,37 @@ inline void Bound::setEmpty()
     left = top = right = bottom = 0;
 }
 
-inline bool Bound::isContains(const Point& point) const
+inline bool Bound::contains(const Point& point) const
 {
-    return isContains(point.x, point.y);
+    return contains(point.x, point.y);
 }
 
-inline bool Bound::isContains(int x, int y) const
+inline bool Bound::contains(int x, int y) const
 {
     return (left <= x) && (x < right)
         && (top  <= y) && (y < bottom);
 }
 
-inline bool Bound::isContains(const Bound& bound) const
+inline bool Bound::contains(const Bound& bound) const
 {
     return (left <= bound.left) && (right  >= bound.right)
         && (top  <= bound.top)  && (bottom >= bound.bottom);
 }
 
-inline bool Bound::isContains(int left, int top, int right, int bottom) const
+inline bool Bound::contains(int left, int top, int right, int bottom) const
 {
-    return isContains(Bound(left, top, right, bottom));
+    return contains(Bound(left, top, right, bottom));
 }
 
-inline bool Bound::isOverlaps(const Bound& bound) const
+inline bool Bound::overlaps(const Bound& bound) const
 {
     return (left < bound.right)  && (right  > bound.left)
         && (top  < bound.bottom) && (bottom > bound.top);
 }
 
-inline bool Bound::isOverlaps(int left, int top, int right, int bottom) const
+inline bool Bound::overlaps(int left, int top, int right, int bottom) const
 {
-    return isOverlaps(Bound(left, top, right, bottom));
+    return overlaps(Bound(left, top, right, bottom));
 }
 
 inline bool Bound::normalize()
@@ -1012,8 +1017,8 @@ inline bool Bound::normalize()
     bool changed = false;
 
     if (left > right) {
-        flipHorizonal();
-        changed = false;
+        flipHorizontal();
+        changed = true;
     }
 
     if (top > bottom) {
@@ -1045,7 +1050,7 @@ inline bool Bound::fixedNormalize()
     return changed;
 }
 
-inline void Bound::flipHorizonal()
+inline void Bound::flipHorizontal()
 {
     int temp = left;
     left = right;
@@ -1190,7 +1195,7 @@ inline void Bound::scale(float xScale, float yScale, PointF center)
 
 inline bool Bound::intersect(const Bound& bound)
 {
-    /* Unlike isOverlaps(), this only checks for no overlaps at all
+    /* Unlike overlaps(), this only checks for no overlaps at all
      * and allows edges to overlap. */
     if ((left > bound.right) || (top > bound.bottom) || (right < bound.left) || (bottom < bound.top))
     {
@@ -1567,8 +1572,8 @@ inline void Rect::inset(int leftMargin, int topMargin, int rightMargin, int bott
 {
     x += leftMargin;
     y += topMargin;
-    width  -= (leftMargin  + rightMargin);
-    height -= (rightMargin + bottomMargin);
+    width  -= (leftMargin + rightMargin);
+    height -= (topMargin  + bottomMargin);
 }
 
 inline void Rect::outset(int margin)     { inset(-margin);  }
@@ -1664,20 +1669,20 @@ inline bool Rect::isOutOfRange(int xMin, int xMax, int yMin, int yMax) const
     return isXOutOfRange(xMin, xMax) || isYOutOfRange(yMin, yMax);
 }
 
-inline bool Rect::isContains(int x, int y) const
+inline bool Rect::contains(int x, int y) const
 {
-    return isContains(Point(x, y));
+    return contains(Point(x, y));
 }
 
-inline bool Rect::isContains(const Point& point) const
+inline bool Rect::contains(const Point& point) const
 {
     return (point.x >= x) && ((unsigned)(point.x - x) < (unsigned)width)
         && (point.y >= y) && ((unsigned)(point.y - y) < (unsigned)height);
 }
 
-inline bool Rect::isContains(int x, int y, int width, int height) const
+inline bool Rect::contains(int x, int y, int width, int height) const
 {
-    return isContains(Rect(x, y, width, height));
+    return contains(Rect(x, y, width, height));
 }
 
 /**
@@ -1687,7 +1692,7 @@ inline bool Rect::isContains(int x, int y, int width, int height) const
  *         {false: This rectangle does not contain the specified rectangle. }
  * @pre Both rectangles must be normalized.
  */
-inline bool Rect::isContains(const Rect& rect) const
+inline bool Rect::contains(const Rect& rect) const
 {
     if ((rect.x < x) || (rect.y < y))
          return false;
@@ -1705,7 +1710,7 @@ inline bool Rect::isContains(const Rect& rect) const
  * @param rect The rectangle to test for intersection with this rectangle.
  * @pre Both rectangles must be normalized.
  */
-inline bool Rect::isOverlaps(const Rect& rect) const
+inline bool Rect::overlaps(const Rect& rect) const
 {
     if ((EGE_TEMP_DIFF_UINT(x, rect.x) >= INT_MAX) || (EGE_TEMP_DIFF_UINT(y, rect.y) >= INT_MAX))
         return false;
@@ -1721,9 +1726,9 @@ inline bool Rect::isOverlaps(const Rect& rect) const
         && (a.top()  < b.bottom()) && (b.top()  < a.bottom());
 }
 
-inline bool Rect::isOverlaps(int x, int y, int width, int height) const
+inline bool Rect::overlaps(int x, int y, int width, int height) const
 {
-    return isOverlaps(Rect(x, y, width, height, false));
+    return overlaps(Rect(x, y, width, height, false));
 }
 
 inline bool Rect::intersect(int x, int y, int width, int height)
@@ -1751,7 +1756,7 @@ inline bool Rect::intersect(const Rect& rect)
     a.offset(xOffset, yOffset);
     b.offset(xOffset, yOffset);
 
-    /* Unlike isOverlaps(), this only checks for no overlaps at all
+    /* Unlike overlaps(), this only checks for no overlaps at all
      * and allows edges to overlap. */
     if (   (a.left()  > b.right()) || (a.top()    > b.bottom())
         || (a.right() < b.left())  || (a.bottom() < b.top()))
@@ -1841,8 +1846,8 @@ inline bool Rect::unite(const Point& point)
 
     int left   = INT_MIN;
     int top    = INT_MIN;
-    int right  = EGE_TEMP_MAX(this->right(), p.x);
-    int bottom = EGE_TEMP_MAX(this->bottom(), p.y);
+    int right  = EGE_TEMP_MAX(r.right(), p.x);
+    int bottom = EGE_TEMP_MAX(r.bottom(), p.y);
 
     set(left - xOffset, top - yOffset, right - left, bottom - top);
 
@@ -1925,7 +1930,7 @@ inline bool Rect::clipByLimits(int& x,  int& length, int minval, int maxval)
         right = x;
     }
 
-    if ((left > maxval) || (right < maxval))
+    if ((left > maxval) || (right < minval))
         return false;
 
     int clipLeft  = EGE_TEMP_MAX(left,  minval);
@@ -2247,43 +2252,43 @@ inline void RectF::scale(float xScale, float yScale, PointF center)
     height *= yScale;
 }
 
-inline bool RectF::isContains(float x, float y) const
+inline bool RectF::contains(float x, float y) const
 {
     return (x >= this->x) && (x < (this->x + width)) &&
            (y >= this->y) && (y < (this->y + height));
 }
 
-inline bool RectF::isContains(const PointF& point) const
+inline bool RectF::contains(const PointF& point) const
 {
     return ((point.x >= x) && (point.x < x + width)) &&
            ((point.y >= y) && (point.y < y + height));
 }
 
-inline bool RectF::isContains(const RectF& rect) const
+inline bool RectF::contains(const RectF& rect) const
 {
     return (rect.x >= x && (rect.x + rect.width)  <= (x + width)) &&
            (rect.y >= y && (rect.y + rect.height) <= (y + height));
 }
 
-inline bool RectF::isContains(float x, float y, float width, float height) const
+inline bool RectF::contains(float x, float y, float width, float height) const
 {
-    return isContains(RectF(x, y, width, height));
+    return contains(RectF(x, y, width, height));
 }
 
-inline bool RectF::isOverlaps(const RectF& rect) const
+inline bool RectF::overlaps(const RectF& rect) const
 {
     return ((x < rect.x + rect.width)  && (rect.x < x + width)) &&
            ((y < rect.y + rect.height) && (rect.y < y + height));
 }
 
-inline bool RectF::isOverlaps(float x, float y, float width, float height) const
+inline bool RectF::overlaps(float x, float y, float width, float height) const
 {
-    return isOverlaps(RectF(x, y, width, height));
+    return overlaps(RectF(x, y, width, height));
 }
 
 inline bool RectF::intersect(const RectF& rect)
 {
-    /* Unlike isOverlaps(), this only checks for no overlaps at all
+    /* Unlike overlaps(), this only checks for no overlaps at all
      * and allows edges to overlap. */
     if ((left() > rect.right()) || (top() > rect.bottom())
         || (right() < rect.left()) || (bottom() < rect.top()))
