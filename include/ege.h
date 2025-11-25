@@ -1,5 +1,5 @@
 /*********************************************************
- * EGE (Easy Graphics Engine)  24.04
+ * EGE (Easy Graphics Engine)  25.11
  * FileName:    ege.h
  * Website:     https://xege.org
  * Community:   https://club.xege.org

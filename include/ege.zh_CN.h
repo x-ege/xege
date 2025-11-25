@@ -1,5 +1,5 @@
 /*********************************************************
- * EGE (Easy Graphics Engine)  24.04
+ * EGE (Easy Graphics Engine)  25.11
  * FileName:    ege.h
  * Website:     https://xege.org
  * Community:   https://club.xege.org
@@ -20,15 +20,15 @@
 
 // Easy Graphics Engine Version
 // Calendar Versioning, format: YY.0M.PatchNumber (If the PatchNumber equals 0, the YY.0M format is used.)
-#define EGE_VERSION        "24.04"
-#define EGE_VERSION_MAJOR  24
-#define EGE_VERSION_MINOR  4
+#define EGE_VERSION        "25.11"
+#define EGE_VERSION_MAJOR  25
+#define EGE_VERSION_MINOR  11
 #define EGE_VERSION_PATCH  0
 #define EGE_MAKE_VERSION_NUMBER(major, minor, patch)    ((major) * 10000L + (minor) * 100L + (patch))
 #define EGE_VERSION_NUMBER    EGE_MAKE_VERSION_NUMBER(EGE_VERSION_MAJOR, EGE_VERSION_MINOR, EGE_VERSION_PATCH)
 
 #ifndef __cplusplus
-#error You must use a C++ compiler and ensure that your source files is named with the '.cpp' suffix.
+#error You must use a C++ compiler and ensure that your source files are named with the '.cpp' suffix.
 #endif
 
 #if defined(_INC_CONIO) || defined(_CONIO_H_)
@@ -109,6 +109,20 @@
 #       define EGE_CDECL  __cdecl
 #   else
 #       define EGE_CDECL  __cdecl
+#   endif
+#endif
+
+#ifndef EGE_ENUM
+#   ifdef _MSC_VER
+#       if (_MSC_VER >= 1700) // VS2012 and later
+#           define EGE_ENUM(enum_name, enum_base_type) enum enum_name : enum_base_type
+#       else
+#           define EGE_ENUM(enum_name, enum_base_type) enum enum_name
+#       endif
+#   elif __cplusplus >= 201103L // C++11
+#       define EGE_ENUM(enum_name, enum_base_type) enum enum_name : enum_base_type
+#   else
+#       define EGE_ENUM(enum_name, enum_base_type) enum enum_name
 #   endif
 #endif
 
@@ -318,8 +332,21 @@ typedef uint32_t color_t;
  */
 enum alpha_type
 {
-    ALPHATYPE_STRAIGHT      = 0,    ///< 直接Alpha（非预乘Alpha）
-    ALPHATYPE_PREMULTIPLIED = 1     ///< 预乘Alpha
+    ALPHATYPE_PREMULTIPLIED = 0,    ///< 预乘Alpha
+    ALPHATYPE_STRAIGHT      = 1     ///< 直接Alpha（非预乘Alpha）
+};
+
+/**
+ * @enum color_type
+ * @brief 颜色类型
+ *
+ * 定义了像素的颜色类型
+ */
+enum color_type
+{
+    COLORTYPE_PRGB32 = 0,   ///< 带预乘Alpha通道的RGB颜色（32位，每通道8位）
+    COLORTYPE_ARGB32 = 1,   ///< 带Alpha通道的RGB颜色（32位，每通道8位）
+    COLORTYPE_RGB32  = 2    ///< RGB颜色（32位，每通道8位，Alpha通道被忽略并强制为不透明）
 };
 
 /**
@@ -368,7 +395,7 @@ struct ege_colpoint
  * 提供了常用的颜色常量，基于Web安全色彩标准定义
  * 颜色值使用RGB格式，可以直接用于绘图函数
  */
-enum COLORS
+EGE_ENUM(COLORS, color_t)
 {
     ALICEBLUE            = EGERGB(0xF0, 0xF8, 0xFF),
     ANTIQUEWHITE         = EGERGB(0xFA, 0xEB, 0xD7),
@@ -947,6 +974,9 @@ struct mouse_msg
     bool is_move()  const {return msg == mouse_msg_move; }
     /// @brief 检查是否为滚轮事件
     bool is_wheel() const {return msg == mouse_msg_wheel;}
+
+    /// @brief 检查是否为双击事件
+    bool is_doubleclick() const {return (flags & mouse_flag_doubleclick) != 0;}
 };
 
 /**
@@ -4422,7 +4452,7 @@ int EGEAPI putimage_transparent(
  * @param xDest 绘制位置的 x 坐标
  * @param yDest 绘制位置的 y 坐标
  * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
+ * @param colorType 源图像像素的颜色类型，默认为 COLORTYPE_PRGB32
  * @return 成功返回 grOk，失败返回相应错误码
  */
 int EGEAPI putimage_alphablend(
@@ -4431,7 +4461,7 @@ int EGEAPI putimage_alphablend(
     int xDest,
     int yDest,
     unsigned char alpha,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**
@@ -4443,7 +4473,7 @@ int EGEAPI putimage_alphablend(
  * @param alpha 图像整体透明度 (0-255)，0为完全透明，255为完全不透明
  * @param xSrc 绘制内容在源 IMAGE 对象中的左上角 x 坐标
  * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
+ * @param colorType 源图像像素的颜色类型，默认为 COLORTYPE_PRGB32
  * @return 成功返回 grOk，失败返回相应错误码
  */
 int EGEAPI putimage_alphablend(
@@ -4454,7 +4484,7 @@ int EGEAPI putimage_alphablend(
     unsigned char alpha,
     int xSrc,
     int ySrc,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**
@@ -4468,7 +4498,7 @@ int EGEAPI putimage_alphablend(
  * @param ySrc 绘制内容在源 IMAGE 对象中的左上角 y 坐标
  * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
  * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
+ * @param colorType 源图像像素的颜色类型，默认为 COLORTYPE_PRGB32
  * @return 成功返回 grOk，失败返回相应错误码
  */
 int EGEAPI putimage_alphablend(
@@ -4481,7 +4511,7 @@ int EGEAPI putimage_alphablend(
     int ySrc,
     int widthSrc,
     int heightSrc,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**
@@ -4498,7 +4528,7 @@ int EGEAPI putimage_alphablend(
  * @param widthSrc 绘制内容在源 IMAGE 对象中的宽度
  * @param heightSrc 绘制内容在源 IMAGE 对象中的高度
  * @param smooth 是否使用平滑处理（抗锯齿），默认为 false
- * @param alphaType 源图像像素的 alpha 类型，默认为 ALPHATYPE_STRAIGHT
+ * @param colorType 源图像像素的颜色类型，默认为 COLORTYPE_PRGB32
  * @return 成功返回 grOk，失败返回相应错误码
  */
 int EGEAPI putimage_alphablend(
@@ -4514,7 +4544,7 @@ int EGEAPI putimage_alphablend(
     int widthSrc,
     int heightSrc,
     bool smooth = false,
-    alpha_type alphaType = ALPHATYPE_STRAIGHT
+    color_type colorType = COLORTYPE_PRGB32
 );
 
 /**
@@ -5242,10 +5272,12 @@ private:
     PVOID m_dwCallBack; ///< 回调句柄
 };
 
-int           EGEAPI ege_compress  (void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen);
-int           EGEAPI ege_compress2 (void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen, int level);
-int           EGEAPI ege_uncompress(void *dest, unsigned long *destLen, const void *source, unsigned long sourceLen);
-unsigned long EGEAPI ege_uncompress_size(const void *source, unsigned long sourceLen);
+uint32_t EGEAPI ege_compress_bound(uint32_t dataSize);
+int      EGEAPI ege_compress (void* compressData, uint32_t* compressSize, const void* data, uint32_t size);
+int      EGEAPI ege_compress2(void* compressData, uint32_t* compressSize, const void* data, uint32_t size, int level);
+
+int      EGEAPI ege_uncompress(void* buffer, uint32_t* bufferSize, const void* compressData, uint32_t compressSize);
+uint32_t EGEAPI ege_uncompress_size(const void* compressData, uint32_t compressSize);
 
 }
 
