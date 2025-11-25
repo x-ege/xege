@@ -5,7 +5,7 @@
 | 相关网站 | 网址 |
 | --- | --- |
 | 官网 | <https://xege.org> (含群讨论联系方式) |
-| 源码 (Github) | <https://github.com/wysaid/xege> |
+| 源码 (GitHub) | <https://github.com/wysaid/xege> |
 | 源码 (Gitee) | <https://gitee.com/xege/xege> |
 | 社区 | <https://club.xege.org> |
 | 教程以及介绍 | [EGE教程&介绍](https://blog.csdn.net/qq_39151563/article/details/100154767) (by [`依稀`](https://blog.csdn.net/qq_39151563?type=blog) ) |
@@ -18,7 +18,7 @@
 | 站点名称 |下载链接 |
 | --- | --- |
 | EGE官网下载 | <https://xege.org/install_and_config> |
-| Github | <https://github.com/wysaid/xege.org> |
+| GitHub | <https://github.com/wysaid/xege.org> |
 | Gitee | <https://gitee.com/xege/xege.org> |
 | 百度网盘 | <https://pan.baidu.com/s/1qWxAgeK> |
 
@@ -36,7 +36,7 @@
 
 请去上方源码下载页面直接下载源码， 或者使用 git 克隆源码仓库。
 
-1. Github:  `git clone https://github.com/wysaid/xege --recursive`
+1. GitHub:  `git clone https://github.com/wysaid/xege --recursive`
 2. Gitee(国内访问更快):  `git clone https://gitee.com/xege/xege --recursive`
 
 ### 编译源码
@@ -49,7 +49,7 @@ EGE 项目是一个 CMake 项目， 使用标准的 CMake 构建方式即可编�
 2. 任意编译器, 推荐安装 Visual Studio 2022 以上的版本以获得最好的体验。以 `Visual Studio 2022` 为例， 在 Windows 商店中， 直接搜索 `Visual Studio Installer` 安装， 之后启动 `Visual Studio Installer` 选择 C++ 开发环境并安装即可。
 3. 启动 `cmake-gui.exe`, 选择源码目录和编译目录，点击 `Configure` 按钮， 选择你的编译器， 然后点击 `Generate` 按钮生成项目文件。之后点击 `Open Project` 打开项目文件， 然后在 Visual Studio 中编译即可。
 
-## 库教程和文档目录（注意：本文档对应的ege版本为 24.04
+## 库教程和文档目录（注意：本文档对应的ege版本为 25.11）
 
 * [基本说明](http://xege.org/manual/intro/index.htm)
 * [图形库安装说明](http://xege.org/manual/setup/index.htm)
