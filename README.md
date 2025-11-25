@@ -5,10 +5,6 @@
 [![License](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/x-ege/xege)
 
-<p align="center">
-  <img src="egelogo.jpg" alt="EGE Logo" />
-</p>
-
 EGE (Easy Graphics Engine) 是一个 Windows 下的简易绘图库，提供类似 BGI (`graphics.h`) 的接口，专为 C/C++ 初学者设计。
 
 ## 目录
