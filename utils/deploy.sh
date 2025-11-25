@@ -10,19 +10,19 @@ FORCE_RELEASE=false
 SKIP_BRANCH_SWITCH=false
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -f|--force)
-            FORCE_RELEASE=true
-            shift
-            ;;
-        -s|--skip-checkout)
-            SKIP_BRANCH_SWITCH=true
-            shift
-            ;;
-        *)
-            echo "Unknown option: $1" >&2
-            echo "Usage: $0 [-f|--force] [-s|--skip-checkout]" >&2
-            exit 1
-            ;;
+    -f | --force)
+        FORCE_RELEASE=true
+        shift
+        ;;
+    -s | --skip-checkout)
+        SKIP_BRANCH_SWITCH=true
+        shift
+        ;;
+    *)
+        echo "Unknown option: $1" >&2
+        echo "Usage: $0 [-f|--force] [-s|--skip-checkout]" >&2
+        exit 1
+        ;;
     esac
 done
 
@@ -38,19 +38,24 @@ fi
 SIBLING_LIBS_DIR="$EGE_DIR/../xege_libs"
 if [[ -d "$SIBLING_LIBS_DIR/.git" ]]; then
     # 检查是否为正确的 git 仓库
-    cd "$SIBLING_LIBS_DIR"
-    REMOTE_URL=$(git remote get-url origin 2>/dev/null)
-    if [[ "$REMOTE_URL" == "git@github.com:wysaid/xege.org.git" ]]; then
-        echo "Using existing xege_libs from sibling directory."
-        LIBS_DIR="$(realpath "$SIBLING_LIBS_DIR")"
-    else
-        echo "Warning: Sibling xege_libs exists but has different remote URL: $REMOTE_URL"
-        echo "Using local xege_libs in utils directory instead."
-        cd "$EGE_DIR/utils"
+    if ! cd "$SIBLING_LIBS_DIR"; then
+        echo "Warning: Failed to enter sibling xege_libs directory" >&2
+        cd "$EGE_DIR/utils" || exit 1
         LIBS_DIR=""
+    else
+        REMOTE_URL=$(git remote get-url origin 2>/dev/null)
+        if [[ "$REMOTE_URL" == "git@github.com:wysaid/xege.org.git" ]]; then
+            echo "Using existing xege_libs from sibling directory."
+            LIBS_DIR="$(realpath "$SIBLING_LIBS_DIR")"
+        else
+            echo "Warning: Sibling xege_libs exists but has different remote URL: $REMOTE_URL" >&2
+            echo "Using local xege_libs in utils directory instead."
+            cd "$EGE_DIR/utils" || exit 1
+            LIBS_DIR=""
+        fi
     fi
 else
-    cd "$EGE_DIR/utils"
+    cd "$EGE_DIR/utils" || exit 1
     LIBS_DIR=""
 fi
 
@@ -73,15 +78,25 @@ fi
 if [[ $SKIP_BRANCH_SWITCH == false ]]; then
     git add .
     git stash -m "Auto stash before deploy"
-    git checkout master
+    # WARNING: This will discard any local commits - deployment script expects clean state
+    git checkout master || exit 1
     git reset --hard origin/master
-    git pull
+    git pull || exit 1
 else
     echo "Skipping branch checkout and pull (current branch: $(git branch --show-current))"
 fi
 
 ### Copy files
 
-cp -rf "$EGE_DIR/Release/lib" "$LIBS_DIR/."
-cp -rf "$EGE_DIR/include" "$LIBS_DIR/."
-cp -rf "$EGE_DIR/man" "$LIBS_DIR/."
+cp -rf "$EGE_DIR/Release/lib" "$LIBS_DIR/." || {
+    echo "Failed to copy lib directory" >&2
+    exit 1
+}
+cp -rf "$EGE_DIR/include" "$LIBS_DIR/." || {
+    echo "Failed to copy include directory" >&2
+    exit 1
+}
+cp -rf "$EGE_DIR/man" "$LIBS_DIR/." || {
+    echo "Failed to copy man directory" >&2
+    exit 1
+}
