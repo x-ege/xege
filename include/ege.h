@@ -3,8 +3,7 @@
  * FileName:    ege.h
  * Website:     https://xege.org
  * Community:   https://club.xege.org
- * GitHub:      https://github.com/wysaid/xege
- * GitHub:      https://github.com/Easy-Graphics-Engine
+ * GitHub:      https://github.com/x-ege/xege
  * Gitee:       https://gitee.com/xege/xege
  * Blog:        https://blog.csdn.net/qq_39151563/article/details/125688290
  * E-Mail:      this@xege.org
