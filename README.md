@@ -102,7 +102,7 @@ EGE 使用 [CMake](https://cmake.org) 作为构建系统。
 | 源码仓库 | <https://github.com/x-ege/xege> |
 | 社区论坛 | [EGE Club](https://club.xege.org) |
 | 百度贴吧 | [ege](http://tieba.baidu.com/f?kw=ege)、[ege娘](http://tieba.baidu.com/f?kw=ege%C4%EF) |
-| 教程博客 | [EGE 教程&介绍](https://blog.csdn.net/qq_39151563/article/details/100154767)（作者：[依稀](https://blog.csdn.net/qq_39151563?type=blog)）|
+| 教程博客 | [EGE 教程&介绍](https://blog.csdn.net/qq_39151563/article/details/100154767) (作者：[依稀](https://blog.csdn.net/qq_39151563?type=blog)) |
 | 邮箱 | <this@xege.org> |
 | QQ 群 | 1060223135 |
 
