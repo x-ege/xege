@@ -29,7 +29,7 @@ function findMingwPath() {
     fi
 }
 
-if [[ -z "$MINGW_PATH" ]] &&  [[ -n "$MINGW64_PATH" ]]; then
+if [[ -z "$MINGW_PATH" ]] && [[ -n "$MINGW64_PATH" ]]; then
     # 如果 MINGW_PATH 未设置, 但 MINGW64_PATH 已设置, 则使用 MINGW64_PATH
     export MINGW_PATH="$MINGW64_PATH"
 fi
@@ -89,6 +89,66 @@ echo "Resource compiler: $(which $RC)"
 
 declare -a FAILED_TASKS=()
 
+# 验证库文件架构
+function verifyLibArchitecture() {
+    local lib_file="$1"
+    local expected_arch="$2" # "x64" 或 "x86"
+
+    if [[ ! -f "$lib_file" ]]; then
+        echo "Error: Library file not found: $lib_file"
+        return 1
+    fi
+
+    # 使用 objdump 检查架构
+    local file_info
+    if command -v objdump &>/dev/null; then
+        file_info=$(objdump -f "$lib_file" 2>/dev/null | head -20)
+
+        if [[ "$expected_arch" == "x64" ]]; then
+            if echo "$file_info" | grep -qi "x86-64\|pe-x86-64"; then
+                echo "✓ Verified: $lib_file is 64-bit (x86-64)"
+                return 0
+            else
+                echo "✗ Error: $lib_file is NOT 64-bit!"
+                echo "  File info: $file_info"
+                return 1
+            fi
+        elif [[ "$expected_arch" == "x86" ]]; then
+            # 32位应该是 i386 或 pe-i386，但不能是 x86-64
+            if echo "$file_info" | grep -qi "x86-64\|pe-x86-64"; then
+                echo "✗ Error: $lib_file is 64-bit, expected 32-bit!"
+                echo "  File info: $file_info"
+                return 1
+            elif echo "$file_info" | grep -qi "i386\|pe-i386"; then
+                echo "✓ Verified: $lib_file is 32-bit (i386)"
+                return 0
+            else
+                echo "? Warning: Cannot determine architecture for $lib_file"
+                echo "  File info: $file_info"
+                return 1
+            fi
+        fi
+    elif command -v file &>/dev/null; then
+        # 备用方案：使用 file 命令
+        file_info=$(file "$lib_file")
+        echo "File info: $file_info"
+
+        if [[ "$expected_arch" == "x64" ]] && echo "$file_info" | grep -qi "x86-64"; then
+            echo "✓ Verified: $lib_file is 64-bit"
+            return 0
+        elif [[ "$expected_arch" == "x86" ]] && ! echo "$file_info" | grep -qi "x86-64"; then
+            echo "✓ Verified: $lib_file is 32-bit"
+            return 0
+        else
+            echo "✗ Architecture mismatch for $lib_file"
+            return 1
+        fi
+    else
+        echo "Warning: Neither objdump nor file command available, skipping verification"
+        return 0
+    fi
+}
+
 # 构建函数
 function mingwBuild() {
     local arch="$1"
@@ -118,6 +178,26 @@ function mingwBuild() {
         mkdir -p "Release/lib/$output_dir"
         find build -type f -name "*.a" -exec cp {} "Release/lib/$output_dir/" \;
         ls -l "Release/lib/$output_dir"
+
+        # 验证生成的库文件架构
+        echo ""
+        echo "Verifying library architecture for $arch build..."
+        local verify_failed=false
+        for lib_file in "Release/lib/$output_dir"/*.a; do
+            if [[ -f "$lib_file" ]]; then
+                if ! verifyLibArchitecture "$lib_file" "$arch"; then
+                    verify_failed=true
+                fi
+            fi
+        done
+
+        if [[ "$verify_failed" == "true" ]]; then
+            echo "Architecture verification failed for $arch build!"
+            FAILED_TASKS+=("mingw-$arch-verify")
+        else
+            echo "Architecture verification passed for $arch build!"
+        fi
+        echo ""
 
         ./utils/test-release-libs.sh \
             --build-dir "build-mingw-$arch" \
