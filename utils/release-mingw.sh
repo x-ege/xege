@@ -14,7 +14,9 @@ BUILD_ARCH_X86="${BUILD_ARCH_X86:-false}"
 
 function findMingwPath() {
     # 找几个默认的路径
-    if [[ -d "/c/Program Files/RedPanda-Cpp/mingw64" ]]; then
+    if [[ -d "/c/TDM-GCC-64" ]]; then
+        echo "/c/TDM-GCC-64"
+    elif [[ -d "/c/Program Files/RedPanda-Cpp/mingw64" ]]; then
         echo "/c/Program Files/RedPanda-Cpp/mingw64"
     elif [[ -d "/c/Program Files (x86)/Dev-Cpp/MinGW64" ]]; then
         echo "/c/Program Files (x86)/Dev-Cpp/MinGW64"
