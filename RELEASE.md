@@ -54,6 +54,8 @@
 - `alpha_type` 枚举值顺序调整：`ALPHATYPE_PREMULTIPLIED` 现为 0，`ALPHATYPE_STRAIGHT` 为 1。
 - `putimage_alphablend` 系列函数的参数由 `alpha_type alphaType` 改为 `color_type colorType`，默认值为 `COLORTYPE_PRGB32`。
 - 数据压缩相关函数签名调整，参数类型由 `unsigned long` 改为 `uint32_t`。
+- `Bound`、`Rect`、`RectF` 类的方法重命名：`isContains` → `contains`，`isOverlaps` → `overlaps`。
+- 修正拼写错误：`tranpose` → `transpose`，`flipHorizonal` → `flipHorizontal`。
 - `keystate` 返回值改为 `bool` 类型，参数无效时返回 `false`。
 - `kbmsg`、`kbhit` 在运行环境退出后的返回值由 `-1` 改为 `0`，防止阻塞。
 - 非阻塞或非延时函数不再触发窗口刷新。

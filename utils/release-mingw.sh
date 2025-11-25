@@ -136,7 +136,7 @@ function verifyLibArchitecture() {
         if [[ "$expected_arch" == "x64" ]] && echo "$file_info" | grep -qi "x86-64"; then
             echo "✓ Verified: $lib_file is 64-bit"
             return 0
-        elif [[ "$expected_arch" == "x86" ]] && ! echo "$file_info" | grep -qi "x86-64"; then
+        elif [[ "$expected_arch" == "x86" ]] && echo "$file_info" | grep -qiE "i386|intel 80386|pe32"; then
             echo "✓ Verified: $lib_file is 32-bit"
             return 0
         else
@@ -183,13 +183,20 @@ function mingwBuild() {
         echo ""
         echo "Verifying library architecture for $arch build..."
         local verify_failed=false
+        local found_libs=false
         for lib_file in "Release/lib/$output_dir"/*.a; do
             if [[ -f "$lib_file" ]]; then
+                found_libs=true
                 if ! verifyLibArchitecture "$lib_file" "$arch"; then
                     verify_failed=true
                 fi
             fi
         done
+
+        if [[ "$found_libs" != "true" ]]; then
+            echo "✗ Error: No .a library files found in Release/lib/$output_dir"
+            verify_failed=true
+        fi
 
         if [[ "$verify_failed" == "true" ]]; then
             echo "Architecture verification failed for $arch build!"
@@ -209,6 +216,10 @@ function mingwBuild() {
             -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)" \
             -DCMAKE_C_FLAGS="$arch_flag" \
             -DCMAKE_CXX_FLAGS="$arch_flag"
+        if [[ $? -ne 0 ]]; then
+            echo "Test for $arch failed!"
+            FAILED_TASKS+=("mingw-$arch-test")
+        fi
     else
         echo "Build $arch failed!"
         FAILED_TASKS+=("mingw-$arch")

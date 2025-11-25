@@ -62,7 +62,10 @@ fi
 # 如果没有使用同级目录的 xege_libs，则在 utils 目录下创建/使用
 if [[ -z "$LIBS_DIR" ]]; then
     if [[ ! -d "xege_libs/.git" ]]; then
-        git clone git@github.com:wysaid/xege.org.git xege_libs
+        git clone git@github.com:wysaid/xege.org.git xege_libs || {
+            echo "Failed to clone xege_libs repository" >&2
+            exit 1
+        }
     fi
 
     LIBS_DIR="$(realpath "$EGE_DIR/utils/xege_libs")"
