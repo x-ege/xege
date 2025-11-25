@@ -1,5 +1,5 @@
 /*********************************************************
- * EGE (Easy Graphics Engine)  24.04
+ * EGE (Easy Graphics Engine)  25.11
  * FileName:    ege.h
  * Website:     https://xege.org
  * Community:   https://club.xege.org
@@ -20,9 +20,9 @@
 
 // Easy Graphics Engine Version
 // Calendar Versioning, format: YY.0M.PatchNumber (If the PatchNumber equals 0, the YY.0M format is used.)
-#define EGE_VERSION        "24.04"
-#define EGE_VERSION_MAJOR  24
-#define EGE_VERSION_MINOR  4
+#define EGE_VERSION        "25.11"
+#define EGE_VERSION_MAJOR  25
+#define EGE_VERSION_MINOR  11
 #define EGE_VERSION_PATCH  0
 #define EGE_MAKE_VERSION_NUMBER(major, minor, patch)    ((major) * 10000L + (minor) * 100L + (patch))
 #define EGE_VERSION_NUMBER    EGE_MAKE_VERSION_NUMBER(EGE_VERSION_MAJOR, EGE_VERSION_MINOR, EGE_VERSION_PATCH)
