@@ -1,4 +1,4 @@
-name: macOS Build
+name: MinGW-w64 Cross-Compile (macOS)
 
 on:
   push:
@@ -18,7 +18,7 @@ on:
 
 jobs:
   macos-cross-compile:
-    name: macOS Cross-Compile (${{ matrix.build_type }})
+    name: Windows Cross-Compile via MinGW-w64 (${{ matrix.build_type }})
     runs-on: macos-latest
     strategy:
       matrix:
@@ -66,6 +66,14 @@ jobs:
 
           # Copy built libraries
           find build-mingw-macos -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw-w64-macos/ \;
+
+          # Verify that libraries were actually found and copied
+          LIBRARY_COUNT=$(find ${BUILD_TYPE}/lib/mingw-w64-macos -type f -name "*.a" | wc -l)
+          if [ "$LIBRARY_COUNT" -eq 0 ]; then
+            echo "ERROR: No .a libraries found in build output!"
+            exit 1
+          fi
+          echo "Successfully packaged $LIBRARY_COUNT library files"
 
           # List generated files
           echo "Generated MinGW macOS cross-compiled libraries for $BUILD_TYPE:"
