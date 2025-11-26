@@ -40,6 +40,9 @@ jobs:
           brew update
           brew install mingw-w64 cmake
 
+          # Verify MinGW-w64 installation
+          x86_64-w64-mingw32-gcc --version || (echo "ERROR: MinGW-w64 installation verification failed" && exit 1)
+
       - name: Cross-compile with MinGW-w64
         env:
           BUILD_TYPE: ${{ matrix.build_type }}
@@ -85,4 +88,3 @@ jobs:
           name: xege-mingw-macos-${{ matrix.build_type }}-libraries
           path: ${{ matrix.build_type }}/lib/mingw-w64-macos/
           retention-days: 30
-        if: success()
