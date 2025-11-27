@@ -45,7 +45,7 @@ bool hasCameraCaptureModule();
 class CameraFrame
 {
 protected:
-    /// @brief CameraFrame 由 shared_ptr 管理生命周期, 不要直接 delete.
+    /// @brief CameraFrame 的生命周期由 shared_ptr 完全管理, 请勿手动释放或 delete.
     virtual ~CameraFrame() = 0;
 
 public:
@@ -239,6 +239,9 @@ public:
      *
      * @return 当前帧数据的 shared_ptr. 如果等待超时或者没有数据, 返回空的 shared_ptr.
      *      无需手动释放, shared_ptr 会自动管理生命周期.
+     *
+     * @note BREAKING CHANGE: 返回类型已从 CameraFrame* 改为 std::shared_ptr<CameraFrame>.
+     *       请更新代码以使用 shared_ptr 语义。这一改动提升了内存安全性和资源自动管理能力.
      */
     std::shared_ptr<CameraFrame> grabFrame(unsigned int timeoutInMs = 0);
 

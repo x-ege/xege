@@ -770,7 +770,10 @@ void logoscene()
         }
     }
     setbkcolor_f(0xFFFFFF);
-    for ((alpha > 0xFF) && (alpha -= 8); alpha >= 0 && b_nobreak; alpha -= 16, delay_fps(60)) {
+    if (alpha > 0xFF) {
+        alpha -= 8;
+    }
+    for (; alpha >= 0 && b_nobreak; alpha -= 16, delay_fps(60)) {
         cleardevice();
         putimage_alphablend(
             NULL, pimg, (getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, (UCHAR)alpha);
