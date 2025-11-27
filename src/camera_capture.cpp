@@ -49,7 +49,6 @@ struct FrameContainer
 {
 #if EGE_ENABLE_CAMERA_CAPTURE
     std::vector<std::shared_ptr<CameraFrameImp>> allFrames;
-    std::vector<std::shared_ptr<CameraFrameImp>> frameInUse;
 #else
     int dummy;
 #endif
@@ -59,13 +58,7 @@ CameraFrame::CameraFrame() : m_camera(nullptr), m_frame(nullptr)
 {}
 
 CameraFrame::~CameraFrame()
-{
-    if (m_frame) {
-        m_frame = nullptr;
-        fputs("CameraFrame 未调用 release 方法!! 数据内存泄漏!!", stderr);
-        fputs("CameraFrame did not call release method!! Data memory leak!!", stderr);
-    }
-}
+{}
 
 #if EGE_ENABLE_CAMERA_CAPTURE
 
@@ -74,28 +67,18 @@ class CameraFrameImp : public CameraFrame, public std::enable_shared_from_this<C
 public:
     CameraFrameImp(CameraCapture* cam) { m_camera = cam; }
 
-    ~CameraFrameImp() = default;
-
-    void release() override
+    ~CameraFrameImp()
     {
+        // shared_ptr 管理的帧，在析构时自动清理
         m_frame = nullptr;
-        if (m_camera) {
-            if (auto* container = m_camera->getFrameContainer()) {
-                auto inUseIt = std::find_if(container->frameInUse.begin(), container->frameInUse.end(),
-                    [this](const auto& frame) { return frame.get() == this; });
-
-                if (inUseIt != container->frameInUse.end()) {
-                    auto& frame        = *inUseIt;
-                    frame->m_realFrame = nullptr;
-                    container->frameInUse.erase(inUseIt);
-                }
-            }
-        }
     }
 
     PIMAGE getImage() override
     {
-        if ((m_frame == nullptr || m_realImage == nullptr) && m_realFrame) {
+        // 检查是否需要更新图像数据：
+        // 1. m_frame != m_realFrame.get() 表示帧数据已更新（新帧或帧被复用）
+        // 2. m_realImage == nullptr 表示图像尚未创建
+        if ((m_frame != m_realFrame.get() || m_realImage == nullptr) && m_realFrame) {
             if (m_realFrame->pixelFormat != ccap::PixelFormat::BGRA32) {
                 fputs("ege: 抓取到的图像格式不正确, 请上报一个错误!!", stderr);
                 fputs("ege: The captured image format is incorrect, please report an error!!", stderr);
@@ -233,6 +216,14 @@ CameraCapture::DeviceList::~DeviceList()
     }
 }
 
+CameraCapture::ResolutionList::~ResolutionList()
+{
+    if (info != nullptr) {
+        delete[] (ResolutionInfo*)info;
+        info = nullptr;
+    }
+}
+
 CameraCapture::DeviceList CameraCapture::findDeviceNames()
 {
     CHECK_AND_PRINT_ERROR_MSG({});
@@ -245,6 +236,26 @@ CameraCapture::DeviceList CameraCapture::findDeviceNames()
                 deviceInfos[i].name[sizeof(deviceInfos[i].name) - 1] = '\0'; // 确保字符串以 null 结尾
             }
             return DeviceList(deviceInfos, static_cast<int>(names.size()));
+        }
+    }
+    return {};
+#endif
+}
+
+CameraCapture::ResolutionList CameraCapture::getDeviceSupportedResolutions()
+{
+    CHECK_AND_PRINT_ERROR_MSG({});
+#if EGE_ENABLE_CAMERA_CAPTURE
+    if (m_provider && m_provider->isOpened()) {
+        auto deviceInfo = m_provider->getDeviceInfo();
+        if (deviceInfo && !deviceInfo->supportedResolutions.empty()) {
+            auto& resolutions = deviceInfo->supportedResolutions;
+            ResolutionInfo* resInfos = new ResolutionInfo[resolutions.size()];
+            for (size_t i = 0; i < resolutions.size(); ++i) {
+                resInfos[i].width  = static_cast<int>(resolutions[i].width);
+                resInfos[i].height = static_cast<int>(resolutions[i].height);
+            }
+            return ResolutionList(resInfos, static_cast<int>(resolutions.size()));
         }
     }
     return {};
@@ -324,7 +335,6 @@ void CameraCapture::close()
 
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_frameContainer) {
-        m_frameContainer->frameInUse.clear();
         m_frameContainer->allFrames.clear();
     }
     if (m_provider) {
@@ -367,32 +377,31 @@ void CameraCapture::stop()
 #endif
 }
 
-CameraFrame* CameraCapture::grabFrame(unsigned int timeoutInMs)
+std::shared_ptr<CameraFrame> CameraCapture::grabFrame(unsigned int timeoutInMs)
 {
-    CHECK_AND_PRINT_ERROR_MSG(NULL);
+    CHECK_AND_PRINT_ERROR_MSG(std::shared_ptr<CameraFrame>());
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_provider && m_provider->isStarted()) {
         auto frame = m_provider->grab(timeoutInMs);
         if (frame && m_frameContainer) {
             auto& allFrames = m_frameContainer->allFrames;
 
+            // 查找只被 allFrames 持有的空闲帧 (use_count() == 1 表示用户已释放其 shared_ptr)
             if (auto freeFrameIt = std::find_if(allFrames.begin(), allFrames.end(),
-                    [frame](const auto& f) { return f.use_count() == 1 && f->getCcapFrame() == nullptr; });
+                    [](const auto& f) { return f.use_count() == 1; });
                 freeFrameIt != allFrames.end())
             {
                 (*freeFrameIt)->setCcapFrame(std::move(frame));
-                m_frameContainer->frameInUse.push_back(*freeFrameIt);
-                return freeFrameIt->get();
+                return *freeFrameIt;
             } else {
                 auto frameImp = std::make_shared<CameraFrameImp>(this);
                 frameImp->setCcapFrame(std::move(frame));
                 m_frameContainer->allFrames.push_back(frameImp);
-                m_frameContainer->frameInUse.push_back(frameImp);
                 fputs("ege: new frame created!!\n", stderr);
-                if (m_frameContainer->frameInUse.size() > 100) {
-                    fputs("ege: too many frames in use, consider releasing unused frames!!\n", stderr);
+                if (m_frameContainer->allFrames.size() > 100) {
+                    fputs("ege: too many frames allocated, consider checking for memory leaks!!\n", stderr);
                 }
-                return frameImp.get();
+                return frameImp;
             }
         }
     }

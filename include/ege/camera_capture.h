@@ -16,6 +16,7 @@
 #endif
 
 #include "ege.h"
+#include <memory>
 
 /// 强制相机输出格式为 BGRA, 适配 ege::Image.
 /// FrameOrientation 限制为 TopToBottom, 适配 ege::Image.
@@ -44,14 +45,11 @@ bool hasCameraCaptureModule();
 class CameraFrame
 {
 protected:
-    /// @brief 请使用 release 方法来回收, 不要直接 delete.
+    /// @brief CameraFrame 由 shared_ptr 管理生命周期, 不要直接 delete.
     virtual ~CameraFrame() = 0;
 
 public:
     CameraFrame();
-
-    /// @brief 请使用 release 方法来回收, 不要直接 delete.
-    virtual void release() = 0;
 
     /**
      * @brief 获取 CameraFrame 对应的 ege::IMAGE. 这里的 PIMAGE 是一个指针,
@@ -70,7 +68,7 @@ public:
      *  可以用在类似于拍照之后继续进行更多处理的场景.
      *
      * @return 一个指向 ege::IMAGE 的指针, 或者 nullptr (如果没有数据).
-     * @note 这个方法内部无缓存, 请注意释放内存.
+     * @note 这个方法内部无缓存, 请注意释放内存. 也就是说调用者需要负责释放这个 IMAGE.
      */
     virtual PIMAGE copyImage() = 0;
 
@@ -103,6 +101,32 @@ public:
         // ... 后面也许会添加更多信息, 比如相机支持的分辨率, 像素格式等.
     };
 
+    struct ResolutionInfo
+    {
+        int width;  ///< 分辨率宽度
+        int height; ///< 分辨率高度
+    };
+
+    struct ResolutionList
+    {
+        ResolutionList() = default;
+
+        ResolutionList(ResolutionInfo* _info, int _count) : info(_info), count(_count) {}
+
+        ResolutionList(const ResolutionList&) = delete;
+
+        ResolutionList(ResolutionList&& r) : info(r.info), count(r.count)
+        {
+            const_cast<ResolutionInfo*&>(r.info) = nullptr;
+            const_cast<int&>(r.count)            = 0;
+        }
+
+        ResolutionList& operator=(const ResolutionList&) = delete;
+        ~ResolutionList();
+        const ResolutionInfo* info  = nullptr; ///< 分辨率信息(数组)
+        const int             count = 0;       ///< 分辨率数量
+    };
+
     struct DeviceList
     {
         DeviceList() = default;
@@ -132,6 +156,13 @@ public:
      * @return DeviceList 对象, 包含所有可用的相机设备名称. 注意, 目前只有名称.
      */
     DeviceList findDeviceNames();
+
+    /**
+     * @brief 获取当前相机设备支持的分辨率列表.
+     * @note 必须在 `open` 成功之后调用, 否则返回空列表.
+     * @return ResolutionList 对象, 包含所有支持的分辨率.
+     */
+    ResolutionList getDeviceSupportedResolutions();
 
     /**
      * @brief 设置期望的相机分辨率. 相机不一定支持这个物理分辨率, 只是会尽可能找一个跟这个分辨率接近的.
@@ -206,11 +237,10 @@ public:
      * @brief 获取当前帧数据.
      * @param timeout 超时等待时间, 单位毫秒. 0 表示不等待, 直接返回.
      *
-     * @return 当前帧数据的指针. 如果等待超时或者没有数据, 返回 nullptr.
-     *      注意, 使用者在不使用的时候需要调用 CameraFrame::release() 来释放.
-     *      否则会造成内存泄漏.
+     * @return 当前帧数据的 shared_ptr. 如果等待超时或者没有数据, 返回空的 shared_ptr.
+     *      无需手动释放, shared_ptr 会自动管理生命周期.
      */
-    CameraFrame* grabFrame(unsigned int timeoutInMs = 0);
+    std::shared_ptr<CameraFrame> grabFrame(unsigned int timeoutInMs = 0);
 
     ////////////////////////////////////////////////
 
