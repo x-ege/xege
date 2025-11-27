@@ -22,26 +22,36 @@ jobs:
       - name: Check VS2026 (v144 toolset) availability
         id: check_vs2026
         run: |
-          # Check if VS2026 toolset (v144) is available
-          $vs2026Path = "C:\Program Files\Microsoft Visual Studio\2026"
-          $v144Toolset = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Microsoft\VC\v144" -ErrorAction SilentlyContinue
+          # Check if VS2026 toolset (v144) is available using vswhere
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           
-          if (Test-Path $vs2026Path) {
+          # Check for VS2026 installation
+          $vs2026 = & $vswhere -version "[18.0,19.0)" -property installationPath 2>$null
+          
+          # Also check if v144 toolset exists in any VS installation
+          $vsInstalls = & $vswhere -all -property installationPath 2>$null
+          $v144Found = $false
+          foreach ($install in $vsInstalls) {
+            $v144Path = Join-Path $install "MSBuild\Microsoft\VC\v144"
+            if (Test-Path $v144Path) {
+              $v144Found = $true
+              echo "✅ v144 toolset found at: $v144Path"
+              break
+            }
+          }
+          
+          if ($vs2026) {
             echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
-            echo "✅ Visual Studio 2026 is installed at: $vs2026Path"
-          } elseif ($v144Toolset) {
+            echo "✅ Visual Studio 2026 is installed at: $vs2026"
+          } elseif ($v144Found) {
             echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
-            echo "✅ v144 toolset found at: $($v144Toolset.FullName)"
           } else {
             echo "VS2026_AVAILABLE=false" >> $env:GITHUB_OUTPUT
             echo "⏭️ VS2026 (v144 toolset) is not available on this runner."
             echo "⏭️ Skipping VS2026 build. This is expected until GitHub adds VS2026 support to windows-latest runners."
             echo ""
-            echo "=== Available Visual Studio Installations ==="
-            Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -ErrorAction SilentlyContinue | Select-Object Name
-            echo ""
-            echo "=== Available MSBuild Toolsets ==="
-            Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Microsoft\VC" -ErrorAction SilentlyContinue | Select-Object Name
+            echo "=== Available Visual Studio Installations (via vswhere) ==="
+            & $vswhere -all -format text
           }
         shell: powershell
 
@@ -58,7 +68,7 @@ jobs:
         run: |
           mkdir build-vs2026
           cd build-vs2026
-          cmake .. -T v144 # vs2026
+          cmake .. -T v144
 
       - name: Build
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
