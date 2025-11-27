@@ -275,6 +275,27 @@
             },
             "group": "build",
             "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - A* Pathfinding",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "graph_astar_pathfinding",
+                "--build",
+                "--run",
+                "graph_astar_pathfinding.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
         }
     ]
 }
