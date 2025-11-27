@@ -19,40 +19,49 @@ jobs:
             fromJson('["Release", "Debug"]')
           }}
     steps:
+      - name: Check VS2026 (v144 toolset) availability
+        id: check_vs2026
+        run: |
+          # Check if VS2026 toolset (v144) is available
+          $vs2026Path = "C:\Program Files\Microsoft Visual Studio\2026"
+          $v144Toolset = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Microsoft\VC\v144" -ErrorAction SilentlyContinue
+          
+          if (Test-Path $vs2026Path) {
+            echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
+            echo "✅ Visual Studio 2026 is installed at: $vs2026Path"
+          } elseif ($v144Toolset) {
+            echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
+            echo "✅ v144 toolset found at: $($v144Toolset.FullName)"
+          } else {
+            echo "VS2026_AVAILABLE=false" >> $env:GITHUB_OUTPUT
+            echo "⏭️ VS2026 (v144 toolset) is not available on this runner."
+            echo "⏭️ Skipping VS2026 build. This is expected until GitHub adds VS2026 support to windows-latest runners."
+            echo ""
+            echo "=== Available Visual Studio Installations ==="
+            Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -ErrorAction SilentlyContinue | Select-Object Name
+            echo ""
+            echo "=== Available MSBuild Toolsets ==="
+            Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Microsoft\VC" -ErrorAction SilentlyContinue | Select-Object Name
+          }
+        shell: powershell
+
       - name: Checkout repository
+        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
         uses: actions/checkout@v4
       
       - name: Setup Visual Studio environment
+        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
         uses: microsoft/setup-msbuild@v1.1
 
-      - name: Print CMake version
-        run: cmake --version
-
-      - name: Print available CMake generators
-        run: cmake --help
-
-      - name: Print Visual Studio installations
-        run: |
-          echo "=== Visual Studio Installations ==="
-          Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -ErrorAction SilentlyContinue | Select-Object Name
-          Get-ChildItem "C:\Program Files (x86)\Microsoft Visual Studio" -ErrorAction SilentlyContinue | Select-Object Name
-          echo ""
-          echo "=== VS 2022 Build Tools ==="
-          Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022" -ErrorAction SilentlyContinue | Select-Object Name
-          echo ""
-          echo "=== VS 2022 VC Tools ==="
-          Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" -ErrorAction SilentlyContinue | Select-Object Name
-          echo ""
-          echo "=== MSBuild Toolsets ==="
-          Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC" -ErrorAction SilentlyContinue | Select-Object Name
-        shell: powershell
-
       - name: Configure CMake
+        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
         run: |
           mkdir build-vs2026
           cd build-vs2026
           cmake .. -T v144 # vs2026
+
       - name: Build
+        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
         run: |
           cd build-vs2026
           cmake --build . --config ${{ matrix.build_type }} --parallel
