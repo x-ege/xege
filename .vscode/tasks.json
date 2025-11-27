@@ -170,7 +170,7 @@
             "args": ["-l", "tasks.sh", "--debug", "--target", "graph_function_visualization", "--build", "--run", "graph_function_visualization.exe"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
-            "problemMatcher": "$msCompile"
+            "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
             "label": "Run Demo - Camera Base (Debug)",
@@ -179,7 +179,7 @@
             "args": ["-l", "tasks.sh", "--debug", "--target", "camera_base", "--build", "--run", "camera_base.exe"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
-            "problemMatcher": "$msCompile"
+            "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
             "label": "Run Demo - Camera Wave (Debug)",
@@ -188,7 +188,7 @@
             "args": ["-l", "tasks.sh", "--debug", "--target", "camera_wave", "--build", "--run", "camera_wave.exe"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
-            "problemMatcher": "$msCompile"
+            "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
             "label": "Run Demo - KMeans Visualization (Debug)",
@@ -251,7 +251,7 @@
             "args": ["-l", "tasks.sh", "--release", "--target", "graph_function_visualization", "--build", "--run", "graph_function_visualization.exe"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
-            "problemMatcher": "$msCompile"
+            "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
             "label": "Run Demo - Camera Base (Release)",
@@ -260,7 +260,7 @@
             "args": ["-l", "tasks.sh", "--release", "--target", "camera_base", "--build", "--run", "camera_base.exe"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
-            "problemMatcher": "$msCompile"
+            "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
             "label": "Run Demo - Camera Wave (Release)",
@@ -269,7 +269,7 @@
             "args": ["-l", "tasks.sh", "--release", "--target", "camera_wave", "--build", "--run", "camera_wave.exe"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
-            "problemMatcher": "$msCompile"
+            "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
             "label": "Run Demo - KMeans Visualization (Release)",

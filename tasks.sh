@@ -348,7 +348,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # 参数解析完成后，初始化 CMAKE_BUILD_DIR
-export CMAKE_BUILD_DIR="$(getBuildDir)"
+CMAKE_BUILD_DIR="$(getBuildDir)"
+export CMAKE_BUILD_DIR
 echo "Build directory: $CMAKE_BUILD_DIR (BUILD_TYPE: $CMAKE_BUILD_TYPE)"
 
 # 第二遍：按正确顺序执行操作
