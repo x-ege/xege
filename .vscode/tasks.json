@@ -279,6 +279,24 @@
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - Game of Life (Debug)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_game_of_life", "--build", "--run", "graph_game_of_life.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - Game of Life (Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_game_of_life", "--build", "--run", "graph_game_of_life.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$gcc"
         }
     ]
 }
