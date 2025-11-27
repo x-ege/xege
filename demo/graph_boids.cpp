@@ -761,6 +761,7 @@ int main()
     setinitmode(INIT_ANIMATION);
     initgraph(WINDOW_WIDTH, WINDOW_HEIGHT);
     setcaption(TEXT_WINDOW_TITLE);
+    setbkmode(TRANSPARENT);
 
     // 创建模拟器
     BoidsSimulation simulation;
