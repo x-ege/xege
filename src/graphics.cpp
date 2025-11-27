@@ -739,18 +739,19 @@ void logoscene()
         pimg = pimg1;
     }
     setrendermode(RENDER_MANUAL);
-    for (n = 0; n < 20 * 1 && b_nobreak; n++, delay_fps(60)) {
+    for (n = 0; n < 5 && b_nobreak; n++, delay_fps(60)) {
         cleardevice();
     }
-    for (alpha = 0; alpha <= 0xFF && b_nobreak; alpha += 8, delay_fps(60)) {
+    for (alpha = 0; alpha <= 0xFF && b_nobreak; alpha += 32, delay_fps(60)) {
         setbkcolor_f(EGERGB(alpha, alpha, alpha));
         cleardevice();
         while (kbhit()) {
             getkey();
+            b_nobreak = 0;
         }
     }
     setbkcolor_f(0xFFFFFF);
-    for (alpha = 0; alpha <= 0xFF && b_nobreak; alpha += 8, delay_fps(60)) {
+    for (alpha = 0; alpha <= 0xFF && b_nobreak; alpha += 16, delay_fps(60)) {
         cleardevice();
         putimage_alphablend(
             NULL, pimg, (getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, (UCHAR)alpha);
@@ -760,7 +761,7 @@ void logoscene()
         }
     }
     setbkcolor_f(0xFFFFFF);
-    for (n = 0; n < 60 * 1 && b_nobreak; n++, delay_fps(60)) {
+    for (n = 0; n < 20 && b_nobreak; n++, delay_fps(60)) {
         cleardevice();
         putimage((getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, pimg);
         while (kbhit()) {
@@ -769,7 +770,7 @@ void logoscene()
         }
     }
     setbkcolor_f(0xFFFFFF);
-    for ((alpha > 0xFF) && (alpha -= 4); alpha >= 0; alpha -= 8, delay_fps(60)) {
+    for ((alpha > 0xFF) && (alpha -= 8); alpha >= 0 && b_nobreak; alpha -= 16, delay_fps(60)) {
         cleardevice();
         putimage_alphablend(
             NULL, pimg, (getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, (UCHAR)alpha);
@@ -779,7 +780,7 @@ void logoscene()
         }
     }
     cleardevice();
-    for (alpha = 0xFF; alpha >= 0; alpha -= 8, delay_fps(60)) {
+    for (alpha = 0xFF; alpha >= 0 && b_nobreak; alpha -= 32, delay_fps(60)) {
         setbkcolor_f(EGERGB(alpha, alpha, alpha));
         cleardevice();
         while (kbhit()) {
