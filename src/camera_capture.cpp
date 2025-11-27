@@ -69,7 +69,9 @@ public:
 
     ~CameraFrameImp()
     {
-        // shared_ptr 管理的帧，在析构时自动清理
+        // 析构时清空帧指针。由于 m_realFrame 是 shared_ptr, 其管理的资源会自动释放。
+        // m_realImage 也是 shared_ptr，同样会自动清理。
+        // 此处显式设置 m_frame 为 nullptr 是为了保持与基类成员的一致性。
         m_frame = nullptr;
     }
 
