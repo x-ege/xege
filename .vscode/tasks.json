@@ -296,6 +296,25 @@
             "group": "build",
             "problemMatcher": "$gcc"
         },
+        {
+            "label": "Run Demo - Boids Simulation",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "graph_boids",
+                "--build",
+                "--run",
+                "graph_boids.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$gcc"
         }
     ]
 }
