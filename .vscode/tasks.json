@@ -173,6 +173,15 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "Run Demo - Camera Base (Debug)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--target", "camera_base", "--build", "--run", "camera_base.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "Run Demo - Camera Wave (Debug)",
             "type": "shell",
             "command": "bash",
@@ -240,6 +249,15 @@
             "type": "shell",
             "command": "bash",
             "args": ["-l", "tasks.sh", "--release", "--target", "graph_function_visualization", "--build", "--run", "graph_function_visualization.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Demo - Camera Base (Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--release", "--target", "camera_base", "--build", "--run", "camera_base.exe"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$msCompile"

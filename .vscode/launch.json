@@ -12,7 +12,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All"
+            "preLaunchTask": "Build All (Debug)"
         },
         {
             "name": "Debug putimage_withalpha (isolated)",
@@ -25,7 +25,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All"
+            "preLaunchTask": "Build All (Debug)"
         },
         {
             "name": "Debug putimage_transparent_test",
@@ -38,7 +38,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All"
+            "preLaunchTask": "Build All (Debug)"
         },
         {
             "name": "Debug putimage_rotate_test",
@@ -51,7 +51,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All"
+            "preLaunchTask": "Build All (Debug)"
         },
         {
             "name": "Debug putimage_alphablend_test",
@@ -64,7 +64,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All"
+            "preLaunchTask": "Build All (Debug)"
         },
         {
             "name": "Debug putimage_basic_test",
@@ -77,7 +77,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All"
+            "preLaunchTask": "Build All (Debug)"
         },
         {
             "name": "Debug Game Gomoku",
@@ -90,7 +90,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All",
+            "preLaunchTask": "Build All (Debug)",
         },
         {
             "name": "Debug Camera Wave",
@@ -103,7 +103,7 @@
             "environment": [],
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build All",
+            "preLaunchTask": "Build All (Debug)",
         }
     ]
 }
