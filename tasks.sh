@@ -46,7 +46,67 @@ if isWsl && isWindows; then
     fi
 fi
 
-CMAKE_BUILD_DIR="$PROJECT_DIR/build"
+# 检测是否为 MSVC 环境的函数
+# 判断逻辑：在 Windows 上，除非明确指定了非 MSVC 生成器，否则默认使用 MSVC
+function isMSVC() {
+    local config_str="${CMAKE_CONFIG_DEFINE[*]}"
+
+    # 如果明确指定了 MinGW/Ninja/Unix Makefiles 生成器，则不是 MSVC
+    if [[ "$config_str" == *"MinGW"* ]] || [[ "$config_str" == *"Unix Makefiles"* ]] || [[ "$config_str" == *"Ninja"* ]]; then
+        return 1
+    fi
+
+    # 检查是否明确指定了 Visual Studio 生成器或工具集
+    if [[ "$config_str" == *"Visual Studio"* ]] || [[ "$config_str" == *"-T v1"* ]]; then
+        return 0
+    fi
+
+    # 检查是否存在 Visual Studio 相关环境变量
+    if [[ -n "$VSINSTALLDIR" ]] || [[ -n "$VisualStudioVersion" ]]; then
+        return 0
+    fi
+
+    # Windows 环境下，如果没有指定生成器，CMake 默认使用 Visual Studio
+    if isWindows; then
+        return 0
+    fi
+
+    return 1
+}
+
+# 检测是否明确指定了 MinGW 生成器
+function isMinGW() {
+    local config_str="${CMAKE_CONFIG_DEFINE[*]}"
+    if [[ "$config_str" == *"MinGW"* ]]; then
+        return 0
+    fi
+    return 1
+}
+
+# 根据编译器类型和构建类型确定 build 目录
+# MSVC: build/ (CMake 自动处理 Debug/Release 子目录)
+# MinGW/其他: build/Debug 或 build/Release
+function getBuildDir() {
+    local base_dir="$PROJECT_DIR/build"
+
+    # 如果用户已经通过 --build-dir 指定了目录，使用用户指定的
+    if [[ -n "$USER_SPECIFIED_BUILD_DIR" ]]; then
+        echo "$USER_SPECIFIED_BUILD_DIR"
+        return
+    fi
+
+    # MSVC 使用单一 build 目录（CMake 会自动创建 Debug/Release 子目录）
+    if isMSVC; then
+        echo "$base_dir"
+        return
+    fi
+
+    # MinGW 和其他编译器需要手动区分 Debug/Release 目录
+    echo "$base_dir/$CMAKE_BUILD_TYPE"
+}
+
+CMAKE_BUILD_DIR=""          # 延迟初始化，在解析完所有参数后设置
+USER_SPECIFIED_BUILD_DIR="" # 用户通过 --build-dir 指定的目录
 
 export BUILD_TARGET="" # 默认只构建 xege 静态库
 
@@ -80,11 +140,25 @@ function loadCMakeProject() {
     # 构建 cmake 参数数组
     local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
+
+    # 确定源代码路径（相对于 build 目录）
+    local source_path
     if [[ -z "$EGE_SOURCE_PATH" ]]; then
-        cmake_args+=("..")
+        # 计算从 CMAKE_BUILD_DIR 到 PROJECT_DIR 的相对路径
+        # 如果是 build/Debug 或 build/Release，则需要 ../..
+        # 如果是 build，则需要 ..
+        if [[ "$CMAKE_BUILD_DIR" == "$PROJECT_DIR/build" ]]; then
+            source_path=".."
+        elif [[ "$CMAKE_BUILD_DIR" == "$PROJECT_DIR/build/"* ]]; then
+            source_path="../.."
+        else
+            # 用户自定义路径，使用绝对路径
+            source_path="$PROJECT_DIR"
+        fi
     else
-        cmake_args+=("$EGE_SOURCE_PATH")
+        source_path="$EGE_SOURCE_PATH"
     fi
+    cmake_args+=("$source_path")
 
     set -x
 
@@ -96,8 +170,19 @@ function loadCMakeProject() {
 }
 
 function cmakeCleanAll() {
-    pushd $PROJECT_DIR
+    pushd "$PROJECT_DIR"
+
+    # 先清理 build 目录
     git clean -ffdx build
+
+    if [[ -n "$CMAKE_BUILD_DIR" ]] && [[ "$CMAKE_BUILD_DIR" != "$PROJECT_DIR/build" ]]; then
+        # 清理特定的 build 子目录
+        if [[ -d "$CMAKE_BUILD_DIR" ]]; then
+            echo "Cleaning $CMAKE_BUILD_DIR..."
+            rm -rf "$CMAKE_BUILD_DIR"
+        fi
+    fi
+
     popd
 }
 
@@ -116,7 +201,7 @@ function cmakeBuildAll() {
 
     set -x
 
-    if compgen -G "*.sln" > /dev/null 2>&1 || compgen -G "*.slnx" > /dev/null 2>&1; then
+    if compgen -G "*.sln" >/dev/null 2>&1 || compgen -G "*.slnx" >/dev/null 2>&1; then
         # MSVC 专属逻辑
         if [[ -n "$CMAKE_BUILD_TYPE" ]]; then
             export WIN_CMAKE_BUILD_DEFINE="$WIN_CMAKE_BUILD_DEFINE --config $CMAKE_BUILD_TYPE"
@@ -177,9 +262,9 @@ while [[ $# -gt 0 ]]; do
         fi
         echo "set build dir to $2"
         if [[ "$2" == /* ]]; then
-            export CMAKE_BUILD_DIR="$2"
+            export USER_SPECIFIED_BUILD_DIR="$2"
         else
-            export CMAKE_BUILD_DIR="$PROJECT_DIR/$2"
+            export USER_SPECIFIED_BUILD_DIR="$PROJECT_DIR/$2"
         fi
         shift
         shift
@@ -262,6 +347,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# 参数解析完成后，初始化 CMAKE_BUILD_DIR
+export CMAKE_BUILD_DIR="$(getBuildDir)"
+echo "Build directory: $CMAKE_BUILD_DIR (BUILD_TYPE: $CMAKE_BUILD_TYPE)"
+
 # 第二遍：按正确顺序执行操作
 
 if [[ "$DO_CLEAN" == true ]]; then
@@ -290,11 +379,21 @@ fi
 if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
     echo "DO_TEST_RELEASE_LIBS is true, start testing release libs..."
 
+    # 对于测试预编译库的场景，使用独立的 build 目录前缀
     if [[ "$(basename "$CMAKE_BUILD_DIR")" != *"msvc"* ]]; then
-        if [[ "$CMAKE_BUILD_TYPE" == "Release" ]]; then
-            export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-release"
+        # 非 MSVC 环境，目录名包含构建类型
+        _base_name=$(basename "$CMAKE_BUILD_DIR")
+        _dir_name=$(dirname "$CMAKE_BUILD_DIR")
+        if [[ "$_base_name" == "Debug" || "$_base_name" == "Release" ]]; then
+            # 已经是 build/Debug 或 build/Release 格式
+            export CMAKE_BUILD_DIR="${_dir_name}-demo/${_base_name}"
         else
-            export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-debug"
+            # 旧格式或自定义目录
+            if [[ "$CMAKE_BUILD_TYPE" == "Release" ]]; then
+                export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-release"
+            else
+                export CMAKE_BUILD_DIR="${CMAKE_BUILD_DIR}-debug"
+            fi
         fi
     fi
 
@@ -303,7 +402,7 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
     CMAKE_CONFIG_DEFINE+=("-DEGE_BUILD_DEMO_WITH_PREBUILT_LIBS=ON")
     mkdir -p "$CMAKE_BUILD_DIR" && cd "$CMAKE_BUILD_DIR"
     if [[ ! -f "CMakeCache.txt" ]]; then
-        export EGE_SOURCE_PATH="../demo"
+        export EGE_SOURCE_PATH="$PROJECT_DIR/demo"
         loadCMakeProject
     fi
     cmakeBuildAll
@@ -328,15 +427,25 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
 fi
 
 if [[ -n "$RUN_EXECUTABLE" ]]; then
-    if isWindows; then
-        echo "run $CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
-        "$CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
+    # 根据编译器类型确定可执行文件路径
+    exe_path=""
+    if isMSVC; then
+        # MSVC: demo/<BuildType>/xxx.exe
+        exe_path="$CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
     else
-        echo run "$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
+        # MinGW/其他: demo/xxx.exe (因为已经在 build/Debug 或 build/Release 目录下了)
+        exe_path="$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
+    fi
+
+    if isWindows; then
+        echo "run $exe_path"
+        "$exe_path"
+    else
+        echo run "$exe_path"
         if command -v wine64 &>/dev/null; then
-            wine64 "$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
+            wine64 "$exe_path"
         elif command -v wine &>/dev/null; then
-            wine "$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
+            wine "$exe_path"
         else
             echo "Command 'wine64' not found, please install wine first."
         fi

@@ -173,10 +173,12 @@ function mingwBuild() {
 
         echo "Build $arch successful!"
 
-        # 显示生成的文件
+        # 显示生成的文件（新的目录结构: build/Release）
         echo "Generated files:"
         mkdir -p "Release/lib/$output_dir"
-        find build -type f -name "*.a" -exec cp {} "Release/lib/$output_dir/" \;
+        # MinGW 环境下，Release 构建产物在 build/Release 目录
+        find build/Release -type f -name "*.a" -exec cp {} "Release/lib/$output_dir/" \; 2>/dev/null ||
+            find build -maxdepth 1 -type f -name "*.a" -exec cp {} "Release/lib/$output_dir/" \;
         ls -l "Release/lib/$output_dir"
 
         # 验证生成的库文件架构

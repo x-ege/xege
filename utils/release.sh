@@ -10,7 +10,9 @@ if [[ $(uname -s) == "Darwin" ]]; then
     # macos/linux
     if ./tasks.sh --clean --release --load --target xege --build; then
         mkdir -p Release/lib/macOS
-        cp -rf build/*.a Release/lib/macOS
+        # 新的目录结构: build/Release
+        cp -rf build/Release/*.a Release/lib/macOS 2>/dev/null ||
+            cp -rf build/*.a Release/lib/macOS
         echo "Copy macOS libs done: $(pwd)/Release/lib/macOS"
 
         ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-macos"
@@ -21,7 +23,9 @@ elif [[ $(uname -s) == "Linux" ]]; then
     if ./tasks.sh --clean --release --load --target xege --build; then
         # 目前暂时只提供 mingw-w64-debian 的版本, 所以默认 mingw-w64-debian. 后续如果要支持更多, 那么再改.
         mkdir -p Release/lib/mingw-w64-debian
-        cp -rf build/*.a Release/lib/mingw-w64-debian
+        # 新的目录结构: build/Release
+        cp -rf build/Release/*.a Release/lib/mingw-w64-debian 2>/dev/null ||
+            cp -rf build/*.a Release/lib/mingw-w64-debian
         echo "Copy mingw-w64-debian libs done: $(pwd)/Release/lib/mingw-w64-debian"
         ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-debian"
     else
