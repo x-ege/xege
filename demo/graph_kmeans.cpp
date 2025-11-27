@@ -30,7 +30,7 @@
 // 文本本地化宏定义
 #ifdef _MSC_VER
 // MSVC编译器使用中文文案
-#define TEXT_WINDOW_TITLE        "K-Means 聚类算法可视化演示"
+#define TEXT_WINDOW_TITLE        "K-Means 聚类算法演示"
 #define TEXT_CONTROLS_TITLE      "按键说明："
 #define TEXT_CONTROLS_START      "S/空格/回车 - 开始/继续迭代"
 #define TEXT_CONTROLS_RESET      "R - 重置算法 (保留数据点)"
@@ -53,7 +53,7 @@
 #define TEXT_CENTROID_MOVED      "中心点移动距离: %.2f"
 #else
 // 非MSVC编译器使用英文文案
-#define TEXT_WINDOW_TITLE        "K-Means Clustering Visualization"
+#define TEXT_WINDOW_TITLE        "K-Means Visualization"
 #define TEXT_CONTROLS_TITLE      "Controls:"
 #define TEXT_CONTROLS_START      "S/Space/Enter - Start/Continue Iteration"
 #define TEXT_CONTROLS_RESET      "R - Reset Algorithm (Keep Data)"
@@ -692,6 +692,7 @@ int main()
     setinitmode(INIT_ANIMATION);
     initgraph(WINDOW_WIDTH, WINDOW_HEIGHT);
     setcaption(TEXT_WINDOW_TITLE);
+    setbkmode(TRANSPARENT);
 
     // 创建可视化器
     KMeansVisualizer visualizer;

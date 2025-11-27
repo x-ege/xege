@@ -170,6 +170,7 @@ public:
     void run()
     {
         initgraph(WINDOW_WIDTH, WINDOW_HEIGHT);
+        setbkmode(TRANSPARENT);
         setcaption(DEMO_TITLE);
         setbkcolor(LIFE_COLOR_BG);
 
