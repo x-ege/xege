@@ -255,6 +255,26 @@
             },
             "group": "build",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Demo - KMeans Visualization",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-l",
+                "tasks.sh",
+                "--debug",
+                "--target",
+                "graph_kmeans",
+                "--build",
+                "--run",
+                "graph_kmeans.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": "$gcc"
         }
     ]
 }
