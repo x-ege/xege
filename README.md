@@ -47,23 +47,52 @@ EGE 模拟了绝大多数 BGI 绘图函数，基本绘图函数的使用方式�
 
 ## 支持的开发环境
 
-EGE 支持以下 IDE 和编译器：
+EGE 支持以下 开发工具/编译器：
 
-| 编译器/IDE | 版本支持 |
-|------------|----------|
-| Visual C++ | 6.0 |
-| Visual Studio | 2008 ~ 2022 |
-| MinGW / MinGW-w64 | 支持 |
-| Dev-C++ | 支持 |
-| Code::Blocks | 支持 |
-| 小熊猫 C++ | 支持 |
-| CLion | 支持 |
-| Eclipse for C/C++ | 支持 |
+| 编译器/IDE | 版本支持 | 备注 |
+|------------|----------|------|
+| [Visual Studio](https://visualstudio.microsoft.com/) | 2017 ~ 2026 | ✅ **推荐**，支持 C++17 全部特性 </br> 强烈建议使用最新版本 (2026) |
+| [CLion](https://www.jetbrains.com/clion/) | 支持 | ✅ **推荐** 可配合 [XEGE 插件](#ide-插件) 迅速上手 |
+| [VS Code](https://code.visualstudio.com/) | 支持 | ✅ **推荐** 可配合 [EGE 插件](#ide-插件) 迅速上手 |
+| [小熊猫 C++](http://royqh.net/redpandacpp/) | 支持 | ✅ **推荐** 已内置 EGE, 下载即可用 |
+| Code::Blocks | 支持 | 已测试版本: 25.03 (最新) |
+| MinGW / MinGW-w64 | 支持 | ✅ 支持, SDK 发布时会基于最新版本进行测试 |
+| 老版本 Visual Studio | 2010 ~ 2015 | ⚠️ 支持，但不推荐（不支持 C++17） |
+| Visual C++ 6.0 | aka vc6.0 | ⚠️ 旧版支持，可从[官网](https://xege.org/install_and_config)下载内嵌版本 |
+| Dev-C++ | 支持 | ⚠️ 十年未更新, 不那么推荐 </br> 已测试版本: 5.11 (最新) |
+| Eclipse for C/C++、 C-Free 等 | 支持 | ⚠️ 需自行配置 |
 
 ## 文档与资源
 
 - **API 文档**：[API 参考](man/api.md)
 - **详细帮助**：`man` 目录下的 `index.htm`
+
+## IDE 插件
+
+EGE 提供官方 IDE 插件，让项目配置更加简单：
+
+| IDE | 插件 | 安装方式 | 功能 |
+|-----|------|---------|------|
+| **CLion** | [XEGE Creator](https://plugins.jetbrains.com/plugin/28785-xege-creator) | `Settings → Plugins → Marketplace` 搜索 "XEGE Creator" | 一键创建项目、CMake 自动配置、多平台支持 |
+| **VS Code** | [EGE](https://marketplace.visualstudio.com/items?itemName=wysaid.ege) | 扩展面板搜索 "ege" | 一键创建项目、单文件编译运行、跨平台支持 |
+
+### CLion 插件使用
+
+1. 安装插件后，点击 `File → New → Project...`
+2. 在左侧项目类型列表中选择 **EGE**
+3. 配置项目名称和位置，选择是否使用源码模式
+4. 点击 `Create` 即可生成可运行的 EGE 项目
+
+### VS Code 插件使用
+
+1. 安装插件后，打开命令面板（`Ctrl+Shift+P`）
+2. 输入 `EGE:` 查看可用命令：
+   - `EGE: 在当前工作区设置 ege 项目` - 使用预编译库创建项目
+   - `EGE: 在当前工作区设置带有 EGE 源代码的 ege 项目` - 使用源码创建项目
+   - `EGE: 构建并运行当前文件` - 快速编译运行单个 cpp 文件
+3. 插件支持 Windows、macOS（需 mingw-w64 + wine）和 Linux
+
+> 更多详情请访问插件主页：[CLion 插件](https://github.com/x-ege/ege-clion-plugin) | [VS Code 插件](https://github.com/x-ege/ege-vscode-plugin)
 
 ## 为什么选择 EGE
 
