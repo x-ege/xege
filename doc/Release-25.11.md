@@ -142,13 +142,63 @@
 
 ---
 
+## 🔌 IDE 插件
+
+为了让开发者更便捷地使用 EGE，我们提供了主流 IDE 的官方插件支持：
+
+### CLion 插件（全新发布）
+
+**XEGE Creator** 是专为 JetBrains CLion 打造的 EGE 项目向导插件，帮助你快速创建和配置 EGE 图形程序项目。
+
+| 信息 | 链接 |
+|------|------|
+| 插件商店 | [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/28785-xege-creator) |
+| 源码仓库 | <https://github.com/x-ege/ege-clion-plugin> |
+
+**功能特性**：
+
+- ✨ 一键创建 EGE 项目，自动配置 CMake 构建系统
+- 🔧 支持预编译库模式和源码模式两种使用方式
+- 🌍 完整的多平台支持（Windows MinGW/MSVC、macOS、Linux）
+- 🌐 中英文双语界面，根据系统语言自动切换
+
+**安装方式**：
+
+1. 打开 CLion → `Settings/Preferences → Plugins`
+2. 在 `Marketplace` 搜索 "XEGE Creator"
+3. 点击 `Install` 安装并重启 CLion
+
+### VSCode 插件
+
+**EGE** 插件为 Visual Studio Code 用户提供一站式 EGE 开发体验。
+
+| 信息 | 链接 |
+|------|------|
+| 插件商店 | [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=wysaid.ege) |
+| 源码仓库 | <https://github.com/x-ege/ege-vscode-plugin> |
+
+**功能特性**：
+
+- 📁 一键生成 EGE 项目（支持预编译库和源码两种模板）
+- ▶️ 单文件快速编译运行，无需复杂配置
+- 🍎 支持 macOS/Linux（通过 mingw-w64 + wine 跨平台编译）
+- 🌐 中英文双语界面，自动适配 VS Code 语言设置
+
+**安装方式**：
+
+1. 打开 VS Code → 扩展面板（`Ctrl+Shift+X`）
+2. 搜索 "ege" 或 "xege"
+3. 点击安装
+
+---
+
 ## 📦 下载与安装
 
 ### 预编译 SDK
 
 - **Visual Studio 2015-2026**: 下载对应版本 SDK
 - **MinGW / Dev-C++**: 使用专用 MinGW SDK 包
-- **VSCode 插件**: 搜索安装 `xege.ege` 插件
+- **VSCode 插件**: 搜索安装 `xege` 插件
 
 ### 仓库地址
 
