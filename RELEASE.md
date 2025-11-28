@@ -26,7 +26,7 @@
 - C++ 标准不低于 C++11 时，颜色枚举 `COLORS` 底层类型设置为 `uint32_t`，与 `color_t` 一致。
 - `ege_` 系列文本输出函数的坐标参数类型由 `int` 改为 `float`，支持更精细的定位。
 - 图像读取和保存返回更详细的错误信息，增加 `grInvalidFileFormat` 和 `grUnsupportedFormat` 错误码。
-- 增加对 Visual Studio 2026 Preview 的支持。
+- 增加对 Visual Studio 2026 的支持。
 - 优化项目配置，在编译器支持 C++17 时自动开启 C++17，并定义宏 `EGE_ENABLE_CPP17=1`。
 - 优化静态库编译参数，同时支持 `/MD` 和 `/MT` 编译。
 - `ege.h` 提供双语版本（英文版为默认版本，中文版 `ege.zh_CN.h` 主要用于生成文档）。
