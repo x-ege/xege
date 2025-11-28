@@ -170,7 +170,7 @@
 
 ### VSCode 插件
 
-**EGE** 插件为 Visual Studio Code 用户提供一站式 EGE 开发体验。
+**EGE** 插件为 Visual Studio Code 用户提供一站式开发体验。
 
 | 信息 | 链接 |
 |------|------|
@@ -198,7 +198,7 @@
 
 - **Visual Studio 2015-2026**: 下载对应版本 SDK
 - **MinGW / Dev-C++**: 使用专用 MinGW SDK 包
-- **VSCode 插件**: 搜索安装 `xege` 插件
+- **VSCode 插件**: 在扩展商店搜索 `ege` 或 `xege`
 
 ### 仓库地址
 
