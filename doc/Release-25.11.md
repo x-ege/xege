@@ -196,9 +196,7 @@
 
 ### 预编译 SDK
 
-- **Visual Studio 2015-2026**: 下载对应版本 SDK
-- **MinGW / Dev-C++**: 使用专用 MinGW SDK 包
-- **VSCode 插件**: 在扩展商店搜索 `ege` 或 `xege`
+查看: <https://xege.org/install_and_config>
 
 ### 仓库地址
 
