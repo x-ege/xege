@@ -116,15 +116,15 @@
 
 | Demo | 说明 |
 |------|------|
-| `camera_base.cpp` | 📷 **相机基础演示** - 摄像头画面采集与显示 |
-| `camera_wave.cpp` | 🌊 **相机波浪效果** - 演示相机捕捉与实时图像处理 |
-| `game_gomoku.cpp` | 🎯 **五子棋游戏** - 支持简单 AI 对战、落棋音效、抗锯齿棋子 |
-| `graph_sort_visualization.cpp` | 📊 **排序可视化** - 直观展示各种排序算法的执行过程 |
-| `graph_function_visualization.cpp` | 📈 **函数绘制** - 蒙特卡洛法绘制二元函数图像 |
-| `graph_astar_pathfinding.cpp` | 🗺️ **A* 寻路算法** - 经典启发式搜索算法可视化，支持迷宫生成 |
-| `graph_boids.cpp` | 🐦 **Boids 群集模拟** - 模拟鸟群/鱼群的涌现行为 |
-| `graph_game_of_life.cpp` | 🧬 **康威生命游戏** - 元胞自动机经典演示，内置多种预设图案 |
-| `graph_kmeans.cpp` | 🔵 **K-Means 聚类** - 机器学习聚类算法可视化 |
+| [camera_base](https://github.com/x-ege/xege/blob/master/demo/camera_base.cpp) | 📷 **相机基础演示** - 摄像头画面采集与显示 |
+| [camera_wave](https://github.com/x-ege/xege/blob/master/demo/camera_wave.cpp) | 🌊 **相机波浪效果** - 演示相机捕捉与实时图像处理 |
+| [game_gomoku](https://github.com/x-ege/xege/blob/master/demo/game_gomoku.cpp) | 🎯 **五子棋游戏** - 支持简单 AI 对战、落棋音效、抗锯齿棋子 |
+| [graph_sort_visualization](https://github.com/x-ege/xege/blob/master/demo/graph_sort_visualization.cpp) | 📊 **排序可视化** - 直观展示各种排序算法的执行过程 |
+| [graph_function_visualization](https://github.com/x-ege/xege/blob/master/demo/graph_function_visualization.cpp) | 📈 **函数绘制** - 蒙特卡洛法绘制二元函数图像 |
+| [graph_astar_pathfinding](https://github.com/x-ege/xege/blob/master/demo/graph_astar_pathfinding.cpp) | 🗺️ **A* 寻路算法** - 经典启发式搜索算法可视化，支持迷宫生成 |
+| [graph_boids](https://github.com/x-ege/xege/blob/master/demo/graph_boids.cpp) | 🐦 **Boids 群集模拟** - 模拟鸟群/鱼群的涌现行为 |
+| [graph_game_of_life](https://github.com/x-ege/xege/blob/master/demo/graph_game_of_life.cpp) | 🧬 **康威生命游戏** - 元胞自动机经典演示，内置多种预设图案 |
+| [graph_kmeans](https://github.com/x-ege/xege/blob/master/demo/graph_kmeans.cpp) | 🔵 **K-Means 聚类** - 机器学习聚类算法可视化 |
 
 此外，示例库还包含更多精彩 Demo（分形绘制、时钟、星空效果等），欢迎探索！
 
