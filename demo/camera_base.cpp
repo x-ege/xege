@@ -45,6 +45,7 @@
 #define TEXT_RESOLUTION_CURRENT    " <-当前"
 #define TEXT_RESOLUTION_SWITCH     "按 ↑/↓ 箭头键切换分辨率"
 #define TEXT_SWITCHING_RESOLUTION  "正在切换到分辨率 %dx%d..."
+#define TEXT_WINDOW_RESIZED        "窗口大小已调整为 %dx%d"
 #else
 // 非MSVC编译器使用英文文案
 #define TEXT_WINDOW_TITLE    "EGE Camera Demo"
@@ -67,6 +68,7 @@
 #define TEXT_RESOLUTION_CURRENT    " <-Current"
 #define TEXT_RESOLUTION_SWITCH     "Press UP/DOWN arrow to switch resolution"
 #define TEXT_SWITCHING_RESOLUTION  "Switching to resolution %dx%d..."
+#define TEXT_WINDOW_RESIZED        "Window resized to %dx%d"
 #endif
 
 // 判断一下 C++ 版本, 低于 C++11 的编译器不支持
@@ -82,6 +84,84 @@ int main()
 
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
+
+// 窗口尺寸限制
+#define MIN_LONG_EDGE  640   // 窗口长边最小值
+#define MAX_LONG_EDGE  1920  // 窗口长边最大值
+
+// 根据相机分辨率调整窗口大小，保持比例一致
+// 返回 true 表示窗口大小发生了变化
+bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
+{
+    int windowWidth = getwidth();
+    int windowHeight = getheight();
+
+    // 计算相机的长边和短边
+    int cameraLongEdge = (std::max)(cameraWidth, cameraHeight);
+    int cameraShortEdge = (std::min)(cameraWidth, cameraHeight);
+    float cameraRatio = (float)cameraWidth / cameraHeight;
+
+    // 获取屏幕可用区域（考虑任务栏）
+    RECT workArea;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
+    int screenAvailWidth = workArea.right - workArea.left;
+    int screenAvailHeight = workArea.bottom - workArea.top;
+    // 留一点边距，避免窗口贴边
+    screenAvailWidth -= 20;
+    screenAvailHeight -= 40;
+
+    // 计算目标窗口长边
+    int targetLongEdge = cameraLongEdge;
+
+    // 限制1：长边不能小于 MIN_LONG_EDGE
+    if (targetLongEdge < MIN_LONG_EDGE) {
+        targetLongEdge = MIN_LONG_EDGE;
+    }
+
+    // 限制2：长边不能大于 MAX_LONG_EDGE
+    if (targetLongEdge > MAX_LONG_EDGE) {
+        targetLongEdge = MAX_LONG_EDGE;
+    }
+
+    // 根据长边和比例计算窗口尺寸
+    int newWidth, newHeight;
+    if (cameraWidth >= cameraHeight) {
+        // 横向视频，宽度是长边
+        newWidth = targetLongEdge;
+        newHeight = (int)(newWidth / cameraRatio);
+    } else {
+        // 纵向视频，高度是长边
+        newHeight = targetLongEdge;
+        newWidth = (int)(newHeight * cameraRatio);
+    }
+
+    // 限制3：不能超过屏幕可用区域
+    if (newWidth > screenAvailWidth) {
+        float scale = (float)screenAvailWidth / newWidth;
+        newWidth = screenAvailWidth;
+        newHeight = (int)(newHeight * scale);
+    }
+    if (newHeight > screenAvailHeight) {
+        float scale = (float)screenAvailHeight / newHeight;
+        newHeight = screenAvailHeight;
+        newWidth = (int)(newWidth * scale);
+    }
+
+    // 如果新尺寸与当前尺寸相同，无需调整
+    if (newWidth == windowWidth && newHeight == windowHeight) {
+        return false;
+    }
+
+    // 调用 initgraph 调整窗口大小 (无需 closegraph)
+    initgraph(newWidth, newHeight, INIT_RENDERMANUAL);
+    setcaption(TEXT_WINDOW_TITLE);
+    setbkmode(TRANSPARENT);
+
+    printf(TEXT_WINDOW_RESIZED, newWidth, newHeight);
+    printf("\n");
+
+    return true;
+}
 
 void showErrorWindow()
 {
@@ -217,7 +297,7 @@ int main()
         if (img) {
             auto w = getwidth(img);
             auto h = getheight(img);
-            putimage(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, img, 0, 0, w, h);
+            putimage(0, 0, getwidth(), getheight(), img, 0, 0, w, h);
 
             // 更新当前分辨率索引
             currentResolutionIndex = findCurrentResolutionIndex(resolutions, w, h);
@@ -279,6 +359,8 @@ int main()
                 printf("\n");
                 if (switchCamera(camera, currentDeviceIndex, deviceCount, newWidth, newHeight)) {
                     currentResolutionIndex = newResolutionIndex;
+                    // 调整窗口大小以匹配相机分辨率比例
+                    adjustWindowToCamera(newWidth, newHeight);
                 }
             }
 

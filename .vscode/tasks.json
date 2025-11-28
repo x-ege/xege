@@ -315,6 +315,24 @@
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - Test Demo (Debug)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--target", "test_demo", "--build", "--run", "test_demo.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - Test Demo (Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--release", "--target", "test_demo", "--build", "--run", "test_demo.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$gcc"
         }
     ]
 }
