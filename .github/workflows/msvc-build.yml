@@ -72,6 +72,8 @@ jobs:
 
       - name: Build
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
+        env:
+          DO_TEST_RELEASE_LIBS: true
         run: |
           cd build-vs2026
           cmake --build . --config ${{ matrix.build_type }} --parallel
@@ -99,6 +101,8 @@ jobs:
           cd build-vs2022
           cmake .. -T v143 # vs2022
       - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
         run: |
           cd build-vs2022
           cmake --build . --config ${{ matrix.build_type }} --parallel
@@ -124,9 +128,12 @@ jobs:
           cd build-vs2019
           cmake .. -T v142
       - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
         run: |
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
+
   vs2017-build:
     name: MSVC 2017 Build (${{ matrix.build_type }})
     runs-on: windows-latest
@@ -156,6 +163,8 @@ jobs:
           cmake .. -T v141 # vs2017
 
       - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
         run: |
           cd build-vs2017
           cmake --build . --config ${{ matrix.build_type }} --parallel
