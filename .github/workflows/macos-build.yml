@@ -46,6 +46,7 @@ jobs:
       - name: Cross-compile with MinGW-w64
         env:
           BUILD_TYPE: ${{ matrix.build_type }}
+          DO_TEST_RELEASE_LIBS: true
         run: |
           # Clean previous builds
           rm -rf build-mingw-macos
