@@ -3,8 +3,7 @@
  * FileName:    ege.h
  * Website:     https://xege.org
  * Community:   https://club.xege.org
- * GitHub:      https://github.com/wysaid/xege
- * GitHub:      https://github.com/Easy-Graphics-Engine
+ * GitHub:      https://github.com/x-ege/xege
  * Gitee:       https://gitee.com/xege/xege
  * Blog:        https://blog.csdn.net/qq_39151563/article/details/125688290
  * E-Mail:      this@xege.org
@@ -931,14 +930,14 @@ enum mouse_msg_e
  */
 enum mouse_flag_e
 {
-    mouse_flag_left     = 0x001,    ///< 鼠标左键被按下
-    mouse_flag_right    = 0x002,    ///< 鼠标右键被按下
-    mouse_flag_mid      = 0x004,    ///< 鼠标中键被按下
-    mouse_flag_x1       = 0x008,    ///< 鼠标X1键被按下
-    mouse_flag_x2       = 0x010,    ///< 鼠标X2键被按下
-    mouse_flag_shift    = 0x100,    ///< Shift键被按下
-    mouse_flag_ctrl     = 0x200,    ///< Ctrl键被按下
-    mouse_flag_doubleclick = 0x1000    ///< 双击事件
+    mouse_flag_left         = 0x0001,   ///< 鼠标左键被按下
+    mouse_flag_right        = 0x0002,   ///< 鼠标右键被按下
+    mouse_flag_mid          = 0x0004,   ///< 鼠标中键被按下
+    mouse_flag_x1           = 0x0008,   ///< 鼠标X1键被按下
+    mouse_flag_x2           = 0x0010,   ///< 鼠标X2键被按下
+    mouse_flag_shift        = 0x0100,   ///< Shift键被按下
+    mouse_flag_ctrl         = 0x0200,   ///< Ctrl键被按下
+    mouse_flag_doubleclick  = 0x1000    ///< 双击事件
 };
 
 /**
@@ -1808,6 +1807,20 @@ color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src);
  * @return 混合后的颜色
  */
 color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor);
+
+/**
+ * @brief 转换图像的像素颜色类型，从源颜色类型转换为目标颜色类型。
+ * @details
+ * - src == dst, 不做任何操作。
+ * - RGB32  --> ARGB32, RGB32 --> PRGB32, ARGB32 --> RGB32: 设置alpha为0xFF
+ * - ARGB32 --> PRGB32: 预乘alpha
+ * - PRGB32 --> ARGB32: 反预乘alpha
+ * - PRGB32 -->  RGB32: 反预乘alpha然后设置alpha为0xFF
+ * @param pimg 要转换的目标图像
+ * @param src 源颜色类型
+ * @param dst 目标颜色类型
+ */
+void EGEAPI image_convertcolor(PIMAGE pimg, color_type src, color_type dst);
 
 /**
  * @brief 获取像素颜色
@@ -4951,7 +4964,7 @@ int     EGEAPI kbhitEx(int flag);
  * @note 实时检测按键状态，不消耗消息队列；支持键盘和鼠标按键
  * @see key_code_e
  */
-int     EGEAPI keystate(int key);
+bool    EGEAPI keystate(int key);
 
 /**
  * @brief 返回按键自上次检测之后按下的次数
@@ -5106,7 +5119,7 @@ return zero means process this message, otherwise means pass it and then process
 callback function define as:
 int __stdcall on_msg_mouse(void* param, unsigned msg, int key, int x, int y);
 msg: see 'enum message_event'
-key: see 'enum message_mouse', if msg==MSG_EVENT_WHELL, key is a int number that indicates the distance the wheel is rotated, expressed in multiples or divisions of WHEEL_DELTA, which is 120.
+key: see 'enum message_mouse', if msg==MSG_EVENT_WHEEL, key is a int number that indicates the distance the wheel is rotated, expressed in multiples or divisions of WHEEL_DELTA, which is 120.
 x,y: current mouse (x, y)
 return zero means process this message, otherwise means pass it and then process with 'GetMouseMsg' function
 */
