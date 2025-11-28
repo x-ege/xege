@@ -107,62 +107,40 @@ public:
         int height; ///< 分辨率高度
     };
 
+    /// @brief 分辨率列表, 使用 std::shared_ptr 管理生命周期.
+    ///        成员变量为 const, 防止误修改.
     struct ResolutionList
     {
-        ResolutionList() = default;
-
         ResolutionList(ResolutionInfo* _info, int _count) : info(_info), count(_count) {}
-
-        ResolutionList(const ResolutionList&) = delete;
-
-        ResolutionList(ResolutionList&& r) : info(r.info), count(r.count)
-        {
-            const_cast<ResolutionInfo*&>(r.info) = nullptr;
-            const_cast<int&>(r.count)            = 0;
-        }
-
-        ResolutionList& operator=(const ResolutionList&) = delete;
         ~ResolutionList();
-        const ResolutionInfo* info  = nullptr; ///< 分辨率信息(数组)
-        const int             count = 0;       ///< 分辨率数量
+
+        const ResolutionInfo* const info;  ///< 分辨率信息(数组)
+        const int                   count; ///< 分辨率数量
     };
 
+    /// @brief 设备列表, 使用 std::shared_ptr 管理生命周期.
+    ///        成员变量为 const, 防止误修改.
     struct DeviceList
     {
-        DeviceList() = default;
-
         DeviceList(DeviceInfo* _info, int _count) : info(_info), count(_count) {}
-
-        DeviceList(const DeviceList&) = delete;
-
-        DeviceList(DeviceList&& d) : info(d.info), count(d.count)
-        {
-            const_cast<DeviceInfo*&>(d.info) = nullptr; // 避免析构时重复释放
-            const_cast<int&>(d.count)        = 0;
-        }
-
-        DeviceList& operator=(const DeviceList&) = delete;
         ~DeviceList();
-        const DeviceInfo* info  = nullptr; ///< 设备信息(数组)
-        const int         count = 0;       ///< 设备数量
+
+        const DeviceInfo* const info;  ///< 设备信息(数组)
+        const int               count; ///< 设备数量
     };
 
     /**
      * @brief 查找所有可用的相机设备名称.
-     * @note 这个函数会扫描所有可用的相机设备, 并返回一个 DeviceList 对象.
-     *       这个 DeviceList 对象包含了所有设备的名称和数量.
-     *       这里原本应该返回 `std::vector<std::string>`,
-     *       但是 EGE 内部在 MSVC 下使用 `/MT` 编译来避免引入动态库依赖, 所以避免此类接口, 下同.
-     * @return DeviceList 对象, 包含所有可用的相机设备名称. 注意, 目前只有名称.
+     * @return DeviceList 的 shared_ptr, 包含所有可用的相机设备名称. 如果没有设备, 返回空的 shared_ptr.
      */
-    DeviceList findDeviceNames();
+    std::shared_ptr<DeviceList> findDeviceNames();
 
     /**
      * @brief 获取当前相机设备支持的分辨率列表.
-     * @note 必须在 `open` 成功之后调用, 否则返回空列表.
-     * @return ResolutionList 对象, 包含所有支持的分辨率.
+     * @note 必须在 `open` 成功之后调用, 否则返回空的 shared_ptr.
+     * @return ResolutionList 的 shared_ptr, 包含所有支持的分辨率.
      */
-    ResolutionList getDeviceSupportedResolutions();
+    std::shared_ptr<ResolutionList> getDeviceSupportedResolutions();
 
     /**
      * @brief 设置期望的相机分辨率. 相机不一定支持这个物理分辨率, 只是会尽可能找一个跟这个分辨率接近的.

@@ -648,9 +648,9 @@ std::vector<ResolutionItem> getResolutionList(ege::CameraCapture& camera)
 {
     std::vector<ResolutionItem> resolutions;
     auto resList = camera.getDeviceSupportedResolutions();
-    if (resList.count > 0) {
-        for (int i = 0; i < resList.count; ++i) {
-            resolutions.push_back({resList.info[i].width, resList.info[i].height});
+    if (resList && resList->count > 0) {
+        for (int i = 0; i < resList->count; ++i) {
+            resolutions.push_back({resList->info[i].width, resList->info[i].height});
         }
     }
     return resolutions;
@@ -700,16 +700,16 @@ int main()
     { /// 获取所有相机设备的名称
         auto devices = camera.findDeviceNames();
 
-        if (devices.count == 0) {
+        if (!devices || devices->count == 0) {
             fputs(TEXT_ERROR_NO_DEVICE, stderr);
             showErrorWindow();
             return -1;
         }
 
-        deviceCount = devices.count;
-        for (int i = 0; i < devices.count; ++i) {
-            deviceNames.push_back(devices.info[i].name);
-            printf(TEXT_CAMERA_DEVICE, devices.info[i].name);
+        deviceCount = devices->count;
+        for (int i = 0; i < devices->count; ++i) {
+            deviceNames.push_back(devices->info[i].name);
+            printf(TEXT_CAMERA_DEVICE, devices->info[i].name);
             printf("\n");
         }
     }

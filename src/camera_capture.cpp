@@ -210,25 +210,27 @@ CameraCapture::~CameraCapture()
 #endif
 }
 
+// ================== DeviceList / ResolutionList 析构 ==================
+
 CameraCapture::DeviceList::~DeviceList()
 {
     if (info != nullptr) {
-        delete[] (DeviceInfo*)info;
-        info = nullptr;
+        delete[] const_cast<DeviceInfo*>(info);
     }
 }
 
 CameraCapture::ResolutionList::~ResolutionList()
 {
     if (info != nullptr) {
-        delete[] (ResolutionInfo*)info;
-        info = nullptr;
+        delete[] const_cast<ResolutionInfo*>(info);
     }
 }
 
-CameraCapture::DeviceList CameraCapture::findDeviceNames()
+// ================== findDeviceNames 和 getDeviceSupportedResolutions 实现 ==================
+
+std::shared_ptr<CameraCapture::DeviceList> CameraCapture::findDeviceNames()
 {
-    CHECK_AND_PRINT_ERROR_MSG({});
+    CHECK_AND_PRINT_ERROR_MSG(nullptr);
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_provider) {
         if (auto names = m_provider->findDeviceNames(); !names.empty()) {
@@ -237,16 +239,16 @@ CameraCapture::DeviceList CameraCapture::findDeviceNames()
                 strncpy(deviceInfos[i].name, names[i].c_str(), sizeof(deviceInfos[i].name) - 1);
                 deviceInfos[i].name[sizeof(deviceInfos[i].name) - 1] = '\0'; // 确保字符串以 null 结尾
             }
-            return DeviceList(deviceInfos, static_cast<int>(names.size()));
+            return std::make_shared<DeviceList>(deviceInfos, static_cast<int>(names.size()));
         }
     }
-    return {};
+    return nullptr;
 #endif
 }
 
-CameraCapture::ResolutionList CameraCapture::getDeviceSupportedResolutions()
+std::shared_ptr<CameraCapture::ResolutionList> CameraCapture::getDeviceSupportedResolutions()
 {
-    CHECK_AND_PRINT_ERROR_MSG({});
+    CHECK_AND_PRINT_ERROR_MSG(nullptr);
 #if EGE_ENABLE_CAMERA_CAPTURE
     if (m_provider && m_provider->isOpened()) {
         auto deviceInfo = m_provider->getDeviceInfo();
@@ -257,10 +259,10 @@ CameraCapture::ResolutionList CameraCapture::getDeviceSupportedResolutions()
                 resInfos[i].width  = static_cast<int>(resolutions[i].width);
                 resInfos[i].height = static_cast<int>(resolutions[i].height);
             }
-            return ResolutionList(resInfos, static_cast<int>(resolutions.size()));
+            return std::make_shared<ResolutionList>(resInfos, static_cast<int>(resolutions.size()));
         }
     }
-    return {};
+    return nullptr;
 #endif
 }
 
