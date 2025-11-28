@@ -12,6 +12,10 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #endif
 
+#ifndef NOMINMAX
+#define NOMINMAX 1
+#endif
+
 #include <cstdio>
 
 #include <graphics.h>

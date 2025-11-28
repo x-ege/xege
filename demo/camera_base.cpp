@@ -8,6 +8,10 @@
 
 #define SHOW_CONSOLE 1
 
+#ifndef NOMINMAX
+#define NOMINMAX 1
+#endif
+
 #include <cstdio>
 
 #include <graphics.h>
