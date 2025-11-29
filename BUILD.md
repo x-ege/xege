@@ -235,11 +235,16 @@ cmake .. -G "Visual Studio 14 2015" -A x64
 
 ```sh
 cmake --build . --config Release
+cmake --build . --config Debug
 ```
 
-因为 Visual Studio 是多配置的编译系统，需要在执行编译时选择配置类型（Configuration type）。这
-也是必须的选项，因为使用 `Release` 配置编译出的库文件才能同时被 `Debug` 和 `Release` 配置的
-项目使用。
+因为 Visual Studio 是多配置的编译系统，需要在执行编译时选择配置类型（Configuration type）。
+EGE 现在为 MSVC 提供了 Debug 和 Release 两个版本的静态库：
+- `graphics.lib` - Release 版本
+- `graphicsd.lib` - Debug 版本
+
+头文件 `ege.h` 会根据 `_DEBUG` 宏自动选择链接正确的库文件。建议同时编译 Debug 和 Release 两个版本，
+以便用户在不同配置下使用。
 
 ## 编译示例程序
 

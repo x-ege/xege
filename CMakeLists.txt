@@ -205,7 +205,18 @@ else()
 endif()
 
 # 设置库文件名
-set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
+# MSVC 下 Debug 版本使用 graphicsd.lib，Release 版本使用 graphics.lib
+# MinGW 不区分 Debug/Release，统一使用 graphics
+if(MSVC)
+    set_target_properties(xege PROPERTIES
+        OUTPUT_NAME_DEBUG graphicsd
+        OUTPUT_NAME_RELEASE graphics
+        OUTPUT_NAME_RELWITHDEBINFO graphics
+        OUTPUT_NAME_MINSIZEREL graphics
+    )
+else()
+    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
+endif()
 
 if(EGE_NON_WINDOWS)
     target_compile_definitions(xege PUBLIC EGE_NON_WINDOWS=1)

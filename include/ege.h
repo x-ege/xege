@@ -47,9 +47,9 @@
 #if !defined(EGE_GRAPH_LIB_BUILD) && !defined(EGE_GRAPH_NO_LIB)
 #   ifdef _MSC_VER
 #       pragma comment(lib,"gdiplus.lib")
-#       ifdef _WIN64 // 64 bit libs
-#           pragma comment(lib,"graphics.lib")
-#       else   // 32 bit libs
+#       ifdef _DEBUG
+#           pragma comment(lib,"graphicsd.lib")
+#       else
 #           pragma comment(lib,"graphics.lib")
 #       endif
 #   endif
