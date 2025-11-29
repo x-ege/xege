@@ -23,12 +23,14 @@ endif()
 option(EGE_BUILD_DEMO "Build ege demos" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEST "Build ege tests" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEMP "Build ege temp" ${EGE_IS_ROOT_PROJECT})
+option(EGE_ENABLE_OPENGL "Enable OpenGL rendering backend (cross-platform)" ON)
 
 message(STATUS "EGE_IS_ROOT_PROJECT: ${EGE_IS_ROOT_PROJECT}")
 message(STATUS "EGE_CLEAR_OPTIONS_CACHE: ${EGE_CLEAR_OPTIONS_CACHE}")
 message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
 message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
 message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
+message(STATUS "EGE_ENABLE_OPENGL: ${EGE_ENABLE_OPENGL}")
 
 if(CMAKE_HOST_UNIX)
     set(CMAKE_SYSTEM_NAME Windows)
@@ -111,9 +113,15 @@ if(EGE_ENABLE_CPP17)
 endif()
 
 file(GLOB EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+
+# Add renderer abstraction layer sources
+file(GLOB EGE_RENDERER_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/*.cpp)
+list(APPEND EGE_CPP_SRC ${EGE_RENDERER_SRC})
+
 add_library(xege STATIC ${EGE_CPP_SRC})
 
 target_include_directories(xege PUBLIC include)
+target_include_directories(xege PRIVATE src)
 
 # 自动检查并拉取缺失的子模块
 if(EXISTS "${PROJECT_SOURCE_DIR}/.gitmodules")
@@ -202,6 +210,40 @@ if(EGE_ENABLE_CAMERA_CAPTURE)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
 else()
     message(WARNING "Camera capture is disabled because your compiler does not support C++17.")
+endif()
+
+# OpenGL backend support
+if(EGE_ENABLE_OPENGL)
+    message(STATUS "OpenGL backend enabled")
+    
+    # Add GLFW
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+    
+    if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/glfw/CMakeLists.txt")
+        add_subdirectory(3rdparty/glfw)
+        target_link_libraries(xege PRIVATE glfw)
+    else()
+        message(WARNING "GLFW not found in 3rdparty/glfw. OpenGL backend will not be available.")
+        set(EGE_ENABLE_OPENGL OFF CACHE BOOL "Enable OpenGL rendering backend" FORCE)
+    endif()
+    
+    # Add GLAD
+    if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/glad_generated/src/gl.c")
+        target_sources(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/glad_generated/src/gl.c)
+        target_include_directories(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/glad_generated/include)
+    else()
+        message(WARNING "GLAD not found in 3rdparty/glad_generated. Please run: cd 3rdparty/glad && python -m glad --api gl:core=3.3 --out-path ../glad_generated c")
+        set(EGE_ENABLE_OPENGL OFF CACHE BOOL "Enable OpenGL rendering backend" FORCE)
+    endif()
+    
+    if(EGE_ENABLE_OPENGL)
+        target_compile_definitions(xege PUBLIC EGE_ENABLE_OPENGL=1)
+    endif()
+else()
+    message(STATUS "OpenGL backend disabled")
 endif()
 
 # 设置库文件名
