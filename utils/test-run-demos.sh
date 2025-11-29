@@ -34,7 +34,9 @@ TOTAL_TIME=$((TOTAL_COUNT * TIMEOUT_SECONDS))
 
 echo "Found ${TOTAL_COUNT} executable(s) to test:"
 for exe in "${EXE_FILES[@]}"; do
-    echo "  - $(basename "$exe")"
+    # 显示相对于 Release 目录的路径
+    rel_path="${exe#$RELEASE_DIR/}"
+    echo "  - $rel_path"
 done
 echo ""
 echo "Estimated total time: ${TOTAL_TIME}s (max ${TIMEOUT_SECONDS}s per demo)"
@@ -47,13 +49,15 @@ CURRENT_INDEX=0
 # 依次执行每个可执行文件
 for exe in "${EXE_FILES[@]}"; do
     CURRENT_INDEX=$((CURRENT_INDEX + 1))
-    exe_name=$(basename "$exe")
+    # 使用相对于 Release 目录的路径
+    exe_rel_path="${exe#$RELEASE_DIR/}"
 
-    echo "[${CURRENT_INDEX}/${TOTAL_COUNT}] Running: $exe_name ..."
+    echo "[${CURRENT_INDEX}/${TOTAL_COUNT}] Running: $exe_rel_path ..."
 
     # 在后台运行可执行文件
     "$exe" &
     pid=$!
+    TIMEOUT_REACHED=false
 
     # 等待指定时间或进程退出
     start_time=$(date +%s)
@@ -63,38 +67,37 @@ for exe in "${EXE_FILES[@]}"; do
 
         if [[ $elapsed -ge $TIMEOUT_SECONDS ]]; then
             # 超时，正常终止进程
-            echo "  Timeout reached, terminating $exe_name..."
+            echo "  Timeout reached, terminating $exe_rel_path..."
             kill "$pid" 2>/dev/null || true
             wait "$pid" 2>/dev/null || true
-            echo "  ✓ $exe_name completed (timeout)"
-            SUCCESS_EXES+=("$exe_name")
+            echo "  ✓ $exe_rel_path completed (timeout)"
+            SUCCESS_EXES+=("$exe_rel_path")
+            TIMEOUT_REACHED=true
             break
         fi
 
         sleep 0.1
     done
 
-    # 检查进程是否在超时前退出
-    if ! kill -0 "$pid" 2>/dev/null; then
+    # 检查进程是否在超时前退出（仅当非超时情况）
+    if [[ "$TIMEOUT_REACHED" != "true" ]] && ! kill -0 "$pid" 2>/dev/null; then
         current_time=$(date +%s)
         elapsed=$((current_time - start_time))
 
-        if [[ $elapsed -lt $TIMEOUT_SECONDS ]]; then
-            # 在超时前退出，获取退出码
-            wait "$pid"
-            exit_code=$?
+        # 在超时前退出，获取退出码
+        wait "$pid"
+        exit_code=$?
 
-            if [[ $exit_code -ne 0 ]]; then
-                echo "  ✗ $exe_name exited abnormally with code $exit_code after ${elapsed}s"
-                echo ""
-                echo "Error: Demo test failed!"
-                echo "Failed executable: $exe_name"
-                exit 1
-            else
-                # 正常退出（退出码为 0）
-                echo "  ✓ $exe_name completed normally (${elapsed}s)"
-                SUCCESS_EXES+=("$exe_name")
-            fi
+        if [[ $exit_code -ne 0 ]]; then
+            echo "  ✗ $exe_rel_path exited abnormally with code $exit_code after ${elapsed}s"
+            echo ""
+            echo "Error: Demo test failed!"
+            echo "Failed executable: $exe_rel_path"
+            exit 1
+        else
+            # 正常退出（退出码为 0）
+            echo "  ✓ $exe_rel_path completed normally (${elapsed}s)"
+            SUCCESS_EXES+=("$exe_rel_path")
         fi
     fi
 

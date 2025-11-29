@@ -48,6 +48,8 @@ function msvcBuild() {
             FAILED_TASKS+=("$vs_version-x64-Load")
         else
             mkdir -p "Release/lib/$vs_version/x64"
+            RELEASE_SUCCESS=false
+            DEBUG_SUCCESS=false
 
             # Build Release
             if ./tasks.sh --release --target xege --build; then
@@ -56,6 +58,7 @@ function msvcBuild() {
                     exit 1
                 }
                 echo "Copy $vs_version x64 Release libs done: $(pwd)/Release/lib/$vs_version/x64"
+                RELEASE_SUCCESS=true
             else
                 echo "Error: Failed to build $vs_version x64 Release"
                 FAILED_TASKS+=("$vs_version-x64-Release")
@@ -68,6 +71,7 @@ function msvcBuild() {
                     exit 1
                 }
                 echo "Copy $vs_version x64 Debug libs done: $(pwd)/Release/lib/$vs_version/x64"
+                DEBUG_SUCCESS=true
             else
                 echo "Error: Failed to build $vs_version x64 Debug"
                 FAILED_TASKS+=("$vs_version-x64-Debug")
@@ -75,8 +79,12 @@ function msvcBuild() {
 
             git clean -ffdx build/Release build/Debug
 
-            # 测试构建的库
-            ./utils/test-release-libs.sh --toolset "$toolset" --arch x64 --build-dir "build-${vs_version/vs/msvc}-x64"
+            # 仅当 Release 和 Debug 都构建成功时才运行测试
+            if [[ "$RELEASE_SUCCESS" == "true" ]] && [[ "$DEBUG_SUCCESS" == "true" ]]; then
+                ./utils/test-release-libs.sh --toolset "$toolset" --arch x64 --build-dir "build-${vs_version/vs/msvc}-x64"
+            else
+                echo "Skipping test for $vs_version x64 due to build failures"
+            fi
         fi
     fi
 
@@ -90,6 +98,8 @@ function msvcBuild() {
             FAILED_TASKS+=("$vs_version-x86-Load")
         else
             mkdir -p "Release/lib/$vs_version/x86"
+            RELEASE_SUCCESS=false
+            DEBUG_SUCCESS=false
 
             # Build Release
             if ./tasks.sh --release --target xege --build; then
@@ -98,6 +108,7 @@ function msvcBuild() {
                     exit 1
                 }
                 echo "Copy $vs_version x86 Release libs done: $(pwd)/Release/lib/$vs_version/x86"
+                RELEASE_SUCCESS=true
             else
                 echo "Error: Failed to build $vs_version x86 Release"
                 FAILED_TASKS+=("$vs_version-x86-Release")
@@ -110,6 +121,7 @@ function msvcBuild() {
                     exit 1
                 }
                 echo "Copy $vs_version x86 Debug libs done: $(pwd)/Release/lib/$vs_version/x86"
+                DEBUG_SUCCESS=true
             else
                 echo "Error: Failed to build $vs_version x86 Debug"
                 FAILED_TASKS+=("$vs_version-x86-Debug")
@@ -117,8 +129,12 @@ function msvcBuild() {
 
             git clean -ffdx build/Release build/Debug
 
-            # 测试构建的库
-            ./utils/test-release-libs.sh --toolset "$toolset" --arch Win32 --build-dir "build-${vs_version/vs/msvc}-x86"
+            # 仅当 Release 和 Debug 都构建成功时才运行测试
+            if [[ "$RELEASE_SUCCESS" == "true" ]] && [[ "$DEBUG_SUCCESS" == "true" ]]; then
+                ./utils/test-release-libs.sh --toolset "$toolset" --arch Win32 --build-dir "build-${vs_version/vs/msvc}-x86"
+            else
+                echo "Skipping test for $vs_version x86 due to build failures"
+            fi
         fi
     fi
 }
