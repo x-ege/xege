@@ -80,13 +80,13 @@ for exe in "${EXE_FILES[@]}"; do
     done
 
     # 检查进程是否在超时前退出（仅当非超时情况）
-    if [[ "$TIMEOUT_REACHED" != "true" ]] && ! kill -0 "$pid" 2>/dev/null; then
+    if [[ "$TIMEOUT_REACHED" != "true" ]]; then
+        # 进程已退出，获取退出码
+        wait "$pid" || true
+        exit_code=$?
+
         current_time=$(date +%s)
         elapsed=$((current_time - start_time))
-
-        # 在超时前退出，获取退出码
-        wait "$pid"
-        exit_code=$?
 
         if [[ $exit_code -ne 0 ]]; then
             echo "  ✗ $exe_rel_path exited abnormally with code $exit_code after ${elapsed}s"
