@@ -257,13 +257,15 @@ if(MSVC)
     # 禁用调试信息，避免使用者链接时产生 LNK4099 警告
     # 移除编译器的调试信息选项，这样 .obj 中不会记录 .pdb 路径
     if(EGE_DISABLE_DEBUG_INFO)
-        # 清除 CMake 默认添加的调试信息选项 (/Zi)
-        string(REPLACE "/Zi" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-        string(REPLACE "/Zi" "" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-        string(REPLACE "/Zi" "" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+        # 清除 CMake 默认添加的调试信息选项 (/Zi 和 /ZI)
+        # /Zi - 生成独立的 PDB 文件
+        # /ZI - 生成支持"编辑并继续"的 PDB 文件
+        foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+            string(REPLACE "/Zi" "" CMAKE_C_FLAGS_${_config} "${CMAKE_C_FLAGS_${_config}}")
+            string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_${_config} "${CMAKE_CXX_FLAGS_${_config}}")
+            string(REPLACE "/ZI" "" CMAKE_C_FLAGS_${_config} "${CMAKE_C_FLAGS_${_config}}")
+            string(REPLACE "/ZI" "" CMAKE_CXX_FLAGS_${_config} "${CMAKE_CXX_FLAGS_${_config}}")
+        endforeach()
     endif()
 
     # MSVC 2015 (v140) 及以上版本支持 /utf-8 选项
