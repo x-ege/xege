@@ -63,8 +63,10 @@ if(MSVC)
         message(FATAL_ERROR "Your MSVC version is too old. Please use a modern version of MSVC compiler.")
     endif()
 
-    add_library(xege STATIC IMPORTED)
-    set_target_properties(xege PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../Release/lib/${osLibDir}/graphics.lib)
+    # MSVC 通过头文件的 #pragma comment(lib, ...) 自动选择 Debug/Release 库
+    # 这里只需设置库搜索路径
+    add_library(xege INTERFACE)
+    target_link_directories(xege INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../Release/lib/${osLibDir})
 
     target_compile_options(xege INTERFACE
         /source-charset:utf-8
