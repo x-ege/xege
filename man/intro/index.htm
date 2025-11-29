@@ -38,10 +38,11 @@
 <font color="#0000FF">●简要安装说明</font>
 把include/graphics.h文件，复制到你的编译器安装目录下的include目录内
 再把lib目录下的文件，复制到你的编译器安装目录下的lib目录内，具体编译器所依赖的文件情况：
-VC6: graphics.lib
-VS2008: graphics08.lib graphics08d.lib
-VS2010: graphics08.lib graphics10d.lib
+MSVC (Release): graphics.lib
+MSVC (Debug): graphicsd.lib
 MinGW: libgraphics.a
+
+注意：MSVC 下头文件会根据 _DEBUG 宏自动选择正确的库文件。
 
 
 <font color="#0000FF">●简要使用说明</font>

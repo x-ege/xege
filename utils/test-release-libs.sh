@@ -15,7 +15,7 @@ else
         echo "Skipping tests for msvc2015 or msvc2010 because they do not support C++17 required by the demo."
     else
         set -x
-        ./tasks.sh --test-release-libs --debug "$@"
-        ./tasks.sh --test-release-libs --release "$@"
+        ./tasks.sh --test-release-libs --debug "$@" &&
+            ./tasks.sh --test-release-libs --release "$@"
     fi
 fi
