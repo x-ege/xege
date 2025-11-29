@@ -74,9 +74,10 @@ function msvcBuild() {
             fi
 
             git clean -ffdx build/Release build/Debug
-        fi
 
-        ./utils/test-release-libs.sh --toolset "$toolset" --arch x64 --build-dir "build-${vs_version/vs/msvc}-x64"
+            # 测试构建的库
+            ./utils/test-release-libs.sh --toolset "$toolset" --arch x64 --build-dir "build-${vs_version/vs/msvc}-x64"
+        fi
     fi
 
     # 32bit
@@ -115,9 +116,10 @@ function msvcBuild() {
             fi
 
             git clean -ffdx build/Release build/Debug
-        fi
 
-        ./utils/test-release-libs.sh --toolset "$toolset" --arch Win32 --build-dir "build-${vs_version/vs/msvc}-x86"
+            # 测试构建的库
+            ./utils/test-release-libs.sh --toolset "$toolset" --arch Win32 --build-dir "build-${vs_version/vs/msvc}-x86"
+        fi
     fi
 }
 
