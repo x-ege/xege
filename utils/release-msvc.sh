@@ -41,32 +41,40 @@ function msvcBuild() {
     # 64bit
     if hasX64; then
         echo "Building $vs_version x64..."
-        # Build Release
-        if ./tasks.sh --clean --release --toolset "$toolset" --arch x64 --target xege --load --build; then
+
+        # 先加载项目
+        if ! ./tasks.sh --clean --toolset "$toolset" --arch x64 --target xege --load; then
+            echo "Error: Failed to load $vs_version x64 project"
+            FAILED_TASKS+=("$vs_version-x64-Load")
+        else
             mkdir -p "Release/lib/$vs_version/x64"
-            cp -rf build/Release/*.lib "Release/lib/$vs_version/x64/" || {
-                echo "Error: Failed to copy $vs_version x64 Release libs"
-                exit 1
-            }
-            echo "Copy $vs_version x64 Release libs done: $(pwd)/Release/lib/$vs_version/x64"
-        else
-            echo "Error: Failed to build $vs_version x64 Release"
-            FAILED_TASKS+=("$vs_version-x64-Release")
-        fi
 
-        # Build Debug
-        if ./tasks.sh --debug --toolset "$toolset" --arch x64 --target xege --build; then
-            cp -rf build/Debug/*.lib "Release/lib/$vs_version/x64/" || {
-                echo "Error: Failed to copy $vs_version x64 Debug libs"
-                exit 1
-            }
-            echo "Copy $vs_version x64 Debug libs done: $(pwd)/Release/lib/$vs_version/x64"
-        else
-            echo "Error: Failed to build $vs_version x64 Debug"
-            FAILED_TASKS+=("$vs_version-x64-Debug")
-        fi
+            # Build Release
+            if ./tasks.sh --release --target xege --build; then
+                cp -rf build/Release/*.lib "Release/lib/$vs_version/x64/" || {
+                    echo "Error: Failed to copy $vs_version x64 Release libs"
+                    exit 1
+                }
+                echo "Copy $vs_version x64 Release libs done: $(pwd)/Release/lib/$vs_version/x64"
+            else
+                echo "Error: Failed to build $vs_version x64 Release"
+                FAILED_TASKS+=("$vs_version-x64-Release")
+            fi
 
-        git clean -ffdx build/Release build/Debug
+            # Build Debug
+            if ./tasks.sh --debug --target xege --build; then
+                cp -rf build/Debug/*.lib "Release/lib/$vs_version/x64/" || {
+                    echo "Error: Failed to copy $vs_version x64 Debug libs"
+                    exit 1
+                }
+                echo "Copy $vs_version x64 Debug libs done: $(pwd)/Release/lib/$vs_version/x64"
+            else
+                echo "Error: Failed to build $vs_version x64 Debug"
+                FAILED_TASKS+=("$vs_version-x64-Debug")
+            fi
+
+            git clean -ffdx build/Release build/Debug
+        fi
 
         ./utils/test-release-libs.sh --toolset "$toolset" --arch x64 --build-dir "build-${vs_version/vs/msvc}-x64"
     fi
@@ -74,32 +82,40 @@ function msvcBuild() {
     # 32bit
     if hasX86; then
         echo "Building $vs_version x86..."
-        # Build Release
-        if ./tasks.sh --clean --release --toolset "$toolset" --arch Win32 --target xege --load --build; then
+
+        # 先加载项目
+        if ! ./tasks.sh --clean --toolset "$toolset" --arch Win32 --target xege --load; then
+            echo "Error: Failed to load $vs_version x86 project"
+            FAILED_TASKS+=("$vs_version-x86-Load")
+        else
             mkdir -p "Release/lib/$vs_version/x86"
-            cp -rf build/Release/*.lib "Release/lib/$vs_version/x86/" || {
-                echo "Error: Failed to copy $vs_version x86 Release libs"
-                exit 1
-            }
-            echo "Copy $vs_version x86 Release libs done: $(pwd)/Release/lib/$vs_version/x86"
-        else
-            echo "Error: Failed to build $vs_version x86 Release"
-            FAILED_TASKS+=("$vs_version-x86-Release")
-        fi
 
-        # Build Debug
-        if ./tasks.sh --debug --toolset "$toolset" --arch Win32 --target xege --build; then
-            cp -rf build/Debug/*.lib "Release/lib/$vs_version/x86/" || {
-                echo "Error: Failed to copy $vs_version x86 Debug libs"
-                exit 1
-            }
-            echo "Copy $vs_version x86 Debug libs done: $(pwd)/Release/lib/$vs_version/x86"
-        else
-            echo "Error: Failed to build $vs_version x86 Debug"
-            FAILED_TASKS+=("$vs_version-x86-Debug")
-        fi
+            # Build Release
+            if ./tasks.sh --release --target xege --build; then
+                cp -rf build/Release/*.lib "Release/lib/$vs_version/x86/" || {
+                    echo "Error: Failed to copy $vs_version x86 Release libs"
+                    exit 1
+                }
+                echo "Copy $vs_version x86 Release libs done: $(pwd)/Release/lib/$vs_version/x86"
+            else
+                echo "Error: Failed to build $vs_version x86 Release"
+                FAILED_TASKS+=("$vs_version-x86-Release")
+            fi
 
-        git clean -ffdx build/Release build/Debug
+            # Build Debug
+            if ./tasks.sh --debug --target xege --build; then
+                cp -rf build/Debug/*.lib "Release/lib/$vs_version/x86/" || {
+                    echo "Error: Failed to copy $vs_version x86 Debug libs"
+                    exit 1
+                }
+                echo "Copy $vs_version x86 Debug libs done: $(pwd)/Release/lib/$vs_version/x86"
+            else
+                echo "Error: Failed to build $vs_version x86 Debug"
+                FAILED_TASKS+=("$vs_version-x86-Debug")
+            fi
+
+            git clean -ffdx build/Release build/Debug
+        fi
 
         ./utils/test-release-libs.sh --toolset "$toolset" --arch Win32 --build-dir "build-${vs_version/vs/msvc}-x86"
     fi
