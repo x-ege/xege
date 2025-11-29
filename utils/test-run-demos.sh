@@ -29,19 +29,27 @@ if [[ ${#EXE_FILES[@]} -eq 0 ]]; then
     exit 1
 fi
 
-echo "Found ${#EXE_FILES[@]} executable(s) to test:"
+TOTAL_COUNT=${#EXE_FILES[@]}
+TOTAL_TIME=$((TOTAL_COUNT * TIMEOUT_SECONDS))
+
+echo "Found ${TOTAL_COUNT} executable(s) to test:"
 for exe in "${EXE_FILES[@]}"; do
     echo "  - $(basename "$exe")"
 done
 echo ""
+echo "Estimated total time: ${TOTAL_TIME}s (max ${TIMEOUT_SECONDS}s per demo)"
+echo ""
 
 # 记录成功运行的可执行文件
 declare -a SUCCESS_EXES=()
+CURRENT_INDEX=0
 
 # 依次执行每个可执行文件
 for exe in "${EXE_FILES[@]}"; do
+    CURRENT_INDEX=$((CURRENT_INDEX + 1))
     exe_name=$(basename "$exe")
-    echo "Running: $exe_name (timeout: ${TIMEOUT_SECONDS}s)..."
+
+    echo "[${CURRENT_INDEX}/${TOTAL_COUNT}] Running: $exe_name ..."
 
     # 在后台运行可执行文件
     "$exe" &
@@ -90,6 +98,10 @@ for exe in "${EXE_FILES[@]}"; do
         fi
     fi
 
+    # 打印进度信息
+    REMAINING_COUNT=$((TOTAL_COUNT - CURRENT_INDEX))
+    REMAINING_TIME=$((REMAINING_COUNT * TIMEOUT_SECONDS))
+    echo "  Progress: ${CURRENT_INDEX}/${TOTAL_COUNT} completed, ~${REMAINING_TIME}s remaining"
     echo ""
 done
 
