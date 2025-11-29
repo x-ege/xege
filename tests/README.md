@@ -1,68 +1,112 @@
-# EGE Performance Test Suite
+# EGE Test Suite (EGE 测试套件)
 
-这是EGE图形库的性能测试套件，专门用于测试`putimage*`系列函数的性能表现。
+这是EGE图形库的完整测试套件，包含功能性测试和性能测试。
+
+## 测试分类
+
+### 🧪 功能性测试 (Functional Tests)
+验证API的正确性、边界条件和错误处理。
+
+### ⚡ 性能测试 (Performance Tests)
+测量API的执行速度、吞吐量和资源使用效率。
 
 ## 功能特性
 
-- 🚀 **完整的性能基准测试** - 涵盖所有主要的putimage函数
+- 🚀 **完整的测试覆盖** - 涵盖核心图形API
 - 📊 **多分辨率测试** - 从64x64到8K分辨率的全面测试
 - ⏱️ **精确的性能测量** - 使用高精度计时器和统计分析
 - 🎯 **自动化测试框架** - 无需手动干预的批量测试
 - 💻 **控制台输出保持** - 定义SHOW_CONSOLE=1保持控制台窗口可见
 - 🖼️ **智能图像生成** - 多种测试图案自动生成
+- 🏷️ **测试标签分类** - 支持按类别运行测试
 
 ## 测试内容
 
-### 1. 主性能测试套件 (`putimage_performance_test.cpp`)
-- **基础putimage测试** - 标准图像绘制性能
-- **透明度测试** - putimage_alphablend性能
-- **透明色测试** - putimage_transparent性能  
-- **带Alpha通道测试** - putimage_withalpha性能
-- **旋转测试** - putimage_rotate和putimage_rotatezoom性能
-- **高分辨率压力测试** - 4K/8K分辨率下的性能表现
-- **内存性能测试** - 大量图像操作的内存使用效率
+### 功能性测试 (Functional Tests)
 
-### 2. 独立测试程序
-- **putimage_basic_test** - 基础功能专项测试
-- **putimage_alphablend_test** - Alpha混合专项测试
-- **putimage_transparent_test** - 透明色处理专项测试
-- **putimage_rotate_test** - 图像旋转专项测试
+#### 1. 图像操作测试
+- **putimage_basic_test** - 基础putimage功能测试
+- **putimage_transparent_test** - 透明色处理测试
+- **putimage_rotate_test** - 图像旋转测试
+- **putimage_comparison_test** - 图像对比测试
+- **putimage_alphablend_comprehensive_test** - Alpha混合综合测试
+
+#### 2. 图形绘制测试
+- **drawing_primitives_test** - 基础图形绘制(线、圆、矩形等)
+
+#### 3. 颜色操作测试
+- **color_operations_test** - 颜色设置、获取、RGB/HSV/HSL转换
+
+#### 4. 图像管理测试
+- **image_management_test** - 图像创建、删除、复制、尺寸等
+
+#### 5. 窗口管理测试
+- **window_management_test** - 窗口初始化、标题、可见性、视口等
+
+### 性能测试 (Performance Tests)
+
+#### 1. 图像操作性能
+- **putimage_performance_test** - putimage系列函数性能基准
+- **putimage_alphablend_test** - Alpha混合性能详细测试
+
+#### 2. 图形绘制性能
+- **drawing_performance_test** - 绘图函数性能测试
+
+#### 3. 像素操作性能
+- **pixel_operations_performance_test** - 像素级操作性能测试
 
 ## 构建说明
 
 ### 前置条件
 1. 已构建的EGE图形库
-2. CMake 3.10或更高版本
-3. Visual Studio 2017或更高版本（Windows）
+2. CMake 3.13或更高版本
+3. MinGW或Visual Studio编译器
 
 ### 构建步骤
 
-1. **确保EGE库已构建**
+1. **构建EGE库和测试**
    ```bash
    cd /path/to/xege
-   # 构建主EGE库
-   bash tasks.sh --debug --load --build
-   ```
-
-2. **构建测试套件**
-   ```bash
-   cd tests/performance
    mkdir build
    cd build
-   cmake ..
-   cmake --build . --config Debug
+   
+   # 构建所有测试
+   cmake .. -DEGE_BUILD_TEST=ON
+   cmake --build .
+   ```
+
+2. **构建选项**
+   ```bash
+   # 只构建功能性测试
+   cmake .. -DEGE_BUILD_TEST=ON -DEGE_TEST_PERFORMANCE=OFF -DEGE_TEST_FUNCTIONAL=ON
+   
+   # 只构建性能测试
+   cmake .. -DEGE_BUILD_TEST=ON -DEGE_TEST_PERFORMANCE=ON -DEGE_TEST_FUNCTIONAL=OFF
+   
+   # 构建所有测试（默认）
+   cmake .. -DEGE_BUILD_TEST=ON -DEGE_TEST_PERFORMANCE=ON -DEGE_TEST_FUNCTIONAL=ON
    ```
 
 3. **运行测试**
    ```bash
-   # 运行主性能测试套件
-   ./bin/putimage_performance_test.exe
+   # 运行所有测试
+   ctest
    
-   # 或运行单独的测试
-   ./bin/putimage_basic_test.exe
-   ./bin/putimage_alphablend_test.exe
-   ./bin/putimage_transparent_test.exe
-   ./bin/putimage_rotate_test.exe
+   # 只运行功能性测试
+   ctest -L functional
+   
+   # 只运行性能测试
+   ctest -L performance
+   
+   # 运行特定测试
+   ctest -R functional_drawing_primitives
+   
+   # 详细输出
+   ctest -V
+   
+   # 直接运行测试程序
+   ./bin/drawing_primitives_test
+   ./bin/drawing_performance_test
    ```
 
 ## 测试分辨率

@@ -37,6 +37,10 @@ if(MSVC)
     )
 endif()
 
+# 测试分类选项
+option(EGE_TEST_PERFORMANCE "Build performance tests" ON)
+option(EGE_TEST_FUNCTIONAL "Build functional tests" ON)
+
 # 主性能测试程序
 add_executable(putimage_performance_test
     tests/putimage_performance_test.cpp
@@ -124,10 +128,143 @@ set_target_properties(
 
 # 创建测试目标
 enable_testing()
-add_test(NAME putimage_performance COMMAND putimage_performance_test)
-add_test(NAME putimage_basic COMMAND putimage_basic_test)
-add_test(NAME putimage_alphablend COMMAND putimage_alphablend_test)
-add_test(NAME putimage_transparent COMMAND putimage_transparent_test)
-add_test(NAME putimage_rotate COMMAND putimage_rotate_test)
-add_test(NAME putimage_comparison COMMAND putimage_comparison_test)
-add_test(NAME putimage_alphablend_comprehensive COMMAND putimage_alphablend_comprehensive_test)
+
+# 性能测试 (Performance Tests)
+if(EGE_TEST_PERFORMANCE)
+    add_test(NAME performance_putimage COMMAND putimage_performance_test)
+    add_test(NAME performance_alphablend COMMAND putimage_alphablend_test)
+    set_tests_properties(
+        performance_putimage
+        performance_alphablend
+        PROPERTIES LABELS "performance"
+    )
+endif()
+
+# 功能性测试 (Functional Tests)
+if(EGE_TEST_FUNCTIONAL)
+    add_test(NAME functional_putimage_basic COMMAND putimage_basic_test)
+    add_test(NAME functional_putimage_transparent COMMAND putimage_transparent_test)
+    add_test(NAME functional_putimage_rotate COMMAND putimage_rotate_test)
+    add_test(NAME functional_putimage_comparison COMMAND putimage_comparison_test)
+    add_test(NAME functional_putimage_alphablend_comprehensive COMMAND putimage_alphablend_comprehensive_test)
+    set_tests_properties(
+        functional_putimage_basic
+        functional_putimage_transparent
+        functional_putimage_rotate
+        functional_putimage_comparison
+        functional_putimage_alphablend_comprehensive
+        PROPERTIES LABELS "functional"
+    )
+endif()
+
+# 新增功能性测试
+
+# 图形绘制基础功能测试
+if(EGE_TEST_FUNCTIONAL)
+    add_executable(drawing_primitives_test
+        tests/drawing_primitives_test.cpp
+    )
+    target_link_libraries(drawing_primitives_test
+        test_framework
+        xege
+        ${SYSTEM_LIBS}
+    )
+    set_target_properties(drawing_primitives_test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    add_test(NAME functional_drawing_primitives COMMAND drawing_primitives_test)
+    set_tests_properties(functional_drawing_primitives PROPERTIES LABELS "functional")
+endif()
+
+# 颜色操作功能测试
+if(EGE_TEST_FUNCTIONAL)
+    add_executable(color_operations_test
+        tests/color_operations_test.cpp
+    )
+    target_link_libraries(color_operations_test
+        test_framework
+        xege
+        ${SYSTEM_LIBS}
+    )
+    set_target_properties(color_operations_test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    add_test(NAME functional_color_operations COMMAND color_operations_test)
+    set_tests_properties(functional_color_operations PROPERTIES LABELS "functional")
+endif()
+
+# 图像管理功能测试
+if(EGE_TEST_FUNCTIONAL)
+    add_executable(image_management_test
+        tests/image_management_test.cpp
+    )
+    target_link_libraries(image_management_test
+        test_framework
+        xege
+        ${SYSTEM_LIBS}
+    )
+    set_target_properties(image_management_test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    add_test(NAME functional_image_management COMMAND image_management_test)
+    set_tests_properties(functional_image_management PROPERTIES LABELS "functional")
+endif()
+
+# 窗口管理功能测试
+if(EGE_TEST_FUNCTIONAL)
+    add_executable(window_management_test
+        tests/window_management_test.cpp
+    )
+    target_link_libraries(window_management_test
+        test_framework
+        xege
+        ${SYSTEM_LIBS}
+    )
+    set_target_properties(window_management_test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    add_test(NAME functional_window_management COMMAND window_management_test)
+    set_tests_properties(functional_window_management PROPERTIES LABELS "functional")
+endif()
+
+# 新增性能测试
+
+# 图形绘制性能测试
+if(EGE_TEST_PERFORMANCE)
+    add_executable(drawing_performance_test
+        tests/drawing_performance_test.cpp
+    )
+    target_link_libraries(drawing_performance_test
+        test_framework
+        xege
+        ${SYSTEM_LIBS}
+    )
+    set_target_properties(drawing_performance_test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    add_test(NAME performance_drawing COMMAND drawing_performance_test)
+    set_tests_properties(performance_drawing PROPERTIES LABELS "performance")
+endif()
+
+# 像素操作性能测试
+if(EGE_TEST_PERFORMANCE)
+    add_executable(pixel_operations_performance_test
+        tests/pixel_operations_performance_test.cpp
+    )
+    target_link_libraries(pixel_operations_performance_test
+        test_framework
+        xege
+        ${SYSTEM_LIBS}
+    )
+    set_target_properties(pixel_operations_performance_test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    add_test(NAME performance_pixel_operations COMMAND pixel_operations_performance_test)
+    set_tests_properties(performance_pixel_operations PROPERTIES LABELS "performance")
+endif()
