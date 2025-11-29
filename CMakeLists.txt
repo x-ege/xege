@@ -24,11 +24,30 @@ option(EGE_BUILD_DEMO "Build ege demos" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEST "Build ege tests" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEMP "Build ege temp" ${EGE_IS_ROOT_PROJECT})
 
+# EGE_DISABLE_DEBUG_INFO 选项：禁用调试信息，避免 LNK4099 警告
+# 优先使用 CMake 参数，其次检查环境变量，默认 OFF
+if(NOT DEFINED EGE_DISABLE_DEBUG_INFO)
+    # CMake 参数未定义，检查环境变量
+    if(DEFINED ENV{EGE_DISABLE_DEBUG_INFO})
+        set(_env_value "$ENV{EGE_DISABLE_DEBUG_INFO}")
+        # 检查环境变量是否为真值 (1, true, TRUE, on, ON, yes, YES)
+        if(_env_value MATCHES "^(1|[Tt][Rr][Uu][Ee]|[Oo][Nn]|[Yy][Ee][Ss])$")
+            set(EGE_DISABLE_DEBUG_INFO ON CACHE BOOL "Disable debug info to avoid LNK4099 warnings")
+        else()
+            set(EGE_DISABLE_DEBUG_INFO OFF CACHE BOOL "Disable debug info to avoid LNK4099 warnings")
+        endif()
+        unset(_env_value)
+    else()
+        set(EGE_DISABLE_DEBUG_INFO OFF CACHE BOOL "Disable debug info to avoid LNK4099 warnings")
+    endif()
+endif()
+
 message(STATUS "EGE_IS_ROOT_PROJECT: ${EGE_IS_ROOT_PROJECT}")
 message(STATUS "EGE_CLEAR_OPTIONS_CACHE: ${EGE_CLEAR_OPTIONS_CACHE}")
 message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
 message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
 message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
+message(STATUS "EGE_DISABLE_DEBUG_INFO: ${EGE_DISABLE_DEBUG_INFO}")
 
 if(CMAKE_HOST_UNIX)
     set(CMAKE_SYSTEM_NAME Windows)
@@ -234,6 +253,20 @@ target_compile_definitions(xege PRIVATE EGE_GRAPH_LIB_BUILD=1)
 
 if(MSVC)
     message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
+
+    # 禁用调试信息，避免使用者链接时产生 LNK4099 警告
+    # 移除编译器的调试信息选项，这样 .obj 中不会记录 .pdb 路径
+    if(EGE_DISABLE_DEBUG_INFO)
+        # 清除 CMake 默认添加的调试信息选项 (/Zi 和 /ZI)
+        # /Zi - 生成独立的 PDB 文件
+        # /ZI - 生成支持"编辑并继续"的 PDB 文件
+        foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+            string(REPLACE "/Zi" "" CMAKE_C_FLAGS_${_config} "${CMAKE_C_FLAGS_${_config}}")
+            string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_${_config} "${CMAKE_CXX_FLAGS_${_config}}")
+            string(REPLACE "/ZI" "" CMAKE_C_FLAGS_${_config} "${CMAKE_C_FLAGS_${_config}}")
+            string(REPLACE "/ZI" "" CMAKE_CXX_FLAGS_${_config} "${CMAKE_CXX_FLAGS_${_config}}")
+        endforeach()
+    endif()
 
     # MSVC 2015 (v140) 及以上版本支持 /utf-8 选项
     # MSVC 2010 (v100) 到 MSVC 2013 (v120) 不支持 /utf-8
