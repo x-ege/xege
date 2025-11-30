@@ -1809,6 +1809,19 @@ color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src);
 color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor);
 
 /**
+ * @brief 将 PARGB32 格式颜色转换为 ARGB32 格式
+ * @param color PARGB32 格式颜色
+ * @return ARGB32 格式颜色
+ */
+color_t EGEAPI color_unpremultiply(color_t color);
+
+/**
+ * @brief 将 ARGB32 格式颜色转换为 PARGB32 格式
+ * @param color ARGB32 格式颜色
+ * @return PARGB32 格式颜色
+ */
+color_t EGEAPI color_premultiply(color_t color);
+/**
  * @brief 转换图像的像素颜色类型，从源颜色类型转换为目标颜色类型。
  * @details
  * - src == dst, 不做任何操作。

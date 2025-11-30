@@ -149,7 +149,7 @@ EGE_FORCEINLINE color_t alphablend_inline(color_t dst, color_t src, uint8_t srcA
  * @param src   前景色(PARGB)
  * @return      混合后的 PARGB 颜色
  * @note 混合公式:
- * A = A(src) + (1.0 - alpha) * A(dst);;
+ * A = A(src) + (1.0 - alpha) * A(dst);
  * R = R(src) + (1.0 - alpha) * R(dst);
  * G = G(src) + (1.0 - alpha) * G(dst);
  * B = B(src) + (1.0 - alpha) * B(dst);
@@ -160,6 +160,35 @@ EGE_FORCEINLINE color_t alphablend_premul_inline(color_t dst, color_t src)
     const uint8_t r = DIVIDE_255_FAST(255 * EGEGET_R(src) + (255 - EGEGET_A(src)) * EGEGET_R(dst));
     const uint8_t g = DIVIDE_255_FAST(255 * EGEGET_G(src) + (255 - EGEGET_A(src)) * EGEGET_G(dst));
     const uint8_t b = DIVIDE_255_FAST(255 * EGEGET_B(src) + (255 - EGEGET_A(src)) * EGEGET_B(dst));
+
+    return EGEARGB(a, r, g, b);
+}
+
+/**
+ * @brief 将两个 PARGB32 类型的 ARGB 颜色进行混合，alpha 指定前景色的透明度比例系数
+ *
+ * @param dst   背景色(PARGB)
+ * @param src   前景色(PARGB)
+ * @return      混合后的 PARGB 颜色
+ * @note 混合公式:
+ * A = A(src) + (1.0 - alpha) * A(dst);
+ * R = R(src) + (1.0 - alpha) * R(dst);
+ * G = G(src) + (1.0 - alpha) * G(dst);
+ * B = B(src) + (1.0 - alpha) * B(dst);
+ */
+EGE_FORCEINLINE color_t alphablend_premul_inline(color_t dst, color_t src, uint8_t alpha)
+{
+    // 将 src 的各通道按 alpha 系数缩放 (alpha: 0~255 对应 0.0~1.0)
+    uint32_t sA = DIVIDE_255_FAST(EGEGET_A(src) * alpha + 255/2);
+    uint32_t sR = DIVIDE_255_FAST(EGEGET_R(src) * alpha + 255/2);
+    uint32_t sG = DIVIDE_255_FAST(EGEGET_G(src) * alpha + 255/2);
+    uint32_t sB = DIVIDE_255_FAST(EGEGET_B(src) * alpha + 255/2);
+
+    // 预乘混合：out = src_scaled + (1 - src_scaled.A) * dst
+    const uint8_t a = DIVIDE_255_FAST(255 * sA + (255 - sA) * EGEGET_A(dst));
+    const uint8_t r = DIVIDE_255_FAST(255 * sR + (255 - sA) * EGEGET_R(dst));
+    const uint8_t g = DIVIDE_255_FAST(255 * sG + (255 - sA) * EGEGET_G(dst));
+    const uint8_t b = DIVIDE_255_FAST(255 * sB + (255 - sA) * EGEGET_B(dst));
 
     return EGEARGB(a, r, g, b);
 }
@@ -175,7 +204,7 @@ inline void ABGRToARGB(color_t* dst, const color_t* src, int count)
 
 extern const uint32_t ege_unpremultiplyRcp[256];
 
-EGE_FORCEINLINE color_t color_premultiply(color_t color)
+EGE_FORCEINLINE color_t color_premultiply_inline(color_t color)
 {
     uint32_t a = EGEGET_A(color);
     color |= 0xFF000000u;
@@ -188,7 +217,7 @@ EGE_FORCEINLINE color_t color_premultiply(color_t color)
     return (c0 >> 8) | c1;
 }
 
-EGE_FORCEINLINE color_t color_unpremultiply(uint32_t b, uint32_t g, uint32_t r, uint32_t a)
+EGE_FORCEINLINE color_t color_unpremultiply_inline(uint32_t a, uint32_t r, uint32_t g, uint32_t b)
 {
     const uint32_t recip = ege_unpremultiplyRcp[a];
     r = (r * recip + 0x8000u) >> 16;
@@ -197,14 +226,14 @@ EGE_FORCEINLINE color_t color_unpremultiply(uint32_t b, uint32_t g, uint32_t r, 
     return  EGEARGB(a, r, g, b);
 }
 
-EGE_FORCEINLINE color_t color_unpremultiply(color_t color)
+EGE_FORCEINLINE color_t color_unpremultiply_inline(color_t color)
 {
-    uint32_t b = EGEGET_B(color);
-    uint32_t g = EGEGET_G(color);
-    uint32_t r = EGEGET_R(color);
     uint32_t a = EGEGET_A(color);
+    uint32_t r = EGEGET_R(color);
+    uint32_t g = EGEGET_G(color);
+    uint32_t b = EGEGET_B(color);
 
-    return color_unpremultiply(b, g, r, a);
+    return color_unpremultiply_inline(a, r, g, b);
 }
 } //namespace ege
 
