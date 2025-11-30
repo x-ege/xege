@@ -1055,20 +1055,16 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
 
         if ((widthSrc == 0) || (heightSrc == 0))
             return grOk;
+
+        BLENDFUNCTION bf;
+        bf.BlendOp             = AC_SRC_OVER;
+        bf.BlendFlags          = 0;
+        bf.SourceConstantAlpha = 0xff;
+        bf.AlphaFormat         = AC_SRC_ALPHA;
         // draw
-        pdp = img->m_pBuffer + yDest * img->m_width + xDest;
-        psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
-        ddx = img->m_width - widthSrc;
-        dsx = imgSrc->m_width - widthSrc;
-        for (y = 0; y < heightSrc; ++y) {
-            for (x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
-                DWORD dst = *pdp, src = *psp;
-                *pdp = colorblend_inline_fast(dst, src, EGEGET_A(src));
-            }
-            pdp += ddx;
-            psp += dsx;
-        }
+        dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc, imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
     }
+
     CONVERT_IMAGE_END;
     return grOk;
 }
@@ -1093,7 +1089,6 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         int     x, y;
         DWORD   ddx, dsx;
         DWORD * pdp, *psp;
-        PIMAGE  alphaSrc = newimage(widthSrc, heightSrc);
 
         BLENDFUNCTION bf;
         // fix rect
@@ -1101,32 +1096,14 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
 
         if ((widthSrc == 0) || (heightSrc == 0))
             return grOk;
-        // premultiply alpha channel
-        pdp = alphaSrc->m_pBuffer;
-        psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
-        ddx = 0;
-        dsx = imgSrc->m_width - widthSrc;
-        for (y = 0; y < heightSrc; ++y) {
-            for (x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
-                DWORD s     = *psp;
-                DWORD alpha = EGEGET_A(s);
-                DWORD r     = EGEGET_R(s);
-                DWORD g     = EGEGET_G(s);
-                DWORD b     = EGEGET_B(s);
-                *pdp        = EGERGBA(r * alpha >> 8, g * alpha >> 8, b * alpha >> 8, alpha);
-            }
-            pdp += ddx;
-            psp += dsx;
-        }
 
         bf.BlendOp             = AC_SRC_OVER;
         bf.BlendFlags          = 0;
         bf.SourceConstantAlpha = 0xff;
         bf.AlphaFormat         = AC_SRC_ALPHA;
         // draw
-        dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, alphaSrc->m_hDC, 0, 0, widthSrc,
+        dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, imgSrc->m_hDC, 0, 0, widthSrc,
             heightSrc, bf);
-        delimage(alphaSrc);
         #endif
 
         if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
@@ -1205,7 +1182,7 @@ int IMAGE::putimage_alphafilter(PIMAGE imgDest,     // handle to dest
                 DWORD d = *pdp, s = *psp;
                 unsigned char alpha = *pap & 0xFF;
                 if (*pap) {
-                    *pdp = alphablend_inline(d, s, alpha);
+                    *pdp = alphablend_premul_inline(d, s, alpha);
                 }
             }
             pdp += ddx;
@@ -3283,7 +3260,7 @@ int image_premultiply(color_t* dst, const color_t* src, int width, int height, i
         const color_t* srcPixel = src;
 
         for (int x = 0; x < width; x++) {
-            *dstPixel++ = color_premultiply(*srcPixel++);
+            *dstPixel++ = color_premultiply_inline(*srcPixel++);
         }
 
         dst += dstStride;

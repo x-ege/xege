@@ -387,6 +387,16 @@ color_t alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlph
     return alphablend_premul_inline(dst, EGEARGB(alpha, red, green, blue));
 }
 
+color_t color_premultiply(color_t color)
+{
+    return color_premultiply_inline(color);
+}
+
+color_t color_unpremultiply(color_t color)
+{
+    return color_unpremultiply_inline(color);
+}
+
 void ARGBToABGR(color_t* dst, const color_t* src, int count)
 {
     if ((dst == NULL) || (src == NULL) || (count <= 0)) {
