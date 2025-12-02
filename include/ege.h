@@ -1809,16 +1809,16 @@ color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src);
 color_t EGEAPI alphablend_premultiplied(color_t dst, color_t src, unsigned char srcAlphaFactor);
 
 /**
- * @brief Convert PRGB32 to ARGB32
- * @param color PRGB32 color
+ * @brief Convert PARGB32 to ARGB32
+ * @param color PARGB32 color
  * @return ARGB32 color
  */
 color_t EGEAPI color_unpremultiply(color_t color);
 
 /**
- * @brief Convert ARGB32 to PRGB32
+ * @brief Convert ARGB32 to PARGB32
  * @param color ARGB32 color
- * @return PRGB32 color
+ * @return PARGB32 color
  */
 color_t EGEAPI color_premultiply(color_t color);
 
@@ -1826,10 +1826,10 @@ color_t EGEAPI color_premultiply(color_t color);
  * @brief Convert pixel color types of the image，convert from src color type to dst color type.
 * @details
 * - src == dst, do nothing.
-* - RGB32  --> ARGB32, RGB32 --> PRGB32, ARGB32 --> RGB32: set alpha to 0xFF
-* - ARGB32 --> PRGB32: premultiply alpha
-* - PRGB32 --> ARGB32: unpremultiply alpha
-* - PRGB32 -->  RGB32: unpremultiply alpha and then set alpha to 0xFF
+* - RGB32  --> ARGB32, RGB32 --> PARGB32, ARGB32 --> RGB32: set alpha to 0xFF
+* - ARGB32 --> PARGB32: premultiply alpha
+* - PARGB32 --> ARGB32: unpremultiply alpha
+* - PARGB32 -->  RGB32: unpremultiply alpha and then set alpha to 0xFF
  * @param pimg Target image to convert
  * @param src Source color type
  * @param dst Destination color type

@@ -1825,10 +1825,10 @@ color_t EGEAPI color_premultiply(color_t color);
  * @brief 转换图像的像素颜色类型，从源颜色类型转换为目标颜色类型。
  * @details
  * - src == dst, 不做任何操作。
- * - RGB32  --> ARGB32, RGB32 --> PRGB32, ARGB32 --> RGB32: 设置alpha为0xFF
- * - ARGB32 --> PRGB32: 预乘alpha
- * - PRGB32 --> ARGB32: 反预乘alpha
- * - PRGB32 -->  RGB32: 反预乘alpha然后设置alpha为0xFF
+ * - RGB32  --> ARGB32, RGB32 --> PARGB32, ARGB32 --> RGB32: 设置alpha为0xFF
+ * - ARGB32 --> PARGB32: 预乘alpha
+ * - PARGB32 --> ARGB32: 反预乘alpha
+ * - PARGB32 -->  RGB32: 反预乘alpha然后设置alpha为0xFF
  * @param pimg 要转换的目标图像
  * @param src 源颜色类型
  * @param dst 目标颜色类型
