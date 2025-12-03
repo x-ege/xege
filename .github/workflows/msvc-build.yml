@@ -13,11 +13,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        build_type: >-
-          ${{
-            github.event_name == 'pull_request' && fromJson('["Release"]') ||
-            fromJson('["Release", "Debug"]')
-          }}
+        build_type: ["Release", "Debug"]
     steps:
       - name: Check VS2026 (v144 toolset) availability
         id: check_vs2026
@@ -83,11 +79,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        build_type: >-
-          ${{
-            github.event_name == 'pull_request' && fromJson('["Release"]') ||
-            fromJson('["Release", "Debug"]')
-          }}
+        build_type: ["Release", "Debug"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -140,11 +132,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        build_type: >-
-          ${{
-            github.event_name == 'pull_request' && fromJson('["Release"]') ||
-            fromJson('["Release", "Debug"]')
-          }}
+        build_type: ["Release", "Debug"]
 
     steps:
       - name: Checkout repository
@@ -171,11 +159,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        build_type: >-
-          ${{
-            github.event_name == 'pull_request' && fromJson('["Release"]') ||
-            fromJson('["Release", "Debug"]')
-          }}
+        build_type: ["Release", "Debug"]
 
     steps:
       - name: Checkout repository
