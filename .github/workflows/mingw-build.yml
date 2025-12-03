@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    # 所有分支的 PR 都触发
   workflow_dispatch:
     inputs:
       build_type:
@@ -47,6 +47,28 @@ jobs:
             mingw-w64-x86_64-ninja
             make
             git
+
+      - name: Print MinGW version info
+        shell: msys2 {0}
+        run: |
+          echo "=== MinGW-w64 Environment Information ==="
+          echo "GCC version:"
+          gcc --version
+          echo ""
+          echo "G++ version:"
+          g++ --version
+          echo ""
+          echo "CMake version:"
+          cmake --version
+          echo ""
+          echo "Make version:"
+          mingw32-make --version
+          echo ""
+          echo "Windres version:"
+          windres --version
+          echo ""
+          echo "MSYS2 MSYSTEM: $MSYSTEM"
+          echo "PATH: $PATH"
 
       - name: Direct CMake Build with MinGW
         shell: msys2 {0}
@@ -129,6 +151,24 @@ jobs:
             cmake \
             make \
             git
+
+      - name: Print MinGW version info
+        run: |
+          echo "=== MinGW-w64 Cross-Compiler Environment Information ==="
+          echo "x86_64-w64-mingw32-gcc version:"
+          x86_64-w64-mingw32-gcc --version
+          echo ""
+          echo "x86_64-w64-mingw32-g++ version:"
+          x86_64-w64-mingw32-g++ --version
+          echo ""
+          echo "CMake version:"
+          cmake --version
+          echo ""
+          echo "Make version:"
+          make --version
+          echo ""
+          echo "Host system:"
+          uname -a
 
       - name: Cross-compile with MinGW-w64
         env:
