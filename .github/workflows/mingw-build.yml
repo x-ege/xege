@@ -17,8 +17,9 @@ on:
         - Debug
 
 jobs:
-  mingw-windows-build:
-    name: MinGW Windows Build (${{ matrix.build_type }})
+  # 使用 MSYS2 最新版 MinGW 构建（默认）
+  mingw-msys2-latest:
+    name: MinGW (MSYS2 Latest) - ${{ matrix.build_type }}
     runs-on: windows-latest
     strategy:
       matrix:
@@ -51,7 +52,7 @@ jobs:
       - name: Print MinGW version info
         shell: msys2 {0}
         run: |
-          echo "=== MinGW-w64 Environment Information ==="
+          echo "=== MinGW-w64 (MSYS2 Latest) Environment Information ==="
           echo "GCC version:"
           gcc --version
           echo ""
@@ -105,20 +106,168 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
         run: |
           # Create build-type specific directory structure
-          mkdir -p ${BUILD_TYPE}/lib/mingw64
+          mkdir -p ${BUILD_TYPE}/lib/mingw64-msys2
 
           # Copy built libraries
-          find build-mingw -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw64/ \;
+          find build-mingw -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw64-msys2/ \;
 
           # List generated files
           echo "Generated MinGW libraries for $BUILD_TYPE:"
-          ls -la ${BUILD_TYPE}/lib/mingw64/
+          ls -la ${BUILD_TYPE}/lib/mingw64-msys2/
 
       - name: Upload MinGW artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: xege-mingw-windows-${{ matrix.build_type }}-libraries
-          path: ${{ matrix.build_type }}/lib/mingw64/
+          name: xege-mingw-msys2-latest-${{ matrix.build_type }}-libraries
+          path: ${{ matrix.build_type }}/lib/mingw64-msys2/
+          retention-days: 30
+        if: success()
+
+  # 使用 WinLibs GCC 14.2.0 构建（Code::Blocks 25.03 内置版本）
+  mingw-codeblocks-25:
+    name: MinGW (Code::Blocks 25.03, GCC 14.2) - ${{ matrix.build_type }}
+    runs-on: windows-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        build_type: ["Release", "Debug"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download and Setup WinLibs GCC 14.2.0
+        shell: powershell
+        run: |
+          # Download WinLibs GCC 14.2.0 (Code::Blocks 25.03 bundled version)
+          $url = "https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.1-12.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64msvcrt-12.0.0-r2.zip"
+          $output = "mingw64.zip"
+          echo "Downloading WinLibs GCC 14.2.0..."
+          Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
+          echo "Extracting..."
+          Expand-Archive -Path $output -DestinationPath "C:\mingw-winlibs" -Force
+          Remove-Item $output
+
+      - name: Print MinGW version info
+        shell: cmd
+        run: |
+          echo === MinGW-w64 WinLibs GCC 14.2.0 (Code::Blocks 25.03) Environment Information ===
+          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          echo GCC version:
+          gcc --version
+          echo.
+          echo G++ version:
+          g++ --version
+          echo.
+          echo Windres version:
+          windres --version
+
+      - name: Build with WinLibs MinGW
+        shell: cmd
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          
+          mkdir build-winlibs-gcc14
+          cd build-winlibs-gcc14
+          
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+          cmake --build . --parallel
+
+      - name: Package artifacts
+        shell: powershell
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+        run: |
+          $buildType = $env:BUILD_TYPE
+          New-Item -ItemType Directory -Force -Path "$buildType/lib/mingw64-codeblocks"
+          Get-ChildItem -Path "build-winlibs-gcc14" -Recurse -Filter "*.a" | Copy-Item -Destination "$buildType/lib/mingw64-codeblocks/"
+          echo "Generated libraries:"
+          Get-ChildItem "$buildType/lib/mingw64-codeblocks/"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xege-mingw-codeblocks25-${{ matrix.build_type }}-libraries
+          path: ${{ matrix.build_type }}/lib/mingw64-codeblocks/
+          retention-days: 30
+        if: success()
+
+  # 使用 WinLibs GCC 13.1.0 构建（CLion 内置版本）
+  mingw-clion:
+    name: MinGW (CLion, GCC 13.1) - ${{ matrix.build_type }}
+    runs-on: windows-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        build_type: ["Release", "Debug"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download and Setup WinLibs GCC 13.1.0
+        shell: powershell
+        run: |
+          # Download WinLibs GCC 13.1.0 (CLion bundled version)
+          $url = "https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip"
+          $output = "mingw64.zip"
+          echo "Downloading WinLibs GCC 13.1.0..."
+          Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
+          echo "Extracting..."
+          Expand-Archive -Path $output -DestinationPath "C:\mingw-winlibs" -Force
+          Remove-Item $output
+
+      - name: Print MinGW version info
+        shell: cmd
+        run: |
+          echo === MinGW-w64 WinLibs GCC 13.1.0 (CLion) Environment Information ===
+          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          echo GCC version:
+          gcc --version
+          echo.
+          echo G++ version:
+          g++ --version
+          echo.
+          echo Windres version:
+          windres --version
+
+      - name: Build with WinLibs MinGW
+        shell: cmd
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          
+          mkdir build-winlibs-gcc13
+          cd build-winlibs-gcc13
+          
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+          cmake --build . --parallel
+
+      - name: Package artifacts
+        shell: powershell
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+        run: |
+          $buildType = $env:BUILD_TYPE
+          New-Item -ItemType Directory -Force -Path "$buildType/lib/mingw64-clion"
+          Get-ChildItem -Path "build-winlibs-gcc13" -Recurse -Filter "*.a" | Copy-Item -Destination "$buildType/lib/mingw64-clion/"
+          echo "Generated libraries:"
+          Get-ChildItem "$buildType/lib/mingw64-clion/"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xege-mingw-clion-${{ matrix.build_type }}-libraries
+          path: ${{ matrix.build_type }}/lib/mingw64-clion/
           retention-days: 30
         if: success()
 
