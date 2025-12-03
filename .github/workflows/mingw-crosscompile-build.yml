@@ -94,6 +94,14 @@ jobs:
           # Copy built libraries
           find build-mingw-ubuntu -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw-w64-ubuntu/ \;
 
+          # Verify that libraries were actually found and copied
+          LIBRARY_COUNT=$(find ${BUILD_TYPE}/lib/mingw-w64-ubuntu -type f -name "*.a" | wc -l)
+          if [ "$LIBRARY_COUNT" -eq 0 ]; then
+            echo "ERROR: No .a libraries found in build output!"
+            exit 1
+          fi
+          echo "Successfully packaged $LIBRARY_COUNT library files"
+
           # List generated files
           echo "Generated MinGW Ubuntu libraries for $BUILD_TYPE:"
           ls -la ${BUILD_TYPE}/lib/mingw-w64-ubuntu/
