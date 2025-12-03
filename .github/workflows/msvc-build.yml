@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    # 所有分支的 PR 都触发
   workflow_dispatch:
 
 jobs:
@@ -13,11 +13,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        build_type: >-
-          ${{
-            github.event_name == 'pull_request' && fromJson('["Release"]') ||
-            fromJson('["Release", "Debug"]')
-          }}
+        build_type: ["Release", "Debug"]
     steps:
       - name: Check VS2026 (v144 toolset) availability
         id: check_vs2026
@@ -83,11 +79,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        build_type: >-
-          ${{
-            github.event_name == 'pull_request' && fromJson('["Release"]') ||
-            fromJson('["Release", "Debug"]')
-          }}
+        build_type: ["Release", "Debug"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -110,7 +102,6 @@ jobs:
   vs2019-build:
     name: MSVC 2019 Build (${{ matrix.build_type }})
     runs-on: windows-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -134,10 +125,10 @@ jobs:
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
 
+  # VS2015-2017 使用 windows-2019 runner（预装了 v140 和 v141 工具集）
   vs2017-build:
     name: MSVC 2017 Build (${{ matrix.build_type }})
-    runs-on: windows-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-2019
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -145,13 +136,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio 2017 Build Tools
-        run: |
-          # 下载并安装 Visual Studio 2017 Build Tools
-          Invoke-WebRequest -Uri "https://aka.ms/vs/15/release/vs_buildtools.exe" -OutFile "vs_buildtools.exe"
-          Start-Process -FilePath "vs_buildtools.exe" -ArgumentList "--quiet", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools", "--add", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "--add", "Microsoft.VisualStudio.Component.Windows10SDK.18362" -NoNewWindow -Wait
-        shell: powershell
       
       - name: Setup Visual Studio environment
         uses: microsoft/setup-msbuild@v1.1
@@ -168,3 +152,34 @@ jobs:
         run: |
           cd build-vs2017
           cmake --build . --config ${{ matrix.build_type }} --parallel
+
+  vs2015-build:
+    name: MSVC 2015 Build (${{ matrix.build_type }})
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        build_type: ["Release", "Debug"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Visual Studio environment
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Configure CMake
+        run: |
+          mkdir build-vs2015
+          cd build-vs2015
+          cmake .. -T v140 # vs2015
+
+      - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          cd build-vs2015
+          cmake --build . --config ${{ matrix.build_type }} --parallel
+
+  # 注意：VS2010-VS2013 (v100-v120) 已从 CI 中移除
+  # 原因：Chocolatey 已移除这些旧版本的 build tools 包，且微软官方也不再提供独立安装程序
+  # 这些编译器版本已超过 10 年，现代 GitHub Actions runner 不再支持

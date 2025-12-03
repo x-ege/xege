@@ -1,7 +1,8 @@
 # EGE (Easy Graphics Engine)
 
 [![MSVC Build](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml)
-[![MinGW Build](https://github.com/x-ege/xege/actions/workflows/mingw-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-build.yml)
+[![MinGW Windows Build](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml)
+[![MinGW Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
 [![License](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/x-ege/xege)
 
