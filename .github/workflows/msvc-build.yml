@@ -126,7 +126,7 @@ jobs:
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
 
-  # VS2015-2017 使用 windows-2022 runner，预装了 v140/v141 工具集，无需额外安装
+  # VS2015-2017 需要安装旧版工具集
   vs2017-build:
     name: MSVC 2017 Build (${{ matrix.build_type }})
     runs-on: windows-2022
@@ -137,6 +137,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install Visual Studio 2017 Build Tools (v141)
+        run: |
+          # 使用 Visual Studio Installer 安装 v141 工具集
+          $installerPath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+          if (Test-Path $installerPath) {
+            # 通过 vs_installer 修改现有安装，添加 v141 工具集
+            Start-Process -FilePath $installerPath -ArgumentList "modify", "--installPath", "C:\Program Files\Microsoft Visual Studio\2022\Enterprise", "--add", "Microsoft.VisualStudio.Component.VC.v141.x86.x64", "--quiet", "--norestart", "--wait" -Wait -NoNewWindow
+          } else {
+            # 备用方案：通过 winget 或直接下载安装
+            choco install visualstudio2017buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+          }
+        shell: powershell
       
       - name: Setup Visual Studio environment
         uses: microsoft/setup-msbuild@v1.1
@@ -164,6 +177,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install Visual Studio 2015 Build Tools (v140)
+        run: |
+          # 使用 Visual Studio Installer 安装 v140 工具集
+          $installerPath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+          if (Test-Path $installerPath) {
+            # 通过 vs_installer 修改现有安装，添加 v140 工具集
+            Start-Process -FilePath $installerPath -ArgumentList "modify", "--installPath", "C:\Program Files\Microsoft Visual Studio\2022\Enterprise", "--add", "Microsoft.VisualStudio.Component.VC.140", "--quiet", "--norestart", "--wait" -Wait -NoNewWindow
+          } else {
+            # 备用方案
+            choco install visualstudio2015buildtools -y --no-progress
+          }
+        shell: powershell
       
       - name: Setup Visual Studio environment
         uses: microsoft/setup-msbuild@v1.1
