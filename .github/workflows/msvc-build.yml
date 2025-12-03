@@ -134,9 +134,10 @@ jobs:
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
 
+  # VS2015-2017 使用 windows-2019 runner，预装了 v140/v141 工具集，无需额外安装
   vs2017-build:
     name: MSVC 2017 Build (${{ matrix.build_type }})
-    runs-on: windows-latest
+    runs-on: windows-2019
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     strategy:
       matrix:
@@ -145,13 +146,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio 2017 Build Tools
-        run: |
-          # 下载并安装 Visual Studio 2017 Build Tools
-          Invoke-WebRequest -Uri "https://aka.ms/vs/15/release/vs_buildtools.exe" -OutFile "vs_buildtools.exe"
-          Start-Process -FilePath "vs_buildtools.exe" -ArgumentList "--quiet", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools", "--add", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "--add", "Microsoft.VisualStudio.Component.Windows10SDK.18362" -NoNewWindow -Wait
-        shell: powershell
       
       - name: Setup Visual Studio environment
         uses: microsoft/setup-msbuild@v1.1
@@ -167,4 +161,175 @@ jobs:
           DO_TEST_RELEASE_LIBS: true
         run: |
           cd build-vs2017
+          cmake --build . --config ${{ matrix.build_type }} --parallel
+
+  vs2015-build:
+    name: MSVC 2015 Build (${{ matrix.build_type }})
+    runs-on: windows-2019
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        build_type: ["Release", "Debug"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Visual Studio environment
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Configure CMake
+        run: |
+          mkdir build-vs2015
+          cd build-vs2015
+          cmake .. -T v140 # vs2015
+
+      - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          cd build-vs2015
+          cmake --build . --config ${{ matrix.build_type }} --parallel
+
+  # VS2010-2013 需要通过 Chocolatey 安装，先检测是否存在
+  vs2013-build:
+    name: MSVC 2013 Build (${{ matrix.build_type }})
+    runs-on: windows-2019
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        build_type: ["Release", "Debug"]
+
+    steps:
+      - name: Check VS2013 (v120 toolset) availability
+        id: check_toolset
+        run: |
+          $toolsetPath = "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC"
+          if (Test-Path $toolsetPath) {
+            echo "TOOLSET_AVAILABLE=true" >> $env:GITHUB_OUTPUT
+            echo "✅ VS2013 toolset found"
+          } else {
+            echo "TOOLSET_AVAILABLE=false" >> $env:GITHUB_OUTPUT
+            echo "⏭️ VS2013 toolset not available, will install"
+          }
+        shell: powershell
+
+      - name: Install Visual Studio 2013 Build Tools
+        if: steps.check_toolset.outputs.TOOLSET_AVAILABLE != 'true'
+        run: |
+          choco install visualstudio2013buildtools -y --no-progress
+        shell: powershell
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Visual Studio environment
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Configure CMake
+        run: |
+          mkdir build-vs2013
+          cd build-vs2013
+          cmake .. -T v120 # vs2013
+
+      - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          cd build-vs2013
+          cmake --build . --config ${{ matrix.build_type }} --parallel
+
+  vs2012-build:
+    name: MSVC 2012 Build (${{ matrix.build_type }})
+    runs-on: windows-2019
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        build_type: ["Release", "Debug"]
+
+    steps:
+      - name: Check VS2012 (v110 toolset) availability
+        id: check_toolset
+        run: |
+          $toolsetPath = "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC"
+          if (Test-Path $toolsetPath) {
+            echo "TOOLSET_AVAILABLE=true" >> $env:GITHUB_OUTPUT
+            echo "✅ VS2012 toolset found"
+          } else {
+            echo "TOOLSET_AVAILABLE=false" >> $env:GITHUB_OUTPUT
+            echo "⏭️ VS2012 toolset not available, will install"
+          }
+        shell: powershell
+
+      - name: Install Visual Studio 2012 Build Tools
+        if: steps.check_toolset.outputs.TOOLSET_AVAILABLE != 'true'
+        run: |
+          choco install visualstudio2012-buildtools -y --no-progress
+        shell: powershell
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Visual Studio environment
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Configure CMake
+        run: |
+          mkdir build-vs2012
+          cd build-vs2012
+          cmake .. -T v110 # vs2012
+
+      - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          cd build-vs2012
+          cmake --build . --config ${{ matrix.build_type }} --parallel
+
+  vs2010-build:
+    name: MSVC 2010 Build (${{ matrix.build_type }})
+    runs-on: windows-2019
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        build_type: ["Release", "Debug"]
+
+    steps:
+      - name: Check VS2010 (v100 toolset) availability
+        id: check_toolset
+        run: |
+          $toolsetPath = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC"
+          if (Test-Path $toolsetPath) {
+            echo "TOOLSET_AVAILABLE=true" >> $env:GITHUB_OUTPUT
+            echo "✅ VS2010 toolset found"
+          } else {
+            echo "TOOLSET_AVAILABLE=false" >> $env:GITHUB_OUTPUT
+            echo "⏭️ VS2010 toolset not available, will install"
+          }
+        shell: powershell
+
+      - name: Install Visual Studio 2010 Build Tools
+        if: steps.check_toolset.outputs.TOOLSET_AVAILABLE != 'true'
+        run: |
+          choco install windows-sdk-10.0 -y --no-progress
+          choco install vcbuildtools -y --no-progress
+        shell: powershell
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Visual Studio environment
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Configure CMake
+        run: |
+          mkdir build-vs2010
+          cd build-vs2010
+          cmake .. -T v100 # vs2010
+
+      - name: Build
+        env:
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          cd build-vs2010
           cmake --build . --config ${{ matrix.build_type }} --parallel
