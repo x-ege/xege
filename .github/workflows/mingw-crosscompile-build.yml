@@ -1,0 +1,200 @@
+name: MinGW Cross-Compile Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    # 所有分支的 PR 都触发
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+        - Release
+        - Debug
+
+jobs:
+  # Ubuntu 交叉编译
+  ubuntu-cross-compile:
+    name: Ubuntu Cross-Compile - ${{ matrix.build_type }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: >-
+          ${{
+            github.event_name == 'pull_request' && fromJson('["Release"]') ||
+            (github.event_name == 'push' && github.ref == 'refs/heads/master') && fromJson('["Release", "Debug"]') ||
+            fromJson(format('["{0}"]', github.event.inputs.build_type || 'Release'))
+          }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install MinGW-w64 cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            mingw-w64 \
+            mingw-w64-tools \
+            gcc-mingw-w64-x86-64 \
+            g++-mingw-w64-x86-64 \
+            cmake \
+            make \
+            git
+
+      - name: Print MinGW version info
+        run: |
+          echo "=== MinGW-w64 Cross-Compiler (Ubuntu) Environment Information ==="
+          echo "x86_64-w64-mingw32-gcc version:"
+          x86_64-w64-mingw32-gcc --version
+          echo ""
+          echo "x86_64-w64-mingw32-g++ version:"
+          x86_64-w64-mingw32-g++ --version
+          echo ""
+          echo "CMake version:"
+          cmake --version
+          echo ""
+          echo "Make version:"
+          make --version
+          echo ""
+          echo "Host system:"
+          uname -a
+
+      - name: Cross-compile with MinGW-w64
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          # Clean previous builds
+          rm -rf build-mingw-ubuntu
+
+          # Configure CMake for cross-compilation
+          mkdir -p build-mingw-ubuntu
+          cd build-mingw-ubuntu
+
+          # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
+          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+
+          # Build the project
+          cmake --build . --parallel $(nproc)
+
+      - name: Package MinGW Ubuntu artifacts
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+        run: |
+          # Create build-type specific directory structure
+          mkdir -p ${BUILD_TYPE}/lib/mingw-w64-ubuntu
+
+          # Copy built libraries
+          find build-mingw-ubuntu -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw-w64-ubuntu/ \;
+
+          # List generated files
+          echo "Generated MinGW Ubuntu libraries for $BUILD_TYPE:"
+          ls -la ${BUILD_TYPE}/lib/mingw-w64-ubuntu/
+
+      - name: Upload MinGW Ubuntu artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xege-mingw-ubuntu-${{ matrix.build_type }}-libraries
+          path: ${{ matrix.build_type }}/lib/mingw-w64-ubuntu/
+          retention-days: 30
+        if: success()
+
+  # macOS 交叉编译
+  macos-cross-compile:
+    name: macOS Cross-Compile - ${{ matrix.build_type }}
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        build_type: >-
+          ${{
+            github.event_name == 'pull_request' && fromJson('["Release"]') ||
+            (github.event_name == 'push' && github.ref == 'refs/heads/master') && fromJson('["Release", "Debug"]') ||
+            fromJson(format('["{0}"]', github.event.inputs.build_type || 'Release'))
+          }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install MinGW-w64 cross-compiler
+        run: |
+          brew update
+          brew install mingw-w64 cmake
+
+          # Verify MinGW-w64 installation
+          x86_64-w64-mingw32-gcc --version || (echo "ERROR: MinGW-w64 installation verification failed" && exit 1)
+
+      - name: Print MinGW version info
+        run: |
+          echo "=== MinGW-w64 Cross-Compiler (macOS) Environment Information ==="
+          echo "x86_64-w64-mingw32-gcc version:"
+          x86_64-w64-mingw32-gcc --version
+          echo ""
+          echo "x86_64-w64-mingw32-g++ version:"
+          x86_64-w64-mingw32-g++ --version
+          echo ""
+          echo "CMake version:"
+          cmake --version
+          echo ""
+          echo "Make version:"
+          make --version
+          echo ""
+          echo "Host system:"
+          uname -a
+
+      - name: Cross-compile with MinGW-w64
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          DO_TEST_RELEASE_LIBS: true
+        run: |
+          # Clean previous builds
+          rm -rf build-mingw-macos
+
+          # Configure CMake for cross-compilation
+          mkdir -p build-mingw-macos
+          cd build-mingw-macos
+
+          # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
+          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+
+          # Build the project
+          cmake --build . --parallel $(sysctl -n hw.ncpu)
+
+      - name: Package macOS cross-compiled artifacts
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+        run: |
+          # Create build-type specific directory structure
+          mkdir -p ${BUILD_TYPE}/lib/mingw-w64-macos
+
+          # Copy built libraries
+          find build-mingw-macos -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw-w64-macos/ \;
+
+          # Verify that libraries were actually found and copied
+          LIBRARY_COUNT=$(find ${BUILD_TYPE}/lib/mingw-w64-macos -type f -name "*.a" | wc -l)
+          if [ "$LIBRARY_COUNT" -eq 0 ]; then
+            echo "ERROR: No .a libraries found in build output!"
+            exit 1
+          fi
+          echo "Successfully packaged $LIBRARY_COUNT library files"
+
+          # List generated files
+          echo "Generated MinGW macOS cross-compiled libraries for $BUILD_TYPE:"
+          ls -la ${BUILD_TYPE}/lib/mingw-w64-macos/
+
+      - name: Upload macOS cross-compiled artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xege-mingw-macos-${{ matrix.build_type }}-libraries
+          path: ${{ matrix.build_type }}/lib/mingw-w64-macos/
+          retention-days: 30
+        if: success()

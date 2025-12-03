@@ -1,4 +1,4 @@
-name: MinGW Build
+name: MinGW Windows Build
 
 on:
   push:
@@ -19,7 +19,7 @@ on:
 jobs:
   # 使用 MSYS2 最新版 MinGW 构建（默认）
   mingw-msys2-latest:
-    name: MinGW (MSYS2 Latest) - ${{ matrix.build_type }}
+    name: MSYS2 Latest - ${{ matrix.build_type }}
     runs-on: windows-latest
     strategy:
       matrix:
@@ -125,7 +125,7 @@ jobs:
 
   # 使用 WinLibs GCC 14.2.0 构建（Code::Blocks 25.03 内置版本）
   mingw-codeblocks-25:
-    name: MinGW (Code::Blocks 25.03, GCC 14.2) - ${{ matrix.build_type }}
+    name: Code::Blocks 25.03 (GCC 14.2) - ${{ matrix.build_type }}
     runs-on: windows-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     strategy:
@@ -199,7 +199,7 @@ jobs:
 
   # 使用 WinLibs GCC 13.1.0 构建（CLion 内置版本）
   mingw-clion:
-    name: MinGW (CLion, GCC 13.1) - ${{ matrix.build_type }}
+    name: CLion (GCC 13.1) - ${{ matrix.build_type }}
     runs-on: windows-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     strategy:
@@ -268,93 +268,5 @@ jobs:
         with:
           name: xege-mingw-clion-${{ matrix.build_type }}-libraries
           path: ${{ matrix.build_type }}/lib/mingw64-clion/
-          retention-days: 30
-        if: success()
-
-  mingw-ubuntu-build:
-    name: MinGW Ubuntu Build (${{ matrix.build_type }})
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        build_type: >-
-          ${{
-            github.event_name == 'pull_request' && fromJson('["Release"]') ||
-            (github.event_name == 'push' && github.ref == 'refs/heads/master') && fromJson('["Release", "Debug"]') ||
-            fromJson(format('["{0}"]', github.event.inputs.build_type || 'Release'))
-          }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install MinGW-w64 cross-compiler
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            mingw-w64 \
-            mingw-w64-tools \
-            gcc-mingw-w64-x86-64 \
-            g++-mingw-w64-x86-64 \
-            cmake \
-            make \
-            git
-
-      - name: Print MinGW version info
-        run: |
-          echo "=== MinGW-w64 Cross-Compiler Environment Information ==="
-          echo "x86_64-w64-mingw32-gcc version:"
-          x86_64-w64-mingw32-gcc --version
-          echo ""
-          echo "x86_64-w64-mingw32-g++ version:"
-          x86_64-w64-mingw32-g++ --version
-          echo ""
-          echo "CMake version:"
-          cmake --version
-          echo ""
-          echo "Make version:"
-          make --version
-          echo ""
-          echo "Host system:"
-          uname -a
-
-      - name: Cross-compile with MinGW-w64
-        env:
-          BUILD_TYPE: ${{ matrix.build_type }}
-          DO_TEST_RELEASE_LIBS: true
-        run: |
-          # Clean previous builds
-          rm -rf build-mingw-ubuntu
-
-          # Configure CMake for cross-compilation
-          mkdir -p build-mingw-ubuntu
-          cd build-mingw-ubuntu
-
-          # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
-          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
-
-          # Build the project
-          cmake --build . --parallel $(nproc)
-
-      - name: Package MinGW Ubuntu artifacts
-        env:
-          BUILD_TYPE: ${{ matrix.build_type }}
-        run: |
-          # Create build-type specific directory structure
-          mkdir -p ${BUILD_TYPE}/lib/mingw-w64-ubuntu
-
-          # Copy built libraries
-          find build-mingw-ubuntu -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw-w64-ubuntu/ \;
-
-          # List generated files
-          echo "Generated MinGW Ubuntu libraries for $BUILD_TYPE:"
-          ls -la ${BUILD_TYPE}/lib/mingw-w64-ubuntu/
-
-      - name: Upload MinGW Ubuntu artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: xege-mingw-ubuntu-${{ matrix.build_type }}-libraries
-          path: ${{ matrix.build_type }}/lib/mingw-w64-ubuntu/
           retention-days: 30
         if: success()
