@@ -102,7 +102,7 @@ jobs:
   vs2019-build:
     name: MSVC 2019 Build (${{ matrix.build_type }})
     runs-on: windows-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -126,10 +126,10 @@ jobs:
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
 
-  # VS2015-2017 使用 windows-2019 runner，预装了 v140/v141 工具集，无需额外安装
+  # VS2015-2017 使用 windows-2022 runner，预装了 v140/v141 工具集，无需额外安装
   vs2017-build:
     name: MSVC 2017 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
+    runs-on: windows-2022
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -156,7 +156,7 @@ jobs:
 
   vs2015-build:
     name: MSVC 2015 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
+    runs-on: windows-2022
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -184,8 +184,8 @@ jobs:
   # VS2010-2013 需要通过 Chocolatey 安装，先检测是否存在
   vs2013-build:
     name: MSVC 2013 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-2022
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -231,8 +231,8 @@ jobs:
 
   vs2012-build:
     name: MSVC 2012 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-2022
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -278,8 +278,8 @@ jobs:
 
   vs2010-build:
     name: MSVC 2010 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-2022
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -301,8 +301,8 @@ jobs:
       - name: Install Visual Studio 2010 Build Tools
         if: steps.check_toolset.outputs.TOOLSET_AVAILABLE != 'true'
         run: |
-          choco install windows-sdk-10.0 -y --no-progress
-          choco install vcbuildtools -y --no-progress
+          choco install windows-sdk-7.1 -y --no-progress
+          choco install visualstudio2010buildtools -y --no-progress
         shell: powershell
 
       - name: Checkout repository

@@ -122,7 +122,7 @@ jobs:
   mingw-codeblocks-25:
     name: Code::Blocks 25.03 (GCC 14.2) - ${{ matrix.build_type }}
     runs-on: windows-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -142,14 +142,14 @@ jobs:
           echo "Downloading WinLibs GCC 14.2.0..."
           Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
           echo "Extracting..."
-          Expand-Archive -Path $output -DestinationPath "C:\mingw-winlibs" -Force
+          Expand-Archive -Path $output -DestinationPath "C:\mingw-winlibs-gcc14" -Force
           Remove-Item $output
 
       - name: Print MinGW version info
         shell: cmd
         run: |
           echo === MinGW-w64 WinLibs GCC 14.2.0 (Code::Blocks 25.03) Environment Information ===
-          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          set PATH=C:\mingw-winlibs-gcc14\mingw64\bin;%PATH%
           echo GCC version:
           gcc --version
           echo.
@@ -165,7 +165,7 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           DO_TEST_RELEASE_LIBS: true
         run: |
-          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          set PATH=C:\mingw-winlibs-gcc14\mingw64\bin;%PATH%
           
           mkdir build-winlibs-gcc14
           cd build-winlibs-gcc14
@@ -196,7 +196,7 @@ jobs:
   mingw-clion:
     name: CLion (GCC 13.1) - ${{ matrix.build_type }}
     runs-on: windows-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
     strategy:
       matrix:
         build_type: ["Release", "Debug"]
@@ -216,14 +216,14 @@ jobs:
           echo "Downloading WinLibs GCC 13.1.0..."
           Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
           echo "Extracting..."
-          Expand-Archive -Path $output -DestinationPath "C:\mingw-winlibs" -Force
+          Expand-Archive -Path $output -DestinationPath "C:\mingw-winlibs-gcc13" -Force
           Remove-Item $output
 
       - name: Print MinGW version info
         shell: cmd
         run: |
           echo === MinGW-w64 WinLibs GCC 13.1.0 (CLion) Environment Information ===
-          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          set PATH=C:\mingw-winlibs-gcc13\mingw64\bin;%PATH%
           echo GCC version:
           gcc --version
           echo.
@@ -239,7 +239,7 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           DO_TEST_RELEASE_LIBS: true
         run: |
-          set PATH=C:\mingw-winlibs\mingw64\bin;%PATH%
+          set PATH=C:\mingw-winlibs-gcc13\mingw64\bin;%PATH%
           
           mkdir build-winlibs-gcc13
           cd build-winlibs-gcc13
