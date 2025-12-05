@@ -16,7 +16,7 @@ int mouseKeyToIndex(int keyMask)
 int main()
 {
     const int winWidth = 1200, winHeight = 300;
-    initgraph(winWidth, winHeight, INIT_RENDERMANUAL);
+    initgraph(winWidth, winHeight, INIT_RENDERMANUAL | INIT_EVENTLOOP);
     ege_enable_aa(true);
 
     setlinecolor(EGEARGB(128, 81, 128, 222));
