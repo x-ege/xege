@@ -109,6 +109,17 @@ target_link_libraries(putimage_alphablend_comprehensive_test
     ${SYSTEM_LIBS}
 )
 
+# 为所有测试可执行文件设置 MSVC 编译选项
+if(MSVC)
+    target_compile_options(putimage_performance_test PRIVATE /source-charset:utf-8)
+    target_compile_options(putimage_basic_test PRIVATE /source-charset:utf-8)
+    target_compile_options(putimage_alphablend_test PRIVATE /source-charset:utf-8)
+    target_compile_options(putimage_transparent_test PRIVATE /source-charset:utf-8)
+    target_compile_options(putimage_rotate_test PRIVATE /source-charset:utf-8)
+    target_compile_options(putimage_comparison_test PRIVATE /source-charset:utf-8)
+    target_compile_options(putimage_alphablend_comprehensive_test PRIVATE /source-charset:utf-8)
+endif()
+
 # 设置输出目录
 set_target_properties(
     putimage_performance_test

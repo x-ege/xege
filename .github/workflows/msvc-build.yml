@@ -68,7 +68,7 @@ jobs:
         run: |
           mkdir build-vs2026
           cd build-vs2026
-          cmake .. -T v144
+          cmake .. -T v144 -DEGE_BUILD_DEMO=ON
 
       - name: Build
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
@@ -99,7 +99,7 @@ jobs:
         run: |
           mkdir build-vs2022
           cd build-vs2022
-          cmake .. -T v143 # vs2022
+          cmake .. -T v143 -DEGE_BUILD_DEMO=ON # vs2022
       - name: Build
         env:
           DO_TEST_RELEASE_LIBS: true
@@ -126,7 +126,7 @@ jobs:
         run: |
           mkdir build-vs2019
           cd build-vs2019
-          cmake .. -T v142
+          cmake .. -T v142 -DEGE_BUILD_DEMO=ON
       - name: Build
         env:
           DO_TEST_RELEASE_LIBS: true
@@ -160,7 +160,7 @@ jobs:
         run: |
           mkdir build-vs2017
           cd build-vs2017
-          cmake .. -T v141 # vs2017
+          cmake .. -T v141 -DEGE_BUILD_DEMO=ON # vs2017
 
       - name: Build
         env:
