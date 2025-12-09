@@ -2,6 +2,15 @@
 #include <stdio.h>
 #include <ege/sys_edit.h>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_FONT_NAME "黑体"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_FONT_NAME "Arial"
+#endif
+
 #define BUFFER_LEN 200
 
 int main()
@@ -15,7 +24,7 @@ int main()
 	editBox.create(false);
 	editBox.size(200, 24 + 8);
 	editBox.setbgcolor(YELLOW);
-	editBox.setfont(24, 0, "黑体");
+	editBox.setfont(24, 0, TEXT_FONT_NAME);
 	editBox.move(40, 40);
 	editBox.visible(true);
 
@@ -23,7 +32,7 @@ int main()
 	editBox1.create(false);
 	editBox1.size(200, 24+8);
 	editBox1.setbgcolor(YELLOW);
-	editBox1.setfont(24, 0, "黑体");
+	editBox1.setfont(24, 0, TEXT_FONT_NAME);
 	editBox1.move(40, 140);
 	editBox1.visible(true);
 
