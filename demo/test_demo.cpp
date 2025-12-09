@@ -8,17 +8,147 @@
 // Static string constants
 #ifdef _MSC_VER
 // MSVC编译器使用中文文案
-static const char* str_8 = R"(//由两个斜杠\'//\'开始后面的内容为注释，不影响编译\n//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意\n//要正确编译本程序，请先为你的VC或者C-Free安装好PEX\n加了包含这个头文件后，就可以使用图形函数了\n#include \"graphics.h\"\n\nint main() //请使用int声明main，作为规范\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置字体高度为20，宽度为默认值的宋体字\n    setfont(20, 0, \"宋体\");\n\n    //在x=100,y=0的地方开始，显示一段文字\n    outtextxy(100, 0, \"Hello World\");\n\n    //等待用户按键，相当于暂停，注意这是图形库的函数\n    getch();\n    return 0;\n})";
-static const char* str_1 = R"(#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n\n    setcolor(RED);\n    //画弧线，以(100,100)为圆心，0度到180度，半径50\n    arc(100, 100, 0, 180, 50);\n    //同画弧线，只是位置不同\n    arc(200, 100, 0, 180, 50);\n    //从(50,100)到(150,200)画线\n    line(50, 100, 150, 200);\n    //从(250,100)到(150,200)画线\n    line(250, 100, 150, 200);\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n})";
-static const char* str_4 = R"(#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为黄色\n    setcolor(YELLOW);\n    //设置填充颜色为紫红色\n    setfillstyle(SOLID_FILL, MAGENTA);\n    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆\n    fillellipse(150, 200, 50, 100);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n})";
-static const char* str_5 = R"(#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置填充颜色为绿色，注意是用来填充颜色\n    setfillstyle(SOLID_FILL, GREEN);\n    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色\n    bar(100, 100, 200, 400);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n})";
-static const char* str_9 = R"(#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300，步长为3，这样画出虚线\n    for (x = 100; x < 300; x += 3)\n    {\n        //在y=100的地方画绿点，多个连续点构成线\n        putpixel(x, 100, GREEN);\n    }\n    getch();\n    return 0;\n})";
-static const char* str_10 = R"(#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300\n    for (x = 100; x < 300; x++)\n    {\n        //在y=100的地方画红点，多个连续点构成线\n        putpixel(x, 100, RED);\n    }\n    getch();\n    return 0;\n})";
-static const char* str_18 = R"(你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？\r\n本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。\r\n在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。\r\n（请按任意键继续）\r\n)";
-static const char* str_6 = R"(#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为绿色\n    setcolor(GREEN);\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n})";
-static const char* str_7 = R"(#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n})";
-static const char* str_16 = R"(1.如果我刚刚学会Hello World\n2.如果我刚刚学会循环和分支\n3.如果我刚刚学会数组和字符串\n（更多内容有待添加）\n)";
-static const char* str_3 = R"(左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子)";
+static const char* str_8 = R"(//由两个斜杠'//'开始后面的内容为注释，不影响编译
+//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意
+//要正确编译本程序，请先为你的VC或者C-Free安装好PEX
+加了包含这个头文件后，就可以使用图形函数了
+#include "graphics.h"
+
+int main() //请使用int声明main，作为规范
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置字体高度为20，宽度为默认值的宋体字
+    setfont(20, 0, "宋体");
+
+    //在x=100,y=0的地方开始，显示一段文字
+    outtextxy(100, 0, "Hello World");
+
+    //等待用户按键，相当于暂停，注意这是图形库的函数
+    getch();
+    return 0;
+})";
+static const char* str_1 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+
+    setcolor(RED);
+    //画弧线，以(100,100)为圆心，0度到180度，半径50
+    arc(100, 100, 0, 180, 50);
+    //同画弧线，只是位置不同
+    arc(200, 100, 0, 180, 50);
+    //从(50,100)到(150,200)画线
+    line(50, 100, 150, 200);
+    //从(250,100)到(150,200)画线
+    line(250, 100, 150, 200);
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_4 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置颜色为黄色
+    setcolor(YELLOW);
+    //设置填充颜色为紫红色
+    setfillstyle(SOLID_FILL, MAGENTA);
+    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆
+    fillellipse(150, 200, 50, 100);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_5 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置填充颜色为绿色，注意是用来填充颜色
+    setfillstyle(SOLID_FILL, GREEN);
+    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色
+    bar(100, 100, 200, 400);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_9 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; //声明变量x
+    //变量x从100到300，步长为3，这样画出虚线
+    for (x = 100; x < 300; x += 3)
+    {
+        //在y=100的地方画绿点，多个连续点构成线
+        putpixel(x, 100, GREEN);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_10 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; //声明变量x
+    //变量x从100到300
+    for (x = 100; x < 300; x++)
+    {
+        //在y=100的地方画红点，多个连续点构成线
+        putpixel(x, 100, RED);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_18 = R"(你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？
+本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。
+在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。
+（请按任意键继续）
+)";
+static const char* str_6 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置颜色为绿色
+    setcolor(GREEN);
+    //在x=200,y=100的地方，画一个半径80的圆
+    circle(200, 100, 80);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_7 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //在x=200,y=100的地方，画一个半径80的圆
+    circle(200, 100, 80);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_16 = R"(1.如果我刚刚学会Hello World
+2.如果我刚刚学会循环和分支
+3.如果我刚刚学会数组和字符串
+（更多内容有待添加）
+)";
+static const char* str_3 = R"(左半边是程序运行结果，下面是相应的源代码
+按任意键查看下一个例子)";
 static const char* str_15 = R"(1.如果我刚学会Hello World)";
 static const char* str_19 = R"(你是刚刚学习Ｃ语言的新手吗？...)";
 static const char* str_11 = R"(请按任意键开始演示冒泡排序)";
