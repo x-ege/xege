@@ -5,6 +5,17 @@
 #include <time.h>
 #include <math.h>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_DEMO_HINT  TEXT_DEMO_HINT
+#define TEXT_FONT_NAME  "宋体"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_DEMO_HINT  "Left side shows the program result, source code is below\nPress any key to view next example"
+#define TEXT_FONT_NAME  "Arial"
+#endif
+
 class SceneBase
 {
 public:
@@ -39,12 +50,12 @@ public:
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return m_parent;
@@ -77,12 +88,12 @@ public:
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return new SceneHelloWorld6(m_parent);
@@ -114,12 +125,12 @@ public:
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return new SceneHelloWorld5(m_parent);
@@ -151,12 +162,12 @@ public:
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return new SceneHelloWorld4(m_parent);
@@ -186,12 +197,12 @@ public:
 
         smain();
         {
-            setfont(12, 0, "宋体");
+            setfont(12, 0, TEXT_FONT_NAME);
             setcolor(0x808080);
             line(320, 0, 320, 480);
             setcolor(0xFFFFFF);
             outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+            outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
         }
         getch();
         return new SceneHelloWorld3(m_parent);
@@ -217,12 +228,12 @@ public:
         setfont(20, 0, "宋体");
         outtextxy(100, 0, "Hello World");
         {
-            setfont(12, 0, "宋体");
+            setfont(12, 0, TEXT_FONT_NAME);
             setcolor(0x808080);
             line(320, 0, 320, 480);
             setcolor(0xFFFFFF);
             outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+            outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
         }
         getch();
         return new SceneHelloWorld2(m_parent);
@@ -286,7 +297,7 @@ public:
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
         }
         putimage(320, 0, img);
     }
@@ -364,7 +375,7 @@ public:
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
         }
         putimage(320, 0, img);
     }
@@ -434,7 +445,7 @@ public:
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
         }
         putimage(320, 0, img);
     }
@@ -537,7 +548,7 @@ public:
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
         }
         putimage(320, 0, img);
     }
@@ -631,7 +642,7 @@ public:
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
         }
         putimage(320, 0, img);
     }
@@ -699,12 +710,12 @@ public:
         setcolor(LIGHTGRAY);
 
         smain();
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return new SceneForLoop5(m_parent);
@@ -758,12 +769,12 @@ public:
         setcolor(LIGHTGRAY);
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return new SceneForLoop4(m_parent);
@@ -797,12 +808,12 @@ public:
         setcolor(LIGHTGRAY);
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return new SceneForLoop3(m_parent);
@@ -836,12 +847,12 @@ public:
         setcolor(LIGHTGRAY);
 
         smain();
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
 
         getch();
         return new SceneForLoop2(m_parent);
@@ -920,7 +931,7 @@ public:
             arr[a] = random(32);
         }
         display(arr, 20, -1);
-        setfont(12, 0, "宋体");
+        setfont(12, 0, TEXT_FONT_NAME);
         outtextxy(0, 0, "请按任意键开始演示冒泡排序");
         info();
         getch();
@@ -1004,7 +1015,7 @@ public:
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50 - m_dline * 12, 320, 2048, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
         }
         putimage(320, 0, img);
     }
@@ -1085,7 +1096,7 @@ public:
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
         }
         putimage(320, 0, img);
     }
