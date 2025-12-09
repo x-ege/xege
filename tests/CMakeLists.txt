@@ -6,13 +6,6 @@ add_definitions(-DSHOW_CONSOLE=1)
 add_definitions(-DEGE_GRAPH_NO_LIB)
 add_definitions(-DNOMINMAX)
 
-# MSVC 编译选项：为所有目标设置 UTF-8 源文件编码
-if(MSVC)
-    if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上支持 /utf-8
-        add_compile_options(/utf-8)
-    endif()
-endif()
-
 # 添加Windows系统库
 set(SYSTEM_LIBS
     gdi32
@@ -54,6 +47,12 @@ target_link_libraries(putimage_performance_test
     ${SYSTEM_LIBS}
 )
 
+if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上支持 /utf-8
+        target_compile_options(putimage_performance_test PRIVATE /utf-8)
+    endif()
+endif()
+
 # 单独的测试用例
 add_executable(putimage_basic_test
     tests/putimage_basic_test.cpp
@@ -65,6 +64,12 @@ target_link_libraries(putimage_basic_test
     ${SYSTEM_LIBS}
 )
 
+if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(putimage_basic_test PRIVATE /utf-8)
+    endif()
+endif()
+
 add_executable(putimage_alphablend_test
     tests/putimage_alphablend_test.cpp
 )
@@ -74,6 +79,12 @@ target_link_libraries(putimage_alphablend_test
     xege
     ${SYSTEM_LIBS}
 )
+
+if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(putimage_alphablend_test PRIVATE /utf-8)
+    endif()
+endif()
 
 add_executable(putimage_transparent_test
     tests/putimage_transparent_test.cpp
@@ -85,6 +96,12 @@ target_link_libraries(putimage_transparent_test
     ${SYSTEM_LIBS}
 )
 
+if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(putimage_transparent_test PRIVATE /utf-8)
+    endif()
+endif()
+
 add_executable(putimage_rotate_test
     tests/putimage_rotate_test.cpp
 )
@@ -94,6 +111,12 @@ target_link_libraries(putimage_rotate_test
     xege
     ${SYSTEM_LIBS}
 )
+
+if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(putimage_rotate_test PRIVATE /utf-8)
+    endif()
+endif()
 
 add_executable(putimage_comparison_test
     tests/putimage_comparison_test.cpp
@@ -105,6 +128,12 @@ target_link_libraries(putimage_comparison_test
     ${SYSTEM_LIBS}
 )
 
+if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(putimage_comparison_test PRIVATE /utf-8)
+    endif()
+endif()
+
 add_executable(putimage_alphablend_comprehensive_test
     tests/putimage_alphablend_comprehensive_test.cpp
 )
@@ -114,6 +143,12 @@ target_link_libraries(putimage_alphablend_comprehensive_test
     xege
     ${SYSTEM_LIBS}
 )
+
+if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(putimage_alphablend_comprehensive_test PRIVATE /utf-8)
+    endif()
+endif()
 
 # 设置输出目录
 set_target_properties(
