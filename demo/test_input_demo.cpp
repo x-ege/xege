@@ -4,6 +4,19 @@
 #include <string>
 #include <cstdio>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_CAPTION_UTF8  "ege 输入演示 - UTF-8"
+#define TEXT_CAPTION_UTF16 "ege 输入演示 - UTF-16"
+#define TEXT_CAPTION_ANSI  "ege 输入演示 - ANSI"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_CAPTION_UTF8  "ege input demo - UTF-8"
+#define TEXT_CAPTION_UTF16 "ege input demo - UTF-16"
+#define TEXT_CAPTION_ANSI  "ege input demo - ANSI"
+#endif
+
 #define CHAR_MSG_MBCS   0
 #define CHAR_MSG_UTF_16 1
 
@@ -16,17 +29,17 @@ int main(int argc, char** argv)
 {
     int mode = CHAR_MSG_MBCS;
     if (argc > 1 && strcmp(argv[1], "--utf-8") == 0) {
-        ege::setcaption("ege input demo - UTF-8");
+        ege::setcaption(TEXT_CAPTION_UTF8);
         ege::setcodepage(EGE_CODEPAGE_UTF8);
         // ege::setunicodecharmessage(false);
     } else if (argc > 1 && strcmp(argv[1], "--utf-16") == 0) {
-        ege::setcaption("ege input demo - UTF-16");
+        ege::setcaption(TEXT_CAPTION_UTF16);
         // ege::setcodepage(EGE_CODEPAGE_ANSI);
         ege::setunicodecharmessage(true);
         mode = CHAR_MSG_UTF_16;
     } else {
         // ege::setcodepage(EGE_CODEPAGE_ANSI);
-        ege::setcaption("ege input demo - ANSI");
+        ege::setcaption(TEXT_CAPTION_ANSI);
         // ege::setunicodecharmessage(false);
     }
 

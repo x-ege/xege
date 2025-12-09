@@ -3,13 +3,24 @@
 #include <stdio.h>
 #include <time.h>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_SCROLL_DEMO "滚动字幕示例，Hello EGE !! Welcome to graphics programming !!!!!!~~~~~~"
+#define TEXT_FONT_NAME   "宋体"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_SCROLL_DEMO "Scrolling text demo, Hello EGE !! Welcome to graphics programming !!!!!!~~~~~~"
+#define TEXT_FONT_NAME   "Arial"
+#endif
+
 int main()
 {
     setcodepage(EGE_CODEPAGE_UTF8);
     initgraph(400, 300);
-    setfont(24, 12, "宋体");
+    setfont(24, 12, TEXT_FONT_NAME);
     {
-        char str[] = "滚动字幕示例，Hello EGE !! Welcome to graphics programming !!!!!!~~~~~~";
+        char str[] = TEXT_SCROLL_DEMO;
         int w = textwidth(str);        //记录下字幕的完整宽度
         int view_x = 100, view_w = 200; //设置可见区的位置和大小（只要x方向）
         int t = clock(), roll_time = 10000; //记录下起始时间，和滚动完所需要的时间

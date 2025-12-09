@@ -7,6 +7,17 @@
 
 #include <ege/fps.h>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_RESTART_HINT   "按 F2 重新开始游戏"
+#define TEXT_FONT_NAME      "宋体"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_RESTART_HINT   "Press F2 to Restart game"
+#define TEXT_FONT_NAME      "Arial"
+#endif
+
 const int g_width = 400;
 const int g_height = 520;
 
@@ -18,7 +29,7 @@ static int g_map_mod[] = {1, 4, 4, 4, 2, 2, 2, 1, 0};
 /* 初始化全局数据及图形显示 */
 void initgr() {
     initgraph(g_width, g_height);
-    setfont(12, 6, "宋体");
+    setfont(12, 6, TEXT_FONT_NAME);
     int Trs_map[8][4][4][4] =
     {
         {{{0}}},{{
@@ -331,7 +342,7 @@ public:
         draw44(bx, by, g_trs_map[m_next2_s][0], 0, 0, 8);
         setcolor(0xFFFFFF);
         if ( m_state == ST_OVER ) { // 结束提示文字显示
-            outtextxy(m_base_x+5*m_base_w, m_base_y, "Press F2 to Restart game");
+            outtextxy(m_base_x+5*m_base_w, m_base_y, TEXT_RESTART_HINT);
         }
     }
     static int dealbit(int a, float dt) {
