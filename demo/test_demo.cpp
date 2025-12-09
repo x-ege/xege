@@ -210,7 +210,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = str_1;
+        auto* str = str_1;
         setbkcolor_f(BLACK);
         cleardevice();
 
@@ -248,7 +248,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = str_4;
+        auto* str = str_4;
         setbkcolor_f(BLACK);
         cleardevice();
 
@@ -285,7 +285,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = str_5;
+        auto* str = str_5;
         setbkcolor_f(BLACK);
         cleardevice();
 
@@ -322,7 +322,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = str_6;
+        auto* str = str_6;
         setbkcolor_f(BLACK);
         cleardevice();
 
@@ -356,7 +356,7 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = str_7;
+        auto* str = str_7;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
@@ -387,7 +387,7 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = str_8;
+        auto* str = str_8;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
@@ -968,7 +968,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = str_9;
+        auto* str = str_9;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
@@ -1007,7 +1007,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = str_10;
+        auto* str = str_10;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
