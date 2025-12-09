@@ -1,6 +1,23 @@
 #include "graphics.h"
 #include <stdio.h>
 
+// æ–‡æœ¬æœ¬åœ°åŒ–å®å®šä¹‰
+#ifdef _MSC_VER
+// MSVCç¼–è¯‘å™¨ä½¿ç”¨ä¸­æ–‡æ–‡æ¡ˆ
+#define TEXT_WELCOME_MSG "æ¬¢è¿ä½¿ç”¨Easy Graphics Enginge (EGE) V0.3.8 ï¼Œæœ¬åº“æ˜¯ä¸€ä¸ªé¢å‘æ–°æ‰‹ï¼Œæˆ–è€…é¢å‘å¿«é€Ÿå›¾å½¢ç¨‹åºå¼€å‘çš„å›¾å½¢åº“ï¼Œä½¿ç”¨æ–¹ä¾¿å¿«æ·ï¼Œå®¹æ˜“ä¸Šæ‰‹ï¼Œç‰¹åˆ«é€‚åˆäºæ–°æ‰‹å­¦ä¹ å›¾å½¢ç¨‹åºè®¾è®¡ã€‚æœ¬ç¨‹åºä¸ºå®‰è£…ç¨‹åºï¼Œå¦‚æœä½ è¦ç»§ç»­å®‰è£…ï¼Œè¯·æŒ‰'y'é”®ç»§ç»­"
+#define TEXT_PATH_INFO "ä»¥ä¸‹æ˜¾ç¤ºæœ¬ç¨‹åºæ‰€æœç´¢åˆ°çš„IDEå®‰è£…è·¯å¾„ï¼Œå¦‚æœæœ‰æ‰¾ä¸åˆ°çš„ï¼Œè¯·æŠŠæœ¬ç¨‹åºè¿åŒå­æ–‡ä»¶å¤¹ä¸€èµ·å¤åˆ¶åˆ°å®‰è£…ç›®å½•ä¸‹ï¼Œç„¶åå†åœ¨é‚£ä¸ªç›®å½•ä¸‹è¿è¡Œæœ¬ç¨‹åºã€‚ä¾‹å¦‚å¦‚æœä½ ä½¿ç”¨çš„æ˜¯VC6çš„ç»¿è‰²ç‰ˆï¼Œé‚£å°±å¯èƒ½ä¼šæ‰¾ä¸åˆ°ï¼Œå‡å¦‚ä½ å®‰è£…åœ¨'D:\\Program Files\\Microsoft Visual Studio\\'ï¼Œé‚£ä½ åªéœ€è¦æŠŠæœ¬ç¨‹åºç›®å½•ä¸‹çš„include, libç›®å½•å¤åˆ¶åˆ°'D:\\Program Files\\Microsoft Visual Studio\\VC98\\'ï¼Œç¡®ä¿æ–‡ä»¶å¤¹åˆå¹¶å°±å¯ä»¥äº†ã€‚\nå¦‚æœä½ è¦ç»§ç»­å®‰è£…ï¼Œè¯·æŒ‰Yé”®ç»§ç»­"
+#define TEXT_COPY_LOG_HEADER "ä»¥ä¸‹ä¸ºå¤åˆ¶è®°å½•åˆ—è¡¨ï¼Œå¦‚æœæœ‰å‘ç”Ÿé”™è¯¯çš„è¯ï¼Œå¯èƒ½éœ€è¦ä½ æ‰‹å·¥å®‰è£…"
+#define TEXT_COPY_LOG_FOOTER "å®‰è£…ç¨‹åºæ‰§è¡Œå®Œæ¯•ï¼ŒæŒ‰ä»»æ„é”®é€€å‡ºç¨‹åºï¼"
+#define TEXT_FONT_NAME "å®‹ä½“"
+#else
+// éMSVCç¼–è¯‘å™¨ä½¿ç”¨è‹±æ–‡æ–‡æ¡ˆ
+#define TEXT_WELCOME_MSG "Welcome to Easy Graphics Engine (EGE) V0.3.8, a graphics library for beginners and rapid graphics development. Easy to use and suitable for learning graphics programming. This is the installation program. Press 'y' to continue installation"
+#define TEXT_PATH_INFO "The following shows the IDE installation paths found by this program. If some are not found, please copy this program with its subfolders to the installation directory and run it there. For example, if you use VC6 portable version and it's not found, and you installed it in 'D:\\Program Files\\Microsoft Visual Studio\\', you just need to copy the include and lib directories from this program's directory to 'D:\\Program Files\\Microsoft Visual Studio\\VC98\\', ensuring folder merge is done.\nPress Y to continue installation"
+#define TEXT_COPY_LOG_HEADER "The following is the copy log. If there are errors, you may need to install manually"
+#define TEXT_COPY_LOG_FOOTER "Installation program completed, press any key to exit!"
+#define TEXT_FONT_NAME "Arial"
+#endif
+
 char installpath[8][MAX_PATH];
 char g_output[1024 * 16];
 char strbasepath[] = "SOFTWARE\\";
@@ -106,9 +123,9 @@ int info_scene()
     setcolor(0xFFFFFF);
     Mira mira(640, 300);
     IMAGE imgtext(440, 130);
-    char infostr[] = "»¶Ó­Ê¹ÓÃEasy Graphics Enginge (EGE) V0.3.8 £¬±¾¿âÊÇÒ»¸öÃæÏòĞÂÊÖ£¬»òÕßÃæÏò¿ìËÙÍ¼ĞÎ³ÌĞò¿ª·¢µÄÍ¼ĞÎ¿â£¬Ê¹ÓÃ·½±ã¿ì½İ£¬ÈİÒ×ÉÏÊÖ£¬ÌØ±ğÊÊºÏÓÚĞÂÊÖÑ§Ï°Í¼ĞÎ³ÌĞòÉè¼Æ¡£±¾³ÌĞòÎª°²×°³ÌĞò£¬Èç¹ûÄãÒª¼ÌĞø°²×°£¬Çë°´'y'¼ü¼ÌĞø";
+    char infostr[] = TEXT_WELCOME_MSG;
     setcolor(0xFFFF, &imgtext);
-    setfont(18, 0, "ËÎÌå", &imgtext);
+    setfont(18, 0, TEXT_FONT_NAME, &imgtext);
     setbkmode(TRANSPARENT, &imgtext);
     for (int i = 0; i < 8; ++i)
     {
@@ -136,9 +153,9 @@ int getpath_scene()
     HKEY key;
     int it;
     cleardevice();
-    setfont(18, 0, "ËÎÌå");
+    setfont(18, 0, TEXT_FONT_NAME);
 
-    outtextrect(100, 30, 440, 280, "ÒÔÏÂÏÔÊ¾±¾³ÌĞòËùËÑË÷µ½µÄIDE°²×°Â·¾¶£¬Èç¹ûÓĞÕÒ²»µ½µÄ£¬Çë°Ñ±¾³ÌĞòÁ¬Í¬×ÓÎÄ¼ş¼ĞÒ»Æğ¸´ÖÆµ½°²×°Ä¿Â¼ÏÂ£¬È»ºóÔÙÔÚÄÇ¸öÄ¿Â¼ÏÂÔËĞĞ±¾³ÌĞò¡£ÀıÈçÈç¹ûÄãÊ¹ÓÃµÄÊÇVC6µÄÂÌÉ«°æ£¬ÄÇ¾Í¿ÉÄÜ»áÕÒ²»µ½£¬¼ÙÈçÄã°²×°ÔÚ'D:\\Program Files\\Microsoft Visual Studio\\'£¬ÄÇÄãÖ»ĞèÒª°Ñ±¾³ÌĞòÄ¿Â¼ÏÂµÄinclude, libÄ¿Â¼¸´ÖÆµ½'D:\\Program Files\\Microsoft Visual Studio\\VC98\\'£¬²¢È·ÈÏÎÄ¼ş¼ĞºÏ²¢¾Í¿ÉÒÔÁË¡£\nÈç¹ûÄãÒª¼ÌĞø°²×°£¬Çë°´Y¼ü¼ÌĞø");
+    outtextrect(100, 30, 440, 280, TEXT_PATH_INFO);
 
     for (it = 0; ver[it][0]; ++it)
     {
@@ -201,7 +218,7 @@ int setup_scene()
     cleardevice();
     int it;
     g_output[0] = 0;
-    setfont(14, 0, "ËÎÌå");
+    setfont(14, 0, TEXT_FONT_NAME);
     for (it = 0; ver[it][0]; ++it)
     {
         if (installpath[it][0] == 0) continue;
@@ -213,10 +230,10 @@ int setup_scene()
     }
     if (g_output[0])
     {
-        outtextxy(10, 10, "ÒÔÏÂÎª¸´ÖÆ¼ÇÂ¼ÁĞ±í£¬Èç¹ûÓĞ·¢Éú´íÎóµÄ»°£¬¿ÉÄÜĞèÒªÄãÊÖ¹¤°²×°");
+        outtextxy(10, 10, TEXT_COPY_LOG_HEADER);
     }
     outtextrect(10, 30, 600, 400, g_output);
-    outtextxy(10, 400, "°²×°²½ÖèÖ´ĞĞÍê³É£¬°´ÈÎÒâ¼üÍË³ö±¾³ÌĞò");
+    outtextxy(10, 400, TEXT_COPY_LOG_FOOTER);
     return getch();
 }
 
