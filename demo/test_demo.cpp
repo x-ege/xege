@@ -125,7 +125,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_ELLIPSE;;
+        char str[] = CODE_EXAMPLE_ELLIPSE;
         setbkcolor_f(BLACK);
         cleardevice();
 
@@ -162,7 +162,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_BAR;;
+        char str[] = CODE_EXAMPLE_BAR;
         setbkcolor_f(BLACK);
         cleardevice();
 
@@ -199,7 +199,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_CIRCLE;;
+        char str[] = CODE_EXAMPLE_CIRCLE;
         setbkcolor_f(BLACK);
         cleardevice();
 
@@ -233,7 +233,7 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_CIRCLE2;;
+        char str[] = CODE_EXAMPLE_CIRCLE2;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
@@ -264,7 +264,7 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_HELLO;;
+        char str[] = CODE_EXAMPLE_HELLO;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
@@ -1105,7 +1105,7 @@ public:
         for (; kbhit() == 0; delay_fps(60))
         {
             cleardevice();
-            sprintf(str, "经过时间%d", clock() - t);
+            sprintf(str, TEXT_ELAPSED_TIME, clock() - t);
             setfont(36, 0, TEXT_FONT_YOUYUAN);
             outtextxy(0, 0, str);
             info();
