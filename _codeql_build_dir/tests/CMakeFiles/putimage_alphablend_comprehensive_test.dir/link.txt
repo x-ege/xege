@@ -1,0 +1,3 @@
+/usr/local/bin/cmake -E rm -f CMakeFiles/putimage_alphablend_comprehensive_test.dir/objects.a
+/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/putimage_alphablend_comprehensive_test.dir/objects.a @CMakeFiles/putimage_alphablend_comprehensive_test.dir/objects1.rsp
+/usr/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -Wl,--whole-archive CMakeFiles/putimage_alphablend_comprehensive_test.dir/objects.a -Wl,--no-whole-archive -o ../bin/putimage_alphablend_comprehensive_test.exe -Wl,--out-implib,libputimage_alphablend_comprehensive_test.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/putimage_alphablend_comprehensive_test.dir/linkLibs.rsp

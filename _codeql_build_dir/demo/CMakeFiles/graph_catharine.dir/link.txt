@@ -1,0 +1,3 @@
+/usr/local/bin/cmake -E rm -f CMakeFiles/graph_catharine.dir/objects.a
+/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/graph_catharine.dir/objects.a @CMakeFiles/graph_catharine.dir/objects1.rsp
+/usr/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -static -Wl,--whole-archive CMakeFiles/graph_catharine.dir/objects.a -Wl,--no-whole-archive -o graph_catharine.exe -Wl,--out-implib,libgraph_catharine.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/graph_catharine.dir/linkLibs.rsp

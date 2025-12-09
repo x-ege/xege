@@ -1,0 +1,3 @@
+/usr/local/bin/cmake -E rm -f CMakeFiles/game_gomoku.dir/objects.a
+/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/game_gomoku.dir/objects.a @CMakeFiles/game_gomoku.dir/objects1.rsp
+/usr/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -static -Wl,--whole-archive CMakeFiles/game_gomoku.dir/objects.a -Wl,--no-whole-archive -o game_gomoku.exe -Wl,--out-implib,libgame_gomoku.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/game_gomoku.dir/linkLibs.rsp

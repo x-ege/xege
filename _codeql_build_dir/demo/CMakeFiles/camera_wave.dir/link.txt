@@ -1,0 +1,3 @@
+/usr/local/bin/cmake -E rm -f CMakeFiles/camera_wave.dir/objects.a
+/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/camera_wave.dir/objects.a @CMakeFiles/camera_wave.dir/objects1.rsp
+/usr/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -static -Wl,--whole-archive CMakeFiles/camera_wave.dir/objects.a -Wl,--no-whole-archive -o camera_wave.exe -Wl,--out-implib,libcamera_wave.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/camera_wave.dir/linkLibs.rsp
