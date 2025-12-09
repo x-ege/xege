@@ -145,8 +145,8 @@ int main() //请使用int声明main，作为规范
 int main()
 {
     initgraph(640, 480);
-    int n; //声明变量x
-    //变量x从0到320，取出每个横坐标
+    int n; //声明变量n
+    //变量n从0到320，取出每个横坐标
     for (n = 0; n < 320; ++n)
     {
         //在坐标n,100的地方画一个3x3的矩形，只画了一半
@@ -356,7 +356,7 @@ int main()
 {
     initgraph(640, 480);
     int n; // Declare variable n
-    // Loop n from 0 to 320, iterate each x coordinate
+    // Loop n from 0 to 320, iterate each position
     for (n = 0; n < 320; ++n)
     {
         // Draw 3x3 rectangle at coordinate n,100
