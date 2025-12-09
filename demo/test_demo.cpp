@@ -6,6 +6,8 @@
 #include <math.h>
 
 // Static string constants
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
 static const char* str_8 = R"(//由两个斜杠\'//\'开始后面的内容为注释，不影响编译\n//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意\n//要正确编译本程序，请先为你的VC或者C-Free安装好PEX\n加了包含这个头文件后，就可以使用图形函数了\n#include \"graphics.h\"\n\nint main() //请使用int声明main，作为规范\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置字体高度为20，宽度为默认值的宋体字\n    setfont(20, 0, \"宋体\");\n\n    //在x=100,y=0的地方开始，显示一段文字\n    outtextxy(100, 0, \"Hello World\");\n\n    //等待用户按键，相当于暂停，注意这是图形库的函数\n    getch();\n    return 0;\n})";
 static const char* str_1 = R"(#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n\n    setcolor(RED);\n    //画弧线，以(100,100)为圆心，0度到180度，半径50\n    arc(100, 100, 0, 180, 50);\n    //同画弧线，只是位置不同\n    arc(200, 100, 0, 180, 50);\n    //从(50,100)到(150,200)画线\n    line(50, 100, 150, 200);\n    //从(250,100)到(150,200)画线\n    line(250, 100, 150, 200);\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n})";
 static const char* str_4 = R"(#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为黄色\n    setcolor(YELLOW);\n    //设置填充颜色为紫红色\n    setfillstyle(SOLID_FILL, MAGENTA);\n    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆\n    fillellipse(150, 200, 50, 100);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n})";
@@ -25,6 +27,160 @@ static const char* str_13 = R"(经过时间%d)";
 static const char* str_12 = R"(排序完成)";
 static const char* str_2 = R"(宋体)";
 static const char* str_14 = R"(幼圆)";
+
+#else
+// 非MSVC编译器使用英文文案
+static const char* str_8 = R"(// Comments start with '//', won't affect compilation
+// This is the graphics library header
+// Please install EGE for your compiler
+// After including this header, you can use graphics functions
+#include "graphics.h"
+
+int main() // Use int for main
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set font height to 20, width to default
+    setfont(20, 0, "Arial");
+
+    // Display text starting at x=100, y=0
+    outtextxy(100, 0, "Hello World");
+
+    // Wait for keypress
+    getch();
+    return 0;
+})";
+static const char* str_1 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+
+    setcolor(RED);
+    // Draw arc, centered at (100,100), 0 to 180 degrees, radius 50
+    arc(100, 100, 0, 180, 50);
+    // Same arc, different position
+    arc(200, 100, 0, 180, 50);
+    // Draw line from (50,100) to (150,200)
+    line(50, 100, 150, 200);
+    // Draw line from (250,100) to (150,200)
+    line(250, 100, 150, 200);
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_4 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set color to yellow
+    setcolor(YELLOW);
+    // Set fill color to magenta
+    setfillstyle(SOLID_FILL, MAGENTA);
+    // Draw filled ellipse at (150,200), x radius 50, y radius 100
+    fillellipse(150, 200, 50, 100);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_5 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set fill color to green
+    setfillstyle(SOLID_FILL, GREEN);
+    // Draw filled rectangle from (100,100) to (200,400)
+    bar(100, 100, 200, 400);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_9 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; // Declare variable x
+    // Loop x from 100 to 300, step 3, to create dashed line
+    for (x = 100; x < 300; x += 3)
+    {
+        // Draw green dots at y=100, multiple dots form line
+        putpixel(x, 100, GREEN);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_10 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; // Declare variable x
+    // Loop x from 100 to 300
+    for (x = 100; x < 300; x++)
+    {
+        // Draw red dots at y=100, multiple dots form line
+        putpixel(x, 100, RED);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_18 = R"(Are you a newbie learning C language? Do you feel character output is boring? Can C do more interesting things? Like making games?
+This demo program will answer your questions and lead you into the wonderful world of C graphics! Whether you just started or have been learning for a while, as long as you have VC or C-Free, you can enjoy this graphics feast...
+Before starting, please search "EGE" online, download and install it. If you encounter difficulties, you can join QQ group 1060223135 for assistance.
+(Press any key to continue)
+)";
+static const char* str_6 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set color to green
+    setcolor(GREEN);
+    // Draw circle at x=200, y=100, radius 80
+    circle(200, 100, 80);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_7 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Draw circle at x=200, y=100, radius 80
+    circle(200, 100, 80);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_16 = R"(1. If I just learned Hello World
+2. If I just learned loops and branches
+3. If I just learned arrays and strings
+(More content to be added)
+)";
+static const char* str_3 = R"(Left side shows program result, source code below
+Press any key for next example)";
+static const char* str_15 = R"(1. If I just learned Hello World)";
+static const char* str_19 = R"(Are you a newbie learning C language?...)";
+static const char* str_11 = R"(Press any key to start bubble sort demo)";
+static const char* str_17 = R"(Press number key to select content)";
+static const char* str_13 = R"(Elapsed time: %d)";
+static const char* str_12 = R"(Sort complete)";
+static const char* str_2 = R"(Arial)";
+static const char* str_14 = R"(Arial)";
+
+#endif
 
 class SceneBase
 {
