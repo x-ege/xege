@@ -10,10 +10,12 @@
 // MSVC编译器使用中文文案
 #define TEXT_DEMO_HINT  "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子"
 #define TEXT_FONT_NAME  "宋体"
+#define TEXT_SORT_START "请按任意键开始演示冒泡排序"
 #else
 // 非MSVC编译器使用英文文案
 #define TEXT_DEMO_HINT  "Left side shows the program result, source code is below\nPress any key to view next example"
 #define TEXT_FONT_NAME  "Arial"
+#define TEXT_SORT_START "Press any key to start bubble sort demo"
 #endif
 
 class SceneBase
@@ -225,7 +227,7 @@ public:
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
-        setfont(20, 0, "宋体");
+        setfont(20, 0, TEXT_FONT_NAME);
         outtextxy(100, 0, "Hello World");
         {
             setfont(12, 0, TEXT_FONT_NAME);
@@ -932,7 +934,7 @@ public:
         }
         display(arr, 20, -1);
         setfont(12, 0, TEXT_FONT_NAME);
-        outtextxy(0, 0, "请按任意键开始演示冒泡排序");
+        outtextxy(0, 0, TEXT_SORT_START);
         info();
         getch();
         cleardevice();
@@ -1180,7 +1182,7 @@ public:
     {
         wchar_t str[1024] = {0};
         int len = 0;
-        setfont(20, 0, "宋体");
+        setfont(20, 0, TEXT_FONT_NAME);
         for (len = 0 ; len<=0x80; delay_fps(60))
         {
             setbkcolor_f(EGERGB(len, len, len));

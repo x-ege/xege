@@ -123,17 +123,16 @@ int info_scene()
     setcolor(0xFFFFFF);
     Mira mira(640, 300);
     IMAGE imgtext(440, 130);
-    char infostr[] = TEXT_WELCOME_MSG;
     setcolor(0xFFFF, &imgtext);
     setfont(18, 0, TEXT_FONT_NAME, &imgtext);
     setbkmode(TRANSPARENT, &imgtext);
     for (int i = 0; i < 8; ++i)
     {
-        outtextrect(5, 5, 440, 280, infostr, &imgtext);
+        outtextrect(5, 5, 440, 280, TEXT_WELCOME_MSG, &imgtext);
         imagefilter_blurring(&imgtext, 0xF0, 0x100);
     }
     setcolor(0xFF, &imgtext);
-    outtextrect(5, 5, 440, 280, infostr, &imgtext);
+    outtextrect(5, 5, 440, 280, TEXT_WELCOME_MSG, &imgtext);
 
     BeginBatchDraw();
     for ( ; kbhit() == 0; delay_fps(60))
