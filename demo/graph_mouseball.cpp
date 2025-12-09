@@ -2,6 +2,15 @@
 #include <graphics.h>
 #include <math.h>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_WINDOW_TITLE "碰撞小球"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_WINDOW_TITLE "Bouncing Balls"
+#endif
+
 #define LEN 640
 #define WID 480
 #define MAXBALL 10
@@ -180,7 +189,7 @@ int main(void)
         setcodepage(EGE_CODEPAGE_UTF8);
         setinitmode(INIT_ANIMATION);
         initgraph(LEN, WID);
-        setcaption("碰撞小球");
+        setcaption(TEXT_WINDOW_TITLE);
         randomize();
     }
     int i;
