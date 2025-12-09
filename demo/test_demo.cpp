@@ -8,7 +8,7 @@
 // 文本本地化宏定义
 #ifdef _MSC_VER
 // MSVC编译器使用中文文案
-#define TEXT_DEMO_HINT  TEXT_DEMO_HINT
+#define TEXT_DEMO_HINT  "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子"
 #define TEXT_FONT_NAME  "宋体"
 #else
 // 非MSVC编译器使用英文文案
