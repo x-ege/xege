@@ -8,7 +8,9 @@ add_definitions(-DNOMINMAX)
 
 # MSVC 编译选项：为所有目标设置 UTF-8 源文件编码
 if(MSVC)
-    add_compile_options(/source-charset:utf-8)
+    if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上支持 /utf-8
+        add_compile_options(/utf-8)
+    endif()
 endif()
 
 # 添加Windows系统库
