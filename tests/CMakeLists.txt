@@ -32,82 +32,36 @@ target_link_libraries(test_framework ${SYSTEM_LIBS})
 
 if(MSVC)
     target_compile_options(test_framework PUBLIC
-        /source-charset:utf-8
         /Zc:__cplusplus
     )
 endif()
 
-# 主性能测试程序
-add_executable(putimage_performance_test
-    tests/putimage_performance_test.cpp
-)
+# 添加测试可执行文件的宏
+macro(add_test_executable name source)
+    add_executable(${name} ${source})
+    target_link_libraries(${name}
+        test_framework
+        xege
+        ${SYSTEM_LIBS}
+    )
+    
+    if(MSVC)
+        if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上支持 /utf-8
+            target_compile_options(${name} PRIVATE /utf-8)
+        endif()
+    endif()
+endmacro()
 
-target_link_libraries(putimage_performance_test
-    test_framework
-    xege
-    ${SYSTEM_LIBS}
-)
+# 主性能测试程序
+add_test_executable(putimage_performance_test tests/putimage_performance_test.cpp)
 
 # 单独的测试用例
-add_executable(putimage_basic_test
-    tests/putimage_basic_test.cpp
-)
-
-target_link_libraries(putimage_basic_test
-    test_framework
-    xege
-    ${SYSTEM_LIBS}
-)
-
-add_executable(putimage_alphablend_test
-    tests/putimage_alphablend_test.cpp
-)
-
-target_link_libraries(putimage_alphablend_test
-    test_framework
-    xege
-    ${SYSTEM_LIBS}
-)
-
-add_executable(putimage_transparent_test
-    tests/putimage_transparent_test.cpp
-)
-
-target_link_libraries(putimage_transparent_test
-    test_framework
-    xege
-    ${SYSTEM_LIBS}
-)
-
-add_executable(putimage_rotate_test
-    tests/putimage_rotate_test.cpp
-)
-
-target_link_libraries(putimage_rotate_test
-    test_framework
-    xege
-    ${SYSTEM_LIBS}
-)
-
-add_executable(putimage_comparison_test
-    tests/putimage_comparison_test.cpp
-)
-
-target_link_libraries(putimage_comparison_test
-    test_framework
-    xege
-    ${SYSTEM_LIBS}
-)
-
-add_executable(putimage_alphablend_comprehensive_test
-    tests/putimage_alphablend_comprehensive_test.cpp
-)
-
-target_link_libraries(putimage_alphablend_comprehensive_test
-    test_framework
-    xege
-    ${SYSTEM_LIBS}
-)
+add_test_executable(putimage_basic_test tests/putimage_basic_test.cpp)
+add_test_executable(putimage_alphablend_test tests/putimage_alphablend_test.cpp)
+add_test_executable(putimage_transparent_test tests/putimage_transparent_test.cpp)
+add_test_executable(putimage_rotate_test tests/putimage_rotate_test.cpp)
+add_test_executable(putimage_comparison_test tests/putimage_comparison_test.cpp)
+add_test_executable(putimage_alphablend_comprehensive_test tests/putimage_alphablend_comprehensive_test.cpp)
 
 # 设置输出目录
 set_target_properties(
