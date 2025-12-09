@@ -157,6 +157,197 @@ static const char* str_13 = R"(经过时间%d)";
 static const char* str_12 = R"(排序完成)";
 static const char* str_2 = R"(宋体)";
 static const char* str_14 = R"(幼圆)";
+static const char* str_loop_move_circle = R"(#include "graphics.h"
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1, color = 0; //x表示圆的横坐标，dx表示速度方向
+    //动画主循环，kbhit()检测当前有没有按键，有就退出
+    //delay_fps(60)控制这个循环每秒循环60次
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        cleardevice();
+        //根据x来调整dx的符号
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        //通过对dx的控制，间接控制x的增减方向
+        x += dx;
+        color += 1;
+        if (color >= 360)
+        {
+            color = 0;
+        }
+        //使用HSV方式指定颜色
+        //关于HSV的介绍见图形库文档或者Google
+        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_move_circle_rgb = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1; //x表示圆的横坐标，dx表示速度方向
+    //动画主循环，kbhit()检测当前有没有按键，有就退出
+    //delay_fps(60)控制这个循环每秒循环60次
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        //清屏
+        cleardevice();
+        //根据x来调整dx的符号
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        //通过对dx的控制，间接控制x的增减方向
+        x += dx;
+        //使用RGB分量方式指定颜色
+        //红色为80，绿为0，蓝为FF
+        setcolor(0xFF0080);
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_sine_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; //声明变量x
+    //变量x从0到320，取出每个横坐标
+    for (int n = 0; n < 320; n++)
+    {
+        //映射到-8到8的浮点数范围
+        double x = ((double)n - 160) / 20;
+        //计算对应的y
+        double y = sin(x);
+        //把y映射回屏幕坐标
+        y = -y * 80 + 240;
+        //画出这个点
+        putpixel(n, (int)y, WHITE);
+    }
+    //画坐标轴
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_loop_parabola_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; //声明变量x
+    //变量x从0到320，取出每个横坐标
+    for (int n = 0; n < 320; n++)
+    {
+        //映射到-2到2的浮点数范围
+        double x = ((double)n - 160) / 80;
+        //计算对应的y
+        double y = x * x;
+        //把y映射回屏幕坐标
+        y = -y * 80 + 240;
+        //画出这个点
+        putpixel(n, (int)y, WHITE);
+    }
+    //画坐标轴
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_bubble_sort_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+void display(int arr[], int n)
+{
+    int a;
+    cleardevice();
+    for (a = 0; a < n; ++a)
+    {
+        setcolor(WHITE);
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));
+        fillellipse(100, 20 * a, 9, 9);
+    }
+    if (i >= 0)
+    {
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f)));
+        fillellipse(80, 20 * i + 30, 9, 9);
+        fillellipse(80, 20 * (i + 1) + 30, 9, 9);
+    }
+    delay(500);
+}
+
+int main()
+{
+    int arr[20];
+    int a, b;
+    initgraph(640, 480);
+    randomize();
+    for (a = 0; a < 20; ++a)
+    {
+        arr[a] = random(32);
+    }
+    display(arr, 20);
+    setfont(12, 0, "宋体");
+    outtextxy(0, 0, "请按任意键开始演示");
+    getch();
+    cleardevice();
+    for (b = 20; b > 0; --b)
+    {
+        for (a = 1; a < b; ++a)
+        {
+            if ( arr[a] < arr[a-1])
+            {
+                int t = arr[a];
+                arr[a] = arr[b];
+                arr[b] = t;
+            }
+            display(arr, 20, a-1);
+        }
+    }
+    outtextxy(0, 0, "排序完成");
+    return 0;
+})";
+static const char* str_timer_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+int main()
+{
+    initgraph(640, 480);
+    {
+        int t = clock(); //记录超始时间
+        char str[100];
+        for (; kbhit() == 0; delay_fps(60))
+        {
+            cleardevice();
+            //把clock()-t的结果输出到字符串str
+            //实现简单的计时，可扩展成秒表
+            sprintf(str, "经过时间%d", clock() - t);
+            setfont(36, 0, "幼圆");
+            outtextxy(0, 0, str);
+        }
+    }
+    getch();
+    return 0;
+})";
 
 #else
 // 非MSVC编译器使用英文文案
@@ -309,8 +500,248 @@ static const char* str_13 = R"(Elapsed time: %d)";
 static const char* str_12 = R"(Sort complete)";
 static const char* str_2 = R"(Arial)";
 static const char* str_14 = R"(Arial)";
+static const char* str_loop_move_circle = R"(#include "graphics.h"
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1, color = 0; // x is circle x position, dx is velocity direction
+    // Main loop; exits when kbhit() detects a key
+    // delay_fps(60) keeps the loop at 60 FPS
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        cleardevice();
+        // Flip dx when hitting bounds
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        // Control x by dx
+        x += dx;
+        color += 1;
+        if (color >= 360)
+        {
+            color = 0;
+        }
+        // Use HSV color; see docs/Google
+        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_move_circle_rgb = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1; // x is circle x position, dx is velocity direction
+    // Main loop; exits when kbhit() detects a key
+    // delay_fps(60) keeps the loop at 60 FPS
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        // clear screen
+        cleardevice();
+        // flip dx when hitting bounds
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        // control x by dx
+        x += dx;
+        // choose color via RGB components
+        // red 0xFF, green 0x00, blue 0x80
+        setcolor(0xFF0080);
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_sine_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; // declare variable x
+    // x goes from 0 to 320
+    for (int n = 0; n < 320; n++)
+    {
+        // map to floating range -8..8
+        double x = ((double)n - 160) / 20;
+        // compute y
+        double y = sin(x);
+        // map y back to screen coords
+        y = -y * 80 + 240;
+        // plot the point
+        putpixel(n, (int)y, WHITE);
+    }
+    // draw axes
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_loop_parabola_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; // declare variable x
+    // x goes from 0 to 320
+    for (int n = 0; n < 320; n++)
+    {
+        // map to floating range -2..2
+        double x = ((double)n - 160) / 80;
+        // compute y
+        double y = x * x;
+        // map y back to screen coords
+        y = -y * 80 + 240;
+        // plot the point
+        putpixel(n, (int)y, WHITE);
+    }
+    // draw axes
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_bubble_sort_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+void display(int arr[], int n)
+{
+    int a;
+    cleardevice();
+    for (a = 0; a < n; ++a)
+    {
+        setcolor(WHITE);
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));
+        fillellipse(100, 20 * a, 9, 9);
+    }
+    if (i >= 0)
+    {
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f)));
+        fillellipse(80, 20 * i + 30, 9, 9);
+        fillellipse(80, 20 * (i + 1) + 30, 9, 9);
+    }
+    delay(500);
+}
+
+int main()
+{
+    int arr[20];
+    int a, b;
+    initgraph(640, 480);
+    randomize();
+    for (a = 0; a < 20; ++a)
+    {
+        arr[a] = random(32);
+    }
+    display(arr, 20);
+    setfont(12, 0, "Arial");
+    outtextxy(0, 0, "Press any key to start");
+    getch();
+    cleardevice();
+    for (b = 20; b > 0; --b)
+    {
+        for (a = 1; a < b; ++a)
+        {
+            if ( arr[a] < arr[a-1])
+            {
+                int t = arr[a];
+                arr[a] = arr[b];
+                arr[b] = t;
+            }
+            display(arr, 20, a-1);
+        }
+    }
+    outtextxy(0, 0, "Sort complete");
+    return 0;
+})";
+static const char* str_timer_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+int main()
+{
+    initgraph(640, 480);
+    {
+        int t = clock(); // record start time
+        char str[100];
+        for (; kbhit() == 0; delay_fps(60))
+        {
+            cleardevice();
+            // write elapsed time to str
+            // simple timer that can become a stopwatch
+            sprintf(str, "Elapsed time: %d", clock() - t);
+            setfont(36, 0, "Arial");
+            outtextxy(0, 0, str);
+        }
+    }
+    getch();
+    return 0;
+})";
 
 #endif
+
+// Shared code snippets used by multiple scenes
+static const char* str_loop_checker_fillcolor = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    for (int y = 0; y < 480; y += 40)
+    {
+        for (int x = 0; x < 640; x += 40)
+        {
+            setfillcolor(((x / 40 + y / 40) & 1) ? BLACK : WHITE);
+            bar(x, y, x + 40, y + 40);
+        }
+    }
+    getch();
+    return 0;
+})";
+
+static const char* str_loop_checker_fillstyle = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    for (int y = 0; y < 480; y += 40)
+    {
+        for (int x = 0; x < 640; x += 40)
+        {
+            setfillstyle(((x / 40 + y / 40) & 1) ? SOLID_FILL : HATCH_FILL, RED);
+            bar(x, y, x + 40, y + 40);
+        }
+    }
+    getch();
+    return 0;
+})";
+
+static const char* str_loop_hsv_lines = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    for (int x = 0; x < 640; ++x)
+    {
+        float hue = (float)x / 640.0f * 360.0f;
+        setcolor(HSVtoRGB(hue, 1.0f, 1.0f));
+        line(x, 0, x, 480);
+    }
+    getch();
+    return 0;
+})";
 
 class SceneBase
 {
@@ -572,24 +1003,7 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = R"(#include "graphics.h"
-int main()
-{
-    initgraph(640, 480);
-    int y, x;
-    setbkcolor(DARKGRAY);
-    for (y = 0; y < 8; ++y)
-    {
-        for (x = 0; x < 8; ++x)
-        {
-            setfillcolor(((x^y)&1) ? BLACK : WHITE );
-            bar(x * 30, y * 30,
-                (x+1) * 30, (y+1) * 30));
-        }
-    }
-    getch();
-    return 0;
-})"";
+            auto* str = str_loop_checker_fillcolor;
             resize(img, 320, 480);
             setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
@@ -654,24 +1068,7 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = R"(#include "graphics.h"
-int main()
-{
-    initgraph(640, 480);
-    int y, x;
-    setbkcolor(DARKGRAY);
-    for (y = 0; y < 8; ++y)
-    {
-        for (x = 0; x < 8; ++x)
-        {
-            setfillstyle(SOLID_FILL, ((x^y)&1) ? BLACK : WHITE );
-            bar(x * 30, y * 30,
-                (x+1) * 30, (y+1) * 30));
-        }
-    }
-    getch();
-    return 0;
-})"";
+            auto* str = str_loop_checker_fillstyle;
             resize(img, 320, 480);
             setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
@@ -732,21 +1129,7 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = R"(#include "graphics.h"
-int main()
-{
-    initgraph(640, 480);
-    {
-        int y;
-        for (y = 0; y < 360; ++y)
-        {
-            setcolor(HSVtoRGB((float)y, 1.0f, 1.0f));
-            line(0, y, 200, y);
-        }
-    }
-    getch();
-    return 0;
-})"";
+            auto* str = str_loop_hsv_lines;
             resize(img, 320, 480);
             setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
@@ -822,40 +1205,7 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = R"(#include "graphics.h"
-int main()
-{
-    initgraph(640, 480);
-    int x = 0, dx = 1, color = 0; //x表示圆的横坐标，dx表示速度方向
-    //动画主循环，kbhit()检测当前有没有按键，有就退出
-    //delay_fps(60)控制这个循环每秒循环60次
-    for (; kbhit() == 0; delay_fps(60))
-    {
-        cleardevice();
-        //根据x来调整dx的符号
-        if (x >= 320)
-        {
-            dx = -1;
-        }
-        else if (x <= 0)
-        {
-            dx = 1;
-        }
-        //通过对dx的控制，间接控制x的增减方向
-        x += dx;
-        color += 1;
-        if (color >= 360)
-        {
-            color = 0;
-        }
-        //使用HSV方式指定颜色
-        //关于HSV的介绍见图形库文档或者Google
-        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));
-        circle(x, 100, 100);
-    }
-    getch();
-    return 0;
-})"";
+            auto* str = str_loop_move_circle;
             resize(img, 320, 480);
             setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
@@ -926,37 +1276,7 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int x = 0, dx = 1; //x表示圆的横坐标，dx表示速度方向
-    //动画主循环，kbhit()检测当前有没有按键，有就退出
-    //delay_fps(60)控制这个循环每秒循环60次
-    for (; kbhit() == 0; delay_fps(60))
-    {
-        //清屏
-        cleardevice();
-        //根据x来调整dx的符号
-        if (x >= 320)
-        {
-            dx = -1;
-        }
-        else if (x <= 0)
-        {
-            dx = 1;
-        }
-        //通过对dx的控制，间接控制x的增减方向
-        x += dx;
-        //使用RGB分量方式指定颜色
-        //红色为80，绿为0，蓝为FF
-        setcolor(0xFF0080);
-        circle(x, 100, 100);
-    }
-    getch();
-    return 0;
-})"";
+            auto* str = str_loop_move_circle_rgb;
             resize(img, 320, 480);
             setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
@@ -1011,30 +1331,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int n; //声明变量x
-    //变量x从0到320，取出每个横坐标
-    for (int n = 0; n < 320; n++)
-    {
-        //映射到-8到8的浮点数范围
-        double x = ((double)n - 160) / 20;
-        //计算对应的y
-        double y = sin(x);
-        //把y映射回屏幕坐标
-        y = -y * 80 + 240;
-        //画出这个点
-        putpixel(n, (int)y, WHITE);
-    }
-    //画坐标轴
-    line(0, 240, 320, 240);
-    line(160, 0, 160, 480);
-    getch();
-    return 0;
-})"";
+        auto* str = str_loop_sine_plot;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
@@ -1078,30 +1375,7 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int n; //声明变量x
-    //变量x从0到320，取出每个横坐标
-    for (int n = 0; n < 320; n++)
-    {
-        //映射到-2到2的浮点数范围
-        double x = ((double)n - 160) / 80;
-        //计算对应的y
-        double y = x * x;
-        //把y映射回屏幕坐标
-        y = -y * 80 + 240;
-        //画出这个点
-        putpixel(n, (int)y, WHITE);
-    }
-    //画坐标轴
-    line(0, 240, 320, 240);
-    line(160, 0, 160, 480);
-    getch();
-    return 0;
-})"";
+        auto* str = str_loop_parabola_plot;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
@@ -1294,59 +1568,7 @@ public:
     {
         if (m_resettext)
         {
-            char str[] = R"(#include "graphics.h"
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-void display(int arr[], int n)
-{
-    int a;
-    cleardevice();
-    for (a = 0; a < n; ++a)
-    {
-        setcolor(WHITE);
-        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));
-        fillellipse(100, 20 * a, 9, 9);
-    }
-    if (i >= 0)
-    {
-        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f)));
-        fillellipse(80, 20 * i + 30, 9, 9);
-        fillellipse(80, 20 * (i + 1) + 30, 9, 9);
-    }
-    delay(500);
-}
-int main()
-{
-    int arr[20];
-    int a, b;
-    initgraph(640, 480);
-    randomize();
-    for (a = 0; a < 20; ++a)
-    {
-        arr[a] = random(32);
-    }
-    display(arr, 20);
-    setfont(12, 0, "宋体");
-    outtextxy(0, 0, "请按任意键开始演示");
-    getch();
-    cleardevice();
-    for (b = 20; b > 0; --b)
-    {
-        for (a = 1; a < b; ++a)
-        {
-            if ( arr[a] < arr[a-1])
-            {
-                int t = arr[a];
-                arr[a] = arr[b];
-                arr[b] = t;
-            }
-            display(arr, 20, a-1);
-        }
-    }
-    outtextxy(0, 0, "排序完成");
-    return 0;
-})"";
+            auto* str = str_bubble_sort_demo;
             m_resettext = 0;
             resize(img, 320, 480);
             setfont(12, 0, str_2, img);
@@ -1413,29 +1635,7 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = R"(#include "graphics.h"
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-int main()
-{
-    initgraph(640, 480);
-    {
-        int t = clock(); //记录超始时间
-        char str[100];
-        for (; kbhit() == 0; delay_fps(60))
-        {
-            cleardevice();
-            //把clock()-t的结果输出到字符串str
-            //实现简单的计时，可扩展成秒表
-            sprintf(str, "经过时间%d", clock() - t;
-            setfont(36, 0, "幼圆");
-            outtextxy(0, 0, str);
-        }
-    }
-    getch();
-    return 0;
-})"";
+            auto* str = str_timer_demo;
             resize(img, 320, 480);
             setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
