@@ -5,445 +5,26 @@
 #include <time.h>
 #include <math.h>
 
-// 判断一下 C++ 版本, 低于 C++11 的编译器不支持
-#if __cplusplus < 201103L
-#pragma message("C++11 or higher is required.")
-
-#ifdef _MSC_VER
-#define TEXT_CPP11_REQUIRED "需要 C++11 或更高版本才能编译此演示程序。"
-#else
-#define TEXT_CPP11_REQUIRED "C++11 or higher is required to compile this demo."
-#endif
-
-int main()
-{
-    fputs(TEXT_CPP11_REQUIRED, stderr);
-    return 0;
-}
-#else
-
-// 文本本地化宏定义
-#ifdef _MSC_VER
-// MSVC编译器使用中文文案
-#define TEXT_DEMO_HINT  "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子"
-#define TEXT_FONT_NAME  "宋体"
-#define TEXT_SORT_START "请按任意键开始演示冒泡排序"
-#define TEXT_SORT_COMPLETE "排序完成"
-#define TEXT_ELAPSED_TIME "经过时间%d"
-#define TEXT_FONT_YOUYUAN "幼圆"
-#define TEXT_MENU_OPTION1 "1.如果我刚学会Hello World"
-#define TEXT_MENU_OPTIONS "1.如果我刚刚学会Hello World\n2.如果我刚刚学会循环和分支\n3.如果我刚刚学会数组和字符串\n（更多内容有待添加）\n"
-#define TEXT_MENU_PROMPT "请按数字键选你要看的内容"
-#define TEXT_INTRO_MESSAGE R"(你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？
-本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。
-在正式开始前，请你百度"EGE"，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。
-（请按任意键继续）
-)"
-
-// 示例代码字符串
-#define CODE_EXAMPLE_ARC R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-
-    setcolor(RED);
-    //画弧线，以(100,100)为圆心，0度到180度，半径50
-    arc(100, 100, 0, 180, 50);
-    //同画弧线，只是位置不同
-    arc(200, 100, 0, 180, 50);
-    //从(50,100)到(150,200)画线
-    line(50, 100, 150, 200);
-    //从(250,100)到(150,200)画线
-    line(250, 100, 150, 200);
-    getch(); //等待用户按键，相当于暂停
-    return 0;
-})"
-#define CODE_EXAMPLE_ELLIPSE R"(#include "graphics.h"
-
-int main()
-{
-    //图形窗口初始化为640*480大小
-    initgraph(640, 480);
-
-    //设置颜色为黄色
-    setcolor(YELLOW);
-    //设置填充颜色为紫红色
-    setfillstyle(SOLID_FILL, MAGENTA);
-    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆
-    fillellipse(150, 200, 50, 100);
-
-    getch(); //等待用户按键，相当于暂停
-    return 0;
-})"
-#define CODE_EXAMPLE_BAR R"(#include "graphics.h"
-
-int main()
-{
-    //图形窗口初始化为640*480大小
-    initgraph(640, 480);
-
-    //设置填充颜色为绿色，注意是用来填充颜色
-    setfillstyle(SOLID_FILL, GREEN);
-    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色
-    bar(100, 100, 200, 400);
-
-    getch(); //等待用户按键，相当于暂停
-    return 0;
-})"
-#define CODE_EXAMPLE_CIRCLE R"(#include "graphics.h"
-
-int main()
-{
-    //图形窗口初始化为640*480大小
-    initgraph(640, 480);
-
-    //设置颜色为绿色
-    setcolor(GREEN);
-    //在x=200,y=100的地方，画一个半径80的圆
-    circle(200, 100, 80);
-
-    getch(); //等待用户按键，相当于暂停
-    return 0;
-})"
-#define CODE_EXAMPLE_CIRCLE2 R"(#include "graphics.h"
-
-int main()
-{
-    //图形窗口初始化为640*480大小
-    initgraph(640, 480);
-
-    //在x=200,y=100的地方，画一个半径80的圆
-    circle(200, 100, 80);
-
-    getch(); //等待用户按键，相当于暂停
-    return 0;
-})"
-#define CODE_EXAMPLE_HELLO R"(//由两个斜杠'//'开始后面的内容为注释，不影响编译
-//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意
-//要正确编译本程序，请先为你的VC或者C-Free安装好PEX
-//加了包含这个头文件后，就可以使用图形函数了
-#include "graphics.h"
-
-int main() //请使用int声明main，作为规范
-{
-    //图形窗口初始化为640*480大小
-    initgraph(640, 480);
-
-    //设置字体高度为20，宽度为默认值的宋体字
-    setfont(20, 0, "宋体");
-
-    //在x=100,y=0的地方开始，显示一段文字
-    outtextxy(100, 0, "Hello World");
-
-    //等待用户按键，相当于暂停，注意这是图形库的函数
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_LOOP1 R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int n; //声明变量n
-    //变量n从0到320，取出每个横坐标
-    for (n = 0; n < 320; ++n)
-    {
-        //在坐标n,100的地方画一个3x3的矩形，只画了一半
-        bar(n, 100, n+3, 103);
-    }
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_DOTLINE R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int x; //声明变量x
-    //变量x从100到300，步长为3，这样画出虚线
-    for (x = 100; x < 300; x += 3)
-    {
-        //在y=100的地方画绿点，多个连续点构成线
-        putpixel(x, 100, GREEN);
-    }
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_LINE R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int x; //声明变量x
-    //变量x从100到300
-    for (x = 100; x < 300; x++)
-    {
-        //在y=100的地方画红点，多个连续点构成线
-        putpixel(x, 100, RED);
-    }
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_SORT R"(#include "graphics.h"
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-int main()
-{
-    initgraph(640, 480);
-    setfont(12, 0, "宋体");
-    setrendermode(RENDER_MANUAL);
-    int arr[20], a, b;
-    randomize();
-    for (a = 0; a < 20; ++a) arr[a] = random(32);
-    outtextxy(0, 0, "请按任意键开始演示");
-    delay_ms(0);
-    getch();
-    for (b = 20; b > 0; --b)
-        for (a = 1; a < b; ++a)
-            if (arr[a] < arr[a-1])
-            {
-                int t = arr[a]; arr[a] = arr[a-1]; arr[a-1] = t;
-                cleardevice();
-                for (int n = 0; n < 20; ++n)
-                    bar(n*30+4, 400-arr[n]*10, n*30+30, 400);
-                delay_ms(0);
-            }
-    outtextxy(0, 0, "排序完成");
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_TIMER R"(#include "graphics.h"
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-int main()
-{
-    initgraph(640, 480);
-    setrendermode(RENDER_MANUAL);
-    setfont(36, 0, "幼圆");
-    int t = clock();
-    for ( ; is_run(); delay_fps(60)) {
-        char str[32];
-        sprintf(str, "经过时间%d", clock() - t);
-        cleardevice();
-        outtextxy(0, 0, str);
-    }
-    return 0;
-})"
-
-#else
-// 非MSVC编译器使用英文文案
-#define TEXT_DEMO_HINT  "Left side shows the program result, source code is below\nPress any key to view next example"
-#define TEXT_FONT_NAME  "Arial"
-#define TEXT_SORT_START "Press any key to start bubble sort demo"
-#define TEXT_SORT_COMPLETE "Sort complete"
-#define TEXT_ELAPSED_TIME "Elapsed time: %d"
-#define TEXT_FONT_YOUYUAN "Arial"
-#define TEXT_MENU_OPTION1 "1. If I just learned Hello World"
-#define TEXT_MENU_OPTIONS "1. If I just learned Hello World\n2. If I just learned loops and branches\n3. If I just learned arrays and strings\n(More content to be added)\n"
-#define TEXT_MENU_PROMPT "Press number key to select content"
-#define TEXT_INTRO_MESSAGE R"(Are you a newbie learning C language? Do you feel that pure character output is boring? Is C language only for this? Can you do something more interesting? Like making games?
-This demo program is to answer your questions and lead you into the wonderful world of C graphics! Whether you just started learning C or have been learning for a while, as long as you have VC or C-Free, you can enjoy this graphics feast...
-Before starting, please search "EGE" on Google, download and install it according to the documentation. If you encounter any difficulties, you can join QQ group 1060223135 for assistance.
-(Press any key to continue)
-)"
-
-// Example code strings in English
-#define CODE_EXAMPLE_ARC R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-
-    setcolor(RED);
-    // Draw arc, centered at (100,100), 0 to 180 degrees, radius 50
-    arc(100, 100, 0, 180, 50);
-    // Same arc, different position
-    arc(200, 100, 0, 180, 50);
-    // Draw line from (50,100) to (150,200)
-    line(50, 100, 150, 200);
-    // Draw line from (250,100) to (150,200)
-    line(250, 100, 150, 200);
-    getch(); // Wait for user keypress, like pause
-    return 0;
-})"
-#define CODE_EXAMPLE_ELLIPSE R"(#include "graphics.h"
-
-int main()
-{
-    // Initialize graphics window to 640*480
-    initgraph(640, 480);
-
-    // Set color to yellow
-    setcolor(YELLOW);
-    // Set fill color to magenta
-    setfillstyle(SOLID_FILL, MAGENTA);
-    // Draw filled ellipse at (150,200), x radius 50, y radius 100
-    fillellipse(150, 200, 50, 100);
-
-    getch(); // Wait for user keypress
-    return 0;
-})"
-#define CODE_EXAMPLE_BAR R"(#include "graphics.h"
-
-int main()
-{
-    // Initialize graphics window to 640*480
-    initgraph(640, 480);
-
-    // Set fill color to green
-    setfillstyle(SOLID_FILL, GREEN);
-    // Draw filled rectangle from (100,100) to (200,400)
-    bar(100, 100, 200, 400);
-
-    getch(); // Wait for user keypress
-    return 0;
-})"
-#define CODE_EXAMPLE_CIRCLE R"(#include "graphics.h"
-
-int main()
-{
-    // Initialize graphics window to 640*480
-    initgraph(640, 480);
-
-    // Set color to green
-    setcolor(GREEN);
-    // Draw circle at x=200, y=100, radius 80
-    circle(200, 100, 80);
-
-    getch(); // Wait for user keypress
-    return 0;
-})"
-#define CODE_EXAMPLE_CIRCLE2 R"(#include "graphics.h"
-
-int main()
-{
-    // Initialize graphics window to 640*480
-    initgraph(640, 480);
-
-    // Draw circle at x=200, y=100, radius 80
-    circle(200, 100, 80);
-
-    getch(); // Wait for user keypress
-    return 0;
-})"
-#define CODE_EXAMPLE_HELLO R"(// Comments start with double slashes '//', won't affect compilation
-// This is the graphics library header, note it's not TC graphics
-// Please install EGE for your VC or C-Free to compile this program
-// After including this header, you can use graphics functions
-#include "graphics.h"
-
-int main() // Use int for main as standard
-{
-    // Initialize graphics window to 640*480
-    initgraph(640, 480);
-
-    // Set font height to 20, width to default
-    setfont(20, 0, "Arial");
-
-    // Display text starting at x=100, y=0
-    outtextxy(100, 0, "Hello World");
-
-    // Wait for keypress, like pause, this is a graphics library function
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_LOOP1 R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int n; // Declare variable n
-    // Loop n from 0 to 320, iterate each position
-    for (n = 0; n < 320; ++n)
-    {
-        // Draw 3x3 rectangle at coordinate n,100
-        bar(n, 100, n+3, 103);
-    }
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_DOTLINE R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int x; // Declare variable x
-    // Loop x from 100 to 300, step 3, to create dashed line
-    for (x = 100; x < 300; x += 3)
-    {
-        // Draw green dots at y=100, multiple dots form line
-        putpixel(x, 100, GREEN);
-    }
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_LINE R"(#include "graphics.h"
-
-int main()
-{
-    initgraph(640, 480);
-    int x; // Declare variable x
-    // Loop x from 100 to 300
-    for (x = 100; x < 300; x++)
-    {
-        // Draw red dots at y=100, multiple dots form line
-        putpixel(x, 100, RED);
-    }
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_SORT R"(#include "graphics.h"
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-int main()
-{
-    initgraph(640, 480);
-    setfont(12, 0, "Arial");
-    setrendermode(RENDER_MANUAL);
-    int arr[20], a, b;
-    randomize();
-    for (a = 0; a < 20; ++a) arr[a] = random(32);
-    outtextxy(0, 0, "Press any key to start demo");
-    delay_ms(0);
-    getch();
-    for (b = 20; b > 0; --b)
-        for (a = 1; a < b; ++a)
-            if (arr[a] < arr[a-1])
-            {
-                int t = arr[a]; arr[a] = arr[a-1]; arr[a-1] = t;
-                cleardevice();
-                for (int n = 0; n < 20; ++n)
-                    bar(n*30+4, 400-arr[n]*10, n*30+30, 400);
-                delay_ms(0);
-            }
-    outtextxy(0, 0, "Sort complete");
-    getch();
-    return 0;
-})"
-#define CODE_EXAMPLE_TIMER R"(#include "graphics.h"
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-int main()
-{
-    initgraph(640, 480);
-    setrendermode(RENDER_MANUAL);
-    setfont(36, 0, "Arial");
-    int t = clock();
-    for ( ; is_run(); delay_fps(60)) {
-        char str[32];
-        sprintf(str, "Elapsed time: %d", clock() - t);
-        cleardevice();
-        outtextxy(0, 0, str);
-    }
-    return 0;
-})"
-#endif
-#endif
+// Static string constants
+static const char* str_8 = "//由两个斜杠\'//\'开始后面的内容为注释，不影响编译\n//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意\n//要正确编译本程序，请先为你的VC或者C-Free安装好PEX\n加了包含这个头文件后，就可以使用图形函数了\n#include \"graphics.h\"\n\nint main() //请使用int声明main，作为规范\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置字体高度为20，宽度为默认值的宋体字\n    setfont(20, 0, \"宋体\");\n\n    //在x=100,y=0的地方开始，显示一段文字\n    outtextxy(100, 0, \"Hello World\");\n\n    //等待用户按键，相当于暂停，注意这是图形库的函数\n    getch();\n    return 0;\n}";
+static const char* str_1 = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n\n    setcolor(RED);\n    //画弧线，以(100,100)为圆心，0度到180度，半径50\n    arc(100, 100, 0, 180, 50);\n    //同画弧线，只是位置不同\n    arc(200, 100, 0, 180, 50);\n    //从(50,100)到(150,200)画线\n    line(50, 100, 150, 200);\n    //从(250,100)到(150,200)画线\n    line(250, 100, 150, 200);\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+static const char* str_4 = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为黄色\n    setcolor(YELLOW);\n    //设置填充颜色为紫红色\n    setfillstyle(SOLID_FILL, MAGENTA);\n    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆\n    fillellipse(150, 200, 50, 100);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+static const char* str_5 = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置填充颜色为绿色，注意是用来填充颜色\n    setfillstyle(SOLID_FILL, GREEN);\n    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色\n    bar(100, 100, 200, 400);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+static const char* str_9 = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300，步长为3，这样画出虚线\n    for (x = 100; x < 300; x += 3)\n    {\n        //在y=100的地方画绿点，多个连续点构成线\n        putpixel(x, 100, GREEN);\n    }\n    getch();\n    return 0;\n}";
+static const char* str_10 = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300\n    for (x = 100; x < 300; x++)\n    {\n        //在y=100的地方画红点，多个连续点构成线\n        putpixel(x, 100, RED);\n    }\n    getch();\n    return 0;\n}";
+static const char* str_18 = "你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？\r\n本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。\r\n在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。\r\n（请按任意键继续）\r\n";
+static const char* str_6 = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为绿色\n    setcolor(GREEN);\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+static const char* str_7 = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+static const char* str_16 = "1.如果我刚刚学会Hello World\n2.如果我刚刚学会循环和分支\n3.如果我刚刚学会数组和字符串\n（更多内容有待添加）\n";
+static const char* str_3 = "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子";
+static const char* str_15 = "1.如果我刚学会Hello World";
+static const char* str_19 = "你是刚刚学习Ｃ语言的新手吗？...";
+static const char* str_11 = "请按任意键开始演示冒泡排序";
+static const char* str_17 = "请按数字键选你要看的内容";
+static const char* str_13 = "经过时间%d";
+static const char* str_12 = "排序完成";
+static const char* str_2 = "宋体";
+static const char* str_14 = "幼圆";
 
 class SceneBase
 {
@@ -473,18 +54,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_ARC;
+        char str[] = str_1;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return m_parent;
@@ -511,18 +92,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_ELLIPSE;
+        char str[] = str_4;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneHelloWorld6(m_parent);
@@ -548,18 +129,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_BAR;
+        char str[] = str_5;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneHelloWorld5(m_parent);
@@ -585,18 +166,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_CIRCLE;
+        char str[] = str_6;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneHelloWorld4(m_parent);
@@ -619,19 +200,19 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_CIRCLE2;
+        char str[] = str_7;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
 
         smain();
         {
-            setfont(12, 0, TEXT_FONT_NAME);
+            setfont(12, 0, str_2);
             setcolor(0x808080);
             line(320, 0, 320, 480);
             setcolor(0xFFFFFF);
             outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+            outtextrect(320, 0, 320, 400, str_3);
         }
         getch();
         return new SceneHelloWorld3(m_parent);
@@ -650,19 +231,19 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_HELLO;
+        char str[] = str_8;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
-        setfont(20, 0, TEXT_FONT_NAME);
+        setfont(20, 0, str_2);
         outtextxy(100, 0, "Hello World");
         {
-            setfont(12, 0, TEXT_FONT_NAME);
+            setfont(12, 0, str_2);
             setcolor(0x808080);
             line(320, 0, 320, 480);
             setcolor(0xFFFFFF);
             outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+            outtextrect(320, 0, 320, 400, str_3);
         }
         getch();
         return new SceneHelloWorld2(m_parent);
@@ -720,13 +301,13 @@ public:
 \n    }\
 \n    getch();\n    return 0;\n}";
             resize(img, 320, 480);
-            setfont(12, 0, TEXT_FONT_NAME, img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -798,13 +379,13 @@ public:
 \n    }\
 \n    getch();\n    return 0;\n}";
             resize(img, 320, 480);
-            setfont(12, 0, TEXT_FONT_NAME, img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -868,13 +449,13 @@ public:
 \n        }\
 \n    }\n    getch();\n    return 0;\n}";
             resize(img, 320, 480);
-            setfont(12, 0, TEXT_FONT_NAME, img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -971,13 +552,13 @@ public:
 \n        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));\
 \n        circle(x, 100, 100);\n    }\n    getch();\n    return 0;\n}";
             resize(img, 320, 480);
-            setfont(12, 0, TEXT_FONT_NAME, img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -1065,13 +646,13 @@ public:
 \n        setcolor(0xFF0080);\
 \n        circle(x, 100, 100);\n    }\n    getch();\n    return 0;\n}";
             resize(img, 320, 480);
-            setfont(12, 0, TEXT_FONT_NAME, img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -1139,12 +720,12 @@ public:
         setcolor(LIGHTGRAY);
 
         smain();
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop5(m_parent);
@@ -1198,12 +779,12 @@ public:
         setcolor(LIGHTGRAY);
         smain();
 
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop4(m_parent);
@@ -1231,18 +812,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_DOTLINE;
+        char str[] = str_9;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
         smain();
 
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop3(m_parent);
@@ -1270,18 +851,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = CODE_EXAMPLE_LINE;
+        char str[] = str_10;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
 
         smain();
-        setfont(12, 0, TEXT_FONT_NAME);
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, TEXT_DEMO_HINT);
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop2(m_parent);
@@ -1360,8 +941,8 @@ public:
             arr[a] = random(32);
         }
         display(arr, 20, -1);
-        setfont(12, 0, TEXT_FONT_NAME);
-        outtextxy(0, 0, TEXT_SORT_START);
+        setfont(12, 0, str_2);
+        outtextxy(0, 0, str_11);
         info();
         getch();
         cleardevice();
@@ -1378,7 +959,7 @@ public:
                 display(arr, 20, a-1);
             }
         }
-        outtextxy(0, 0, TEXT_SORT_COMPLETE);
+        outtextxy(0, 0, str_12);
     }
 
     void info()
@@ -1438,13 +1019,13 @@ public:
 ";
             m_resettext = 0;
             resize(img, 320, 480);
-            setfont(12, 0, TEXT_FONT_NAME, img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50 - m_dline * 12, 320, 2048, str, img);
-            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -1491,8 +1072,8 @@ public:
         for (; kbhit() == 0; delay_fps(60))
         {
             cleardevice();
-            sprintf(str, TEXT_ELAPSED_TIME, clock() - t);
-            setfont(36, 0, TEXT_FONT_YOUYUAN);
+            sprintf(str, str_13, clock() - t);
+            setfont(36, 0, str_14);
             outtextxy(0, 0, str);
             info();
         }
@@ -1519,13 +1100,13 @@ public:
 \n    }\
 \n    getch();\n    return 0;\n}";
             resize(img, 320, 480);
-            setfont(12, 0, TEXT_FONT_NAME, img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, TEXT_DEMO_HINT, img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -1555,7 +1136,7 @@ public:
     SceneMenu()
     {
         memset(m_strlist, 0, sizeof(m_strlist));
-        strcpy(m_strlist[0], TEXT_MENU_OPTION1);
+        strcpy(m_strlist[0], str_15);
     }
 
     SceneBase* Update()
@@ -1563,9 +1144,9 @@ public:
         setbkcolor_f(0x808080);
         cleardevice();
         setcolor(0xFFFFFF);
-        setfont(24, 0, TEXT_FONT_NAME);
-        outtextrect(100, 200, 500, 500, TEXT_MENU_OPTIONS);
-        outtextxy(100, 100, TEXT_MENU_PROMPT);
+        setfont(24, 0, str_2);
+        outtextrect(100, 200, 500, 500, str_16);
+        outtextxy(100, 100, str_17);
         int k;
         while (1)
         {
@@ -1598,18 +1179,18 @@ public:
     {
         memset(m_str, 0, sizeof(m_str));
         // 此处没有直接用宽字符串字面量初始化 m_str, 因为 VC6 会转出乱码
-        const char* str = TEXT_INTRO_MESSAGE;
+        const char* str = str_18;
         MultiByteToWideChar(getcodepage(), 0, str, -1, m_str, 1024);
 
         // 理想状态:
-        // wcscpy(m_str, L"你是刚刚学习Ｃ语言的新手吗？...");
+        // wcscpy(m_str, Lstr_19);
     }
 
     SceneBase* Update()
     {
         wchar_t str[1024] = {0};
         int len = 0;
-        setfont(20, 0, TEXT_FONT_NAME);
+        setfont(20, 0, str_2);
         for (len = 0 ; len<=0x80; delay_fps(60))
         {
             setbkcolor_f(EGERGB(len, len, len));
@@ -1664,6 +1245,4 @@ int main()
     closegraph();
     return 0;
 }
-
-#endif // __cplusplus >= 201103L
 
