@@ -6,6 +6,11 @@ add_definitions(-DSHOW_CONSOLE=1)
 add_definitions(-DEGE_GRAPH_NO_LIB)
 add_definitions(-DNOMINMAX)
 
+# MSVC 编译选项：为所有目标设置 UTF-8 源文件编码
+if(MSVC)
+    add_compile_options(/source-charset:utf-8)
+endif()
+
 # 添加Windows系统库
 set(SYSTEM_LIBS
     gdi32
@@ -32,7 +37,6 @@ target_link_libraries(test_framework ${SYSTEM_LIBS})
 
 if(MSVC)
     target_compile_options(test_framework PUBLIC
-        /source-charset:utf-8
         /Zc:__cplusplus
     )
 endif()
@@ -108,23 +112,6 @@ target_link_libraries(putimage_alphablend_comprehensive_test
     xege
     ${SYSTEM_LIBS}
 )
-
-# 为所有测试可执行文件设置 MSVC 编译选项
-# 注意：添加新的测试可执行文件时，需要将其添加到下面的 TEST_TARGETS 列表中
-if(MSVC)
-    set(TEST_TARGETS
-        putimage_performance_test
-        putimage_basic_test
-        putimage_alphablend_test
-        putimage_transparent_test
-        putimage_rotate_test
-        putimage_comparison_test
-        putimage_alphablend_comprehensive_test
-    )
-    foreach(target ${TEST_TARGETS})
-        target_compile_options(${target} PRIVATE /source-charset:utf-8)
-    endforeach()
-endif()
 
 # 设置输出目录
 set_target_properties(
