@@ -1,2 +1,0 @@
-/usr/bin/x86_64-w64-mingw32-ar qc libtest_framework.a CMakeFiles/test_framework.dir/test_framework.cpp.obj CMakeFiles/test_framework.dir/image_generator.cpp.obj CMakeFiles/test_framework.dir/performance_timer.cpp.obj
-/usr/bin/x86_64-w64-mingw32-ranlib libtest_framework.a

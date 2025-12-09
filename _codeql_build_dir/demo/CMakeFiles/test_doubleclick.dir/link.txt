@@ -1,3 +1,0 @@
-/usr/local/bin/cmake -E rm -f CMakeFiles/test_doubleclick.dir/objects.a
-/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/test_doubleclick.dir/objects.a @CMakeFiles/test_doubleclick.dir/objects1.rsp
-/usr/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -static -Wl,--whole-archive CMakeFiles/test_doubleclick.dir/objects.a -Wl,--no-whole-archive -o test_doubleclick.exe -Wl,--out-implib,libtest_doubleclick.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/test_doubleclick.dir/linkLibs.rsp

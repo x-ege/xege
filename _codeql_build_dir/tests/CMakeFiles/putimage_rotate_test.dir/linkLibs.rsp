@@ -1,1 +1,0 @@
- libtest_framework.a ../libgraphics.a -lgdi32 -luser32 -lkernel32 -lgdiplus -lole32 -loleaut32 -luuid -lwinmm -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

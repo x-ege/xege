@@ -1,3 +1,0 @@
-/usr/local/bin/cmake -E rm -f CMakeFiles/game_snake.dir/objects.a
-/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/game_snake.dir/objects.a @CMakeFiles/game_snake.dir/objects1.rsp
-/usr/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -static -Wl,--whole-archive CMakeFiles/game_snake.dir/objects.a -Wl,--no-whole-archive -o game_snake.exe -Wl,--out-implib,libgame_snake.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/game_snake.dir/linkLibs.rsp

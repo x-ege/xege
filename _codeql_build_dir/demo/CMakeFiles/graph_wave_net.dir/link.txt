@@ -1,3 +1,0 @@
-/usr/local/bin/cmake -E rm -f CMakeFiles/graph_wave_net.dir/objects.a
-/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/graph_wave_net.dir/objects.a @CMakeFiles/graph_wave_net.dir/objects1.rsp
-/usr/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -static -Wl,--whole-archive CMakeFiles/graph_wave_net.dir/objects.a -Wl,--no-whole-archive -o graph_wave_net.exe -Wl,--out-implib,libgraph_wave_net.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/graph_wave_net.dir/linkLibs.rsp
