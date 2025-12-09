@@ -14,3 +14,5 @@ build-*
 build/
 /temp
 /out_codeql_detected_source_root
+_codeql_build_dir/
+_codeql_detected_source_root

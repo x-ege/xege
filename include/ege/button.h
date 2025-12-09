@@ -112,6 +112,7 @@ public:
     {
         CTL_INIT; // must be the first line
         size(64, 32);
+        _caption[0]   = '\0';
         _font_height = 12;
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
         strcpy_s(_face, sizeof(_face), "SimSun");
