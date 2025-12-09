@@ -110,6 +110,7 @@ target_link_libraries(putimage_alphablend_comprehensive_test
 )
 
 # 为所有测试可执行文件设置 MSVC 编译选项
+# 注意：添加新的测试可执行文件时，需要将其添加到下面的 TEST_TARGETS 列表中
 if(MSVC)
     set(TEST_TARGETS
         putimage_performance_test
