@@ -703,18 +703,5 @@ jobs:
           echo "  Release version: ${{ steps.version.outputs.VERSION }}"
           echo "  Version tag: ${{ needs.validate-and-setup.outputs.version_tag }}"
           echo "  GitHub Release created and artifacts uploaded"
-            
-            ## 使用方法 / Usage
-            
-            解压后可直接使用 CMake 构建示例程序：
-            
-            ```bash
-            cd ege-${{ steps.version.outputs.VERSION }}
-            mkdir build && cd build
-            cmake ..
-            cmake --build .
-            ```
-            
-            详细使用说明请查看 [官方文档](https://xege.org) 和包内的 `说明.txt` 文件。
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
