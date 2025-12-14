@@ -1,5 +1,16 @@
 #include <graphics.h>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_CLICK_LABEL        "       点击: %3d"
+#define TEXT_DOUBLE_CLICK_LABEL "双击: %3d"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_CLICK_LABEL        "       click: %3d"
+#define TEXT_DOUBLE_CLICK_LABEL "double click: %3d"
+#endif
+
 int mouseKeyToIndex(int keyMask)
 {
     int index = -1;
@@ -73,8 +84,8 @@ int main()
 
                 xyprintf(centerX, bottom + 10, keyName[i]);
 
-                xyprintf(centerX, bottom + 60, "       click: %3d", clickCount[i]);
-                xyprintf(centerX, bottom + 80, "double click: %3d", doubleClickCount[i]);
+                xyprintf(centerX, bottom + 60, TEXT_CLICK_LABEL, clickCount[i]);
+                xyprintf(centerX, bottom + 80, TEXT_DOUBLE_CLICK_LABEL, doubleClickCount[i]);
             }
         }
     }

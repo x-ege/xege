@@ -13,6 +13,15 @@
 #include <stdlib.h>
 #include "ege/fps.h"
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_FONT_NAME "宋体"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_FONT_NAME "Arial"
+#endif
+
 int width = 640, height = 480;
 
 /**
@@ -230,7 +239,7 @@ int main()
 		initpolys(&p[i], n_poly[i], n_points[i]);
 	}
 
-	setfont(12, 6, "宋体");
+	setfont(12, 6, TEXT_FONT_NAME);
 	fps ui_fps;
 
 	// 主循环

@@ -1,5 +1,14 @@
 //打字小游戏
 #include <graphics.h>
+
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_FONT_NAME "宋体"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_FONT_NAME "Arial"
+#endif
 typedef struct chartarget
 {
     float x, y;
@@ -44,7 +53,7 @@ int main()
     chartarget ct[256];
     int nobj = 0;
     int t = 1000;
-    setfont(36, 0, "宋体");
+    setfont(36, 0, TEXT_FONT_NAME);
     setcolor(WHITE);
     setbkmode(TRANSPARENT);
     setrendermode(RENDER_MANUAL);

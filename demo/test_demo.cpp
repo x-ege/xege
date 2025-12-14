@@ -5,6 +5,744 @@
 #include <time.h>
 #include <math.h>
 
+// Static string constants
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+static const char* str_8 = R"(//由两个斜杠'//'开始后面的内容为注释，不影响编译
+//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意
+//要正确编译本程序，请先为你的VC或者C-Free安装好PEX
+加了包含这个头文件后，就可以使用图形函数了
+#include "graphics.h"
+
+int main() //请使用int声明main，作为规范
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置字体高度为20，宽度为默认值的宋体字
+    setfont(20, 0, "宋体");
+
+    //在x=100,y=0的地方开始，显示一段文字
+    outtextxy(100, 0, "Hello World");
+
+    //等待用户按键，相当于暂停，注意这是图形库的函数
+    getch();
+    return 0;
+})";
+static const char* str_1 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+
+    setcolor(RED);
+    //画弧线，以(100,100)为圆心，0度到180度，半径50
+    arc(100, 100, 0, 180, 50);
+    //同画弧线，只是位置不同
+    arc(200, 100, 0, 180, 50);
+    //从(50,100)到(150,200)画线
+    line(50, 100, 150, 200);
+    //从(250,100)到(150,200)画线
+    line(250, 100, 150, 200);
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_4 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置颜色为黄色
+    setcolor(YELLOW);
+    //设置填充颜色为紫红色
+    setfillstyle(SOLID_FILL, MAGENTA);
+    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆
+    fillellipse(150, 200, 50, 100);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_5 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置填充颜色为绿色，注意是用来填充颜色
+    setfillstyle(SOLID_FILL, GREEN);
+    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色
+    bar(100, 100, 200, 400);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_9 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; //声明变量x
+    //变量x从100到300，步长为3，这样画出虚线
+    for (x = 100; x < 300; x += 3)
+    {
+        //在y=100的地方画绿点，多个连续点构成线
+        putpixel(x, 100, GREEN);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_10 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; //声明变量x
+    //变量x从100到300
+    for (x = 100; x < 300; x++)
+    {
+        //在y=100的地方画红点，多个连续点构成线
+        putpixel(x, 100, RED);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_18 = R"(你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？
+本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。
+在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。
+（请按任意键继续）
+)";
+static const char* str_6 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //设置颜色为绿色
+    setcolor(GREEN);
+    //在x=200,y=100的地方，画一个半径80的圆
+    circle(200, 100, 80);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_7 = R"(#include "graphics.h"
+
+int main()
+{
+    //图形窗口初始化为640*480大小
+    initgraph(640, 480);
+
+    //在x=200,y=100的地方，画一个半径80的圆
+    circle(200, 100, 80);
+
+    getch(); //等待用户按键，相当于暂停
+    return 0;
+})";
+static const char* str_16 = R"(1.如果我刚刚学会Hello World
+2.如果我刚刚学会循环和分支
+3.如果我刚刚学会数组和字符串
+（更多内容有待添加）
+)";
+static const char* str_3 = R"(左半边是程序运行结果，下面是相应的源代码
+按任意键查看下一个例子)";
+static const char* str_15 = R"(1.如果我刚学会Hello World)";
+static const char* str_19 = R"(你是刚刚学习Ｃ语言的新手吗？...)";
+static const char* str_11 = R"(请按任意键开始演示冒泡排序)";
+static const char* str_17 = R"(请按数字键选你要看的内容)";
+static const char* str_13 = R"(经过时间%d)";
+static const char* str_12 = R"(排序完成)";
+static const char* str_2 = R"(宋体)";
+static const char* str_14 = R"(幼圆)";
+static const char* str_loop_move_circle = R"(#include "graphics.h"
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1, color = 0; //x表示圆的横坐标，dx表示速度方向
+    //动画主循环，kbhit()检测当前有没有按键，有就退出
+    //delay_fps(60)控制这个循环每秒循环60次
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        cleardevice();
+        //根据x来调整dx的符号
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        //通过对dx的控制，间接控制x的增减方向
+        x += dx;
+        color += 1;
+        if (color >= 360)
+        {
+            color = 0;
+        }
+        //使用HSV方式指定颜色
+        //关于HSV的介绍见图形库文档或者Google
+        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_move_circle_rgb = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1; //x表示圆的横坐标，dx表示速度方向
+    //动画主循环，kbhit()检测当前有没有按键，有就退出
+    //delay_fps(60)控制这个循环每秒循环60次
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        //清屏
+        cleardevice();
+        //根据x来调整dx的符号
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        //通过对dx的控制，间接控制x的增减方向
+        x += dx;
+        //使用RGB分量方式指定颜色
+        //红色为80，绿为0，蓝为FF
+        setcolor(0xFF0080);
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_sine_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; //声明变量x
+    //变量x从0到320，取出每个横坐标
+    for (int n = 0; n < 320; n++)
+    {
+        //映射到-8到8的浮点数范围
+        double x = ((double)n - 160) / 20;
+        //计算对应的y
+        double y = sin(x);
+        //把y映射回屏幕坐标
+        y = -y * 80 + 240;
+        //画出这个点
+        putpixel(n, (int)y, WHITE);
+    }
+    //画坐标轴
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_loop_parabola_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; //声明变量x
+    //变量x从0到320，取出每个横坐标
+    for (int n = 0; n < 320; n++)
+    {
+        //映射到-2到2的浮点数范围
+        double x = ((double)n - 160) / 80;
+        //计算对应的y
+        double y = x * x;
+        //把y映射回屏幕坐标
+        y = -y * 80 + 240;
+        //画出这个点
+        putpixel(n, (int)y, WHITE);
+    }
+    //画坐标轴
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_bubble_sort_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+void display(int arr[], int n)
+{
+    int a;
+    cleardevice();
+    for (a = 0; a < n; ++a)
+    {
+        setcolor(WHITE);
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));
+        fillellipse(100, 20 * a, 9, 9);
+    }
+    if (i >= 0)
+    {
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f)));
+        fillellipse(80, 20 * i + 30, 9, 9);
+        fillellipse(80, 20 * (i + 1) + 30, 9, 9);
+    }
+    delay(500);
+}
+
+int main()
+{
+    int arr[20];
+    int a, b;
+    initgraph(640, 480);
+    randomize();
+    for (a = 0; a < 20; ++a)
+    {
+        arr[a] = random(32);
+    }
+    display(arr, 20);
+    setfont(12, 0, "宋体");
+    outtextxy(0, 0, "请按任意键开始演示");
+    getch();
+    cleardevice();
+    for (b = 20; b > 0; --b)
+    {
+        for (a = 1; a < b; ++a)
+        {
+            if ( arr[a] < arr[a-1])
+            {
+                int t = arr[a];
+                arr[a] = arr[b];
+                arr[b] = t;
+            }
+            display(arr, 20, a-1);
+        }
+    }
+    outtextxy(0, 0, "排序完成");
+    return 0;
+})";
+static const char* str_timer_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+int main()
+{
+    initgraph(640, 480);
+    {
+        int t = clock(); //记录超始时间
+        char str[100];
+        for (; kbhit() == 0; delay_fps(60))
+        {
+            cleardevice();
+            //把clock()-t的结果输出到字符串str
+            //实现简单的计时，可扩展成秒表
+            sprintf(str, "经过时间%d", clock() - t);
+            setfont(36, 0, "幼圆");
+            outtextxy(0, 0, str);
+        }
+    }
+    getch();
+    return 0;
+})";
+
+#else
+// 非MSVC编译器使用英文文案
+static const char* str_8 = R"(// Comments start with '//', won't affect compilation
+// This is the graphics library header
+// Please install EGE for your compiler
+// After including this header, you can use graphics functions
+#include "graphics.h"
+
+int main() // Use int for main
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set font height to 20, width to default
+    setfont(20, 0, "Arial");
+
+    // Display text starting at x=100, y=0
+    outtextxy(100, 0, "Hello World");
+
+    // Wait for keypress
+    getch();
+    return 0;
+})";
+static const char* str_1 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+
+    setcolor(RED);
+    // Draw arc, centered at (100,100), 0 to 180 degrees, radius 50
+    arc(100, 100, 0, 180, 50);
+    // Same arc, different position
+    arc(200, 100, 0, 180, 50);
+    // Draw line from (50,100) to (150,200)
+    line(50, 100, 150, 200);
+    // Draw line from (250,100) to (150,200)
+    line(250, 100, 150, 200);
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_4 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set color to yellow
+    setcolor(YELLOW);
+    // Set fill color to magenta
+    setfillstyle(SOLID_FILL, MAGENTA);
+    // Draw filled ellipse at (150,200), x radius 50, y radius 100
+    fillellipse(150, 200, 50, 100);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_5 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set fill color to green
+    setfillstyle(SOLID_FILL, GREEN);
+    // Draw filled rectangle from (100,100) to (200,400)
+    bar(100, 100, 200, 400);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_9 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; // Declare variable x
+    // Loop x from 100 to 300, step 3, to create dashed line
+    for (x = 100; x < 300; x += 3)
+    {
+        // Draw green dots at y=100, multiple dots form line
+        putpixel(x, 100, GREEN);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_10 = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x; // Declare variable x
+    // Loop x from 100 to 300
+    for (x = 100; x < 300; x++)
+    {
+        // Draw red dots at y=100, multiple dots form line
+        putpixel(x, 100, RED);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_18 = R"(Are you a newbie learning C language? Do you feel character output is boring? Can C do more interesting things? Like making games?
+This demo program will answer your questions and lead you into the wonderful world of C graphics! Whether you just started or have been learning for a while, as long as you have VC or C-Free, you can enjoy this graphics feast...
+Before starting, please search "EGE" online, download and install it. If you encounter difficulties, you can join QQ group 1060223135 for assistance.
+(Press any key to continue)
+)";
+static const char* str_6 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Set color to green
+    setcolor(GREEN);
+    // Draw circle at x=200, y=100, radius 80
+    circle(200, 100, 80);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_7 = R"(#include "graphics.h"
+
+int main()
+{
+    // Initialize graphics window to 640*480
+    initgraph(640, 480);
+
+    // Draw circle at x=200, y=100, radius 80
+    circle(200, 100, 80);
+
+    getch(); // Wait for keypress
+    return 0;
+})";
+static const char* str_16 = R"(1. If I just learned Hello World
+2. If I just learned loops and branches
+3. If I just learned arrays and strings
+(More content to be added)
+)";
+static const char* str_3 = R"(Left side shows program result, source code below
+Press any key for next example)";
+static const char* str_15 = R"(1. If I just learned Hello World)";
+static const char* str_19 = R"(Are you a newbie learning C language?...)";
+static const char* str_11 = R"(Press any key to start bubble sort demo)";
+static const char* str_17 = R"(Press number key to select content)";
+static const char* str_13 = R"(Elapsed time: %d)";
+static const char* str_12 = R"(Sort complete)";
+static const char* str_2 = R"(Arial)";
+static const char* str_14 = R"(Arial)";
+static const char* str_loop_move_circle = R"(#include "graphics.h"
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1, color = 0; // x is circle x position, dx is velocity direction
+    // Main loop; exits when kbhit() detects a key
+    // delay_fps(60) keeps the loop at 60 FPS
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        cleardevice();
+        // Flip dx when hitting bounds
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        // Control x by dx
+        x += dx;
+        color += 1;
+        if (color >= 360)
+        {
+            color = 0;
+        }
+        // Use HSV color; see docs/Google
+        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_move_circle_rgb = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int x = 0, dx = 1; // x is circle x position, dx is velocity direction
+    // Main loop; exits when kbhit() detects a key
+    // delay_fps(60) keeps the loop at 60 FPS
+    for (; kbhit() == 0; delay_fps(60))
+    {
+        // clear screen
+        cleardevice();
+        // flip dx when hitting bounds
+        if (x >= 320)
+        {
+            dx = -1;
+        }
+        else if (x <= 0)
+        {
+            dx = 1;
+        }
+        // control x by dx
+        x += dx;
+        // choose color via RGB components
+        // red 0xFF, green 0x00, blue 0x80
+        setcolor(0xFF0080);
+        circle(x, 100, 100);
+    }
+    getch();
+    return 0;
+})";
+static const char* str_loop_sine_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; // declare variable x
+    // x goes from 0 to 320
+    for (int n = 0; n < 320; n++)
+    {
+        // map to floating range -8..8
+        double x = ((double)n - 160) / 20;
+        // compute y
+        double y = sin(x);
+        // map y back to screen coords
+        y = -y * 80 + 240;
+        // plot the point
+        putpixel(n, (int)y, WHITE);
+    }
+    // draw axes
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_loop_parabola_plot = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    int n; // declare variable x
+    // x goes from 0 to 320
+    for (int n = 0; n < 320; n++)
+    {
+        // map to floating range -2..2
+        double x = ((double)n - 160) / 80;
+        // compute y
+        double y = x * x;
+        // map y back to screen coords
+        y = -y * 80 + 240;
+        // plot the point
+        putpixel(n, (int)y, WHITE);
+    }
+    // draw axes
+    line(0, 240, 320, 240);
+    line(160, 0, 160, 480);
+    getch();
+    return 0;
+})";
+static const char* str_bubble_sort_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+void display(int arr[], int n)
+{
+    int a;
+    cleardevice();
+    for (a = 0; a < n; ++a)
+    {
+        setcolor(WHITE);
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));
+        fillellipse(100, 20 * a, 9, 9);
+    }
+    if (i >= 0)
+    {
+        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f)));
+        fillellipse(80, 20 * i + 30, 9, 9);
+        fillellipse(80, 20 * (i + 1) + 30, 9, 9);
+    }
+    delay(500);
+}
+
+int main()
+{
+    int arr[20];
+    int a, b;
+    initgraph(640, 480);
+    randomize();
+    for (a = 0; a < 20; ++a)
+    {
+        arr[a] = random(32);
+    }
+    display(arr, 20);
+    setfont(12, 0, "Arial");
+    outtextxy(0, 0, "Press any key to start");
+    getch();
+    cleardevice();
+    for (b = 20; b > 0; --b)
+    {
+        for (a = 1; a < b; ++a)
+        {
+            if ( arr[a] < arr[a-1])
+            {
+                int t = arr[a];
+                arr[a] = arr[b];
+                arr[b] = t;
+            }
+            display(arr, 20, a-1);
+        }
+    }
+    outtextxy(0, 0, "Sort complete");
+    return 0;
+})";
+static const char* str_timer_demo = R"(#include "graphics.h"
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+int main()
+{
+    initgraph(640, 480);
+    {
+        int t = clock(); // record start time
+        char str[100];
+        for (; kbhit() == 0; delay_fps(60))
+        {
+            cleardevice();
+            // write elapsed time to str
+            // simple timer that can become a stopwatch
+            sprintf(str, "Elapsed time: %d", clock() - t);
+            setfont(36, 0, "Arial");
+            outtextxy(0, 0, str);
+        }
+    }
+    getch();
+    return 0;
+})";
+
+#endif
+
+// Shared code snippets used by multiple scenes
+static const char* str_loop_checker_fillcolor = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    for (int y = 0; y < 480; y += 40)
+    {
+        for (int x = 0; x < 640; x += 40)
+        {
+            setfillcolor(((x / 40 + y / 40) & 1) ? BLACK : WHITE);
+            bar(x, y, x + 40, y + 40);
+        }
+    }
+    getch();
+    return 0;
+})";
+
+static const char* str_loop_checker_fillstyle = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    for (int y = 0; y < 480; y += 40)
+    {
+        for (int x = 0; x < 640; x += 40)
+        {
+            setfillstyle(((x / 40 + y / 40) & 1) ? SOLID_FILL : HATCH_FILL, RED);
+            bar(x, y, x + 40, y + 40);
+        }
+    }
+    getch();
+    return 0;
+})";
+
+static const char* str_loop_hsv_lines = R"(#include "graphics.h"
+
+int main()
+{
+    initgraph(640, 480);
+    for (int x = 0; x < 640; ++x)
+    {
+        float hue = (float)x / 640.0f * 360.0f;
+        setcolor(HSVtoRGB(hue, 1.0f, 1.0f));
+        line(x, 0, x, 480);
+    }
+    getch();
+    return 0;
+})";
+
 class SceneBase
 {
 public:
@@ -33,18 +771,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n\n    setcolor(RED);\n    //画弧线，以(100,100)为圆心，0度到180度，半径50\n    arc(100, 100, 0, 180, 50);\n    //同画弧线，只是位置不同\n    arc(200, 100, 0, 180, 50);\n    //从(50,100)到(150,200)画线\n    line(50, 100, 150, 200);\n    //从(250,100)到(150,200)画线\n    line(250, 100, 150, 200);\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+        auto* str = str_1;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return m_parent;
@@ -71,18 +809,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为黄色\n    setcolor(YELLOW);\n    //设置填充颜色为紫红色\n    setfillstyle(SOLID_FILL, MAGENTA);\n    //以(150,200)为圆心，x半径为50，y半径为100，画一个实心椭圆\n    fillellipse(150, 200, 50, 100);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+        auto* str = str_4;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneHelloWorld6(m_parent);
@@ -108,18 +846,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置填充颜色为绿色，注意是用来填充颜色\n    setfillstyle(SOLID_FILL, GREEN);\n    //从(100,100)到(200,400)画一个实心矩形，使用填充颜色\n    bar(100, 100, 200, 400);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+        auto* str = str_5;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneHelloWorld5(m_parent);
@@ -145,18 +883,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置颜色为绿色\n    setcolor(GREEN);\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+        auto* str = str_6;
         setbkcolor_f(BLACK);
         cleardevice();
 
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneHelloWorld4(m_parent);
@@ -179,19 +917,19 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //在x=200,y=100的地方，画一个半径80的圆\n    circle(200, 100, 80);\n\n    getch(); //等待用户按键，相当于暂停\n    return 0;\n}";
+        auto* str = str_7;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
 
         smain();
         {
-            setfont(12, 0, "宋体");
+            setfont(12, 0, str_2);
             setcolor(0x808080);
             line(320, 0, 320, 480);
             setcolor(0xFFFFFF);
             outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+            outtextrect(320, 0, 320, 400, str_3);
         }
         getch();
         return new SceneHelloWorld3(m_parent);
@@ -210,19 +948,19 @@ public:
     }
     SceneBase* Update()
     {
-        char str[] = "//由两个斜杠\'//\'开始后面的内容为注释，不影响编译\n//以下这个是PowerEasyX图形库的头文件，并不是TC图形的头文件，请注意\n//要正确编译本程序，请先为你的VC或者C-Free安装好PEX\n加了包含这个头文件后，就可以使用图形函数了\n#include \"graphics.h\"\n\nint main() //请使用int声明main，作为规范\n{\n    //图形窗口初始化为640*480大小\n    initgraph(640, 480);\n\n    //设置字体高度为20，宽度为默认值的宋体字\n    setfont(20, 0, \"宋体\");\n\n    //在x=100,y=0的地方开始，显示一段文字\n    outtextxy(100, 0, \"Hello World\");\n\n    //等待用户按键，相当于暂停，注意这是图形库的函数\n    getch();\n    return 0;\n}";
+        auto* str = str_8;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
-        setfont(20, 0, "宋体");
+        setfont(20, 0, str_2);
         outtextxy(100, 0, "Hello World");
         {
-            setfont(12, 0, "宋体");
+            setfont(12, 0, str_2);
             setcolor(0x808080);
             line(320, 0, 320, 480);
             setcolor(0xFFFFFF);
             outtextrect(320, 100, 320, 380, str);
-            outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+            outtextrect(320, 0, 320, 400, str_3);
         }
         getch();
         return new SceneHelloWorld2(m_parent);
@@ -265,28 +1003,15 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int y, x;\
-\n    setbkcolor(DARKGRAY);\
-\n    for (y = 0; y < 8; ++y)\
-\n    {\
-\n        for (x = 0; x < 8; ++x)\
-\n        {\
-\n            setfillcolor(((x^y)&1) ? BLACK : WHITE );\
-\n            bar(x * 30, y * 30,\
-\n                (x+1) * 30, (y+1) * 30));\
-\n        }\
-\n    }\
-\n    getch();\n    return 0;\n}";
+            auto* str = str_loop_checker_fillcolor;
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -343,28 +1068,15 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int y, x;\
-\n    setbkcolor(DARKGRAY);\
-\n    for (y = 0; y < 8; ++y)\
-\n    {\
-\n        for (x = 0; x < 8; ++x)\
-\n        {\
-\n            setfillstyle(SOLID_FILL, ((x^y)&1) ? BLACK : WHITE );\
-\n            bar(x * 30, y * 30,\
-\n                (x+1) * 30, (y+1) * 30));\
-\n        }\
-\n    }\
-\n    getch();\n    return 0;\n}";
+            auto* str = str_loop_checker_fillstyle;
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -417,24 +1129,15 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    {\
-\n        int y;\
-\n        for (y = 0; y < 360; ++y)\
-\n        {\
-\n            setcolor(HSVtoRGB((float)y, 1.0f, 1.0f));\
-\n            line(0, y, 200, y);\
-\n        }\
-\n    }\n    getch();\n    return 0;\n}";
+            auto* str = str_loop_hsv_lines;
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -502,42 +1205,15 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = "#include \"graphics.h\"\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int x = 0, dx = 1, color = 0; //x表示圆的横坐标，dx表示速度方向\
-\n    //动画主循环，kbhit()检测当前有没有按键，有就退出\
-\n    //delay_fps(60)控制这个循环每秒循环60次\
-\n    for (; kbhit() == 0; delay_fps(60))\
-\n    {\
-\n        cleardevice();\
-\n        //根据x来调整dx的符号\
-\n        if (x >= 320)\
-\n        {\
-\n            dx = -1;\
-\n        }\
-\n        else if (x <= 0)\
-\n        {\
-\n            dx = 1;\
-\n        }\
-\n        //通过对dx的控制，间接控制x的增减方向\
-\n        x += dx;\
-\n        color += 1;\
-\n        if (color >= 360)\
-\n        {\
-\n            color = 0;\
-\n        }\
-\n        //使用HSV方式指定颜色\
-\n        //关于HSV的介绍见图形库文档或者Google\
-\n        setcolor(HSVtoRGB((float)color, 1.0f, 1.0f));\
-\n        circle(x, 100, 100);\n    }\n    getch();\n    return 0;\n}";
+            auto* str = str_loop_move_circle;
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -600,38 +1276,15 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = "#include \"graphics.h\"\n\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    int x = 0, dx = 1; //x表示圆的横坐标，dx表示速度方向\
-\n    //动画主循环，kbhit()检测当前有没有按键，有就退出\
-\n    //delay_fps(60)控制这个循环每秒循环60次\
-\n    for (; kbhit() == 0; delay_fps(60))\
-\n    {\
-\n        //清屏\
-\n        cleardevice();\
-\n        //根据x来调整dx的符号\
-\n        if (x >= 320)\
-\n        {\
-\n            dx = -1;\
-\n        }\
-\n        else if (x <= 0)\
-\n        {\
-\n            dx = 1;\
-\n        }\
-\n        //通过对dx的控制，间接控制x的增减方向\
-\n        x += dx;\
-\n        //使用RGB分量方式指定颜色\
-\n        //红色为80，绿为0，蓝为FF\
-\n        setcolor(0xFF0080);\
-\n        circle(x, 100, 100);\n    }\n    getch();\n    return 0;\n}";
+            auto* str = str_loop_move_circle_rgb;
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -678,33 +1331,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int n; //声明变量x\n    //变量x从0到320，取出每个横坐标\
-\n    for (int n = 0; n < 320; n++)\
-\n    {\
-\n        //映射到-8到8的浮点数范围\
-\n        double x = ((double)n - 160) / 20;\
-\n        //计算对应的y\
-\n        double y = sin(x);\
-\n        //把y映射回屏幕坐标\
-\n        y = -y * 80 + 240;\
-\n        //画出这个点\
-\n        putpixel(n, (int)y, WHITE);\
-\n    }\
-\n    //画坐标轴\
-\n    line(0, 240, 320, 240);\
-\n    line(160, 0, 160, 480);\
-\n    getch();\n    return 0;\n}";
+        auto* str = str_loop_sine_plot;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
 
         smain();
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop5(m_parent);
@@ -737,33 +1375,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int n; //声明变量x\n    //变量x从0到320，取出每个横坐标\
-\n    for (int n = 0; n < 320; n++)\
-\n    {\
-\n        //映射到-2到2的浮点数范围\
-\n        double x = ((double)n - 160) / 80;\
-\n        //计算对应的y\
-\n        double y = x * x;\
-\n        //把y映射回屏幕坐标\
-\n        y = -y * 80 + 240;\
-\n        //画出这个点\
-\n        putpixel(n, (int)y, WHITE);\
-\n    }\
-\n    //画坐标轴\
-\n    line(0, 240, 320, 240);\
-\n    line(160, 0, 160, 480);\
-\n    getch();\n    return 0;\n}";
+        auto* str = str_loop_parabola_plot;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop4(m_parent);
@@ -791,18 +1414,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300，步长为3，这样画出虚线\n    for (x = 100; x < 300; x += 3)\n    {\n        //在y=100的地方画绿点，多个连续点构成线\n        putpixel(x, 100, GREEN);\n    }\n    getch();\n    return 0;\n}";
+        auto* str = str_9;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
         smain();
 
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop3(m_parent);
@@ -830,18 +1453,18 @@ public:
 
     SceneBase* Update()
     {
-        char str[] = "#include \"graphics.h\"\n\nint main()\n{\n    initgraph(640, 480);\n    int x; //声明变量x\n    //变量x从100到300\n    for (x = 100; x < 300; x++)\n    {\n        //在y=100的地方画红点，多个连续点构成线\n        putpixel(x, 100, RED);\n    }\n    getch();\n    return 0;\n}";
+        auto* str = str_10;
         setbkcolor_f(BLACK);
         cleardevice();
         setcolor(LIGHTGRAY);
 
         smain();
-        setfont(12, 0, "宋体");
+        setfont(12, 0, str_2);
         setcolor(0x808080);
         line(320, 0, 320, 480);
         setcolor(0xFFFFFF);
         outtextrect(320, 100, 320, 380, str);
-        outtextrect(320, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子");
+        outtextrect(320, 0, 320, 400, str_3);
 
         getch();
         return new SceneForLoop2(m_parent);
@@ -920,8 +1543,8 @@ public:
             arr[a] = random(32);
         }
         display(arr, 20, -1);
-        setfont(12, 0, "宋体");
-        outtextxy(0, 0, "请按任意键开始演示冒泡排序");
+        setfont(12, 0, str_2);
+        outtextxy(0, 0, str_11);
         info();
         getch();
         cleardevice();
@@ -938,73 +1561,23 @@ public:
                 display(arr, 20, a-1);
             }
         }
-        outtextxy(0, 0, "排序完成");
+        outtextxy(0, 0, str_12);
     }
 
     void info()
     {
         if (m_resettext)
         {
-            char str[] = "#include \"graphics.h\"\n#include <stdio.h>\n#include <time.h>\n#include <string.h>\
-\nvoid display(int arr[], int n)\
-\n{\
-\n    int a;\
-\n    cleardevice();\
-\n    for (a = 0; a < n; ++a)\
-\n    {\
-\n        setcolor(WHITE);\
-\n        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, (float)(arr[a] / 32.0)));\
-\n        fillellipse(100, 20 * a, 9, 9);\
-\n    }\
-\n    if (i >= 0)\
-\n    {\
-\n        setfillstyle(SOLID_FILL, HSLtoRGB(120.0f, 1.0f, 1.0f)));\
-\n        fillellipse(80, 20 * i + 30, 9, 9);\
-\n        fillellipse(80, 20 * (i + 1) + 30, 9, 9);\
-\n    }\
-\n    delay(500);\
-\n}\
-\nint main()\
-\n{\
-\n    int arr[20];\
-\n    int a, b;\
-\n    initgraph(640, 480);\
-\n    randomize();\
-\n    for (a = 0; a < 20; ++a)\
-\n    {\
-\n        arr[a] = random(32);\
-\n    }\
-\n    display(arr, 20);\
-\n    setfont(12, 0, \"宋体\");\
-\n    outtextxy(0, 0, \"请按任意键开始演示\");\
-\n    getch();\
-\n    cleardevice();\
-\n    for (b = 20; b > 0; --b)\
-\n    {\
-\n        for (a = 1; a < b; ++a)\
-\n        {\
-\n            if ( arr[a] < arr[a-1])\
-\n            {\
-\n                int t = arr[a];\
-\n                arr[a] = arr[b];\
-\n                arr[b] = t;\
-\n            }\
-\n            display(arr, 20, a-1);\
-\n        }\
-\n    }\
-\n    outtextxy(0, 0, \"排序完成\");\
-\n    return 0;\
-\n}\
-";
+            auto* str = str_bubble_sort_demo;
             m_resettext = 0;
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50 - m_dline * 12, 320, 2048, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -1051,8 +1624,8 @@ public:
         for (; kbhit() == 0; delay_fps(60))
         {
             cleardevice();
-            sprintf(str, "经过时间%d", clock() - t);
-            setfont(36, 0, "幼圆");
+            sprintf(str, str_13, clock() - t);
+            setfont(36, 0, str_14);
             outtextxy(0, 0, str);
             info();
         }
@@ -1062,30 +1635,15 @@ public:
     {
         if (getwidth(img) <= 1)
         {
-            char str[] = "#include \"graphics.h\"\n#include <stdio.h>\n#include <time.h>\n#include <string.h>\nint main()\n{\
-\n    initgraph(640, 480);\
-\n    {\
-\n        int t = clock(); //记录超始时间\
-\n        char str[100];\
-\n        for (; kbhit() == 0; delay_fps(60))\
-\n        {\
-\n            cleardevice();\
-\n            //把clock()-t的结果输出到字符串str\
-\n            //实现简单的计时，可扩展成秒表\
-\n            sprintf(str, \"经过时间%d\", clock() - t;\
-\n            setfont(36, 0, \"幼圆\");\
-\n            outtextxy(0, 0, str);\
-\n        }\
-\n    }\
-\n    getch();\n    return 0;\n}";
+            auto* str = str_timer_demo;
             resize(img, 320, 480);
-            setfont(12, 0, "宋体", img);
+            setfont(12, 0, str_2, img);
             setbkmode(TRANSPARENT, img);
             setcolor(0x808080, img);
             line(0, 0, 0, 480, img);
             setcolor(0xFFFFFF, img);
             outtextrect(0, 50, 320, 480, str, img);
-            outtextrect(0, 0, 320, 400, "左半边是程序运行结果，下面是相应的源代码\n按任意键查看下一个例子", img);
+            outtextrect(0, 0, 320, 400, str_3, img);
         }
         putimage(320, 0, img);
     }
@@ -1115,7 +1673,7 @@ public:
     SceneMenu()
     {
         memset(m_strlist, 0, sizeof(m_strlist));
-        strcpy(m_strlist[0], "1.如果我刚学会Hello World");
+        strcpy(m_strlist[0], str_15);
     }
 
     SceneBase* Update()
@@ -1123,9 +1681,9 @@ public:
         setbkcolor_f(0x808080);
         cleardevice();
         setcolor(0xFFFFFF);
-        setfont(24, 0, "宋体");
-        outtextrect(100, 200, 500, 500, "1.如果我刚刚学会Hello World\n2.如果我刚刚学会循环和分支\n3.如果我刚刚学会数组和字符串\n（更多内容有待添加）\n");
-        outtextxy(100, 100, "请按数字键选你要看的内容");
+        setfont(24, 0, str_2);
+        outtextrect(100, 200, 500, 500, str_16);
+        outtextxy(100, 100, str_17);
         int k;
         while (1)
         {
@@ -1158,18 +1716,18 @@ public:
     {
         memset(m_str, 0, sizeof(m_str));
         // 此处没有直接用宽字符串字面量初始化 m_str, 因为 VC6 会转出乱码
-        const char* str = "你是刚刚学习Ｃ语言的新手吗？你是不是觉得单纯的字符输出有点无聊？Ｃ语言只能做这些吗？能不能做更有趣的？比如写游戏？\r\n本演示程序就是为了给你解开这个疑惑，本程序将带你进入精彩的Ｃ语言图形世界！不管你现在的C是刚刚开始学，还是学了一段时间，只要你有VC或者C-Free，都可以享受这个图形的盛宴。。。\r\n在正式开始前，请你百度“EGE”，下载并按里面的说明文档安装好。如果安装时遇到什么困难，可以加QQ群1060223135说明你的情况，会有人协助你解决的。\r\n（请按任意键继续）\r\n";
+        const char* str = str_18;
         MultiByteToWideChar(getcodepage(), 0, str, -1, m_str, 1024);
 
         // 理想状态:
-        // wcscpy(m_str, L"你是刚刚学习Ｃ语言的新手吗？...");
+        // wcscpy(m_str, Lstr_19);
     }
 
     SceneBase* Update()
     {
         wchar_t str[1024] = {0};
         int len = 0;
-        setfont(20, 0, "宋体");
+        setfont(20, 0, str_2);
         for (len = 0 ; len<=0x80; delay_fps(60))
         {
             setbkcolor_f(EGERGB(len, len, len));

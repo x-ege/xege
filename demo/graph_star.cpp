@@ -3,6 +3,19 @@
 #include <time.h>
 #include <stdio.h>
 
+// 文本本地化宏定义
+#ifdef _MSC_VER
+// MSVC编译器使用中文文案
+#define TEXT_NO_CONFIG_MSG  "本屏幕保护程序无配置"
+#define TEXT_NO_CONFIG_TITLE "星空屏保"
+#define TEXT_FONT_NAME      "宋体"
+#else
+// 非MSVC编译器使用英文文案
+#define TEXT_NO_CONFIG_MSG  "This screensaver has no configuration"
+#define TEXT_NO_CONFIG_TITLE "Star Screensaver"
+#define TEXT_FONT_NAME      "Arial"
+#endif
+
 #define MAXSTAR 2000 // 星星总数
 int sc_width, sc_heigh; // 记录窗口宽高
 int g_max;
@@ -58,7 +71,7 @@ int preinit( int argc, char* argv[] ) {
         g_max = 200;
         return 1;
     } else if ( stricmp( argv[1], "/s" ) ) { // 非测试运行模式
-        MessageBoxA( NULL, "本屏幕保护程序无配置", "星空屏保", MB_OK );
+        MessageBoxA( NULL, TEXT_NO_CONFIG_MSG, TEXT_NO_CONFIG_TITLE, MB_OK );
         return -1;
     }
     return 0; // 全屏模式
@@ -86,7 +99,7 @@ int main( int argc, char* argv[] ) {
         star[i].x = randomf();
     }
     // 绘制星空，按任意键或移动鼠标退出
-    setfont( 12, 6, "宋体" );
+    setfont( 12, 6, TEXT_FONT_NAME );
     setrendermode( RENDER_MANUAL );
     dtime = fclock();
     while ( kbmsg() ) getkey();
