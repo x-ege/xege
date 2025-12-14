@@ -74,7 +74,7 @@ jobs:
           cd build-mingw-ubuntu
 
           # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
-          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DEGE_BUILD_DEMO=ON
 
           # Build the project
           cmake --build . --parallel $(nproc)
@@ -162,7 +162,7 @@ jobs:
           cd build-mingw-macos
 
           # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
-          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DEGE_BUILD_DEMO=ON
 
           # Build the project
           cmake --build . --parallel $(sysctl -n hw.ncpu)

@@ -90,7 +90,8 @@ jobs:
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
             -DCMAKE_RC_COMPILER=windres \
-            -DCMAKE_MAKE_PROGRAM=mingw32-make
+            -DCMAKE_MAKE_PROGRAM=mingw32-make \
+            -DEGE_BUILD_DEMO=ON
 
           # Build the project
           cmake --build . --parallel $(nproc)
@@ -170,7 +171,7 @@ jobs:
           mkdir build-winlibs-gcc14
           cd build-winlibs-gcc14
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DEGE_BUILD_DEMO=ON
           cmake --build . --parallel
 
       - name: Package artifacts
@@ -244,7 +245,7 @@ jobs:
           mkdir build-winlibs-gcc13
           cd build-winlibs-gcc13
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DEGE_BUILD_DEMO=ON
           cmake --build . --parallel
 
       - name: Package artifacts
