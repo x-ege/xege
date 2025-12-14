@@ -1,0 +1,415 @@
+name: Release Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 25.11)'
+        required: true
+        type: string
+      create_release:
+        description: 'Create GitHub Release'
+        required: false
+        default: true
+        type: boolean
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # Job 1: Build MSVC libraries
+  build-msvc-libraries:
+    name: Build MSVC Libraries (${{ matrix.name }})
+    strategy:
+      matrix:
+        include:
+          - name: VS2022
+            os: windows-latest
+            toolset: v143
+            lib_subdir: vs2022/x64
+          
+          - name: VS2019
+            os: windows-latest
+            toolset: v142
+            lib_subdir: vs2019/x64
+          
+          - name: VS2017
+            os: windows-2019
+            toolset: v141
+            lib_subdir: vs2017/x64
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@v1.1
+      
+      - name: Build ${{ matrix.name }}
+        run: |
+          mkdir build-release
+          cd build-release
+          cmake .. -T ${{ matrix.toolset }}
+          cmake --build . --config Release --parallel
+      
+      - name: Collect artifacts
+        shell: powershell
+        run: |
+          $libDir = "${{ matrix.lib_subdir }}" -replace '/', '\'
+          New-Item -ItemType Directory -Force -Path "artifacts\$libDir"
+          Get-ChildItem -Path "build-release" -Recurse -Filter "*.lib" | Copy-Item -Destination "artifacts\$libDir\"
+          Write-Host "Collected libraries:"
+          Get-ChildItem "artifacts\$libDir\"
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-${{ matrix.lib_subdir }}
+          path: artifacts/${{ matrix.lib_subdir }}/
+          retention-days: 7
+  
+  # Job 2: Build MinGW libraries on Windows
+  build-mingw-windows-libraries:
+    name: Build MinGW Windows (${{ matrix.name }})
+    strategy:
+      matrix:
+        include:
+          - name: MSYS2-Latest
+            lib_dir: mingw64
+            use_msys2: true
+          
+          - name: CodeBlocks-GCC14
+            lib_dir: codeblocks
+            use_msys2: false
+            gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.1-12.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64msvcrt-12.0.0-r2.zip"
+          
+          - name: CLion-GCC13
+            lib_dir: redpanda
+            use_msys2: false
+            gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip"
+    
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup MSYS2 MinGW
+        if: matrix.use_msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-ninja
+            make
+            git
+      
+      - name: Build with MSYS2
+        if: matrix.use_msys2
+        shell: msys2 {0}
+        run: |
+          rm -rf build-release
+          mkdir -p build-release
+          cd build-release
+          
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --parallel $(nproc)
+          
+          mkdir -p ../artifacts/${{ matrix.lib_dir }}
+          find . -name "*.a" -exec cp {} ../artifacts/${{ matrix.lib_dir }}/ \;
+          
+          echo "Collected libraries:"
+          ls -la ../artifacts/${{ matrix.lib_dir }}/
+      
+      - name: Download and Setup WinLibs GCC
+        if: ${{ !matrix.use_msys2 }}
+        shell: powershell
+        run: |
+          $url = "${{ matrix.gcc_url }}"
+          $output = "mingw64.zip"
+          Write-Host "Downloading ${{ matrix.name }}..."
+          Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
+          Write-Host "Extracting..."
+          Expand-Archive -Path $output -DestinationPath "C:\mingw-custom" -Force
+          Remove-Item $output
+      
+      - name: Build with WinLibs
+        if: ${{ !matrix.use_msys2 }}
+        shell: cmd
+        run: |
+          set PATH=C:\mingw-custom\mingw64\bin;%PATH%
+          
+          mkdir build-release
+          cd build-release
+          
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --parallel
+      
+      - name: Collect WinLibs artifacts
+        if: ${{ !matrix.use_msys2 }}
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path "artifacts/${{ matrix.lib_dir }}"
+          Get-ChildItem -Path "build-release" -Recurse -Filter "*.a" | Copy-Item -Destination "artifacts/${{ matrix.lib_dir }}/"
+          Write-Host "Collected libraries:"
+          Get-ChildItem "artifacts/${{ matrix.lib_dir }}/"
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-${{ matrix.lib_dir }}
+          path: artifacts/${{ matrix.lib_dir }}/
+          retention-days: 7
+  
+  # Job 3: Build cross-compile libraries
+  build-cross-libraries:
+    name: Build Cross-Compile (${{ matrix.name }})
+    strategy:
+      matrix:
+        include:
+          - name: Ubuntu-MinGW
+            os: ubuntu-latest
+            lib_dir: mingw-w64-debian
+          
+          - name: macOS-MinGW
+            os: macos-latest
+            lib_dir: macOS
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Install MinGW-w64 (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 cmake make git
+      
+      - name: Install MinGW-w64 (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update
+          brew install mingw-w64 cmake
+      
+      - name: Build
+        run: |
+          rm -rf build-release
+          mkdir -p build-release
+          cd build-release
+          
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --parallel
+          
+          mkdir -p ../artifacts/${{ matrix.lib_dir }}
+          find . -name "*.a" -exec cp {} ../artifacts/${{ matrix.lib_dir }}/ \;
+          
+          echo "Collected libraries:"
+          ls -la ../artifacts/${{ matrix.lib_dir }}/
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-${{ matrix.lib_dir }}
+          path: artifacts/${{ matrix.lib_dir }}/
+          retention-days: 7
+  
+  # Job 4: Create release package
+  create-release-package:
+    name: Create Release Package
+    needs: [build-msvc-libraries, build-mingw-windows-libraries, build-cross-libraries]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Extract version from tag (v25.11 -> 25.11)
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+      
+      - name: Download all library artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: libs-*
+          path: artifacts/
+      
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full tree rsync
+      
+      - name: Create release package structure
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          RELEASE_DIR="ege-${VERSION}"
+          echo "Creating release directory: $RELEASE_DIR"
+          
+          # Create base directory structure
+          mkdir -p "$RELEASE_DIR"/{demo,doc,include,lib}
+          
+          # Copy demo files (exclude CMake and build-related files)
+          echo "Copying demo files..."
+          rsync -av --exclude='CMakeLists.txt' \
+                    --exclude='ege_release.cmake' \
+                    --exclude='compile-tests' \
+                    demo/ "$RELEASE_DIR/demo/"
+          
+          # Copy include directory
+          echo "Copying include directory..."
+          cp -r include "$RELEASE_DIR/"
+          
+          # Copy doc directory
+          echo "Copying doc directory..."
+          if [ -d "doc" ]; then
+            cp -r doc "$RELEASE_DIR/"
+          fi
+          
+          # Copy man directory
+          echo "Copying man directory..."
+          if [ -d "man" ]; then
+            cp -r man "$RELEASE_DIR/"
+          fi
+          
+          # Copy release CMakeLists.txt
+          echo "Copying CMakeLists.txt..."
+          cp release/CMakeLists.txt "$RELEASE_DIR/"
+          
+          # Copy logo
+          if [ -f "egelogo.jpg" ]; then
+            cp egelogo.jpg "$RELEASE_DIR/"
+          fi
+          
+          # Copy README as 说明.txt
+          if [ -f "README.md" ]; then
+            cp README.md "$RELEASE_DIR/说明.txt"
+          fi
+          
+          # Organize library artifacts
+          echo "Organizing library artifacts..."
+          
+          # List downloaded artifacts
+          echo "Downloaded artifacts:"
+          find artifacts/ -type f
+          
+          # MSVC libraries (vs2022, vs2019, vs2017)
+          for vsver in vs2022 vs2019 vs2017; do
+            if [ -d "artifacts/libs-${vsver}" ]; then
+              mkdir -p "$RELEASE_DIR/lib/${vsver}/x64"
+              find "artifacts/libs-${vsver}" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/${vsver}/x64/" \; 2>/dev/null || true
+            fi
+          done
+          
+          # MinGW libraries
+          for mingw_dir in mingw64 codeblocks redpanda mingw-w64-debian macOS; do
+            if [ -d "artifacts/libs-${mingw_dir}" ]; then
+              mkdir -p "$RELEASE_DIR/lib/${mingw_dir}"
+              find "artifacts/libs-${mingw_dir}" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/${mingw_dir}/" \; 2>/dev/null || true
+            fi
+          done
+          
+          # Show the structure
+          echo "Release package structure:"
+          tree -L 3 "$RELEASE_DIR" || find "$RELEASE_DIR" -type d | sort
+          
+          echo "Library files:"
+          find "$RELEASE_DIR/lib" -type f
+          
+          # Create version.txt
+          echo "$VERSION" > "$RELEASE_DIR/version.txt"
+      
+      - name: Create archives
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          RELEASE_DIR="ege-${VERSION}"
+          
+          echo "Creating 7z archive..."
+          7z a -t7z -mx=9 "${RELEASE_DIR}.7z" "$RELEASE_DIR"
+          
+          echo "Creating zip archive..."
+          7z a -tzip -mx=9 "${RELEASE_DIR}.zip" "$RELEASE_DIR"
+          
+          echo "Archive sizes:"
+          ls -lh "${RELEASE_DIR}.7z" "${RELEASE_DIR}.zip"
+      
+      - name: Upload release package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ege-release-${{ steps.version.outputs.VERSION }}
+          path: |
+            ege-*.7z
+            ege-*.zip
+          retention-days: 90
+      
+      - name: Create GitHub Release
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', steps.version.outputs.VERSION) }}
+          name: EGE ${{ steps.version.outputs.VERSION }}
+          draft: true
+          files: |
+            ege-*.7z
+            ege-*.zip
+          body: |
+            # EGE ${{ steps.version.outputs.VERSION }} Release
+            
+            ## 下载说明 / Download Instructions
+            
+            - **ege-${{ steps.version.outputs.VERSION }}.7z** - 完整发布包 (推荐，体积更小)
+            - **ege-${{ steps.version.outputs.VERSION }}.zip** - 完整发布包 (ZIP 格式)
+            
+            ## 包含内容 / Contents
+            
+            - **demo/** - 示例程序源代码
+            - **doc/** - 文档
+            - **include/** - 头文件
+            - **lib/** - 静态库文件
+              - vs2022/vs2019/vs2017 - Visual Studio 静态库
+              - mingw64 - MinGW-w64 (MSYS2) 静态库
+              - codeblocks - Code::Blocks 25.03 静态库
+              - redpanda - CLion/小熊猫C++ 静态库
+              - mingw-w64-debian - Ubuntu 交叉编译静态库
+              - macOS - macOS 交叉编译静态库
+            - **man/** - API 文档
+            - **CMakeLists.txt** - CMake 项目文件
+            
+            ## 使用方法 / Usage
+            
+            解压后可直接使用 CMake 构建示例程序：
+            
+            ```bash
+            cd ege-${{ steps.version.outputs.VERSION }}
+            mkdir build && cd build
+            cmake ..
+            cmake --build .
+            ```
+            
+            详细使用说明请查看 [官方文档](https://xege.org) 和包内的 `说明.txt` 文件。
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
