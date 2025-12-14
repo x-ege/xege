@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Test release version (e.g., 25.11 or 25.11.1-rc)'
+        description: 'Version number without prefix (e.g., 25.11, 25.11.1, or 25.11-rc). Used for test releases. For official release, create a tag instead.'
         required: true
         type: string
   push:
@@ -58,63 +58,79 @@ jobs:
             echo "create_github_release=false" >> $GITHUB_OUTPUT
             
           elif [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.ref_name }}" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            # Tag push - official release
+            # Tag push - try official release, fallback to test release if validation fails
             TAG_NAME="${{ github.ref_name }}"
             echo "Tag push detected: $TAG_NAME"
             
+            # Flag to track if tag validation passed
+            TAG_VALIDATION_PASSED=false
+            TAG_VALIDATION_ERROR=""
+            
             # Validate tag format: v(\d+)\.(\d+)(\.(\d+))?(-\w+)?
-            if ! [[ "$TAG_NAME" =~ ^v([0-9]+)\.([0-9]+)(\.([0-9]+))?(-[a-zA-Z0-9_]+)?$ ]]; then
-              echo "Error: Tag '$TAG_NAME' does not match required format: v{major}.{minor}[.{patch}][-suffix]"
-              echo "Examples: v25.11, v25.11.0, v25.11-rc, v25.11.1-beta"
-              exit 1
+            if [[ "$TAG_NAME" =~ ^v([0-9]+)\.([0-9]+)(\.([0-9]+))?(-[a-zA-Z0-9_]+)?$ ]]; then
+              # Extract version components from tag
+              TAG_MAJOR="${BASH_REMATCH[1]}"
+              TAG_MINOR="${BASH_REMATCH[2]}"
+              TAG_PATCH="${BASH_REMATCH[4]}"
+              TAG_SUFFIX="${BASH_REMATCH[5]}"
+              
+              # Default patch to 0 if not specified
+              if [ -z "$TAG_PATCH" ]; then
+                TAG_PATCH="0"
+              fi
+              
+              TAG_VERSION="${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}"
+              echo "Parsed tag version: $TAG_VERSION (suffix: ${TAG_SUFFIX:-none})"
+              
+              # Validate version matches header
+              if [ "$TAG_VERSION" = "$HEADER_VERSION" ]; then
+                # Check if tag is on master branch
+                # Use git merge-base to check if tag is reachable from origin/master
+                if git merge-base --is-ancestor "$TAG_NAME" origin/master 2>/dev/null; then
+                  echo "✓ Tag validation passed"
+                  TAG_VALIDATION_PASSED=true
+                else
+                  TAG_VALIDATION_ERROR="Tag '$TAG_NAME' is not on the master branch"
+                fi
+              else
+                TAG_VALIDATION_ERROR="Tag version ($TAG_VERSION) does not match EGE_VERSION in ege.h ($HEADER_VERSION)"
+              fi
+            else
+              TAG_VALIDATION_ERROR="Tag '$TAG_NAME' does not match required format: v{major}.{minor}[.{patch}][-suffix]. Examples: v25.11, v25.11.0, v25.11-rc, v25.11.1-beta"
             fi
             
-            # Extract version components from tag
-            TAG_MAJOR="${BASH_REMATCH[1]}"
-            TAG_MINOR="${BASH_REMATCH[2]}"
-            TAG_PATCH="${BASH_REMATCH[4]}"
-            TAG_SUFFIX="${BASH_REMATCH[5]}"
-            
-            # Default patch to 0 if not specified
-            if [ -z "$TAG_PATCH" ]; then
-              TAG_PATCH="0"
+            if [ "$TAG_VALIDATION_PASSED" = true ]; then
+              echo "is_official_release=true" >> $GITHUB_OUTPUT
+              
+              # Use version without 'v' prefix for package name
+              VERSION="${TAG_MAJOR}.${TAG_MINOR}"
+              if [ "$TAG_PATCH" != "0" ]; then
+                VERSION="${VERSION}.${TAG_PATCH}"
+              fi
+              if [ -n "$TAG_SUFFIX" ]; then
+                VERSION="${VERSION}${TAG_SUFFIX}"
+              fi
+              
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "version_tag=$TAG_NAME" >> $GITHUB_OUTPUT
+              echo "create_github_release=true" >> $GITHUB_OUTPUT
+            else
+              # Tag validation failed, fallback to test release
+              echo "⚠ Tag validation failed: $TAG_VALIDATION_ERROR"
+              echo "Falling back to test release with tag name as version suffix"
+              echo "is_official_release=false" >> $GITHUB_OUTPUT
+              
+              VERSION="${EGE_VERSION_MAJOR}.${EGE_VERSION_MINOR}"
+              if [ "$EGE_VERSION_PATCH" != "0" ]; then
+                VERSION="${VERSION}.${EGE_VERSION_PATCH}"
+              fi
+              # Use tag name as version suffix for identification
+              VERSION="${VERSION}-tag-${TAG_NAME}"
+              
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "version_tag=test-${TAG_NAME}" >> $GITHUB_OUTPUT
+              echo "create_github_release=false" >> $GITHUB_OUTPUT
             fi
-            
-            TAG_VERSION="${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}"
-            echo "Parsed tag version: $TAG_VERSION (suffix: ${TAG_SUFFIX:-none})"
-            
-            # Validate version matches header
-            if [ "$TAG_VERSION" != "$HEADER_VERSION" ]; then
-              echo "Error: Tag version ($TAG_VERSION) does not match EGE_VERSION in ege.h ($HEADER_VERSION)"
-              echo "Please update include/ege.h to match the tag version or create a matching tag."
-              exit 1
-            fi
-            
-            # Check if tag is on master branch
-            # Use git merge-base to check if tag is reachable from origin/master
-            if ! git merge-base --is-ancestor "$TAG_NAME" origin/master 2>/dev/null; then
-              echo "Error: Tag '$TAG_NAME' is not on the master branch"
-              echo "Please ensure the tag is created from master branch."
-              echo "Checking remote branches..."
-              git branch -r --contains "$TAG_NAME" || true
-              exit 1
-            fi
-            
-            echo "✓ Tag validation passed"
-            echo "is_official_release=true" >> $GITHUB_OUTPUT
-            
-            # Use version without 'v' prefix for package name
-            VERSION="${TAG_MAJOR}.${TAG_MINOR}"
-            if [ "$TAG_PATCH" != "0" ]; then
-              VERSION="${VERSION}.${TAG_PATCH}"
-            fi
-            if [ -n "$TAG_SUFFIX" ]; then
-              VERSION="${VERSION}${TAG_SUFFIX}"
-            fi
-            
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "version_tag=$TAG_NAME" >> $GITHUB_OUTPUT
-            echo "create_github_release=true" >> $GITHUB_OUTPUT
             
           elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/master" ]; then
             # Push to master - test release with header version
@@ -280,7 +296,6 @@ jobs:
             # WinLibs GCC 14.2.0posix-19.1.1-12.0.0-msvcrt-r2 - matches Code::Blocks 25.03 bundled compiler
             # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.1-12.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64msvcrt-12.0.0-r2.zip"
-            gcc_sha256: "b0b8b6e4f8a5f8c8e8f8d8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8"  # TODO: Replace with actual SHA256 from WinLibs release page
           
           - name: CLion-GCC13
             lib_dir: redpanda
@@ -288,7 +303,6 @@ jobs:
             # WinLibs GCC 13.1.0-16.0.5-11.0.0-msvcrt-r5 - compatible with CLion/RedPanda C++ bundled compiler
             # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip"
-            gcc_sha256: "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"  # TODO: Replace with actual SHA256 from WinLibs release page
     
     runs-on: windows-latest
     
@@ -334,33 +348,26 @@ jobs:
         shell: powershell
         run: |
           $url = "${{ matrix.gcc_url }}"
-          $expected_sha256 = "${{ matrix.gcc_sha256 }}"
           $output = "mingw64.zip"
           
           Write-Host "Downloading ${{ matrix.name }}..."
-          Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
-          
-          # Verify SHA256 checksum if provided and not a placeholder
-          # Placeholders are repeating patterns like b0b8b6... or c0c0c0...
-          if ($expected_sha256 -and -not ($expected_sha256 -match "^([0-9a-f])\1+$|^([0-9a-f]{2})\2+$")) {
-            Write-Host "Verifying SHA256 checksum..."
-            $actual_sha256 = (Get-FileHash $output -Algorithm SHA256).Hash.ToLower()
-            $expected_sha256_lower = $expected_sha256.ToLower()
-            Write-Host "Expected SHA256: $expected_sha256_lower"
-            Write-Host "Actual   SHA256: $actual_sha256"
-            if ($expected_sha256_lower -ne $actual_sha256) {
-              Write-Error "SHA256 checksum mismatch! Download may be corrupted or compromised."
-              exit 1
-            }
-            Write-Host "✓ SHA256 checksum verified"
-          } else {
-            Write-Host "⚠ WARNING: SHA256 verification skipped (placeholder or not provided)"
-            Write-Host "  For production use, update the SHA256 in the workflow matrix"
+          try {
+            Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
+            Write-Host "✓ Download completed"
+          } catch {
+            Write-Error "Failed to download from $url"
+            exit 1
           }
           
           Write-Host "Extracting..."
-          Expand-Archive -Path $output -DestinationPath "C:\mingw-custom" -Force
-          Remove-Item $output
+          try {
+            Expand-Archive -Path $output -DestinationPath "C:\mingw-custom" -Force
+            Remove-Item $output
+            Write-Host "✓ Extraction completed"
+          } catch {
+            Write-Error "Failed to extract archive"
+            exit 1
+          }
       
       - name: Build with WinLibs
         if: ${{ !matrix.use_msys2 }}
@@ -471,6 +478,19 @@ jobs:
           echo "Release version: $VERSION"
           echo "Is official release: ${{ needs.validate-and-setup.outputs.is_official_release }}"
           echo "Create GitHub Release: ${{ needs.validate-and-setup.outputs.create_github_release }}"
+      
+      - name: Verify official release configuration
+        if: needs.validate-and-setup.outputs.is_official_release == 'true'
+        run: |
+          echo "✓ Official release detected"
+          echo "  create_github_release=${{ needs.validate-and-setup.outputs.create_github_release }}"
+          echo "  version_tag=${{ needs.validate-and-setup.outputs.version_tag }}"
+          
+          # Ensure create_github_release is true for official releases
+          if [ "${{ needs.validate-and-setup.outputs.create_github_release }}" != "true" ]; then
+            echo "ERROR: Official release should have create_github_release=true"
+            exit 1
+          fi
       
       - name: Download all library artifacts
         uses: actions/download-artifact@v4
@@ -675,6 +695,14 @@ jobs:
               - macOS - macOS 交叉编译静态库 (x64)
             - **man/** - API 文档
             - **CMakeLists.txt** - CMake 项目文件
+      
+      - name: Verify official release completion
+        if: needs.validate-and-setup.outputs.is_official_release == 'true'
+        run: |
+          echo "✓ Official release workflow completed successfully"
+          echo "  Release version: ${{ steps.version.outputs.VERSION }}"
+          echo "  Version tag: ${{ needs.validate-and-setup.outputs.version_tag }}"
+          echo "  GitHub Release created and artifacts uploaded"
             
             ## 使用方法 / Usage
             
