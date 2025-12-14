@@ -8,35 +8,71 @@ This workflow automates the creation of EGE release packages, replacing the prev
 
 ## 触发方式 / Triggering Methods
 
-### 方法 1: 自动触发（推荐） / Method 1: Automatic (Recommended)
+### 方法 1: 正式发布 (Official Release) - 推荐 / Method 1: Official Release (Recommended)
 
-推送版本标签时自动触发：
+推送符合规则的版本标签时自动触发：
 
 ```bash
-git tag v25.11
+git tag v25.11      # 或 v25.11.0, v25.11-rc 等
 git push origin v25.11
 ```
 
-工作流会自动：
-1. 构建所有平台的库文件
-2. 创建发布包
-3. 创建 GitHub Release（草稿模式）
+**标签格式规则 / Tag Format Rules:**
+- 格式: `v{major}.{minor}[.{patch}][-suffix]`
+- 示例 / Examples: `v25.11`, `v25.11.0`, `v25.11-rc`, `v25.11.1-beta`
+- 正则表达式 / Regex: `/^v(\d+)\.(\d+)(\.\d+)?(-\w+)?$/`
 
-The workflow will automatically:
-1. Build libraries for all platforms
-2. Create release packages
-3. Create a GitHub Release (draft mode)
+**验证流程 / Validation Process:**
+1. 验证标签格式是否正确
+2. 验证标签版本与 `include/ege.h` 中的 `EGE_VERSION` 是否匹配
+3. 验证标签是否存在于 master 分支
+4. 构建所有平台的库文件
+5. 创建发布包
+6. 创建 GitHub Release（草稿模式）
 
-### 方法 2: 手动触发 / Method 2: Manual
+The workflow will:
+1. Validate tag format
+2. Verify tag version matches `EGE_VERSION` in `include/ege.h`
+3. Ensure tag is on master branch
+4. Build libraries for all platforms
+5. Create release packages
+6. Create a GitHub Release (draft mode)
+
+### 方法 2: 测试发布 (Test Release) - 手动触发 / Method 2: Test Release (Manual)
 
 1. 访问 GitHub Actions 页面
 2. 选择 "Release Package" 工作流
 3. 点击 "Run workflow"
-4. 输入版本号（如 `25.11`）
-5. 选择是否创建 GitHub Release
-6. 点击 "Run workflow"
+4. 输入测试版本号（如 `25.11-test` 或 `25.11.1-rc`）
+5. 点击 "Run workflow"
 
-Visit GitHub Actions page, select "Release Package" workflow, click "Run workflow", enter version number, and run.
+**注意 / Notes:**
+- 测试发布**不会**创建 GitHub Release
+- 制品可在 Actions 页面下载（保留 90 天）
+- 适用于测试和验证发布流程
+
+Test releases:
+- Will **NOT** create a GitHub Release
+- Artifacts available on Actions page (90 days retention)
+- Suitable for testing and validation
+
+### 方法 3: 自动测试发布 / Method 3: Automatic Test Release
+
+当 master 分支更新时（非标签推送），自动触发测试发布：
+
+```bash
+git push origin master
+```
+
+工作流会使用 `include/ege.h` 中的版本号加上 commit SHA 创建测试发布：
+- 版本格式: `{version}-dev-{short_sha}`
+- 示例: `25.11-dev-a1b2c3d`
+- 不创建 GitHub Release
+
+When master branch is updated (not a tag push), a test release is automatically triggered:
+- Version format: `{version}-dev-{short_sha}`
+- Example: `25.11-dev-a1b2c3d`
+- No GitHub Release created
 
 ## 工作流程 / Workflow Process
 
@@ -105,29 +141,48 @@ ege-{version}/
 
 ## 发布流程 / Release Process
 
+### 正式发布流程 / Official Release Process
+
 ### 1. 准备发布 / Prepare Release
 
 确保：
 - 代码已合并到 master 分支
 - RELEASE.md 已更新
+- **`include/ege.h` 中的 `EGE_VERSION_MAJOR`, `EGE_VERSION_MINOR`, `EGE_VERSION_PATCH` 已更新**
 - 版本号已确定
 
 Ensure:
 - Code is merged to master
 - RELEASE.md is updated
+- **`EGE_VERSION_MAJOR`, `EGE_VERSION_MINOR`, `EGE_VERSION_PATCH` in `include/ege.h` are updated**
 - Version number is determined
 
-### 2. 触发构建 / Trigger Build
+### 2. 创建并推送标签 / Create and Push Tag
 
-使用上述任一方法触发工作流。
+```bash
+# 确保在 master 分支
+git checkout master
+git pull
 
-Use either method above to trigger the workflow.
+# 创建标签（版本号必须与 ege.h 匹配）
+git tag v25.11      # 如果 ege.h 中是 25.11.0
+# 或
+git tag v25.11.1    # 如果 ege.h 中是 25.11.1
+
+# 推送标签
+git push origin v25.11
+```
 
 ### 3. 等待构建 / Wait for Build
 
 工作流需要约 30-60 分钟完成所有构建。
 
 The workflow takes approximately 30-60 minutes to complete all builds.
+
+**监控构建 / Monitor Build:**
+1. 访问 Actions 页面
+2. 查看 "Release Package" 工作流
+3. 检查验证步骤是否通过
 
 ### 4. 检查草稿发布 / Check Draft Release
 
@@ -149,7 +204,42 @@ Check:
 
 If everything looks good, click "Publish release".
 
+### 测试发布流程 / Test Release Process
+
+1. 手动触发工作流（见方法 2）
+2. 等待构建完成
+3. 在 Actions 页面下载制品
+4. 本地测试发布包
+
 ## 故障排查 / Troubleshooting
+
+### 验证失败 / Validation Failures
+
+#### 1. 标签格式错误 / Tag Format Error
+```
+Error: Tag 'vXXX' does not match required format
+```
+**解决方法 / Solution:**
+- 使用正确格式: `v{major}.{minor}[.{patch}][-suffix]`
+- 示例: `v25.11`, `v25.11.0`, `v25.11-rc`
+
+#### 2. 版本不匹配 / Version Mismatch
+```
+Error: Tag version (X.X.X) does not match EGE_VERSION in ege.h (Y.Y.Y)
+```
+**解决方法 / Solution:**
+1. 检查 `include/ege.h` 中的版本号
+2. 更新头文件版本号或使用匹配的标签
+3. 确保 `EGE_VERSION_MAJOR`, `EGE_VERSION_MINOR`, `EGE_VERSION_PATCH` 都正确
+
+#### 3. 标签不在 master 分支 / Tag Not On Master
+```
+Error: Tag 'vX.X' is not on the master branch
+```
+**解决方法 / Solution:**
+1. 切换到 master 分支
+2. 确保代码已合并到 master
+3. 从 master 分支创建标签
 
 ### 库文件缺失 / Missing Libraries
 
@@ -162,14 +252,16 @@ If everything looks good, click "Publish release".
 ### 工作流失败 / Workflow Failure
 
 常见原因：
-1. **编译错误**: 检查源代码是否有问题
-2. **依赖下载失败**: 网络问题，重新运行工作流
-3. **权限问题**: 确保 GITHUB_TOKEN 有正确权限
+1. **验证错误**: 检查标签格式和版本号
+2. **编译错误**: 检查源代码是否有问题
+3. **依赖下载失败**: 网络问题，重新运行工作流
+4. **权限问题**: 确保 GITHUB_TOKEN 有正确权限
 
 Common causes:
-1. **Compilation errors**: Check source code
-2. **Download failures**: Network issues, re-run workflow
-3. **Permission issues**: Ensure GITHUB_TOKEN has correct permissions
+1. **Validation errors**: Check tag format and version number
+2. **Compilation errors**: Check source code
+3. **Download failures**: Network issues, re-run workflow
+4. **Permission issues**: Ensure GITHUB_TOKEN has correct permissions
 
 ### 制品缺失 / Missing Artifacts
 

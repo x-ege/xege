@@ -4,25 +4,143 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g., 25.11)'
+        description: 'Test release version (e.g., 25.11 or 25.11.1-rc)'
         required: true
         type: string
-      create_release:
-        description: 'Create GitHub Release'
-        required: false
-        default: true
-        type: boolean
   push:
     tags:
       - 'v*'
+    branches:
+      - master
 
 permissions:
   contents: write  # Required for creating releases and uploading assets
 
 jobs:
+  # Job 0: Validate and determine release type
+  validate-and-setup:
+    name: Validate and Setup Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      is_official_release: ${{ steps.validate.outputs.is_official_release }}
+      version: ${{ steps.validate.outputs.version }}
+      version_tag: ${{ steps.validate.outputs.version_tag }}
+      create_github_release: ${{ steps.validate.outputs.create_github_release }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history to check branch
+      
+      - name: Validate release and extract version
+        id: validate
+        run: |
+          set -e
+          
+          # Extract version from ege.h
+          EGE_VERSION_MAJOR=$(grep -oP '#define\s+EGE_VERSION_MAJOR\s+\K\d+' include/ege.h)
+          EGE_VERSION_MINOR=$(grep -oP '#define\s+EGE_VERSION_MINOR\s+\K\d+' include/ege.h)
+          EGE_VERSION_PATCH=$(grep -oP '#define\s+EGE_VERSION_PATCH\s+\K\d+' include/ege.h)
+          HEADER_VERSION="${EGE_VERSION_MAJOR}.${EGE_VERSION_MINOR}.${EGE_VERSION_PATCH}"
+          
+          echo "Header version: $HEADER_VERSION"
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual trigger - test release
+            VERSION="${{ inputs.version }}"
+            echo "Manual test release triggered with version: $VERSION"
+            echo "is_official_release=false" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "version_tag=test-$VERSION" >> $GITHUB_OUTPUT
+            echo "create_github_release=false" >> $GITHUB_OUTPUT
+            
+          elif [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.ref_name }}" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            # Tag push - official release
+            TAG_NAME="${{ github.ref_name }}"
+            echo "Tag push detected: $TAG_NAME"
+            
+            # Validate tag format: v(\d+)\.(\d+)(\.(\d+))?(-\w+)?
+            if ! [[ "$TAG_NAME" =~ ^v([0-9]+)\.([0-9]+)(\.([0-9]+))?(-[a-zA-Z0-9_]+)?$ ]]; then
+              echo "Error: Tag '$TAG_NAME' does not match required format: v{major}.{minor}[.{patch}][-suffix]"
+              echo "Examples: v25.11, v25.11.0, v25.11-rc, v25.11.1-beta"
+              exit 1
+            fi
+            
+            # Extract version components from tag
+            TAG_MAJOR="${BASH_REMATCH[1]}"
+            TAG_MINOR="${BASH_REMATCH[2]}"
+            TAG_PATCH="${BASH_REMATCH[4]}"
+            TAG_SUFFIX="${BASH_REMATCH[5]}"
+            
+            # Default patch to 0 if not specified
+            if [ -z "$TAG_PATCH" ]; then
+              TAG_PATCH="0"
+            fi
+            
+            TAG_VERSION="${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}"
+            echo "Parsed tag version: $TAG_VERSION (suffix: ${TAG_SUFFIX:-none})"
+            
+            # Validate version matches header
+            if [ "$TAG_VERSION" != "$HEADER_VERSION" ]; then
+              echo "Error: Tag version ($TAG_VERSION) does not match EGE_VERSION in ege.h ($HEADER_VERSION)"
+              echo "Please update include/ege.h to match the tag version or create a matching tag."
+              exit 1
+            fi
+            
+            # Check if tag is on master branch
+            if ! git branch --contains "$TAG_NAME" | grep -q "master"; then
+              echo "Error: Tag '$TAG_NAME' is not on the master branch"
+              echo "Please ensure the tag is created from master branch."
+              exit 1
+            fi
+            
+            echo "✓ Tag validation passed"
+            echo "is_official_release=true" >> $GITHUB_OUTPUT
+            
+            # Use version without 'v' prefix for package name
+            VERSION="${TAG_MAJOR}.${TAG_MINOR}"
+            if [ "$TAG_PATCH" != "0" ]; then
+              VERSION="${VERSION}.${TAG_PATCH}"
+            fi
+            if [ -n "$TAG_SUFFIX" ]; then
+              VERSION="${VERSION}${TAG_SUFFIX}"
+            fi
+            
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "version_tag=$TAG_NAME" >> $GITHUB_OUTPUT
+            echo "create_github_release=true" >> $GITHUB_OUTPUT
+            
+          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            # Push to master - test release with header version
+            VERSION="${EGE_VERSION_MAJOR}.${EGE_VERSION_MINOR}"
+            if [ "$EGE_VERSION_PATCH" != "0" ]; then
+              VERSION="${VERSION}.${EGE_VERSION_PATCH}"
+            fi
+            COMMIT_SHA="${{ github.sha }}"
+            COMMIT_SHORT=$(echo "$COMMIT_SHA" | cut -c1-7)
+            VERSION="${VERSION}-dev-${COMMIT_SHORT}"
+            
+            echo "Master branch push detected"
+            echo "Creating test release with version: $VERSION"
+            echo "is_official_release=false" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "version_tag=dev-${COMMIT_SHORT}" >> $GITHUB_OUTPUT
+            echo "create_github_release=false" >> $GITHUB_OUTPUT
+            
+          else
+            echo "Error: Unexpected trigger condition"
+            exit 1
+          fi
+          
+          echo "Final version: $(cat $GITHUB_OUTPUT | grep '^version=' | cut -d= -f2)"
+  
   # Job 1: Build MSVC libraries
   build-msvc-libraries:
     name: Build MSVC Libraries (${{ matrix.name }})
+    needs: validate-and-setup
     permissions:
       contents: read
     strategy:
@@ -80,6 +198,7 @@ jobs:
   # Job 2: Build MinGW libraries on Windows
   build-mingw-windows-libraries:
     name: Build MinGW Windows (${{ matrix.name }})
+    needs: validate-and-setup
     permissions:
       contents: read
     strategy:
@@ -185,6 +304,7 @@ jobs:
   # Job 3: Build cross-compile libraries
   build-cross-libraries:
     name: Build Cross-Compile (${{ matrix.name }})
+    needs: validate-and-setup
     permissions:
       contents: read
     strategy:
@@ -243,7 +363,7 @@ jobs:
   # Job 4: Create release package
   create-release-package:
     name: Create Release Package
-    needs: [build-msvc-libraries, build-mingw-windows-libraries, build-cross-libraries]
+    needs: [validate-and-setup, build-msvc-libraries, build-mingw-windows-libraries, build-cross-libraries]
     permissions:
       contents: write  # Required for creating releases and uploading assets
     runs-on: ubuntu-latest
@@ -254,17 +374,14 @@ jobs:
         with:
           submodules: recursive
       
-      - name: Determine version
+      - name: Use validated version
         id: version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            # Extract version from tag (v25.11 -> 25.11)
-            VERSION="${GITHUB_REF#refs/tags/v}"
-          fi
+          VERSION="${{ needs.validate-and-setup.outputs.version }}"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Release version: $VERSION"
+          echo "Is official release: ${{ needs.validate-and-setup.outputs.is_official_release }}"
+          echo "Create GitHub Release: ${{ needs.validate-and-setup.outputs.create_github_release }}"
       
       - name: Download all library artifacts
         uses: actions/download-artifact@v4
@@ -411,10 +528,10 @@ jobs:
           retention-days: 90
       
       - name: Create GitHub Release
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
+        if: needs.validate-and-setup.outputs.create_github_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', steps.version.outputs.VERSION) }}
+          tag_name: ${{ needs.validate-and-setup.outputs.version_tag }}
           name: EGE ${{ steps.version.outputs.VERSION }}
           draft: true
           files: |

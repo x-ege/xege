@@ -69,29 +69,38 @@ cmake --build .
 
 ## 发布流程
 
-### 自动发布（推荐）
+### 正式发布（推荐）
 
-1. 推送一个版本标签：
+1. 更新 `include/ege.h` 中的版本号（`EGE_VERSION_MAJOR`, `EGE_VERSION_MINOR`, `EGE_VERSION_PATCH`）
+
+2. 推送符合规则的版本标签：
    ```bash
-   git tag v25.11
+   git tag v25.11      # 格式: v{major}.{minor}[.{patch}][-suffix]
    git push origin v25.11
    ```
 
-2. GitHub Actions 会自动：
+3. GitHub Actions 会自动：
+   - **验证标签格式和版本号**
    - 在各个平台上编译所有版本的静态库
    - 组织文件到发布包结构
    - 创建 `.7z` 和 `.zip` 压缩包
    - 创建 GitHub Release（草稿模式）
 
-3. 在 GitHub Release 页面检查并发布
+4. 在 GitHub Release 页面检查并发布
 
-### 手动发布
+**重要提示：**
+- 标签版本必须与 `include/ege.h` 中的版本匹配
+- 标签必须在 master 分支上
+- 标签格式: `/^v(\d+)\.(\d+)(\.\d+)?(-\w+)?$/`
+
+### 测试发布
 
 1. 在 GitHub Actions 页面，选择 "Release Package" 工作流
 2. 点击 "Run workflow"
-3. 输入版本号（如 `25.11`）
-4. 选择是否创建 GitHub Release
-5. 点击 "Run workflow" 开始
+3. 输入测试版本号（如 `25.11-test`）
+4. 点击 "Run workflow" 开始
+
+**注意：** 测试发布不会创建 GitHub Release，制品可在 Actions 页面下载。
 
 ## 开发说明
 
