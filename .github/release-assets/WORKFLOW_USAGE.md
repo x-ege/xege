@@ -20,7 +20,7 @@ git push origin v25.11
 **标签格式规则 / Tag Format Rules:**
 - 格式: `v{major}.{minor}[.{patch}][-suffix]`
 - 示例 / Examples: `v25.11`, `v25.11.0`, `v25.11-rc`, `v25.11.1-beta`
-- 正则表达式 / Regex: `/^v(\d+)\.(\d+)(\.\d+)?(-\w+)?$/`
+- 正则表达式 / Regex: `/^v([0-9]+)\.([0-9]+)(\.([0-9]+))?(-[a-zA-Z0-9_]+)?$/`
 
 **验证流程 / Validation Process:**
 1. 验证标签格式是否正确
@@ -48,12 +48,12 @@ The workflow will:
 
 **注意 / Notes:**
 - 测试发布**不会**创建 GitHub Release
-- 制品可在 Actions 页面下载（保留 90 天）
+- 最终发布包制品可在 Actions 页面下载（保留 90 天）
 - 适用于测试和验证发布流程
 
 Test releases:
 - Will **NOT** create a GitHub Release
-- Artifacts available on Actions page (90 days retention)
+- Final release package artifacts available on Actions page (90 days retention)
 - Suitable for testing and validation
 
 ### 方法 3: 自动测试发布 / Method 3: Automatic Test Release
@@ -86,9 +86,9 @@ When master branch is updated (not a tag push), a test release is automatically 
 - VS2017 (toolset v141) - Windows 2019
 
 **MinGW Windows 库:**
-- MSYS2 Latest (GCC 最新版)
+- MSYS2 最新版 (GCC 最新版) / MSYS2 Latest (GCC Latest Version)
 - Code::Blocks GCC 14.2.0
-- CLion/RedPanda GCC 13.1.0
+- CLion/小熊猫C++ (RedPanda C++) GCC 13.1.0
 
 **交叉编译库:**
 - Ubuntu MinGW-w64

@@ -30,12 +30,15 @@ if(MSVC)
     set(CPP_COMPILE_OPTIONS "/std:c++17")
 
     if(MSVC_VERSION GREATER_EQUAL 1950)
-        # vs2026 以上, 静态库是兼容的.
+        # VS2026 (speculative - MSVC_VERSION value not confirmed by Microsoft yet)
+        # This is forward-looking support; will be updated when VS2026 is officially released
+        # Falls back to VS2022 libraries which should be ABI compatible
         if(CMAKE_CL_64)
-            set(osLibDir "vs2026/x64")
+            set(osLibDir "vs2022/x64")
         else()
-            set(osLibDir "vs2026/x86")
+            set(osLibDir "vs2022/x86")
         endif()
+        message(WARNING "Using VS2026 or newer detected. Using VS2022 libraries for compatibility.")
     elseif(MSVC_VERSION GREATER_EQUAL 1930)
         # vs2022 以上, 静态库是兼容的.
         if(CMAKE_CL_64)
@@ -111,9 +114,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     elseif(CMAKE_HOST_UNIX)
         set(osLibDir "mingw-w64-debian")
     elseif(MINGW)
-        # 检测是否使用 codeblocks 或 redpanda (clion) 的编译器
-        # 默认使用 mingw64
+        # Note: Automatic detection of MinGW variant (MSYS2/Code::Blocks/RedPanda) is not reliable
+        # Default to mingw64 (MSYS2). Users should download the package matching their compiler.
+        # Available variants: mingw64 (MSYS2), codeblocks, redpanda (CLion/小熊猫C++)
+        # To use a specific variant, use the matching release package
         set(osLibDir "mingw64")
+        message(STATUS "Using default MinGW libraries (mingw64). Ensure you downloaded the correct package for your compiler.")
     endif()
 
     target_compile_options(ege-common INTERFACE -D_FORTIFY_SOURCE=0)

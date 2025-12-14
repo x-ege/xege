@@ -91,7 +91,7 @@ cmake --build .
 **重要提示：**
 - 标签版本必须与 `include/ege.h` 中的版本匹配
 - 标签必须在 master 分支上
-- 标签格式: `/^v(\d+)\.(\d+)(\.\d+)?(-\w+)?$/`
+- 标签格式: `/^v([0-9]+)\.([0-9]+)(\.([0-9]+))?(-[a-zA-Z0-9_]+)?$/`
 
 ### 测试发布
 
@@ -132,7 +132,7 @@ cmake --build .
 ## 注意事项
 
 1. **库文件命名**: 
-   - MSVC: `graphics.lib`, `graphicsd.lib` (Debug版本)
+   - MSVC: `graphics.lib` (Release), `graphicsd.lib` (Debug)
    - MinGW: `libgraphics.a`
 
 2. **子模块**: 发布包不包含源码编译需要的子模块（如 3rdparty）

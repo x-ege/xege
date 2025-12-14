@@ -142,27 +142,90 @@ jobs:
   
   # Job 1: Build MSVC libraries
   build-msvc-libraries:
-    name: Build MSVC Libraries (${{ matrix.name }})
+    name: Build MSVC Libraries (${{ matrix.name }}-${{ matrix.arch }}-${{ matrix.config }})
     needs: validate-and-setup
     permissions:
       contents: read
     strategy:
       matrix:
         include:
+          # VS2022 - x64 and x86, Debug and Release
           - name: VS2022
             os: windows-latest
             toolset: v143
-            lib_subdir: vs2022/x64
+            arch: x64
+            config: Release
+            cmake_arch: x64
+          - name: VS2022
+            os: windows-latest
+            toolset: v143
+            arch: x64
+            config: Debug
+            cmake_arch: x64
+          - name: VS2022
+            os: windows-latest
+            toolset: v143
+            arch: x86
+            config: Release
+            cmake_arch: Win32
+          - name: VS2022
+            os: windows-latest
+            toolset: v143
+            arch: x86
+            config: Debug
+            cmake_arch: Win32
           
+          # VS2019 - x64 and x86, Debug and Release
           - name: VS2019
-            os: windows-2019  # Using windows-2019 for consistency with existing CI
+            os: windows-2019
             toolset: v142
-            lib_subdir: vs2019/x64
+            arch: x64
+            config: Release
+            cmake_arch: x64
+          - name: VS2019
+            os: windows-2019
+            toolset: v142
+            arch: x64
+            config: Debug
+            cmake_arch: x64
+          - name: VS2019
+            os: windows-2019
+            toolset: v142
+            arch: x86
+            config: Release
+            cmake_arch: Win32
+          - name: VS2019
+            os: windows-2019
+            toolset: v142
+            arch: x86
+            config: Debug
+            cmake_arch: Win32
           
+          # VS2017 - x64 and x86, Debug and Release
           - name: VS2017
-            os: windows-2019  # VS2017 toolset requires windows-2019 runner
+            os: windows-2019
             toolset: v141
-            lib_subdir: vs2017/x64
+            arch: x64
+            config: Release
+            cmake_arch: x64
+          - name: VS2017
+            os: windows-2019
+            toolset: v141
+            arch: x64
+            config: Debug
+            cmake_arch: x64
+          - name: VS2017
+            os: windows-2019
+            toolset: v141
+            arch: x86
+            config: Release
+            cmake_arch: Win32
+          - name: VS2017
+            os: windows-2019
+            toolset: v141
+            arch: x86
+            config: Debug
+            cmake_arch: Win32
     
     runs-on: ${{ matrix.os }}
     
@@ -175,28 +238,28 @@ jobs:
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
       
-      - name: Build ${{ matrix.name }}
+      - name: Build ${{ matrix.name }}-${{ matrix.arch }}-${{ matrix.config }}
         run: |
-          mkdir build-release
-          cd build-release
-          cmake .. -T ${{ matrix.toolset }} -DEGE_BUILD_DEMO=ON
-          cmake --build . --config Release --parallel
+          mkdir build-${{ matrix.config }}-${{ matrix.arch }}
+          cd build-${{ matrix.config }}-${{ matrix.arch }}
+          cmake .. -A ${{ matrix.cmake_arch }} -T ${{ matrix.toolset }} -DEGE_BUILD_DEMO=ON
+          cmake --build . --config ${{ matrix.config }} --parallel
       
       - name: Collect artifacts
         shell: powershell
         run: |
-          $libDir = "${{ matrix.lib_subdir }}" -replace '/', '\'
-          New-Item -ItemType Directory -Force -Path "artifacts\$libDir"
-          Get-ChildItem -Path "build-release" -Recurse -Filter "*.lib" | Copy-Item -Destination "artifacts\$libDir\"
+          $libDir = "${{ matrix.name }}/${{ matrix.arch }}/${{ matrix.config }}"
+          New-Item -ItemType Directory -Force -Path "artifacts/$libDir"
+          Get-ChildItem -Path "build-${{ matrix.config }}-${{ matrix.arch }}" -Recurse -Filter "*.lib" | Copy-Item -Destination "artifacts/$libDir/"
           Write-Host "Collected libraries:"
-          Get-ChildItem "artifacts\$libDir\"
+          Get-ChildItem "artifacts/$libDir/"
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.name }}
-          path: artifacts/${{ matrix.lib_subdir }}/
-          retention-days: 7
+          name: libs-${{ matrix.name }}-${{ matrix.arch }}-${{ matrix.config }}
+          path: artifacts/${{ matrix.name }}/${{ matrix.arch }}/${{ matrix.config }}/
+          retention-days: 90
   
   # Job 2: Build MinGW libraries on Windows
   build-mingw-windows-libraries:
@@ -207,23 +270,25 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: MSYS2-Latest
+          - name: MSYS2-GCC-Latest
             lib_dir: mingw64
             use_msys2: true
           
           - name: CodeBlocks-GCC14
             lib_dir: codeblocks
             use_msys2: false
-            # WinLibs GCC 14.2.0 - matches Code::Blocks 25.03 bundled compiler
+            # WinLibs GCC 14.2.0posix-19.1.1-12.0.0-msvcrt-r2 - matches Code::Blocks 25.03 bundled compiler
             # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.1-12.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64msvcrt-12.0.0-r2.zip"
+            gcc_sha256: "b0b8b6e4f8a5f8c8e8f8d8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8"  # Placeholder - update with actual SHA256
           
           - name: CLion-GCC13
             lib_dir: redpanda
             use_msys2: false
-            # WinLibs GCC 13.1.0 - matches CLion bundled compiler
+            # WinLibs GCC 13.1.0-16.0.5-11.0.0-msvcrt-r5 - compatible with CLion/RedPanda C++ bundled compiler
             # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip"
+            gcc_sha256: "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"  # Placeholder - update with actual SHA256
     
     runs-on: windows-latest
     
@@ -269,9 +334,29 @@ jobs:
         shell: powershell
         run: |
           $url = "${{ matrix.gcc_url }}"
+          $expected_sha256 = "${{ matrix.gcc_sha256 }}"
           $output = "mingw64.zip"
+          
           Write-Host "Downloading ${{ matrix.name }}..."
           Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
+          
+          # Verify SHA256 checksum if provided and not a placeholder
+          if ($expected_sha256 -and -not ($expected_sha256 -match "^[bf0]+$")) {
+            Write-Host "Verifying SHA256 checksum..."
+            $actual_sha256 = (Get-FileHash $output -Algorithm SHA256).Hash.ToLower()
+            $expected_sha256_lower = $expected_sha256.ToLower()
+            Write-Host "Expected SHA256: $expected_sha256_lower"
+            Write-Host "Actual   SHA256: $actual_sha256"
+            if ($expected_sha256_lower -ne $actual_sha256) {
+              Write-Error "SHA256 checksum mismatch! Download may be corrupted or compromised."
+              exit 1
+            }
+            Write-Host "✓ SHA256 checksum verified"
+          } else {
+            Write-Host "⚠ WARNING: SHA256 verification skipped (placeholder or not provided)"
+            Write-Host "  For production use, update the SHA256 in the workflow matrix"
+          }
+          
           Write-Host "Extracting..."
           Expand-Archive -Path $output -DestinationPath "C:\mingw-custom" -Force
           Remove-Item $output
@@ -450,30 +535,53 @@ jobs:
           # List downloaded artifacts
           echo "Downloaded artifacts:"
           find artifacts/ -type f
+        shell: bash
+      
+      - name: Organize MSVC libraries
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          RELEASE_DIR="ege-${VERSION}"
           
-          # MSVC libraries (VS2022, VS2019, VS2017)
-          # Artifacts are named libs-VS2022, libs-VS2019, libs-VS2017
-          # Each contains the lib files in a vs*/x64 subdirectory structure
+          # MSVC libraries - now with Debug/Release and x86/x64
+          # Artifacts are named: libs-VS2022-x64-Release, libs-VS2022-x64-Debug, etc.
           for vsname in VS2022 VS2019 VS2017; do
             vsdir=$(echo "$vsname" | tr '[:upper:]' '[:lower:]')
-            if [ -d "artifacts/libs-${vsname}" ]; then
-              mkdir -p "$RELEASE_DIR/lib/${vsdir}/x64"
-              lib_count=$(find "artifacts/libs-${vsname}" -name "*.lib" -type f | wc -l)
-              if [ "$lib_count" -gt 0 ]; then
-                find "artifacts/libs-${vsname}" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/${vsdir}/x64/" \;
-                echo "Copied $lib_count library files for ${vsname}"
-              else
-                echo "Warning: No .lib files found for ${vsname}"
-              fi
-            else
-              echo "Warning: Artifact directory artifacts/libs-${vsname} not found"
-            fi
+            
+            for arch in x64 x86; do
+              for config in Release Debug; do
+                artifact_dir="artifacts/libs-${vsname}-${arch}-${config}"
+                target_dir="$RELEASE_DIR/lib/${vsdir}/${arch}"
+                
+                if [ -d "$artifact_dir" ]; then
+                  mkdir -p "$target_dir"
+                  lib_count=$(find "$artifact_dir" -name "*.lib" -type f | wc -l)
+                  if [ "$lib_count" -gt 0 ]; then
+                    find "$artifact_dir" -name "*.lib" -exec cp {} "$target_dir/" \;
+                    echo "✓ Copied $lib_count library files for ${vsname}-${arch}-${config} to lib/${vsdir}/${arch}"
+                  else
+                    echo "ERROR: No .lib files found for ${vsname}-${arch}-${config}"
+                    exit 1
+                  fi
+                else
+                  echo "ERROR: Artifact directory $artifact_dir not found"
+                  exit 1
+                fi
+              done
+            done
           done
+        shell: bash
+      
+      - name: Organize MinGW libraries
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          RELEASE_DIR="ege-${VERSION}"
           
-          # MinGW libraries
-          # Artifacts: libs-MSYS2-Latest, libs-CodeBlocks-GCC14, libs-CLion-GCC13
+          # MinGW libraries (64-bit only as per user requirement)
+          # Artifacts: libs-MSYS2-GCC-Latest, libs-CodeBlocks-GCC14, libs-CLion-GCC13
           declare -A mingw_mappings=(
-            ["MSYS2-Latest"]="mingw64"
+            ["MSYS2-GCC-Latest"]="mingw64"
             ["CodeBlocks-GCC14"]="codeblocks"
             ["CLion-GCC13"]="redpanda"
             ["Ubuntu-MinGW"]="mingw-w64-debian"
@@ -482,17 +590,21 @@ jobs:
           
           for artifact_name in "${!mingw_mappings[@]}"; do
             target_dir="${mingw_mappings[$artifact_name]}"
-            if [ -d "artifacts/libs-${artifact_name}" ]; then
+            artifact_dir="artifacts/libs-${artifact_name}"
+            
+            if [ -d "$artifact_dir" ]; then
               mkdir -p "$RELEASE_DIR/lib/${target_dir}"
-              lib_count=$(find "artifacts/libs-${artifact_name}" -name "*.a" -type f | wc -l)
+              lib_count=$(find "$artifact_dir" -name "*.a" -type f | wc -l)
               if [ "$lib_count" -gt 0 ]; then
-                find "artifacts/libs-${artifact_name}" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/${target_dir}/" \;
-                echo "Copied $lib_count library files for ${artifact_name} to lib/${target_dir}"
+                find "$artifact_dir" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/${target_dir}/" \;
+                echo "✓ Copied $lib_count library files for ${artifact_name} to lib/${target_dir}"
               else
-                echo "Warning: No .a files found for ${artifact_name}"
+                echo "ERROR: No .a files found for ${artifact_name}"
+                exit 1
               fi
             else
-              echo "Warning: Artifact directory artifacts/libs-${artifact_name} not found"
+              echo "ERROR: Artifact directory $artifact_dir not found"
+              exit 1
             fi
           done
           
@@ -554,12 +666,12 @@ jobs:
             - **doc/** - 文档
             - **include/** - 头文件
             - **lib/** - 静态库文件
-              - vs2022/vs2019/vs2017 - Visual Studio 静态库
-              - mingw64 - MinGW-w64 (MSYS2) 静态库
-              - codeblocks - Code::Blocks 25.03 静态库
-              - redpanda - CLion/小熊猫C++ 静态库
-              - mingw-w64-debian - Ubuntu 交叉编译静态库
-              - macOS - macOS 交叉编译静态库
+              - vs2022/vs2019/vs2017 - Visual Studio 静态库 (x86/x64, Debug/Release)
+              - mingw64 - MinGW-w64 (MSYS2) 静态库 (x64)
+              - codeblocks - Code::Blocks 25.03 静态库 (x64)
+              - redpanda - CLion/小熊猫C++ (RedPanda C++) 静态库 (x64)
+              - mingw-w64-debian - Ubuntu 交叉编译静态库 (x64)
+              - macOS - macOS 交叉编译静态库 (x64)
             - **man/** - API 文档
             - **CMakeLists.txt** - CMake 项目文件
             
