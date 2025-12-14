@@ -91,9 +91,12 @@ jobs:
             fi
             
             # Check if tag is on master branch
-            if ! git branch --contains "$TAG_NAME" | grep -q "master"; then
+            # Use git merge-base to check if tag is reachable from origin/master
+            if ! git merge-base --is-ancestor "$TAG_NAME" origin/master 2>/dev/null; then
               echo "Error: Tag '$TAG_NAME' is not on the master branch"
               echo "Please ensure the tag is created from master branch."
+              echo "Checking remote branches..."
+              git branch -r --contains "$TAG_NAME" || true
               exit 1
             fi
             
