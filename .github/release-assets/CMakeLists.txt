@@ -83,7 +83,7 @@ if(MSVC)
         endif()
 
     else()
-        message(FATAL_ERROR "你的 MSVC 版本太老了, 请使用 vs2015 或更新版本的 MSVC 编译器. 与时俱进吧, 不要一直使用十年前的编译器.")
+        message(FATAL_ERROR "Your MSVC version is too old. Please use VS2015 or newer. / 你的 MSVC 版本太老了, 请使用 vs2015 或更新版本的 MSVC 编译器.")
     endif()
 
     # /Zc:__cplusplus 选项仅在 VS2017 15.7 (MSVC_VERSION >= 1914) 及以上版本支持

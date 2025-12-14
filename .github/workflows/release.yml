@@ -29,7 +29,7 @@ jobs:
             lib_subdir: vs2022/x64
           
           - name: VS2019
-            os: windows-latest
+            os: windows-2019
             toolset: v142
             lib_subdir: vs2019/x64
           
@@ -53,7 +53,7 @@ jobs:
         run: |
           mkdir build-release
           cd build-release
-          cmake .. -T ${{ matrix.toolset }}
+          cmake .. -T ${{ matrix.toolset }} -DEGE_BUILD_DEMO=ON
           cmake --build . --config Release --parallel
       
       - name: Collect artifacts
@@ -85,11 +85,15 @@ jobs:
           - name: CodeBlocks-GCC14
             lib_dir: codeblocks
             use_msys2: false
+            # WinLibs GCC 14.2.0 - matches Code::Blocks 25.03 bundled compiler
+            # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.1-12.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64msvcrt-12.0.0-r2.zip"
           
           - name: CLion-GCC13
             lib_dir: redpanda
             use_msys2: false
+            # WinLibs GCC 13.1.0 - matches CLion bundled compiler
+            # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip"
     
     runs-on: windows-latest
@@ -122,7 +126,7 @@ jobs:
           mkdir -p build-release
           cd build-release
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
           cmake --build . --parallel $(nproc)
           
           mkdir -p ../artifacts/${{ matrix.lib_dir }}
@@ -152,7 +156,7 @@ jobs:
           mkdir build-release
           cd build-release
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
           cmake --build . --parallel
       
       - name: Collect WinLibs artifacts
@@ -211,7 +215,7 @@ jobs:
           mkdir -p build-release
           cd build-release
           
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
           cmake --build . --parallel
           
           mkdir -p ../artifacts/${{ matrix.lib_dir }}
@@ -319,49 +323,47 @@ jobs:
           # MSVC libraries (VS2022, VS2019, VS2017)
           # Artifacts are named libs-VS2022, libs-VS2019, libs-VS2017
           # Each contains the lib files in a vs*/x64 subdirectory structure
-          if [ -d "artifacts/libs-VS2022" ]; then
-            mkdir -p "$RELEASE_DIR/lib/vs2022/x64"
-            find "artifacts/libs-VS2022" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/vs2022/x64/" \; 2>/dev/null || true
-          fi
-          
-          if [ -d "artifacts/libs-VS2019" ]; then
-            mkdir -p "$RELEASE_DIR/lib/vs2019/x64"
-            find "artifacts/libs-VS2019" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/vs2019/x64/" \; 2>/dev/null || true
-          fi
-          
-          if [ -d "artifacts/libs-VS2017" ]; then
-            mkdir -p "$RELEASE_DIR/lib/vs2017/x64"
-            find "artifacts/libs-VS2017" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/vs2017/x64/" \; 2>/dev/null || true
-          fi
+          for vsname in VS2022 VS2019 VS2017; do
+            vsdir=$(echo "$vsname" | tr '[:upper:]' '[:lower:]')
+            if [ -d "artifacts/libs-${vsname}" ]; then
+              mkdir -p "$RELEASE_DIR/lib/${vsdir}/x64"
+              lib_count=$(find "artifacts/libs-${vsname}" -name "*.lib" -type f | wc -l)
+              if [ "$lib_count" -gt 0 ]; then
+                find "artifacts/libs-${vsname}" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/${vsdir}/x64/" \;
+                echo "Copied $lib_count library files for ${vsname}"
+              else
+                echo "Warning: No .lib files found for ${vsname}"
+              fi
+            else
+              echo "Warning: Artifact directory artifacts/libs-${vsname} not found"
+            fi
+          done
           
           # MinGW libraries
           # Artifacts: libs-MSYS2-Latest, libs-CodeBlocks-GCC14, libs-CLion-GCC13
-          if [ -d "artifacts/libs-MSYS2-Latest" ]; then
-            mkdir -p "$RELEASE_DIR/lib/mingw64"
-            find "artifacts/libs-MSYS2-Latest" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/mingw64/" \; 2>/dev/null || true
-          fi
+          declare -A mingw_mappings=(
+            ["MSYS2-Latest"]="mingw64"
+            ["CodeBlocks-GCC14"]="codeblocks"
+            ["CLion-GCC13"]="redpanda"
+            ["Ubuntu-MinGW"]="mingw-w64-debian"
+            ["macOS-MinGW"]="macOS"
+          )
           
-          if [ -d "artifacts/libs-CodeBlocks-GCC14" ]; then
-            mkdir -p "$RELEASE_DIR/lib/codeblocks"
-            find "artifacts/libs-CodeBlocks-GCC14" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/codeblocks/" \; 2>/dev/null || true
-          fi
-          
-          if [ -d "artifacts/libs-CLion-GCC13" ]; then
-            mkdir -p "$RELEASE_DIR/lib/redpanda"
-            find "artifacts/libs-CLion-GCC13" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/redpanda/" \; 2>/dev/null || true
-          fi
-          
-          # Cross-compile libraries
-          # Artifacts: libs-Ubuntu-MinGW, libs-macOS-MinGW
-          if [ -d "artifacts/libs-Ubuntu-MinGW" ]; then
-            mkdir -p "$RELEASE_DIR/lib/mingw-w64-debian"
-            find "artifacts/libs-Ubuntu-MinGW" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/mingw-w64-debian/" \; 2>/dev/null || true
-          fi
-          
-          if [ -d "artifacts/libs-macOS-MinGW" ]; then
-            mkdir -p "$RELEASE_DIR/lib/macOS"
-            find "artifacts/libs-macOS-MinGW" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/macOS/" \; 2>/dev/null || true
-          fi
+          for artifact_name in "${!mingw_mappings[@]}"; do
+            target_dir="${mingw_mappings[$artifact_name]}"
+            if [ -d "artifacts/libs-${artifact_name}" ]; then
+              mkdir -p "$RELEASE_DIR/lib/${target_dir}"
+              lib_count=$(find "artifacts/libs-${artifact_name}" -name "*.a" -type f | wc -l)
+              if [ "$lib_count" -gt 0 ]; then
+                find "artifacts/libs-${artifact_name}" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/${target_dir}/" \;
+                echo "Copied $lib_count library files for ${artifact_name} to lib/${target_dir}"
+              else
+                echo "Warning: No .a files found for ${artifact_name}"
+              fi
+            else
+              echo "Warning: Artifact directory artifacts/libs-${artifact_name} not found"
+            fi
+          done
           
           # Show the structure
           echo "Release package structure:"
