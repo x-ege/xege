@@ -29,12 +29,12 @@ jobs:
             lib_subdir: vs2022/x64
           
           - name: VS2019
-            os: windows-2019
+            os: windows-2019  # Using windows-2019 for consistency with existing CI
             toolset: v142
             lib_subdir: vs2019/x64
           
           - name: VS2017
-            os: windows-2019
+            os: windows-2019  # VS2017 toolset requires windows-2019 runner
             toolset: v141
             lib_subdir: vs2017/x64
     
@@ -47,7 +47,7 @@ jobs:
           submodules: recursive
       
       - name: Setup MSVC
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
       
       - name: Build ${{ matrix.name }}
         run: |
@@ -401,7 +401,7 @@ jobs:
       
       - name: Create GitHub Release
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', steps.version.outputs.VERSION) }}
           name: EGE ${{ steps.version.outputs.VERSION }}
