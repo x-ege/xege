@@ -68,7 +68,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.lib_subdir }}
+          name: libs-${{ matrix.name }}
           path: artifacts/${{ matrix.lib_subdir }}/
           retention-days: 7
   
@@ -167,7 +167,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.lib_dir }}
+          name: libs-${{ matrix.name }}
           path: artifacts/${{ matrix.lib_dir }}/
           retention-days: 7
   
@@ -223,7 +223,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.lib_dir }}
+          name: libs-${{ matrix.name }}
           path: artifacts/${{ matrix.lib_dir }}/
           retention-days: 7
   
@@ -316,21 +316,52 @@ jobs:
           echo "Downloaded artifacts:"
           find artifacts/ -type f
           
-          # MSVC libraries (vs2022, vs2019, vs2017)
-          for vsver in vs2022 vs2019 vs2017; do
-            if [ -d "artifacts/libs-${vsver}" ]; then
-              mkdir -p "$RELEASE_DIR/lib/${vsver}/x64"
-              find "artifacts/libs-${vsver}" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/${vsver}/x64/" \; 2>/dev/null || true
-            fi
-          done
+          # MSVC libraries (VS2022, VS2019, VS2017)
+          # Artifacts are named libs-VS2022, libs-VS2019, libs-VS2017
+          # Each contains the lib files in a vs*/x64 subdirectory structure
+          if [ -d "artifacts/libs-VS2022" ]; then
+            mkdir -p "$RELEASE_DIR/lib/vs2022/x64"
+            find "artifacts/libs-VS2022" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/vs2022/x64/" \; 2>/dev/null || true
+          fi
+          
+          if [ -d "artifacts/libs-VS2019" ]; then
+            mkdir -p "$RELEASE_DIR/lib/vs2019/x64"
+            find "artifacts/libs-VS2019" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/vs2019/x64/" \; 2>/dev/null || true
+          fi
+          
+          if [ -d "artifacts/libs-VS2017" ]; then
+            mkdir -p "$RELEASE_DIR/lib/vs2017/x64"
+            find "artifacts/libs-VS2017" -name "*.lib" -exec cp {} "$RELEASE_DIR/lib/vs2017/x64/" \; 2>/dev/null || true
+          fi
           
           # MinGW libraries
-          for mingw_dir in mingw64 codeblocks redpanda mingw-w64-debian macOS; do
-            if [ -d "artifacts/libs-${mingw_dir}" ]; then
-              mkdir -p "$RELEASE_DIR/lib/${mingw_dir}"
-              find "artifacts/libs-${mingw_dir}" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/${mingw_dir}/" \; 2>/dev/null || true
-            fi
-          done
+          # Artifacts: libs-MSYS2-Latest, libs-CodeBlocks-GCC14, libs-CLion-GCC13
+          if [ -d "artifacts/libs-MSYS2-Latest" ]; then
+            mkdir -p "$RELEASE_DIR/lib/mingw64"
+            find "artifacts/libs-MSYS2-Latest" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/mingw64/" \; 2>/dev/null || true
+          fi
+          
+          if [ -d "artifacts/libs-CodeBlocks-GCC14" ]; then
+            mkdir -p "$RELEASE_DIR/lib/codeblocks"
+            find "artifacts/libs-CodeBlocks-GCC14" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/codeblocks/" \; 2>/dev/null || true
+          fi
+          
+          if [ -d "artifacts/libs-CLion-GCC13" ]; then
+            mkdir -p "$RELEASE_DIR/lib/redpanda"
+            find "artifacts/libs-CLion-GCC13" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/redpanda/" \; 2>/dev/null || true
+          fi
+          
+          # Cross-compile libraries
+          # Artifacts: libs-Ubuntu-MinGW, libs-macOS-MinGW
+          if [ -d "artifacts/libs-Ubuntu-MinGW" ]; then
+            mkdir -p "$RELEASE_DIR/lib/mingw-w64-debian"
+            find "artifacts/libs-Ubuntu-MinGW" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/mingw-w64-debian/" \; 2>/dev/null || true
+          fi
+          
+          if [ -d "artifacts/libs-macOS-MinGW" ]; then
+            mkdir -p "$RELEASE_DIR/lib/macOS"
+            find "artifacts/libs-macOS-MinGW" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/macOS/" \; 2>/dev/null || true
+          fi
           
           # Show the structure
           echo "Release package structure:"
