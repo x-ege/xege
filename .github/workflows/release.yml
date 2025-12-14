@@ -297,7 +297,7 @@ jobs:
           
           # Copy release CMakeLists.txt
           echo "Copying CMakeLists.txt..."
-          cp release/CMakeLists.txt "$RELEASE_DIR/"
+          cp .github/release-assets/CMakeLists.txt "$RELEASE_DIR/"
           
           # Copy logo
           if [ -f "egelogo.jpg" ]; then
