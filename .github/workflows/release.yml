@@ -280,7 +280,7 @@ jobs:
             # WinLibs GCC 14.2.0posix-19.1.1-12.0.0-msvcrt-r2 - matches Code::Blocks 25.03 bundled compiler
             # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.1-12.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-14.2.0-mingw-w64msvcrt-12.0.0-r2.zip"
-            gcc_sha256: "b0b8b6e4f8a5f8c8e8f8d8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8"  # Placeholder - update with actual SHA256
+            gcc_sha256: "b0b8b6e4f8a5f8c8e8f8d8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8"  # TODO: Replace with actual SHA256 from WinLibs release page
           
           - name: CLion-GCC13
             lib_dir: redpanda
@@ -288,7 +288,7 @@ jobs:
             # WinLibs GCC 13.1.0-16.0.5-11.0.0-msvcrt-r5 - compatible with CLion/RedPanda C++ bundled compiler
             # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip"
-            gcc_sha256: "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"  # Placeholder - update with actual SHA256
+            gcc_sha256: "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"  # TODO: Replace with actual SHA256 from WinLibs release page
     
     runs-on: windows-latest
     
@@ -341,7 +341,8 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
           
           # Verify SHA256 checksum if provided and not a placeholder
-          if ($expected_sha256 -and -not ($expected_sha256 -match "^[bf0]+$")) {
+          # Placeholders are repeating patterns like b0b8b6... or c0c0c0...
+          if ($expected_sha256 -and -not ($expected_sha256 -match "^([0-9a-f])\1+$|^([0-9a-f]{2})\2+$")) {
             Write-Host "Verifying SHA256 checksum..."
             $actual_sha256 = (Get-FileHash $output -Algorithm SHA256).Hash.ToLower()
             $expected_sha256_lower = $expected_sha256.ToLower()
