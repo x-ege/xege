@@ -942,11 +942,8 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
                 if (!fontFamily->IsAvailable()) {
                     delete fontFamily;
                     
-                    // Use generic sans serif as final fallback
-                    // Get name from static family to avoid cloning overhead
-                    WCHAR familyName[LF_FACESIZE];
-                    Gdiplus::FontFamily::GenericSansSerif()->GetFamilyName(familyName);
-                    fontFamily = new Gdiplus::FontFamily(familyName);
+                    // Use generic sans serif as final fallback (always available)
+                    fontFamily = Gdiplus::FontFamily::GenericSansSerif()->Clone();
                 }
             }
         }
@@ -958,13 +955,11 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
         delete fontFamily;
         
         // Validate the created font before storing it
-        if (newFont != NULL && newFont->IsAvailable()) {
+        if (newFont->IsAvailable()) {
             img->m_font = newFont;
         } else {
             // Font creation failed, clean up and don't store
-            if (newFont != NULL) {
-                delete newFont;
-            }
+            delete newFont;
         }
     }
     CONVERT_IMAGE_END;

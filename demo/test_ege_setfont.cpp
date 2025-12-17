@@ -57,9 +57,9 @@ int main()
     
     wchar_t info[256];
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
-    swprintf_s(info, sizeof(info)/sizeof(wchar_t), L"Width: %.2f, Height: %.2f", width, height);
+    swprintf_s(info, 256, L"Width: %.2f, Height: %.2f", width, height);
 #else
-    swprintf(info, sizeof(info)/sizeof(wchar_t), L"Width: %.2f, Height: %.2f", width, height);
+    swprintf(info, 256, L"Width: %.2f, Height: %.2f", width, height);
 #endif
     ege_drawtext(testText, 50.0f, 480.0f);
     ege_setfont(12.0f, L"Arial");
