@@ -930,11 +930,25 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
         
         // If the font family is not available, try to use a default font
         if (!fontFamily.IsAvailable()) {
-            fontFamily = Gdiplus::FontFamily(L"SimSun");
+            // Try common fallback fonts in order
+            fontFamily = Gdiplus::FontFamily(L"Arial");
+            if (!fontFamily.IsAvailable()) {
+                fontFamily = Gdiplus::FontFamily(L"SimSun");
+            }
         }
 
         // Create new GDI+ Font with floating-point size
-        img->m_font = new Gdiplus::Font(&fontFamily, size, style, Gdiplus::UnitPoint);
+        Gdiplus::Font* newFont = new Gdiplus::Font(&fontFamily, size, style, Gdiplus::UnitPoint);
+        
+        // Validate the created font before storing it
+        if (newFont != NULL && newFont->IsAvailable()) {
+            img->m_font = newFont;
+        } else {
+            // Font creation failed, clean up and don't store
+            if (newFont != NULL) {
+                delete newFont;
+            }
+        }
     }
     CONVERT_IMAGE_END;
 }

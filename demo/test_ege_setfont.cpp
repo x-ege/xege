@@ -56,7 +56,7 @@ int main()
     measuretext(testText, &width, &height);
     
     char info[256];
-    sprintf(info, "Width: %.2f, Height: %.2f", width, height);
+    snprintf(info, sizeof(info), "Width: %.2f, Height: %.2f", width, height);
     ege_drawtext(testText, 50.0f, 480.0f);
     ege_setfont(12.0f, L"Arial");
     ege_drawtext(info, 50.0f, 510.0f);
