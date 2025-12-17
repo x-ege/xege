@@ -919,6 +919,17 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        // Validate input parameters
+        if (typeface == NULL || typeface[0] == L'\0') {
+            typeface = L"Arial";  // Use safe default
+        }
+        
+        // Validate size (reasonable range for font sizes)
+        if (size <= 0.0f || size > 1000.0f) {
+            CONVERT_IMAGE_END;
+            return;  // Invalid size, do nothing
+        }
+        
         // Delete existing GDI+ font if any
         if (img->m_font != NULL) {
             delete img->m_font;
@@ -942,8 +953,14 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
                 if (!fontFamily->IsAvailable()) {
                     delete fontFamily;
                     
-                    // Use generic sans serif as final fallback (always available)
-                    fontFamily = Gdiplus::FontFamily::GenericSansSerif()->Clone();
+                    // Use generic sans serif as final fallback
+                    const Gdiplus::FontFamily* genericFamily = Gdiplus::FontFamily::GenericSansSerif();
+                    if (genericFamily != NULL) {
+                        fontFamily = genericFamily->Clone();
+                    } else {
+                        // Last resort: try to create a basic font family
+                        fontFamily = new Gdiplus::FontFamily(L"Sans Serif");
+                    }
                 }
             }
         }
