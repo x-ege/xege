@@ -925,28 +925,34 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
             img->m_font = NULL;
         }
 
-        // Create GDI+ FontFamily
-        Gdiplus::FontFamily fontFamily(typeface);
+        // Create GDI+ FontFamily - try requested font first, then fallbacks
+        Gdiplus::FontFamily* fontFamily = new Gdiplus::FontFamily(typeface);
         
         // If the font family is not available, try fallback fonts
-        if (!fontFamily.IsAvailable()) {
-            // Try common fallback fonts in order
-            Gdiplus::FontFamily arialFamily(L"Arial");
-            if (arialFamily.IsAvailable()) {
-                fontFamily = arialFamily;
-            } else {
-                Gdiplus::FontFamily simSunFamily(L"SimSun");
-                if (simSunFamily.IsAvailable()) {
-                    fontFamily = simSunFamily;
-                } else {
+        if (!fontFamily->IsAvailable()) {
+            delete fontFamily;
+            
+            // Try Arial
+            fontFamily = new Gdiplus::FontFamily(L"Arial");
+            if (!fontFamily->IsAvailable()) {
+                delete fontFamily;
+                
+                // Try SimSun (common Chinese font)
+                fontFamily = new Gdiplus::FontFamily(L"SimSun");
+                if (!fontFamily->IsAvailable()) {
+                    delete fontFamily;
+                    
                     // Use generic sans serif as final fallback
-                    Gdiplus::FontFamily::GenericSansSerif()->Clone(&fontFamily);
+                    fontFamily = Gdiplus::FontFamily::GenericSansSerif()->Clone();
                 }
             }
         }
 
         // Create new GDI+ Font with floating-point size
-        Gdiplus::Font* newFont = new Gdiplus::Font(&fontFamily, size, style, Gdiplus::UnitPoint);
+        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPoint);
+        
+        // Clean up font family (Font makes its own copy)
+        delete fontFamily;
         
         // Validate the created font before storing it
         if (newFont != NULL && newFont->IsAvailable()) {
