@@ -928,12 +928,20 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
         // Create GDI+ FontFamily
         Gdiplus::FontFamily fontFamily(typeface);
         
-        // If the font family is not available, try to use a default font
+        // If the font family is not available, try fallback fonts
         if (!fontFamily.IsAvailable()) {
             // Try common fallback fonts in order
-            fontFamily = Gdiplus::FontFamily(L"Arial");
-            if (!fontFamily.IsAvailable()) {
-                fontFamily = Gdiplus::FontFamily(L"SimSun");
+            Gdiplus::FontFamily arialFamily(L"Arial");
+            if (arialFamily.IsAvailable()) {
+                fontFamily = arialFamily;
+            } else {
+                Gdiplus::FontFamily simSunFamily(L"SimSun");
+                if (simSunFamily.IsAvailable()) {
+                    fontFamily = simSunFamily;
+                } else {
+                    // Use generic sans serif as final fallback
+                    Gdiplus::FontFamily::GenericSansSerif()->Clone(&fontFamily);
+                }
             }
         }
 

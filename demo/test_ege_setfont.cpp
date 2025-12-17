@@ -29,16 +29,16 @@ int main()
     ege_drawtext(L"13.0pt Times New Roman", 50.0f, 140.0f);
 
     // Test 3: With font styles
-    ege_setfont(20.0f, L"Arial", FontStyleBold);
+    ege_setfont(20.0f, L"Arial", Gdiplus::FontStyleBold);
     ege_drawtext(L"20pt Arial Bold", 50.0f, 200.0f);
 
-    ege_setfont(18.0f, L"Arial", FontStyleItalic);
+    ege_setfont(18.0f, L"Arial", Gdiplus::FontStyleItalic);
     ege_drawtext(L"18pt Arial Italic", 50.0f, 240.0f);
 
-    ege_setfont(16.0f, L"Arial", FontStyleBold | FontStyleItalic);
+    ege_setfont(16.0f, L"Arial", Gdiplus::FontStyleBold | Gdiplus::FontStyleItalic);
     ege_drawtext(L"16pt Arial Bold Italic", 50.0f, 280.0f);
 
-    ege_setfont(14.0f, L"Arial", FontStyleUnderline);
+    ege_setfont(14.0f, L"Arial", Gdiplus::FontStyleUnderline);
     ege_drawtext(L"14pt Arial Underline", 50.0f, 320.0f);
 
     // Test 4: Very precise sizes
@@ -55,8 +55,8 @@ int main()
     ege_setfont(18.0f, L"Arial");
     measuretext(testText, &width, &height);
     
-    char info[256];
-    snprintf(info, sizeof(info), "Width: %.2f, Height: %.2f", width, height);
+    wchar_t info[256];
+    swprintf(info, sizeof(info)/sizeof(wchar_t), L"Width: %.2f, Height: %.2f", width, height);
     ege_drawtext(testText, 50.0f, 480.0f);
     ege_setfont(12.0f, L"Arial");
     ege_drawtext(info, 50.0f, 510.0f);
