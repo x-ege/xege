@@ -943,7 +943,10 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
                     delete fontFamily;
                     
                     // Use generic sans serif as final fallback
-                    fontFamily = Gdiplus::FontFamily::GenericSansSerif()->Clone();
+                    // Get name from static family to avoid cloning overhead
+                    WCHAR familyName[LF_FACESIZE];
+                    Gdiplus::FontFamily::GenericSansSerif()->GetFamilyName(familyName);
+                    fontFamily = new Gdiplus::FontFamily(familyName);
                 }
             }
         }
