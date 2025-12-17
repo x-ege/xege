@@ -3991,6 +3991,48 @@ void EGEAPI setfont(const LOGFONTA *font, PIMAGE pimg = NULL);
 EGE_DEPRECATE(getfont, "Please use the 'getfont' function with the LOGFONTW* parameter instead.")
 void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
 
+/**
+ * @brief 设置用于GDI+文字渲染的浮点数大小字体
+ * @param size 字体大小（单位：em，浮点数），支持小数以实现精确的字体大小
+ * @param typeface 字体名称
+ * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @note 此函数直接创建GDI+ Font，允许使用浮点数字体大小。
+ *       设置后，ege_drawtext将使用此GDI+字体，而不是从GDI HFONT转换。
+ */
+void EGEAPI ege_setfont(float size, const char* typeface, PIMAGE pimg = NULL);
+
+/**
+ * @brief 设置用于GDI+文字渲染的浮点数大小字体（Unicode版本）
+ * @param size 字体大小（单位：em，浮点数），支持小数以实现精确的字体大小
+ * @param typeface 字体名称
+ * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @note 此函数直接创建GDI+ Font，允许使用浮点数字体大小。
+ *       设置后，ege_drawtext将使用此GDI+字体，而不是从GDI HFONT转换。
+ */
+void EGEAPI ege_setfont(float size, const wchar_t* typeface, PIMAGE pimg = NULL);
+
+/**
+ * @brief 设置用于GDI+文字渲染的浮点数大小和样式字体
+ * @param size 字体大小（单位：em，浮点数），支持小数以实现精确的字体大小
+ * @param typeface 字体名称
+ * @param style 字体样式（Gdiplus::FontStyle标志的组合：FontStyleBold、FontStyleItalic等）
+ * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @note 此函数直接创建GDI+ Font，允许使用浮点数字体大小和GDI+字体样式。
+ *       设置后，ege_drawtext将使用此GDI+字体，而不是从GDI HFONT转换。
+ */
+void EGEAPI ege_setfont(float size, const char* typeface, int style, PIMAGE pimg = NULL);
+
+/**
+ * @brief 设置用于GDI+文字渲染的浮点数大小和样式字体（Unicode版本）
+ * @param size 字体大小（单位：em，浮点数），支持小数以实现精确的字体大小
+ * @param typeface 字体名称
+ * @param style 字体样式（Gdiplus::FontStyle标志的组合：FontStyleBold、FontStyleItalic等）
+ * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ * @note 此函数直接创建GDI+ Font，允许使用浮点数字体大小和GDI+字体样式。
+ *       设置后，ege_drawtext将使用此GDI+字体，而不是从GDI HFONT转换。
+ */
+void EGEAPI ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg = NULL);
+
 /// @}
 
 #define getmaxx getwidth

@@ -325,8 +325,16 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
     if (!isEmpty(text) && img && img->m_hDC) {
         using namespace Gdiplus;
 
-        HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
-        Font font(img->m_hDC, hFont);
+        // Use stored GDI+ font if available, otherwise create from GDI HFONT
+        Font* fontPtr = NULL;
+        bool useStoredFont = (img->m_font != NULL);
+        
+        if (useStoredFont) {
+            fontPtr = img->m_font;
+        } else {
+            HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+            fontPtr = new Font(img->m_hDC, hFont);
+        }
 
         Graphics graphics(img->m_hDC);
 
@@ -345,7 +353,7 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
 
         Gdiplus::RectF layoutRect(0, 0, 65535, 65535);
         Region region;
-        if (graphics.MeasureCharacterRanges(text, textLength, &font, layoutRect, format, 1, &region) == Ok) {
+        if (graphics.MeasureCharacterRanges(text, textLength, fontPtr, layoutRect, format, 1, &region) == Ok) {
             Gdiplus::RectF boundRect;
             if (region.GetBounds(&boundRect, &graphics) == Ok) {
                 textWidth = boundRect.Width;
@@ -354,6 +362,11 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
         }
 
         delete format;
+        
+        // Clean up temporary font if created
+        if (!useStoredFont) {
+            delete fontPtr;
+        }
     }
 
     if (width != NULL)
@@ -785,17 +798,24 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
     using namespace Gdiplus;
     Gdiplus::Graphics* graphics = img->getGraphics();
 
-    HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
-    LOGFONTW lf;
-    GetObjectW(hf, sizeof(LOGFONTW), &lf);
-    if (wcscmp(lf.lfFaceName, L"System") == 0) {
-        hf = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+    // Use stored GDI+ font if available, otherwise create from GDI HFONT
+    Gdiplus::Font* fontPtr = NULL;
+    bool useStoredFont = (img->m_font != NULL);
+    
+    if (useStoredFont) {
+        fontPtr = img->m_font;
+    } else {
+        HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+        LOGFONTW lf;
+        GetObjectW(hf, sizeof(LOGFONTW), &lf);
+        if (wcscmp(lf.lfFaceName, L"System") == 0) {
+            hf = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+        }
+        fontPtr = new Gdiplus::Font(img->m_hDC, hf);
     }
 
-    Gdiplus::Font font(img->m_hDC, hf);
-
-    // if (!font.IsAvailable()) {
-    // 	fprintf(stderr, "!font.IsAvailable(), hf: %p\n", hf);
+    // if (!fontPtr->IsAvailable()) {
+    // 	fprintf(stderr, "!fontPtr->IsAvailable()\n");
     // }
     Gdiplus::PointF origin(x, y);
     Gdiplus::SolidBrush brush(img->m_textcolor);
@@ -823,25 +843,32 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
 
     float xScale = 1.0f, angle = 0.0f;
 
-    if (lf.lfWidth != 0) {
-        LONG fixedWidth = lf.lfWidth;
-        float tmp;
-        float textCurrentWidth;
-        measuretext(textstring, &textCurrentWidth, &tmp, img);
-        lf.lfWidth = 0;
-        setfont(&lf, img);
-        float textNormalWidth;
-        measuretext(textstring, &textNormalWidth, &tmp, img);
-        lf.lfWidth = fixedWidth;
-        setfont(&lf, img);
+    // Only apply width scaling and escapement for GDI fonts (not for stored GDI+ fonts)
+    if (!useStoredFont) {
+        LOGFONTW lf;
+        HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+        GetObjectW(hf, sizeof(LOGFONTW), &lf);
 
-        if ((int)textCurrentWidth != (int)textNormalWidth && ((int)textCurrentWidth != 0) && ((int)textNormalWidth != 0)) {
-            xScale = textCurrentWidth / textNormalWidth;
+        if (lf.lfWidth != 0) {
+            LONG fixedWidth = lf.lfWidth;
+            float tmp;
+            float textCurrentWidth;
+            measuretext(textstring, &textCurrentWidth, &tmp, img);
+            lf.lfWidth = 0;
+            setfont(&lf, img);
+            float textNormalWidth;
+            measuretext(textstring, &textNormalWidth, &tmp, img);
+            lf.lfWidth = fixedWidth;
+            setfont(&lf, img);
+
+            if ((int)textCurrentWidth != (int)textNormalWidth && ((int)textCurrentWidth != 0) && ((int)textNormalWidth != 0)) {
+                xScale = textCurrentWidth / textNormalWidth;
+            }
         }
-    }
 
-    if (lf.lfEscapement % 3600 != 0) {
-        angle = (float)(-lf.lfEscapement / 10.0);
+        if (lf.lfEscapement % 3600 != 0) {
+            angle = (float)(-lf.lfEscapement / 10.0);
+        }
     }
 
     if ((xScale != 1.0) || (angle != 0.0f)) {
@@ -857,13 +884,59 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
             graphics->ScaleTransform(xScale, 1.0f);
         }
 
-        graphics->DrawString(textstring, -1, &font, Gdiplus::PointF(0, 0), format, &brush);
+        graphics->DrawString(textstring, -1, fontPtr, Gdiplus::PointF(0, 0), format, &brush);
         graphics->SetTransform(&oldTransformMatrix);
     } else {
-        graphics->DrawString(textstring, -1, &font, origin, format, &brush);
+        graphics->DrawString(textstring, -1, fontPtr, origin, format, &brush);
     }
 
     delete format;
+    
+    // Clean up temporary font if created
+    if (!useStoredFont) {
+        delete fontPtr;
+    }
+}
+
+void ege_setfont(float size, const char* typeface, PIMAGE pimg)
+{
+    const std::wstring& wFace = mb2w(typeface);
+    ege_setfont(size, wFace.c_str(), pimg);
+}
+
+void ege_setfont(float size, const wchar_t* typeface, PIMAGE pimg)
+{
+    ege_setfont(size, typeface, Gdiplus::FontStyleRegular, pimg);
+}
+
+void ege_setfont(float size, const char* typeface, int style, PIMAGE pimg)
+{
+    const std::wstring& wFace = mb2w(typeface);
+    ege_setfont(size, wFace.c_str(), style, pimg);
+}
+
+void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        // Delete existing GDI+ font if any
+        if (img->m_font != NULL) {
+            delete img->m_font;
+            img->m_font = NULL;
+        }
+
+        // Create GDI+ FontFamily
+        Gdiplus::FontFamily fontFamily(typeface);
+        
+        // If the font family is not available, try to use a default font
+        if (!fontFamily.IsAvailable()) {
+            fontFamily = Gdiplus::FontFamily(L"SimSun");
+        }
+
+        // Create new GDI+ Font with floating-point size
+        img->m_font = new Gdiplus::Font(&fontFamily, size, style, Gdiplus::UnitPoint);
+    }
+    CONVERT_IMAGE_END;
 }
 
 } // namespace ege

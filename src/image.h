@@ -98,6 +98,7 @@ private:
     Gdiplus::Graphics* m_graphics;
     Gdiplus::Pen*      m_pen;
     Gdiplus::Brush*    m_brush;
+    Gdiplus::Font*     m_font;
 #endif
     bool m_aa;
     void initimage(HDC refDC, int width, int height);
