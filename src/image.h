@@ -92,14 +92,14 @@ public:
     color_t m_fillcolor;
     color_t m_textcolor;
     color_t m_bk_color;
-
-private:
 #ifdef EGE_GDIPLUS
     Gdiplus::Graphics* m_graphics;
     Gdiplus::Pen*      m_pen;
     Gdiplus::Brush*    m_brush;
     Gdiplus::Font*     m_font;
 #endif
+
+private:
     bool m_aa;
     void initimage(HDC refDC, int width, int height);
     void construct(int width, int height);
