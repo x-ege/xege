@@ -3998,43 +3998,47 @@ void EGEAPI getfont(LOGFONTA *font, PCIMAGE pimg = NULL);
 
 /**
  * @brief Set font for GDI+ text rendering with floating-point size
- * @param size Font size in ems (floating-point), supports fractional values for precise sizing
+ * @param size Font size in pixels (floating-point), supports fractional values for precise sizing
  * @param typeface Font family name
  * @param pimg Target image pointer, NULL means current ege window
  * @note This function creates a GDI+ Font directly, allowing floating-point font sizes.
  *       When set, ege_drawtext will use this GDI+ font instead of converting from GDI HFONT.
+ *       The size is in pixels to maintain consistency with the existing setfont() function.
  */
 void EGEAPI ege_setfont(float size, const char* typeface, PIMAGE pimg = NULL);
 
 /**
  * @brief Set font for GDI+ text rendering with floating-point size (Unicode)
- * @param size Font size in ems (floating-point), supports fractional values for precise sizing
+ * @param size Font size in pixels (floating-point), supports fractional values for precise sizing
  * @param typeface Font family name
  * @param pimg Target image pointer, NULL means current ege window
  * @note This function creates a GDI+ Font directly, allowing floating-point font sizes.
  *       When set, ege_drawtext will use this GDI+ font instead of converting from GDI HFONT.
+ *       The size is in pixels to maintain consistency with the existing setfont() function.
  */
 void EGEAPI ege_setfont(float size, const wchar_t* typeface, PIMAGE pimg = NULL);
 
 /**
  * @brief Set font for GDI+ text rendering with floating-point size and style
- * @param size Font size in ems (floating-point), supports fractional values for precise sizing
+ * @param size Font size in pixels (floating-point), supports fractional values for precise sizing
  * @param typeface Font family name
  * @param style Font style (combination of Gdiplus::FontStyle flags: FontStyleBold, FontStyleItalic, etc.)
  * @param pimg Target image pointer, NULL means current ege window
  * @note This function creates a GDI+ Font directly, allowing floating-point font sizes and GDI+ font styles.
  *       When set, ege_drawtext will use this GDI+ font instead of converting from GDI HFONT.
+ *       The size is in pixels to maintain consistency with the existing setfont() function.
  */
 void EGEAPI ege_setfont(float size, const char* typeface, int style, PIMAGE pimg = NULL);
 
 /**
  * @brief Set font for GDI+ text rendering with floating-point size and style (Unicode)
- * @param size Font size in ems (floating-point), supports fractional values for precise sizing
+ * @param size Font size in pixels (floating-point), supports fractional values for precise sizing
  * @param typeface Font family name
  * @param style Font style (combination of Gdiplus::FontStyle flags: FontStyleBold, FontStyleItalic, etc.)
  * @param pimg Target image pointer, NULL means current ege window
  * @note This function creates a GDI+ Font directly, allowing floating-point font sizes and GDI+ font styles.
  *       When set, ege_drawtext will use this GDI+ font instead of converting from GDI HFONT.
+ *       The size is in pixels to maintain consistency with the existing setfont() function.
  */
 void EGEAPI ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg = NULL);
 

@@ -977,7 +977,8 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
         }
 
         // Create new GDI+ Font with floating-point size
-        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPoint);
+        // Use UnitPixel instead of UnitPoint to match GDI behavior (size in pixels)
+        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
         
         // Clean up font family (Font makes its own copy)
         delete fontFamily;
