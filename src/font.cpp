@@ -976,19 +976,77 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
             return;
         }
 
-        // Create new GDI+ Font with floating-point size
-        // Use UnitPixel instead of UnitPoint to match GDI behavior (size in pixels)
-        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
+        // Create a temporary LOGFONT to understand GDI font metrics
+        // This helps us match the size that Font(HDC, HFONT) would produce
+        LOGFONTW tempLf = {0};
+        tempLf.lfHeight = (LONG)size;  // Use positive value as passed
+        tempLf.lfWidth = 0;
+        tempLf.lfEscapement = 0;
+        tempLf.lfOrientation = 0;
+        tempLf.lfWeight = (style & Gdiplus::FontStyleBold) ? FW_BOLD : FW_NORMAL;
+        tempLf.lfItalic = (style & Gdiplus::FontStyleItalic) ? TRUE : FALSE;
+        tempLf.lfUnderline = (style & Gdiplus::FontStyleUnderline) ? TRUE : FALSE;
+        tempLf.lfStrikeOut = (style & Gdiplus::FontStyleStrikeout) ? TRUE : FALSE;
+        tempLf.lfCharSet = DEFAULT_CHARSET;
+        tempLf.lfOutPrecision = OUT_DEFAULT_PRECIS;
+        tempLf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+        tempLf.lfQuality = DEFAULT_QUALITY;
+        tempLf.lfPitchAndFamily = DEFAULT_PITCH;
+        lstrcpyW(tempLf.lfFaceName, fontFamily->GetFamilyName(NULL) == Gdiplus::Ok ? validatedTypeface : L"Arial");
         
-        // Clean up font family (Font makes its own copy)
-        delete fontFamily;
-        
-        // Validate the created font before storing it
-        if (newFont->IsAvailable()) {
-            img->m_font = newFont;
+        // Create temporary HFONT and let GDI+ convert it properly
+        HFONT tempHfont = CreateFontIndirectW(&tempLf);
+        if (tempHfont != NULL) {
+            // Create Font from HFONT - this will do the proper conversion
+            Gdiplus::Font* tempFont = new Gdiplus::Font(img->m_hDC, tempHfont);
+            
+            if (tempFont->IsAvailable()) {
+                // Get the actual size that GDI+ computed
+                Gdiplus::REAL actualSize = tempFont->GetSize();
+                Gdiplus::Unit unit = tempFont->GetUnit();
+                
+                // Clean up temporary font and HFONT
+                delete tempFont;
+                DeleteObject(tempHfont);
+                
+                // Now create the font with the corrected size
+                Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, actualSize, style, unit);
+                
+                // Clean up font family (Font makes its own copy)
+                delete fontFamily;
+                
+                // Validate the created font before storing it
+                if (newFont->IsAvailable()) {
+                    img->m_font = newFont;
+                } else {
+                    // Font creation failed, clean up and don't store
+                    delete newFont;
+                }
+            } else {
+                // Failed to create temp font, fall back to direct creation
+                delete tempFont;
+                DeleteObject(tempHfont);
+                
+                // Use UnitPixel as fallback
+                Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
+                delete fontFamily;
+                
+                if (newFont->IsAvailable()) {
+                    img->m_font = newFont;
+                } else {
+                    delete newFont;
+                }
+            }
         } else {
-            // Font creation failed, clean up and don't store
-            delete newFont;
+            // Couldn't create HFONT, use direct method as fallback
+            Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
+            delete fontFamily;
+            
+            if (newFont->IsAvailable()) {
+                img->m_font = newFont;
+            } else {
+                delete newFont;
+            }
         }
     }
     CONVERT_IMAGE_END;
