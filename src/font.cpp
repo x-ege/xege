@@ -977,9 +977,6 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
             return;
         }
 
-        Gdiplus::REAL emSize = size; 
-
-        // 获取该字体族的“留白”比例
         Gdiplus::REAL cellHeight = (Gdiplus::REAL)fontFamily->GetLineSpacing(style);
         Gdiplus::REAL emHeight   = (Gdiplus::REAL)fontFamily->GetEmHeight(style);
         // 缩放 size，去掉留白部分，得到 GDI+ 需要的纯像素大小
