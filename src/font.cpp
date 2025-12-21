@@ -345,7 +345,11 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
         case RIGHT_TEXT:  format->SetAlignment(StringAlignmentFar);     break;
         default: break;
         }
-        format->SetFormatFlags(StringFormatFlagsMeasureTrailingSpaces);
+        
+        // Match the behavior in ege_drawtext_p: only measure trailing spaces for non-left alignment
+        if (img->m_texttype.horiz != LEFT_TEXT) {
+            format->SetFormatFlags(format->GetFormatFlags() | StringFormatFlagsMeasureTrailingSpaces);
+        }
 
         int textLength = (int)wcslen(text);
         CharacterRange charRange(0, textLength);
