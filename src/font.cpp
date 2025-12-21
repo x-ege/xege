@@ -980,7 +980,7 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
         // Create a temporary LOGFONT to understand GDI font metrics
         // This helps us match the size that Font(HDC, HFONT) would produce
         LOGFONTW tempLf = {0};
-        tempLf.lfHeight = (LONG)size;  // Use positive value as passed
+        tempLf.lfHeight = (LONG)(size + 0.5f);  // Round to nearest integer for LOGFONT
         tempLf.lfWidth = 0;
         tempLf.lfEscapement = 0;
         tempLf.lfOrientation = 0;
@@ -1002,7 +1002,7 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
             Gdiplus::Font* tempFont = new Gdiplus::Font(img->m_hDC, tempHfont);
             
             if (tempFont->IsAvailable()) {
-                // Get the actual size that GDI+ computed
+                // Get the actual size and unit that GDI+ computed
                 Gdiplus::REAL actualSize = tempFont->GetSize();
                 Gdiplus::Unit unit = tempFont->GetUnit();
                 
@@ -1010,8 +1010,13 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
                 delete tempFont;
                 DeleteObject(tempHfont);
                 
-                // Now create the font with the corrected size
-                Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, actualSize, style, unit);
+                // Calculate the scaling factor to preserve the floating-point precision
+                // If input was 24.5 but LOGFONT used 25, we scale actualSize proportionally
+                float scaleFactor = size / (float)(LONG)(size + 0.5f);
+                Gdiplus::REAL adjustedSize = actualSize * scaleFactor;
+                
+                // Now create the font with the adjusted size to preserve float precision
+                Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, adjustedSize, style, unit);
                 
                 // Clean up font family (Font makes its own copy)
                 delete fontFamily;
