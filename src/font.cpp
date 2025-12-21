@@ -352,17 +352,14 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
         }
 
         int textLength = (int)wcslen(text);
-        CharacterRange charRange(0, textLength);
-        format->SetMeasurableCharacterRanges(1, &charRange);
-
+        
+        // Use MeasureString instead of MeasureCharacterRanges for better accuracy
+        // MeasureString gives bounds that match what DrawString actually renders
+        Gdiplus::RectF boundRect;
         Gdiplus::RectF layoutRect(0, 0, 65535, 65535);
-        Region region;
-        if (graphics.MeasureCharacterRanges(text, textLength, fontPtr, layoutRect, format, 1, &region) == Ok) {
-            Gdiplus::RectF boundRect;
-            if (region.GetBounds(&boundRect, &graphics) == Ok) {
-                textWidth = boundRect.Width;
-                textHeight = boundRect.Height;
-            }
+        if (graphics.MeasureString(text, textLength, fontPtr, layoutRect, format, &boundRect) == Ok) {
+            textWidth = boundRect.Width;
+            textHeight = boundRect.Height;
         }
 
         delete format;
