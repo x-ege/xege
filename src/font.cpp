@@ -977,82 +977,19 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
             return;
         }
 
-        // Create a temporary LOGFONT to understand GDI font metrics
-        // This helps us match the size that Font(HDC, HFONT) would produce
-        LOGFONTW tempLf = {0};
-        tempLf.lfHeight = (LONG)(size + 0.5f);  // Round to nearest integer for LOGFONT
-        tempLf.lfWidth = 0;
-        tempLf.lfEscapement = 0;
-        tempLf.lfOrientation = 0;
-        tempLf.lfWeight = (style & Gdiplus::FontStyleBold) ? FW_BOLD : FW_NORMAL;
-        tempLf.lfItalic = (style & Gdiplus::FontStyleItalic) ? TRUE : FALSE;
-        tempLf.lfUnderline = (style & Gdiplus::FontStyleUnderline) ? TRUE : FALSE;
-        tempLf.lfStrikeOut = (style & Gdiplus::FontStyleStrikeout) ? TRUE : FALSE;
-        tempLf.lfCharSet = DEFAULT_CHARSET;
-        tempLf.lfOutPrecision = OUT_DEFAULT_PRECIS;
-        tempLf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-        tempLf.lfQuality = DEFAULT_QUALITY;
-        tempLf.lfPitchAndFamily = DEFAULT_PITCH;
-        lstrcpyW(tempLf.lfFaceName, fontFamily->GetFamilyName(NULL) == Gdiplus::Ok ? validatedTypeface : L"Arial");
+        // Create new GDI+ Font with floating-point size directly
+        // Use UnitPixel to specify size in pixels (matching GDI behavior)
+        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
         
-        // Create temporary HFONT and let GDI+ convert it properly
-        HFONT tempHfont = CreateFontIndirectW(&tempLf);
-        if (tempHfont != NULL) {
-            // Create Font from HFONT - this will do the proper conversion
-            Gdiplus::Font* tempFont = new Gdiplus::Font(img->m_hDC, tempHfont);
-            
-            if (tempFont->IsAvailable()) {
-                // Get the actual size and unit that GDI+ computed
-                Gdiplus::REAL actualSize = tempFont->GetSize();
-                Gdiplus::Unit unit = tempFont->GetUnit();
-                
-                // Clean up temporary font and HFONT
-                delete tempFont;
-                DeleteObject(tempHfont);
-                
-                // Calculate the scaling factor to preserve the floating-point precision
-                // If input was 24.5 but LOGFONT used 25, we scale actualSize proportionally
-                float scaleFactor = size / (float)(LONG)(size + 0.5f);
-                Gdiplus::REAL adjustedSize = actualSize * scaleFactor;
-                
-                // Now create the font with the adjusted size to preserve float precision
-                Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, adjustedSize, style, unit);
-                
-                // Clean up font family (Font makes its own copy)
-                delete fontFamily;
-                
-                // Validate the created font before storing it
-                if (newFont->IsAvailable()) {
-                    img->m_font = newFont;
-                } else {
-                    // Font creation failed, clean up and don't store
-                    delete newFont;
-                }
-            } else {
-                // Failed to create temp font, fall back to direct creation
-                delete tempFont;
-                DeleteObject(tempHfont);
-                
-                // Use UnitPixel as fallback
-                Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
-                delete fontFamily;
-                
-                if (newFont->IsAvailable()) {
-                    img->m_font = newFont;
-                } else {
-                    delete newFont;
-                }
-            }
+        // Clean up font family (Font makes its own copy)
+        delete fontFamily;
+        
+        // Validate the created font before storing it
+        if (newFont->IsAvailable()) {
+            img->m_font = newFont;
         } else {
-            // Couldn't create HFONT, use direct method as fallback
-            Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
-            delete fontFamily;
-            
-            if (newFont->IsAvailable()) {
-                img->m_font = newFont;
-            } else {
-                delete newFont;
-            }
+            // Font creation failed, clean up and don't store
+            delete newFont;
         }
     }
     CONVERT_IMAGE_END;
