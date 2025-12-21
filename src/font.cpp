@@ -977,9 +977,15 @@ void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
             return;
         }
 
-        // Create new GDI+ Font with floating-point size directly
-        // Use UnitPixel to specify size in pixels (matching GDI behavior)
-        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, size, style, Gdiplus::UnitPixel);
+        Gdiplus::REAL emSize = size; 
+
+        // 获取该字体族的“留白”比例
+        Gdiplus::REAL cellHeight = (Gdiplus::REAL)fontFamily->GetLineSpacing(style);
+        Gdiplus::REAL emHeight   = (Gdiplus::REAL)fontFamily->GetEmHeight(style);
+        // 缩放 size，去掉留白部分，得到 GDI+ 需要的纯像素大小
+        Gdiplus::REAL adjustedSize = size * emHeight / cellHeight;
+
+        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, adjustedSize, style, Gdiplus::UnitPixel);
         
         // Clean up font family (Font makes its own copy)
         delete fontFamily;
