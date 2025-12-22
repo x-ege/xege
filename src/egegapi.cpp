@@ -2986,9 +2986,15 @@ int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
 
 int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len)
 {
+    // 绘制逻辑：如果空间足够，就采用远古设置
+    // 如果空间不够，就等比例缩放一下
+    //由于字体高度对观感影响比较大，这里字体高度绑定的是对话框的高度
     IMAGE bg;
     IMAGE window;
-    int w = 400, h = 300, x = (getwidth() - w) / 2, y = (getheight() - h) / 2;
+
+    const int defaultWidth = 400, defaultHeight = 300;
+
+    int w = MIN(defaultWidth, getwidth()), h = MIN(defaultHeight, getheight()), x = (getwidth() - w) / 2, y = (getheight() - h) / 2;
     int ret = 0;
 
     bg.getimage(0, 0, getwidth(), getheight());
@@ -2997,8 +3003,8 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
 
     sys_edit edit(true);
     edit.create(true);
-    edit.move(x + 30 + 1, y + 192 + 1);
-    edit.size(w - (30 + 1) * 2, h - 40 - 192 - 2);
+    edit.move(x + (30 + 1)*w / defaultWidth, y + (192 + 1)*h / defaultHeight);
+    edit.size(w - (30 + 1) * 2*w / defaultWidth, h - (40 + 192 + 2)*h / defaultHeight);
     edit.setmaxlen(len);
     edit.visible(true);
     edit.setfocus();
@@ -3009,17 +3015,17 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
 
     for (int dy = 1; dy < 24; dy++) {
         setcolor(HSLtoRGB(240.0f, 1.0f, 0.5f + float(dy / 24.0 * 0.3)), &window);
-        line(1, dy, w - 1, dy, &window);
+        line(1, dy*h/defaultHeight, w - 1, dy*h/defaultHeight, &window);
     }
 
     setcolor(0xFFFFFF, &window);
     setbkmode(TRANSPARENT, &window);
-    setfont(18, 0, L"Tahoma", &window);
-    outtextxy(3, 3, title, &window);
+    setfont(18*h/defaultHeight, 0, L"Tahoma", &window);
+    outtextxy(3*w/defaultWidth, 3*h/defaultHeight, title, &window);
     setcolor(0x0, &window);
 
     {
-        RECT rect = {30, 32, w - 30, 128 - 3};
+        RECT rect = {30*w/defaultWidth, 32*h/defaultHeight, w - 30*w/defaultWidth, 128 - 3*h/defaultHeight};
         DrawTextW(window.m_hDC,
             text,
             -1,
