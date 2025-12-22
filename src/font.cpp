@@ -325,8 +325,16 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
     if (!isEmpty(text) && img && img->m_hDC) {
         using namespace Gdiplus;
 
-        HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
-        Font font(img->m_hDC, hFont);
+        // Use stored GDI+ font if available, otherwise create from GDI HFONT
+        Font* fontPtr = NULL;
+        bool useStoredFont = (img->m_font != NULL);
+        
+        if (useStoredFont) {
+            fontPtr = img->m_font;
+        } else {
+            HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+            fontPtr = new Font(img->m_hDC, hFont);
+        }
 
         Graphics graphics(img->m_hDC);
 
@@ -337,23 +345,29 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
         case RIGHT_TEXT:  format->SetAlignment(StringAlignmentFar);     break;
         default: break;
         }
-        format->SetFormatFlags(StringFormatFlagsMeasureTrailingSpaces);
+        
+        // Match the behavior in ege_drawtext_p: only measure trailing spaces for non-left alignment
+        if (img->m_texttype.horiz != LEFT_TEXT) {
+            format->SetFormatFlags(format->GetFormatFlags() | StringFormatFlagsMeasureTrailingSpaces);
+        }
 
         int textLength = (int)wcslen(text);
-        CharacterRange charRange(0, textLength);
-        format->SetMeasurableCharacterRanges(1, &charRange);
-
+        
+        // Use MeasureString instead of MeasureCharacterRanges for better accuracy
+        // MeasureString gives bounds that match what DrawString actually renders
+        Gdiplus::RectF boundRect;
         Gdiplus::RectF layoutRect(0, 0, 65535, 65535);
-        Region region;
-        if (graphics.MeasureCharacterRanges(text, textLength, &font, layoutRect, format, 1, &region) == Ok) {
-            Gdiplus::RectF boundRect;
-            if (region.GetBounds(&boundRect, &graphics) == Ok) {
-                textWidth = boundRect.Width;
-                textHeight = boundRect.Height;
-            }
+        if (graphics.MeasureString(text, textLength, fontPtr, layoutRect, format, &boundRect) == Ok) {
+            textWidth = boundRect.Width;
+            textHeight = boundRect.Height;
         }
 
         delete format;
+        
+        // Clean up temporary font if created
+        if (!useStoredFont) {
+            delete fontPtr;
+        }
     }
 
     if (width != NULL)
@@ -785,17 +799,24 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
     using namespace Gdiplus;
     Gdiplus::Graphics* graphics = img->getGraphics();
 
-    HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
-    LOGFONTW lf;
-    GetObjectW(hf, sizeof(LOGFONTW), &lf);
-    if (wcscmp(lf.lfFaceName, L"System") == 0) {
-        hf = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+    // Use stored GDI+ font if available, otherwise create from GDI HFONT
+    Gdiplus::Font* fontPtr = NULL;
+    bool useStoredFont = (img->m_font != NULL);
+    
+    if (useStoredFont) {
+        fontPtr = img->m_font;
+    } else {
+        HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+        LOGFONTW lf;
+        GetObjectW(hf, sizeof(LOGFONTW), &lf);
+        if (wcscmp(lf.lfFaceName, L"System") == 0) {
+            hf = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+        }
+        fontPtr = new Gdiplus::Font(img->m_hDC, hf);
     }
 
-    Gdiplus::Font font(img->m_hDC, hf);
-
-    // if (!font.IsAvailable()) {
-    // 	fprintf(stderr, "!font.IsAvailable(), hf: %p\n", hf);
+    // if (!fontPtr->IsAvailable()) {
+    // 	fprintf(stderr, "!fontPtr->IsAvailable()\n");
     // }
     Gdiplus::PointF origin(x, y);
     Gdiplus::SolidBrush brush(img->m_textcolor);
@@ -823,25 +844,32 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
 
     float xScale = 1.0f, angle = 0.0f;
 
-    if (lf.lfWidth != 0) {
-        LONG fixedWidth = lf.lfWidth;
-        float tmp;
-        float textCurrentWidth;
-        measuretext(textstring, &textCurrentWidth, &tmp, img);
-        lf.lfWidth = 0;
-        setfont(&lf, img);
-        float textNormalWidth;
-        measuretext(textstring, &textNormalWidth, &tmp, img);
-        lf.lfWidth = fixedWidth;
-        setfont(&lf, img);
+    // Only apply width scaling and escapement for GDI fonts (not for stored GDI+ fonts)
+    if (!useStoredFont) {
+        LOGFONTW lf;
+        HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+        GetObjectW(hf, sizeof(LOGFONTW), &lf);
 
-        if ((int)textCurrentWidth != (int)textNormalWidth && ((int)textCurrentWidth != 0) && ((int)textNormalWidth != 0)) {
-            xScale = textCurrentWidth / textNormalWidth;
+        if (lf.lfWidth != 0) {
+            LONG fixedWidth = lf.lfWidth;
+            float tmp;
+            float textCurrentWidth;
+            measuretext(textstring, &textCurrentWidth, &tmp, img);
+            lf.lfWidth = 0;
+            setfont(&lf, img);
+            float textNormalWidth;
+            measuretext(textstring, &textNormalWidth, &tmp, img);
+            lf.lfWidth = fixedWidth;
+            setfont(&lf, img);
+
+            if ((int)textCurrentWidth != (int)textNormalWidth && ((int)textCurrentWidth != 0) && ((int)textNormalWidth != 0)) {
+                xScale = textCurrentWidth / textNormalWidth;
+            }
         }
-    }
 
-    if (lf.lfEscapement % 3600 != 0) {
-        angle = (float)(-lf.lfEscapement / 10.0);
+        if (lf.lfEscapement % 3600 != 0) {
+            angle = (float)(-lf.lfEscapement / 10.0);
+        }
     }
 
     if ((xScale != 1.0) || (angle != 0.0f)) {
@@ -857,13 +885,125 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
             graphics->ScaleTransform(xScale, 1.0f);
         }
 
-        graphics->DrawString(textstring, -1, &font, Gdiplus::PointF(0, 0), format, &brush);
+        graphics->DrawString(textstring, -1, fontPtr, Gdiplus::PointF(0, 0), format, &brush);
         graphics->SetTransform(&oldTransformMatrix);
     } else {
-        graphics->DrawString(textstring, -1, &font, origin, format, &brush);
+        graphics->DrawString(textstring, -1, fontPtr, origin, format, &brush);
     }
 
     delete format;
+    
+    // Clean up temporary font if created
+    if (!useStoredFont) {
+        delete fontPtr;
+    }
+}
+
+void ege_setfont(float size, const char* typeface, PIMAGE pimg)
+{
+    const char* validatedTypeface = typeface;
+    if (validatedTypeface == NULL || validatedTypeface[0] == '\0') {
+        validatedTypeface = "Arial";
+    }
+    const std::wstring& wFace = mb2w(validatedTypeface);
+    ege_setfont(size, wFace.c_str(), pimg);
+}
+
+void ege_setfont(float size, const wchar_t* typeface, PIMAGE pimg)
+{
+    ege_setfont(size, typeface, Gdiplus::FontStyleRegular, pimg);
+}
+
+void ege_setfont(float size, const char* typeface, int style, PIMAGE pimg)
+{
+    const char* validatedTypeface = typeface;
+    if (validatedTypeface == NULL || validatedTypeface[0] == '\0') {
+        validatedTypeface = "Arial";
+    }
+    const std::wstring& wFace = mb2w(validatedTypeface);
+    ege_setfont(size, wFace.c_str(), style, pimg);
+}
+
+void ege_setfont(float size, const wchar_t* typeface, int style, PIMAGE pimg)
+{
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        // Validate input parameters
+        const wchar_t* validatedTypeface = typeface;
+        if (validatedTypeface == NULL || validatedTypeface[0] == L'\0') {
+            validatedTypeface = L"Arial";  // Use safe default
+        }
+        
+        // Validate size (reasonable range for font sizes)
+        if (size <= 0.0f || size > 1000.0f) {
+            CONVERT_IMAGE_END;
+            return;  // Invalid size, do nothing
+        }
+        
+        // Delete existing GDI+ font if any
+        if (img->m_font != NULL) {
+            delete img->m_font;
+            img->m_font = NULL;
+        }
+
+        // Create GDI+ FontFamily - try requested font first, then fallbacks
+        Gdiplus::FontFamily* fontFamily = new Gdiplus::FontFamily(validatedTypeface);
+        
+        // If the font family is not available, try fallback fonts
+        if (!fontFamily->IsAvailable()) {
+            delete fontFamily;
+            
+            // Try Arial
+            fontFamily = new Gdiplus::FontFamily(L"Arial");
+            if (!fontFamily->IsAvailable()) {
+                delete fontFamily;
+                
+                // Try SimSun (common Chinese font)
+                fontFamily = new Gdiplus::FontFamily(L"SimSun");
+                if (!fontFamily->IsAvailable()) {
+                    delete fontFamily;
+                    
+                    // Use generic sans serif as final fallback
+                    const Gdiplus::FontFamily* genericFamily = Gdiplus::FontFamily::GenericSansSerif();
+                    if (genericFamily != NULL) {
+                        fontFamily = genericFamily->Clone();
+                    } else {
+                        // Last resort: return without setting font (use GDI fallback)
+                        CONVERT_IMAGE_END;
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Validate font family is available before creating font
+        if (fontFamily == NULL || !fontFamily->IsAvailable()) {
+            if (fontFamily != NULL) {
+                delete fontFamily;
+            }
+            CONVERT_IMAGE_END;
+            return;
+        }
+
+        Gdiplus::REAL cellHeight = (Gdiplus::REAL)fontFamily->GetLineSpacing(style);
+        Gdiplus::REAL emHeight   = (Gdiplus::REAL)fontFamily->GetEmHeight(style);
+        // 缩放 size，去掉留白部分，得到 GDI+ 需要的纯像素大小
+        Gdiplus::REAL adjustedSize = size * emHeight / cellHeight;
+
+        Gdiplus::Font* newFont = new Gdiplus::Font(fontFamily, adjustedSize, style, Gdiplus::UnitPixel);
+        
+        // Clean up font family (Font makes its own copy)
+        delete fontFamily;
+        
+        // Validate the created font before storing it
+        if (newFont->IsAvailable()) {
+            img->m_font = newFont;
+        } else {
+            // Font creation failed, clean up and don't store
+            delete newFont;
+        }
+    }
+    CONVERT_IMAGE_END;
 }
 
 } // namespace ege
