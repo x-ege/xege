@@ -901,7 +901,11 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
 
 void ege_setfont(float size, const char* typeface, PIMAGE pimg)
 {
-    const std::wstring& wFace = mb2w(typeface);
+    const char* validatedTypeface = typeface;
+    if (validatedTypeface == NULL || validatedTypeface[0] == '\0') {
+        validatedTypeface = "Arial";
+    }
+    const std::wstring& wFace = mb2w(validatedTypeface);
     ege_setfont(size, wFace.c_str(), pimg);
 }
 
@@ -912,7 +916,11 @@ void ege_setfont(float size, const wchar_t* typeface, PIMAGE pimg)
 
 void ege_setfont(float size, const char* typeface, int style, PIMAGE pimg)
 {
-    const std::wstring& wFace = mb2w(typeface);
+    const char* validatedTypeface = typeface;
+    if (validatedTypeface == NULL || validatedTypeface[0] == '\0') {
+        validatedTypeface = "Arial";
+    }
+    const std::wstring& wFace = mb2w(validatedTypeface);
     ege_setfont(size, wFace.c_str(), style, pimg);
 }
 
