@@ -333,6 +333,24 @@
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - Light Pollution (Debug)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_light_pollution", "--build", "--run", "graph_light_pollution.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run Demo - Light Pollution (Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_light_pollution", "--build", "--run", "graph_light_pollution.exe"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": "$gcc"
         }
     ]
 }
