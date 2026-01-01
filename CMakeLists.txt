@@ -24,6 +24,9 @@ option(EGE_BUILD_DEMO "Build ege demos" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEST "Build ege tests" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEMP "Build ege temp" ${EGE_IS_ROOT_PROJECT})
 
+# OpenGL backend option - experimental cross-platform support
+option(EGE_ENABLE_OPENGL "Enable OpenGL rendering backend (experimental)" OFF)
+
 # EGE_DISABLE_DEBUG_INFO 选项：禁用调试信息，避免 LNK4099 警告
 # 优先使用 CMake 参数，其次检查环境变量，默认 OFF
 if(NOT DEFINED EGE_DISABLE_DEBUG_INFO)
@@ -47,6 +50,7 @@ message(STATUS "EGE_CLEAR_OPTIONS_CACHE: ${EGE_CLEAR_OPTIONS_CACHE}")
 message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
 message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
 message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
+message(STATUS "EGE_ENABLE_OPENGL: ${EGE_ENABLE_OPENGL}")
 message(STATUS "EGE_DISABLE_DEBUG_INFO: ${EGE_DISABLE_DEBUG_INFO}")
 
 if(CMAKE_HOST_UNIX)
@@ -129,8 +133,13 @@ if(EGE_ENABLE_CPP17)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
+# Collect source files from src/ directory
 file(GLOB EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-add_library(xege STATIC ${EGE_CPP_SRC})
+
+# Collect backend source files
+file(GLOB EGE_BACKEND_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/*.cpp)
+
+add_library(xege STATIC ${EGE_CPP_SRC} ${EGE_BACKEND_SRC})
 
 target_include_directories(xege PUBLIC include)
 
@@ -221,6 +230,77 @@ if(EGE_ENABLE_CAMERA_CAPTURE)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
 else()
     message(WARNING "Camera capture is disabled because your compiler does not support C++17.")
+endif()
+
+# OpenGL backend configuration (experimental cross-platform support)
+if(EGE_ENABLE_OPENGL)
+    message(STATUS "OpenGL backend enabled (experimental)")
+
+    # Find OpenGL
+    find_package(OpenGL REQUIRED)
+
+    # Check for GLFW
+    find_package(glfw3 CONFIG QUIET)
+    if(NOT glfw3_FOUND)
+        # Try to find GLFW via pkg-config
+        find_package(PkgConfig QUIET)
+        if(PKG_CONFIG_FOUND)
+            pkg_check_modules(GLFW3 glfw3)
+        endif()
+
+        if(NOT GLFW3_FOUND)
+            message(STATUS "GLFW3 not found in system, checking 3rdparty...")
+            # Check if GLFW is available in 3rdparty
+            if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/glfw/CMakeLists.txt")
+                set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+                set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+                set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+                add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/glfw)
+                set(GLFW_LIBRARIES glfw)
+                set(GLFW_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/3rdparty/glfw/include)
+            else()
+                message(WARNING "GLFW not found. OpenGL backend disabled.")
+                message(WARNING "To enable, install GLFW or add it as a submodule in 3rdparty/glfw")
+                set(EGE_ENABLE_OPENGL OFF)
+            endif()
+        else()
+            set(GLFW_LIBRARIES ${GLFW3_LIBRARIES})
+            set(GLFW_INCLUDE_DIRS ${GLFW3_INCLUDE_DIRS})
+        endif()
+    else()
+        set(GLFW_LIBRARIES glfw)
+    endif()
+
+    # Check for GLAD
+    if(EGE_ENABLE_OPENGL)
+        if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/glad/include/glad/glad.h")
+            set(GLAD_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/3rdparty/glad/include)
+            # Add GLAD source file if it exists
+            if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/glad/src/glad.c")
+                target_sources(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/glad/src/glad.c)
+            endif()
+        else()
+            message(WARNING "GLAD not found in 3rdparty/glad. OpenGL backend disabled.")
+            message(WARNING "To enable, add GLAD to 3rdparty/glad with include/glad/glad.h")
+            set(EGE_ENABLE_OPENGL OFF)
+        endif()
+    endif()
+
+    # Apply OpenGL configuration if still enabled
+    if(EGE_ENABLE_OPENGL)
+        target_compile_definitions(xege PRIVATE EGE_ENABLE_OPENGL=1)
+        target_include_directories(xege PRIVATE ${GLFW_INCLUDE_DIRS})
+        if(DEFINED GLAD_INCLUDE_DIRS)
+            target_include_directories(xege PRIVATE ${GLAD_INCLUDE_DIRS})
+        endif()
+        target_link_libraries(xege INTERFACE OpenGL::GL)
+        if(DEFINED GLFW_LIBRARIES)
+            target_link_libraries(xege INTERFACE ${GLFW_LIBRARIES})
+        endif()
+        message(STATUS "OpenGL backend configured successfully")
+    endif()
+else()
+    message(STATUS "OpenGL backend disabled (use -DEGE_ENABLE_OPENGL=ON to enable)")
 endif()
 
 # 设置库文件名

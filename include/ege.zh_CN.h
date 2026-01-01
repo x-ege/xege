@@ -238,6 +238,7 @@ enum initmode_flag
     INIT_UNICODE         = 0x20,  ///< Unicode字符消息 (等同于setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< 隐藏窗口
     INIT_WITHLOGO        = 0x100, ///< 启动时显示EGE Logo 动画 (Debug版本下默认不显示)
+    INIT_OPENGL          = 0x200, ///< 使用OpenGL渲染后端 (实验性功能，用于跨平台支持)
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< 动画模式
 };
 
