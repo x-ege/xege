@@ -31,9 +31,8 @@ namespace ege
 // GLFW error callback
 static void glfwErrorCallback(int error, const char* description)
 {
-    // Could log the error here
-    (void)error;
-    (void)description;
+    // Log error to stderr for debugging
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
 // GLFW framebuffer size callback
@@ -56,7 +55,6 @@ OpenGLBackend::OpenGLBackend()
     , m_height(0)
     , m_clearColor(0)
     , m_drawColor(0xFFFFFFFF)
-    , m_frameBuffer(nullptr)
 {
 }
 
@@ -171,9 +169,8 @@ bool OpenGLBackend::initialize(int width, int height, int mode)
     // Set up OpenGL state
     setupOpenGLState();
 
-    // Allocate frame buffer for software rendering fallback
-    m_frameBuffer = new color_t[width * height];
-    std::memset(m_frameBuffer, 0, width * height * sizeof(color_t));
+    // Allocate frame buffer for software rendering fallback (using vector for RAII)
+    m_frameBuffer.resize(width * height, 0);
 
     m_initialized = true;
     return true;
@@ -181,16 +178,17 @@ bool OpenGLBackend::initialize(int width, int height, int mode)
 
 void OpenGLBackend::shutdown()
 {
-    if (m_frameBuffer) {
-        delete[] m_frameBuffer;
-        m_frameBuffer = nullptr;
-    }
+    // Clear frame buffer (vector handles memory automatically)
+    m_frameBuffer.clear();
+    m_frameBuffer.shrink_to_fit();
 
     if (m_window) {
         glfwDestroyWindow(m_window);
         m_window = nullptr;
     }
 
+    // Note: glfwTerminate() should only be called when no more GLFW windows exist
+    // In a multi-window scenario, this should be handled differently
     if (m_initialized) {
         glfwTerminate();
     }
@@ -241,7 +239,7 @@ void OpenGLBackend::putPixel(int x, int y, color_t color)
     glEnd();
 
     // Also update frame buffer
-    if (m_frameBuffer && x >= 0 && x < m_width && y >= 0 && y < m_height) {
+    if (!m_frameBuffer.empty() && x >= 0 && x < m_width && y >= 0 && y < m_height) {
         m_frameBuffer[y * m_width + x] = color;
     }
 }
@@ -249,7 +247,7 @@ void OpenGLBackend::putPixel(int x, int y, color_t color)
 color_t OpenGLBackend::getPixel(int x, int y)
 {
     // Read from frame buffer
-    if (m_frameBuffer && x >= 0 && x < m_width && y >= 0 && y < m_height) {
+    if (!m_frameBuffer.empty() && x >= 0 && x < m_width && y >= 0 && y < m_height) {
         return m_frameBuffer[y * m_width + x];
     }
     return 0;

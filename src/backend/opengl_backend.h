@@ -15,6 +15,7 @@
 #ifdef EGE_ENABLE_OPENGL
 
 #include "render_backend.h"
+#include <vector>
 
 // Forward declarations for GLFW types
 struct GLFWwindow;
@@ -109,8 +110,8 @@ private:
     color_t m_clearColor;
     color_t m_drawColor;
 
-    // Frame buffer for software rendering fallback
-    color_t* m_frameBuffer;
+    // Frame buffer for software rendering fallback (using vector for RAII)
+    std::vector<color_t> m_frameBuffer;
 };
 
 } // namespace ege
