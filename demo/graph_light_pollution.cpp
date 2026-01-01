@@ -48,6 +48,7 @@ struct FlashStar {
     float blink_speed;    // 闪烁速度
     float phase;          // 相位
     int size;             // 大小
+    float hue;            // 色相（预计算）
 };
 
 // 彩色线条结构
@@ -56,6 +57,7 @@ struct ColorLine {
     float hue;            // 色相
     float hue_speed;      // 色相变化速度
     int alpha;            // 透明度
+    int width;            // 线宽
 };
 
 FlashCircle circles[MAX_CIRCLES];
@@ -106,6 +108,7 @@ void InitStars() {
         stars[i].blink_speed = (float)(random(50) + 20) / 100.0f;
         stars[i].phase = (float)(random(628)) / 100.0f;
         stars[i].size = random(3) + 2;
+        stars[i].hue = (float)(random(360)); // 预计算色相
     }
 }
 
@@ -119,6 +122,7 @@ void InitLines() {
         lines[i].hue = (float)(random(360));
         lines[i].hue_speed = (float)(random(100) + 30) / 10.0f;
         lines[i].alpha = random(150) + 80;
+        lines[i].width = random(3) + 1; // 预计算线宽
     }
 }
 
@@ -175,6 +179,11 @@ void UpdateStars(float dt) {
     for (int i = 0; i < MAX_STARS; i++) {
         stars[i].phase += stars[i].blink_speed * dt;
         stars[i].brightness = (float)((sin(stars[i].phase) + 1.0) * 0.5);
+        
+        // 偶尔改变色相以增加变化
+        if (random(1000) < 5) {
+            stars[i].hue = (float)(random(360));
+        }
     }
 }
 
@@ -184,12 +193,13 @@ void UpdateLines(float dt) {
         lines[i].hue += lines[i].hue_speed * dt;
         if (lines[i].hue >= 360.0f) lines[i].hue -= 360.0f;
         
-        // 偶尔重新生成线条位置
+        // 偶尔重新生成线条位置和线宽
         if (random(1000) < 10) {
             lines[i].x1 = random(screen_w);
             lines[i].y1 = random(screen_h);
             lines[i].x2 = random(screen_w);
             lines[i].y2 = random(screen_h);
+            lines[i].width = random(3) + 1;
         }
     }
 }
@@ -236,9 +246,8 @@ void DrawRects() {
 // 绘制星星
 void DrawStars() {
     for (int i = 0; i < MAX_STARS; i++) {
-        // 根据亮度计算颜色
-        int brightness = (int)(stars[i].brightness * 255);
-        color_t color = HSVtoRGB((float)(random(360)), 1.0f, stars[i].brightness);
+        // 根据亮度和预计算的色相生成颜色
+        color_t color = HSVtoRGB(stars[i].hue, 1.0f, stars[i].brightness);
         
         setcolor(EGERGB(EGEGET_R(color), EGEGET_G(color), EGEGET_B(color)));
         setfillcolor(EGERGB(EGEGET_R(color), EGEGET_G(color), EGEGET_B(color)));
@@ -263,7 +272,7 @@ void DrawLines() {
         color_t color = HSVtoRGB(lines[i].hue, 1.0f, 1.0f);
         setcolor(EGERGBA(EGEGET_R(color), EGEGET_G(color), EGEGET_B(color), lines[i].alpha));
         
-        setlinewidth(random(3) + 1);
+        setlinewidth(lines[i].width);
         line(lines[i].x1, lines[i].y1, lines[i].x2, lines[i].y2);
     }
 }
@@ -343,7 +352,7 @@ int main() {
             outtextxy(10, 10, "光污染效果演示 - 按任意键退出");
             
             char fps_str[64];
-            sprintf(fps_str, "FPS: %.1f", getfps());
+            snprintf(fps_str, sizeof(fps_str), "FPS: %.1f", getfps());
             outtextxy(10, 30, fps_str);
         } else {
             show_hint = false;
