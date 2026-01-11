@@ -217,6 +217,16 @@ function cmakeBuildAll() {
     popd
 }
 
+function cmakeCacheGet() {
+    local var="$1"
+    local cache_file="$CMAKE_BUILD_DIR/CMakeCache.txt"
+    if [[ -f "$cache_file" ]]; then
+        # Format: VAR:TYPE=VALUE
+        # Keep the last match in case of duplicates.
+        grep -E "^${var}:" "$cache_file" | tail -n 1 | cut -d= -f2-
+    fi
+}
+
 if [[ $# -eq 0 ]]; then
     echo "usage: [--load] [--reload] [--clean] [--build]"
 fi
@@ -442,17 +452,23 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
         echo "run $exe_path"
         "$exe_path"
     else
+        cache_opengl="$(cmakeCacheGet EGE_BUILD_OPENGL)"
         echo run "$exe_path"
         # If the output is a native binary (no .exe suffix), run it directly.
         # Otherwise, fall back to wine for the legacy cross-compile workflow.
         if [[ "$exe_path" != *.exe ]]; then
             "$exe_path"
+        elif [[ "$cache_opengl" == "ON" ]]; then
+            echo "Error: This build directory is configured with EGE_BUILD_OPENGL=ON (native OpenGL)." >&2
+            echo "Refusing to run Windows .exe via wine. Please run the native binary (no .exe suffix)." >&2
+            exit 2
         elif command -v wine64 &>/dev/null; then
             wine64 "$exe_path"
         elif command -v wine &>/dev/null; then
             wine "$exe_path"
         else
-            echo "Command 'wine64' not found, please install wine first."
+            echo "Command 'wine64' not found, please install wine first." >&2
+            exit 127
         fi
     fi
 fi
