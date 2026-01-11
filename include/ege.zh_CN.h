@@ -2492,6 +2492,13 @@ void EGEAPI floodfill     (int x, int y, int borderColor, PIMAGE pimg = NULL);
  */
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
+/**
+ * @brief 设置全局Alpha透明度
+ * @param alpha Alpha值（0-255，0完全透明，255完全不透明）
+ * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ */
+void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
+
 #ifdef EGE_GDIPLUS
 /// @defgroup EGEGDIPlus EGE GDI+增强函数
 /// 需要定义EGE_GDIPLUS宏才能使用的增强绘图功能
@@ -2504,12 +2511,6 @@ void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NUL
  */
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
-/**
- * @brief 设置全局Alpha透明度
- * @param alpha Alpha值（0-255，0完全透明，255完全不透明）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- */
-void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 
 /**
  * @brief 绘制直线（GDI+增强版本）

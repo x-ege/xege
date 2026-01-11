@@ -9,8 +9,10 @@ MUSIC类的定义
 
 #include "music.h"
 
+#ifdef _WIN32
 #include <mmsystem.h>
 #include <digitalv.h>
+#endif
 
 #ifndef MUSIC_ASSERT_TRUE
 #   ifdef _DEBUG
@@ -25,6 +27,7 @@ namespace ege
 {
 
 // Class MUSIC Construction
+#ifdef _WIN32
 MUSIC::MUSIC()
 {
     m_DID        = MUSIC_ERROR;
@@ -246,5 +249,21 @@ DWORD MUSIC::GetPlayStatus()
 
     return (DWORD)mci_p.dwReturn;
 }
+#else
+MUSIC::MUSIC() { m_DID = MUSIC_ERROR; m_dwCallBack = 0; }
+MUSIC::~MUSIC() {}
+DWORD MUSIC::OpenFile(const char* _szStr) { return 0; }
+DWORD MUSIC::OpenFile(const wchar_t* _szStr) { return 0; }
+DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo) { return 0; }
+DWORD MUSIC::RepeatPlay(DWORD dwFrom, DWORD dwTo) { return 0; }
+DWORD MUSIC::Pause() { return 0; }
+DWORD MUSIC::Stop() { return 0; }
+DWORD MUSIC::SetVolume(float value) { return 0; }
+DWORD MUSIC::Seek(DWORD dwTo) { return 0; }
+DWORD MUSIC::Close() { return 0; }
+DWORD MUSIC::GetPosition() { return 0; }
+DWORD MUSIC::GetLength() { return 0; }
+DWORD MUSIC::GetPlayStatus() { return 0; }
+#endif
 
 } // namespace ege

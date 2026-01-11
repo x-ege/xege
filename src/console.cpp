@@ -1,6 +1,8 @@
 #include "ege_head.h"
 
 #include <stdio.h>
+
+#ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #include <wincon.h>
@@ -189,3 +191,18 @@ int kbhit_console()
 }
 
 } // namespace ege
+#else
+#include <unistd.h>
+#include <fcntl.h>
+
+namespace ege
+{
+    bool init_console() { return true; }
+    bool clear_console() { return true; }
+    bool show_console() { return true; }
+    bool hide_console() { return true; }
+    bool close_console() { return true; }
+    int getch_console() { return getchar(); }
+    int kbhit_console() { return 0; }
+}
+#endif

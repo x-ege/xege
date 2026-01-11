@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "image.h"
+#include <cstring>
 
 using namespace ccap;
 

@@ -48,8 +48,12 @@ message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
 message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
 message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
 message(STATUS "EGE_DISABLE_DEBUG_INFO: ${EGE_DISABLE_DEBUG_INFO}")
+message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
-if(CMAKE_HOST_UNIX)
+option(EGE_BUILD_FOR_LINUX "Build for Linux native" ${CMAKE_HOST_UNIX})
+message(STATUS "EGE_BUILD_FOR_LINUX: ${EGE_BUILD_FOR_LINUX}")
+
+if(CMAKE_HOST_UNIX AND NOT EGE_BUILD_FOR_LINUX)
     set(CMAKE_SYSTEM_NAME Windows)
     set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
 
@@ -329,10 +333,30 @@ else()
     endif()
 endif()
 
+if(NOT EGE_BUILD_FOR_LINUX)
 target_link_libraries(xege INTERFACE
-    gdiplus
-    gdi32
+    $<$<PLATFORM_ID:Windows>:gdiplus>
+    $<$<PLATFORM_ID:Windows>:gdi32>
+    $<$<PLATFORM_ID:Windows>:imm32>
+    $<$<PLATFORM_ID:Windows>:ole32>
+    $<$<PLATFORM_ID:Windows>:oleaut32>
+    $<$<PLATFORM_ID:Windows>:uuid>
+    $<$<PLATFORM_ID:Windows>:winmm>
+    $<$<PLATFORM_ID:Windows>:msimg32>
 )
+endif()
+
+option(EGE_BUILD_OPENGL "Build with OpenGL backend" ON)
+
+if(EGE_BUILD_OPENGL)
+    find_package(glfw3 REQUIRED)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(xege PRIVATE glfw OpenGL::GL)
+    target_compile_definitions(xege PRIVATE EGE_BUILD_OPENGL=1)
+    
+    file(GLOB_RECURSE EGE_BACKEND_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/*.cpp)
+    target_sources(xege PRIVATE ${EGE_BACKEND_SRC})
+endif()
 
 if(EGE_BUILD_DEMO)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/demo/CMakeLists.txt")

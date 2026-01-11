@@ -1,6 +1,9 @@
 #include "ege_head.h"
 #include "ege_common.h"
 
+#include <cstdarg>
+#include <cwchar>
+
 #include "font.h"
 
 namespace ege
@@ -21,6 +24,9 @@ static UINT horizontalAlignToDrawTextFormat(int horizontalAlign);
 static Point private_escapementToOffset(int textHeight, int textEscapement);
 static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text);
 static void private_textout(PIMAGE img, const wchar_t* text, int x, int y);
+
+void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg);
+void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg);
 
 //------------------------------------------------------------------------------
 //                               Global Functions
@@ -93,6 +99,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
+#ifdef _WIN32
         if ((text == NULL) || (w <= 0) || (h <= 0)) {
             return;
         }
@@ -168,7 +175,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                 DeleteObject(oldClicRgn);
             }
         }
-
+#endif
     }
 
     CONVERT_IMAGE_END;
@@ -206,8 +213,10 @@ void xyprintf(int x, int y, const wchar_t* format, ...)
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
         size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
         vswprintf_s(buff, bufferCount, format, v);
-#else
+#elif defined(_WIN32)
         vswprintf(buff, format, v);
+#else
+        vswprintf(buff, sizeof(pg->g_t_buff) / sizeof(wchar_t), format, v);
 #endif
         outtextxy(x, y, buff);
     }
@@ -242,8 +251,10 @@ void rectprintf(int x, int y, int w, int h, const wchar_t* format, ...)
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
         size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
         vswprintf_s(buff, bufferCount, format, v);
-#else
+#elif defined(_WIN32)
         vswprintf(buff, format, v);
+#else
+        vswprintf(buff, sizeof(pg->g_t_buff) / sizeof(wchar_t), format, v);
 #endif
         outtextrect(x, y, w, h, buff);
     }
@@ -260,10 +271,12 @@ int textwidth(const wchar_t* text, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
+#ifdef _WIN32
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
         CONVERT_IMAGE_END;
         return sz.cx;
+#endif
     }
     CONVERT_IMAGE_END;
     return 0;
@@ -291,18 +304,20 @@ int textheight(const wchar_t* text, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
+#ifdef _WIN32
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
         CONVERT_IMAGE_END;
         return sz.cy;
+#endif
     }
     CONVERT_IMAGE_END;
     return 0;
 }
 
-int textheight(CHAR c, PCIMAGE pimg)
+int textheight(char c, PCIMAGE pimg)
 {
-    CHAR str[2] = {c};
+    char str[2] = {c};
     return textheight(str, pimg);
 }
 
@@ -323,6 +338,7 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
     float textWidth = 0.0f, textHeight = 0.0f;
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (!isEmpty(text) && img && img->m_hDC) {
+#ifdef EGE_GDIPLUS
         using namespace Gdiplus;
 
         HFONT hFont = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
@@ -354,6 +370,7 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
         }
 
         delete format;
+#endif
     }
 
     if (width != NULL)
@@ -429,8 +446,10 @@ void ege_xyprintf(float x, float y, const wchar_t* format, ...)
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
         size_t bufferCount = sizeof(pg->g_t_buff) / sizeof(wchar_t);
         vswprintf_s(buff, bufferCount, format, v);
-#else
+#elif defined(_WIN32)
         vswprintf(buff, format, v);
+#else
+        vswprintf(buff, sizeof(pg->g_t_buff) / sizeof(wchar_t), format, v);
 #endif
         ege_outtextxy(x, y, buff);
     }
@@ -500,6 +519,7 @@ void setfont(int height,
     BYTE pitchAndFamily,
     PIMAGE pimg)
 {
+#ifdef _WIN32
     LOGFONTW lf = {0};
     lf.lfHeight = height;
     lf.lfWidth = width;
@@ -517,6 +537,7 @@ void setfont(int height,
     lstrcpyW(lf.lfFaceName, typeface);
 
     setfont(&lf, pimg);
+#endif
 }
 
 void setfont(int height,
@@ -530,6 +551,7 @@ void setfont(int height,
     bool strikeOut,
     PIMAGE pimg)
 {
+#ifdef _WIN32
     setfont(height,
         width,
         typeface,
@@ -545,6 +567,7 @@ void setfont(int height,
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#endif
 }
 
 void setfont(int height,
@@ -558,6 +581,7 @@ void setfont(int height,
     bool strikeOut,
     PIMAGE pimg)
 {
+#ifdef _WIN32
     setfont(height,
         width,
         typeface,
@@ -573,10 +597,12 @@ void setfont(int height,
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#endif
 }
 
 void setfont(int height, int width, const char* typeface, PIMAGE pimg)
 {
+#ifdef _WIN32
     setfont(height,
         width,
         typeface,
@@ -592,10 +618,12 @@ void setfont(int height, int width, const char* typeface, PIMAGE pimg)
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#endif
 }
 
 void setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg)
 {
+#ifdef _WIN32
     setfont(height,
         width,
         typeface,
@@ -611,6 +639,7 @@ void setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg)
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#endif
 }
 
 // NOTE: 按照 EGE 的 codepage 来转换 LOGFONTA::lfFaceName 似乎不太合规, 所以这里保留了原行为没有修改.
@@ -620,8 +649,10 @@ void setfont(const LOGFONTA* font, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+#ifdef _WIN32
         HFONT hfont = CreateFontIndirectA(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -630,8 +661,10 @@ void setfont(const LOGFONTW* font, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+#ifdef _WIN32
         HFONT hfont = CreateFontIndirectW(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -640,8 +673,10 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
+#ifdef _WIN32
         HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
         GetObjectA(hf, sizeof(LOGFONTA), font);
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -650,8 +685,10 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
+#ifdef _WIN32
         HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
         GetObjectW(hf, sizeof(LOGFONTW), font);
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -660,6 +697,7 @@ void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_hDC) {
+#ifdef _WIN32
         int bufferSize = MultiByteToWideChar(getcodepage(), 0, text, -1, NULL, 0);
         if (bufferSize <= 2048) {
             wchar_t* buffer = (wchar_t*)graph_setting.g_t_buff;
@@ -669,6 +707,7 @@ void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
             const std::wstring& wStr = mb2w(text);
             ege_drawtext_p(wStr.c_str(), x, y, img);
         }
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -689,6 +728,7 @@ void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg)
 /* private function */
 static unsigned int private_gettextmode(PIMAGE img)
 {
+#ifdef _WIN32
     UINT fMode = TA_NOUPDATECP; // TA_UPDATECP;
     if (img->m_texttype.horiz == RIGHT_TEXT) {
         fMode |= TA_RIGHT;
@@ -703,10 +743,14 @@ static unsigned int private_gettextmode(PIMAGE img)
         fMode |= TA_TOP;
     }
     return fMode;
+#else
+    return 0;
+#endif
 }
 
 static UINT horizontalAlignToDrawTextFormat(int horizontalAlign)
 {
+#ifdef _WIN32
     UINT format = 0;
     switch (horizontalAlign) {
     case LEFT_TEXT:    format |= DT_LEFT;   break;
@@ -715,6 +759,9 @@ static UINT horizontalAlignToDrawTextFormat(int horizontalAlign)
     }
 
     return format;
+#else
+    return 0;
+#endif
 }
 
 /* private function */
@@ -736,6 +783,7 @@ static Point private_escapementToOffset(int textHeight, int textEscapement)
 
 static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
 {
+#ifdef _WIN32
     SetTextAlign(img->m_hDC, TA_UPDATECP | private_gettextmode(img));
 
     if (text) {
@@ -760,10 +808,12 @@ static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
             TextOutW(img->m_hDC, 0, 0, text, (int)lstrlenW(text));
         }
     }
+#endif
 }
 
 static void private_textout(PIMAGE img, const wchar_t* text, int x, int y)
 {
+#ifdef _WIN32
     SetTextAlign(img->m_hDC, private_gettextmode(img));
 
     if (text) {
@@ -777,11 +827,13 @@ static void private_textout(PIMAGE img, const wchar_t* text, int x, int y)
 
         TextOutW(img->m_hDC, x + offset.x, y + offset.y, text, (int)lstrlenW(text));
     }
+#endif
 }
 
 // TODO: 错误处理
 static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE img)
 {
+#ifdef EGE_GDIPLUS
     using namespace Gdiplus;
     Gdiplus::Graphics* graphics = img->getGraphics();
 
@@ -864,6 +916,7 @@ static void ege_drawtext_p(const wchar_t* textstring, float x, float y, PIMAGE i
     }
 
     delete format;
+#endif
 }
 
 } // namespace ege

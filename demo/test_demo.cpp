@@ -1764,7 +1764,7 @@ private:
 int main()
 {
     // setcodepage(EGE_CODEPAGE_UTF8);
-    setinitmode(INIT_RENDERMANUAL);
+    setinitmode(INIT_RENDERMANUAL | INIT_OPENGL);
     initgraph(640, 480);
     SceneBase* scene = new SceneIntroduce; //SceneIntroduce; SceneMenu
     setbkmode(TRANSPARENT);

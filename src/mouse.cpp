@@ -3,7 +3,9 @@
 
 #include "mouse.h"
 
+#ifdef _WIN32
 #include <windowsx.h>
+#endif
 
 namespace ege
 {
@@ -35,6 +37,7 @@ mouse_msg mouseMessageConvert(UINT message, WPARAM wParam, LPARAM lParam, int* k
 {
     mouse_msg msg = {0};
 
+#ifdef _WIN32
     /* WINAPI bug: WM_MOUSEWHEEL 提供的是屏幕坐标，DPI 不等于 100% 时 ScreenToClient 的计算
      * 结果与其它鼠标消息提供的坐标不一致。因此 lParam 参数已经处理过，直接使用之前记录的客户区坐标，
      * 这里不需要再进行转换。
@@ -117,6 +120,7 @@ mouse_msg mouseMessageConvert(UINT message, WPARAM wParam, LPARAM lParam, int* k
     if (key != NULL) {
         *key = vkCode;
     }
+#endif
 
     return msg;
 }
@@ -184,6 +188,7 @@ MOUSEMSG GetMouseMsg()
              * 结果与其它鼠标消息提供的坐标不一致。因此 lParam 参数已经处理过，直接使用之前记录的客户区坐标，
              * 这里不需要再进行转换。
              */
+#ifdef _WIN32
             mmsg.x       = GET_X_LPARAM(msg.lParam);
             mmsg.y       = GET_Y_LPARAM(msg.lParam);
 
@@ -194,11 +199,14 @@ MOUSEMSG GetMouseMsg()
             mmsg.mkRButton  = ((msg.wParam & MK_RBUTTON)  != 0);
             mmsg.mkMButton  = ((msg.wParam & MK_MBUTTON)  != 0);
             mmsg.mkXButton1 = ((msg.wParam & MK_XBUTTON1) != 0);
+#endif
+#ifdef _WIN32
             mmsg.mkXButton2 = ((msg.wParam & MK_XBUTTON2) != 0);
 
             if (msg.message == WM_MOUSEWHEEL) {
                 mmsg.wheel = GET_WHEEL_DELTA_WPARAM(msg.wParam);
             }
+#endif
             return mmsg;
         }
     } while (!pg->exit_window && waitdealmessage(pg));

@@ -2,15 +2,27 @@
 #include "ege_common.h"
 #include "ege_extension.h"
 
+#ifdef _WIN32
+#include <mmsystem.h>
+#include <digitalv.h>
+#else
+#include <time.h>
+#include <unistd.h>
+#endif
+
 namespace ege
 {
 
 void api_sleep(long ms)
 {
     if (ms >= 0) {
+#ifdef _WIN32
         dll::timeBeginPeriod(1);
         ::Sleep(ms);
         dll::timeEndPeriod(1);
+#else
+        usleep(ms * 1000);
+#endif
     }
 }
 
@@ -20,6 +32,7 @@ void ege_sleep(long ms)
         return;
     }
 
+#ifdef _WIN32
     if (0) { // 经济模式，占CPU极少
         ::Sleep(ms);
     } else if (0) { // 精确模式，占CPU略高
@@ -53,6 +66,9 @@ void ege_sleep(long ms)
         }
         dll::timeEndPeriod(1);
     }
+#else
+    usleep(ms * 1000);
+#endif
 }
 
 void delay(long ms)
@@ -84,7 +100,11 @@ void delay_ms(long ms)
     /* 延时 */
     if (ms == 0) {
         /* Sleep(0): 让出 CPU 时间片，处理后立即返回 */
+#ifdef _WIN32
         ::Sleep(0);
+#else
+        usleep(0);
+#endif
     } else if (ms > 0) {
         double currentTime = get_highfeq_time_ls(pg) * 1000.0;
 
@@ -215,6 +235,7 @@ double get_highfeq_time_ls(struct _graph_setting* pg)
     static LARGE_INTEGER llFeq = {{0}}; /* 此实为常数 */
     LARGE_INTEGER llNow = {{0}};
 
+#ifdef _WIN32
     if (pg->get_highfeq_time_start.QuadPart == 0) {
         if (1) {
             SetThreadAffinityMask(::GetCurrentThread(), 0);
@@ -248,6 +269,17 @@ double get_highfeq_time_ls(struct _graph_setting* pg)
         llNow.QuadPart -= pg->get_highfeq_time_start.QuadPart;
         return (double)llNow.QuadPart / llFeq.QuadPart;
     }
+#else
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    if (pg->get_highfeq_time_start.QuadPart == 0) {
+        pg->get_highfeq_time_start.QuadPart = (long long)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+        return 0;
+    } else {
+        long long now = (long long)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+        return (double)(now - pg->get_highfeq_time_start.QuadPart) / 1000000000.0;
+    }
+#endif
 }
 
 

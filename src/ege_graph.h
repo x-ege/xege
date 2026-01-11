@@ -37,11 +37,13 @@ void setmode(int gdriver, int gmode);
 // GDI+ 初始化
 void gdiplusinit();
 
+#ifdef EGE_GDIPLUS
 Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics);
 
 Gdiplus::LineCap convertToGdiplusLineCap(line_cap_type linecap);
 
 Gdiplus::LineJoin convertToGdiplusLineJoin(line_join_type linejoin);
+#endif
 
 int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect& rect);
 

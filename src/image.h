@@ -1,8 +1,11 @@
 #pragma once
 
 #include "ege_head.h"
+#include "backend/interface/GraphicsContext.h"
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 
 namespace ege
@@ -84,6 +87,7 @@ private:
 
 public:
     HDC     m_hDC;
+    GraphicsContext* m_gc;
     HBITMAP m_hBmp;
     int     m_width;
     int     m_height;
@@ -307,7 +311,9 @@ public:
     friend graphics_errors getimage_from_png_struct(PIMAGE, void*, void*);
 };
 
+#ifdef EGE_GDIPLUS
 graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
+#endif
 
 int savebmp(PCIMAGE pimg, FILE* file, bool alpha = false);
 

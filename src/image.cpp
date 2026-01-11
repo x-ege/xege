@@ -17,7 +17,32 @@
 #include "ege_common.h"
 #include "ege_dllimport.h"
 
+#include <cstring>
+#include <cwctype>
+#include <cstdio>
+
+#ifndef _WIN32
+#include <strings.h>
+#define _wcsicmp wcscasecmp
+#endif
+
+#ifndef _WIN32
+#include <cstdio>
+#include <cwchar>
+#include <cwctype>
+#include <cstdlib>
+
+inline FILE* _wfopen(const wchar_t* filename, const wchar_t* mode) {
+    char fn[1024];
+    char m[16];
+    wcstombs(fn, filename, 1024);
+    wcstombs(m, mode, 16);
+    return fopen(fn, m);
+}
+#endif
+
 #include "image.h"
+#include "backend/opengl/OpenGLGraphicsContext.h"
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL
 // #endif
@@ -36,6 +61,7 @@ void IMAGE::reset()
 {
     m_initflag  = IMAGE_INIT_FLAG;
     m_hDC       = NULL;
+    m_gc        = NULL;
     m_hBmp      = NULL;
     m_width     = 0;
     m_height    = 0;
@@ -69,6 +95,7 @@ void IMAGE::reset()
  */
 void IMAGE::construct(int width, int height)
 {
+#ifdef _WIN32
     HDC refDC = NULL;
 
     if (graph_setting.hwnd) {
@@ -84,6 +111,10 @@ void IMAGE::construct(int width, int height)
     if (refDC) {
         ::ReleaseDC(graph_setting.hwnd, refDC);
     }
+#else
+    reset();
+    initimage(NULL, width, height);
+#endif
 }
 
 /**
@@ -133,7 +164,9 @@ IMAGE::IMAGE(const IMAGE& img)
     reset();
     initimage(img.m_hDC, img.m_width, img.m_height);
     setdefaultattribute();
+#ifdef _WIN32
     BitBlt(m_hDC, 0, 0, img.m_width, img.m_height, img.m_hDC, 0, 0, SRCCOPY);
+#endif
 }
 
 IMAGE::~IMAGE()
@@ -145,10 +178,15 @@ IMAGE::~IMAGE()
 void IMAGE::inittest(const WCHAR* strCallFunction) const
 {
     if (m_initflag != IMAGE_INIT_FLAG) {
+#ifdef _WIN32
         WCHAR str[60];
         wsprintfW(str, L"Fatal error: read/write at 0x%p. At function '%s'", this, strCallFunction);
         MessageBoxW(graph_setting.hwnd, str, L"EGE ERROR message", MB_ICONSTOP);
         ExitProcess((UINT)grError);
+#else
+        fprintf(stderr, "Fatal error: read/write at 0x%p. At function '%ls'\n", this, strCallFunction);
+        exit((int)grError);
+#endif
     }
 }
 
@@ -156,21 +194,34 @@ void IMAGE::gentexture(bool gen)
 {
     if (!gen) {
         if (m_texture != NULL) {
+#ifdef EGE_GDIPLUS
             delete (Gdiplus::Bitmap*)m_texture;
+#endif
             m_texture = NULL;
         }
     } else {
         if (m_texture != NULL) {
             gentexture(false);
         }
+#ifdef EGE_GDIPLUS
         Gdiplus::Bitmap* bitmap =
             new Gdiplus::Bitmap(getwidth(), getheight(), getwidth() * 4, PixelFormat32bppPARGB, (BYTE*)getbuffer());
         m_texture = bitmap;
+#endif
     }
 }
 
 int IMAGE::deleteimage()
 {
+    if (m_gc) {
+        delete m_gc;
+        m_gc = NULL;
+        if (m_pBuffer) {
+            delete[] m_pBuffer;
+            m_pBuffer = NULL;
+        }
+    }
+
 #ifdef EGE_GDIPLUS
     if (NULL != m_graphics) {
         delete m_graphics;
@@ -186,6 +237,7 @@ int IMAGE::deleteimage()
     m_brush = NULL;
 #endif
 
+#ifdef _WIN32
     HBITMAP hbmp  = (HBITMAP)GetCurrentObject(m_hDC, OBJ_BITMAP);
     HBRUSH  hbr   = (HBRUSH)GetCurrentObject(m_hDC, OBJ_BRUSH);
     HPEN    hpen  = (HPEN)GetCurrentObject(m_hDC, OBJ_PEN);
@@ -198,12 +250,16 @@ int IMAGE::deleteimage()
     DeleteObject(hbr);
     DeleteObject(hpen);
     DeleteObject(hfont);
+#else
+    m_hDC = NULL;
+#endif
 
     return 0;
 }
 
 HBITMAP newbitmap(int width, int height, PDWORD* p_bmp_buf)
 {
+#ifdef _WIN32
     HBITMAP    bitmap;
     BITMAPINFO bmi = {{0}};
     PDWORD     bmp_buf;
@@ -230,10 +286,17 @@ HBITMAP newbitmap(int width, int height, PDWORD* p_bmp_buf)
     }
 
     return bitmap;
+#else
+    if (p_bmp_buf) {
+        *p_bmp_buf = NULL;
+    }
+    return NULL;
+#endif
 }
 
 void IMAGE::initimage(HDC refDC, int width, int height)
 {
+#ifdef _WIN32
     HDC     dc = CreateCompatibleDC(refDC);
     PDWORD  bmp_buf;
     HBITMAP bitmap = newbitmap(width, height, &bmp_buf);
@@ -246,9 +309,14 @@ void IMAGE::initimage(HDC refDC, int width, int height)
 
     m_hDC     = dc;
     m_hBmp    = bitmap;
+    m_pBuffer = bmp_buf;
+#else
+    m_hDC     = NULL;
+    m_hBmp    = NULL;
+    m_pBuffer = NULL;
+#endif
     m_width   = width;
     m_height  = height;
-    m_pBuffer = bmp_buf;
 
     setviewport(0, 0, m_width, m_height, false, this);
 }
@@ -258,7 +326,9 @@ void IMAGE::setdefaultattribute()
     setlinecolor(initial_line_color, this);
     settextcolor(initial_text_color, this);
     setbkcolor_f(initial_bk_color, this);
+#ifdef _WIN32
     SetBkMode(m_hDC, OPAQUE);
+#endif
     setfillstyle(SOLID_FILL, initial_fill_color, this);
     setlinestyle(PS_SOLID, 0, 1, this);
     settextjustify(LEFT_TEXT, TOP_TEXT, this);
@@ -349,6 +419,7 @@ int IMAGE::resize_f(int width, int height)
 
     Size oldWindowSize(m_width, m_height);
 
+#ifdef _WIN32
     PDWORD  bmp_buf;
     HBITMAP bitmap     = newbitmap(width, height, &bmp_buf);
     if (bitmap == NULL) {
@@ -359,16 +430,19 @@ int IMAGE::resize_f(int width, int height)
     DeleteObject(old_bitmap);
 
     m_hBmp    = bitmap;
+    m_pBuffer = bmp_buf;
+#endif
     m_width   = width;
     m_height  = height;
-    m_pBuffer = bmp_buf;
 
     // BITMAP 更换后需重新创建 Graphics 对象(否则会在已销毁的 old_bitmap 上绘制，引发异常)
+#ifdef EGE_GDIPLUS
     if (m_graphics != NULL) {
         Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
         delete m_graphics;
         m_graphics = newGraphics;
     }
+#endif
 
     Bound viewport = m_vpt;
 
@@ -410,7 +484,9 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
     inittest(L"IMAGE::getimage");
     PCIMAGE img = CONVERT_IMAGE_CONST(pSrcImg);
     this->resize_f(srcWidth, srcHeight);
+#ifdef _WIN32
     BitBlt(this->m_hDC, 0, 0, srcWidth, srcHeight, img->m_hDC, xSrc, ySrc, SRCCOPY);
+#endif
     CONVERT_IMAGE_END;
     return grOk;
 }
@@ -428,7 +504,9 @@ void IMAGE::putimage(
 {
     inittest(L"IMAGE::putimage");
     PIMAGE img = CONVERT_IMAGE(imgDest);
+#ifdef _WIN32
     BitBlt(img->m_hDC, xDest, yDest, widthDest, heightDest, m_hDC, xSrc, ySrc, dwRop);
+#endif
     CONVERT_IMAGE_END;
 }
 
@@ -478,6 +556,7 @@ int IMAGE::getimage(const char* filename, int zoomWidth, int zoomHeight)
     return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
 }
 
+#ifdef EGE_GDIPLUS
 graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
 {
     /* 将图像尺寸调整至和 bitmap 一致 */
@@ -514,6 +593,7 @@ graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
 
     return (bitmap.GetLastStatus() == Gdiplus::Ok) ? grOk : grError;
 }
+#endif
 
 int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
 {
@@ -555,6 +635,7 @@ int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
 
     /* 如图像格式不受 stb_image 支持或者 stb_image 认为格式错误，再次尝试使用 GDI+ 读取 */
     if (error == grUnsupportedFormat || error == grInvalidFileFormat) {
+#ifdef EGE_GDIPLUS
         /* GDI+ 支持格式：BMP, GIF, JPEG, PNG, TIFF, Exif, WMF, EMF */
         Gdiplus::Bitmap bitmap(filename);
 
@@ -569,6 +650,7 @@ int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
             /* 从 GDI+ Bitmap 中读取图像数据，写入 ege IMAGE 中*/
             error = getimage_from_bitmap(this, bitmap);
         }
+#endif
     }
 
     return error;
@@ -630,6 +712,7 @@ int IMAGE::getimage(const char* resType, const char* resName, int zoomWidth, int
 
 static void* getResourceData(const wchar_t* resName, const wchar_t* resType, int* size)
 {
+#ifdef _WIN32
     struct _graph_setting* pg    = &graph_setting;
     void* resData = NULL;
     int resSize = 0;
@@ -649,6 +732,12 @@ static void* getResourceData(const wchar_t* resName, const wchar_t* resType, int
     }
 
     return resData;
+#else
+    if (size != NULL) {
+        *size = 0;
+    }
+    return NULL;
+#endif
 }
 
 
@@ -670,6 +759,7 @@ int IMAGE::getimage(void* memory, long size)
     if ((memory == NULL) || (size <= 0))
         return grParamError;
 
+#ifdef EGE_GDIPLUS
     HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, size);
 
     if (hGlobal == NULL) {
@@ -708,7 +798,9 @@ int IMAGE::getimage(void* memory, long size)
     stream->Release();
 
     return error;
-
+#else
+    return grUnsupportedFormat;
+#endif
 }
 
 void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int srcWidth,
@@ -717,8 +809,10 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
     inittest(L"IMAGE::putimage");
     const PCIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
+#ifdef _WIN32
         SetStretchBltMode(img->m_hDC, COLORONCOLOR);
         StretchBlt(img->m_hDC, xDest, yDest, widthDest, heightDest, m_hDC, xSrc, ySrc, srcWidth, srcHeight, dwRop);
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -884,6 +978,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
                 }
             }
         } else { // COLORTYPE_PRGB32 or other
+#ifdef _WIN32
             BLENDFUNCTION bf;
             bf.BlendOp             = AC_SRC_OVER;
             bf.BlendFlags          = 0;
@@ -892,6 +987,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
             // draw
             dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc,
                 imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
+#endif
         }
     }
     CONVERT_IMAGE_END;
@@ -926,6 +1022,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
         if (heightDest <= 0) heightDest = heightSrc;
 
         if ((colorType == COLORTYPE_PRGB32) && !smooth) {
+#ifdef _WIN32
             BLENDFUNCTION bf;
             bf.BlendOp             = AC_SRC_OVER;
             bf.BlendFlags          = 0;
@@ -934,7 +1031,9 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             // draw
             dll::AlphaBlend(img->m_hDC, xDest, yDest, widthDest, heightDest, imgSrc->m_hDC, xSrc, ySrc, widthSrc,
                 heightSrc, bf);
+#endif
         } else {
+#ifdef EGE_GDIPLUS
             const Bound& vptDest = img->m_vpt;
             const Bound& vptSrc  = imgSrc->m_vpt;
             Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
@@ -984,6 +1083,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             graphics->SetTransform(&matrix);
 
             delete imageAtt;
+#endif
         }
     }
     CONVERT_IMAGE_END;
@@ -1056,6 +1156,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
         if ((widthSrc == 0) || (heightSrc == 0))
             return grOk;
 
+#ifdef _WIN32
         BLENDFUNCTION bf;
         bf.BlendOp             = AC_SRC_OVER;
         bf.BlendFlags          = 0;
@@ -1063,6 +1164,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
         bf.AlphaFormat         = AC_SRC_ALPHA;
         // draw
         dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc, imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
+#endif
     }
 
     CONVERT_IMAGE_END;
@@ -1120,6 +1222,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         if (imgDest->m_enableclip) {
             clipDest = Rect(vptDest.left, vptDest.top, vptDest.right - vptDest.left, vptDest.bottom - vptDest.top);
         }
+#ifdef EGE_GDIPLUS
         Gdiplus::GraphicsPath path;
         path.AddRectangle(Gdiplus::Rect(clipDest.x, clipDest.y, clipDest.width, clipDest.height));
         Gdiplus::Region region(&path);
@@ -1143,6 +1246,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         PixelFormat32bppPARGB, (BYTE*)imgSrc->m_pBuffer);
         graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
         graphics->SetTransform(&matrix);
+#endif
     }
     CONVERT_IMAGE_END;
     return grOk;
@@ -2649,10 +2753,14 @@ int getx(PCIMAGE pimg)
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img) {
+#ifdef _WIN32
         POINT pt;
         GetCurrentPositionEx(img->m_hDC, &pt);
         CONVERT_IMAGE_END;
         return pt.x;
+#else
+        return 0;
+#endif
     }
 
     CONVERT_IMAGE_END;
@@ -2664,10 +2772,14 @@ int gety(PCIMAGE pimg)
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 
     if (img) {
+#ifdef _WIN32
         POINT pt;
         GetCurrentPositionEx(img->m_hDC, &pt);
         CONVERT_IMAGE_END;
         return pt.y;
+#else
+        return 0;
+#endif
     }
 
     CONVERT_IMAGE_END;

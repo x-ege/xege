@@ -6,6 +6,7 @@ namespace ege
 
 static int _getkey(_graph_setting* pg)
 {
+#ifdef _WIN32
     EGEMSG msg;
 
     while (pg->msgkey_queue->pop(msg)) {
@@ -17,12 +18,14 @@ static int _getkey(_graph_setting* pg)
             return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
         }
     }
+#endif
     return 0;
 }
 
 /*private function*/
 static int peekkey(_graph_setting* pg)
 {
+#ifdef _WIN32
     EGEMSG msg;
 
     while (pg->msgkey_queue->pop(msg)) {
@@ -47,12 +50,14 @@ static int peekkey(_graph_setting* pg)
             }
         }
     }
+#endif
     return 0;
 }
 
 /*private function*/
 static int peekallkey(_graph_setting* pg, int flag)
 {
+#ifdef _WIN32
     EGEMSG msg;
 
     while (pg->msgkey_queue->pop(msg)) {
@@ -70,15 +75,17 @@ static int peekallkey(_graph_setting* pg, int flag)
             }
         }
     }
+#endif
     return 0;
 }
 
 int getflush()
 {
     struct _graph_setting* pg = &graph_setting;
-    EGEMSG                 msg;
     int                    lastkey = 0;
 
+#ifdef _WIN32
+    EGEMSG                 msg;
     if (!pg->msgkey_queue->empty()) {
         while (pg->msgkey_queue->pop(msg)) {
             if (msg.message == WM_CHAR) {
@@ -88,6 +95,7 @@ int getflush()
             }
         }
     }
+#endif
     return lastkey;
 }
 
@@ -123,7 +131,11 @@ int getchEx(int flag)
     {
         int    key;
         EGEMSG msg;
+#ifdef _WIN32
         DWORD  dw = GetTickCount();
+#else
+        DWORD  dw = 0;
+#endif
         do {
             key = kbhitEx(flag);
             if (key < 0) {
@@ -201,10 +213,10 @@ key_msg getkey()
                 if (key & KEYMSG_FIRSTDOWN) {
                     msg.flags |= key_flag_first_down;
                 }
-                if (keystate(VK_CONTROL)) {
+                if (keystate(key_control)) {
                     msg.flags |= key_flag_ctrl;
                 }
-                if (keystate(VK_SHIFT)) {
+                if (keystate(key_shift)) {
                     msg.flags |= key_flag_shift;
                 }
                 return msg;

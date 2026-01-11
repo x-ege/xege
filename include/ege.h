@@ -84,8 +84,198 @@
 #include <windef.h>
 #include <winuser.h>
 #include <wingdi.h>
-#else
+#elif defined(_WIN32)
 #include <windows.h>
+#else
+// Linux/Cross-platform definitions
+#include <stdint.h>
+#include <cstddef>
+typedef void* HWND;
+typedef void* HDC;
+typedef void* HINSTANCE;
+typedef void* HICON;
+typedef void* HMENU;
+typedef void* HMODULE;
+typedef void* LPVOID;
+typedef void* PVOID;
+typedef void* HANDLE;
+typedef unsigned long DWORD;
+typedef unsigned short WORD;
+typedef unsigned char BYTE;
+typedef unsigned int UINT;
+typedef long LONG;
+typedef int BOOL;
+typedef const char* LPCSTR;
+typedef char* LPSTR;
+typedef const wchar_t* LPCWSTR;
+typedef wchar_t* LPWSTR;
+typedef long long LONG_PTR;
+typedef unsigned long long ULONG_PTR;
+typedef LONG_PTR LRESULT;
+typedef ULONG_PTR WPARAM;
+typedef LONG_PTR LPARAM;
+
+typedef union _LARGE_INTEGER {
+    struct {
+        DWORD LowPart;
+        LONG HighPart;
+    } u;
+    long long QuadPart;
+} LARGE_INTEGER;
+
+typedef void* HBRUSH;
+typedef void* HBITMAP;
+typedef void* HFONT;
+typedef DWORD* PDWORD;
+typedef wchar_t WCHAR;
+typedef WORD ATOM;
+
+typedef struct tagPOINT {
+  LONG x;
+  LONG y;
+} POINT, *PPOINT, *NPPOINT, *LPPOINT;
+
+typedef struct tagSIZE {
+  LONG cx;
+  LONG cy;
+} SIZE, *PSIZE, *LPSIZE;
+
+#define AC_SRC_OVER 0x00
+#define BI_RGB 0
+#define BI_BITFIELDS 3
+
+#define TRANSPARENT 1
+#define OPAQUE 2
+
+typedef struct _BLENDFUNCTION {
+  BYTE BlendOp;
+  BYTE BlendFlags;
+  BYTE SourceConstantAlpha;
+  BYTE AlphaFormat;
+} BLENDFUNCTION, *PBLENDFUNCTION;
+
+#pragma pack(push, 1)
+typedef struct tagBITMAPFILEHEADER {
+  WORD  bfType;
+  DWORD bfSize;
+  WORD  bfReserved1;
+  WORD  bfReserved2;
+  DWORD bfOffBits;
+} BITMAPFILEHEADER, *PBITMAPFILEHEADER;
+#pragma pack(pop)
+
+typedef struct tagBITMAPINFOHEADER {
+  DWORD biSize;
+  LONG  biWidth;
+  LONG  biHeight;
+  WORD  biPlanes;
+  WORD  biBitCount;
+  DWORD biCompression;
+  DWORD biSizeImage;
+  LONG  biXPelsPerMeter;
+  LONG  biYPelsPerMeter;
+  DWORD biClrUsed;
+  DWORD biClrImportant;
+} BITMAPINFOHEADER, *PBITMAPINFOHEADER;
+
+typedef struct {
+  DWORD        bV4Size;
+  LONG         bV4Width;
+  LONG         bV4Height;
+  WORD         bV4Planes;
+  WORD         bV4BitCount;
+  DWORD        bV4V4Compression;
+  DWORD        bV4SizeImage;
+  LONG         bV4XPelsPerMeter;
+  LONG         bV4YPelsPerMeter;
+  DWORD        bV4ClrUsed;
+  DWORD        bV4ClrImportant;
+  DWORD        bV4RedMask;
+  DWORD        bV4GreenMask;
+  DWORD        bV4BlueMask;
+  DWORD        bV4AlphaMask;
+  DWORD        bV4CSType;
+  // CIEXYZTRIPLE bV4Endpoints; // Simplified for now
+  DWORD        bV4Endpoints[9];
+  DWORD        bV4GammaRed;
+  DWORD        bV4GammaGreen;
+  DWORD        bV4GammaBlue;
+} BITMAPV4HEADER, *PBITMAPV4HEADER;
+
+typedef struct tagLOGFONTA {
+  LONG lfHeight;
+  LONG lfWidth;
+  LONG lfEscapement;
+  LONG lfOrientation;
+  LONG lfWeight;
+  BYTE lfItalic;
+  BYTE lfUnderline;
+  BYTE lfStrikeOut;
+  BYTE lfCharSet;
+  BYTE lfOutPrecision;
+  BYTE lfClipPrecision;
+  BYTE lfQuality;
+  BYTE lfPitchAndFamily;
+  char lfFaceName[32];
+} LOGFONTA, *PLOGFONTA, *LPLOGFONTA;
+
+typedef struct tagLOGFONTW {
+  LONG  lfHeight;
+  LONG  lfWidth;
+  LONG  lfEscapement;
+  LONG  lfOrientation;
+  LONG  lfWeight;
+  BYTE  lfItalic;
+  BYTE  lfUnderline;
+  BYTE  lfStrikeOut;
+  BYTE  lfCharSet;
+  BYTE  lfOutPrecision;
+  BYTE  lfClipPrecision;
+  BYTE  lfQuality;
+  BYTE  lfPitchAndFamily;
+  wchar_t lfFaceName[32];
+} LOGFONTW, *PLOGFONTW, *LPLOGFONTW;
+
+#define CALLBACK
+#define WINAPI
+#define EGE_CDECL
+#define __stdcall
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#define CW_USEDEFAULT ((int)0x80000000)
+
+#define SRCCOPY     (DWORD)0x00CC0020
+#define SRCPAINT    (DWORD)0x00EE0086
+#define SRCAND      (DWORD)0x008800C6
+#define SRCINVERT   (DWORD)0x00660046
+#define SRCERASE    (DWORD)0x00440328
+#define NOTSRCCOPY  (DWORD)0x00330008
+#define NOTSRCERASE (DWORD)0x001100A6
+#define MERGECOPY   (DWORD)0x00C000CA
+#define MERGEPAINT  (DWORD)0x00BB0226
+#define PATCOPY     (DWORD)0x00F00021
+#define PATPAINT    (DWORD)0x00FB0A09
+#define PATINVERT   (DWORD)0x005A0049
+#define DSTINVERT   (DWORD)0x00550009
+#define BLACKNESS   (DWORD)0x00000042
+#define WHITENESS   (DWORD)0x00FF0062
+
+#define PS_SOLID 0
+#define PS_DASH 1
+#define PS_DOT 2
+#define PS_DASHDOT 3
+#define PS_DASHDOTDOT 4
+#define PS_NULL 5
+#define PS_INSIDEFRAME 6
+#define PS_USERSTYLE 7
+#define PS_ALTERNATE 8
+
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1300)
@@ -157,7 +347,9 @@
 #   endif
 #endif
 
+#ifdef _WIN32
 #define EGE_GDIPLUS
+#endif
 
 #define EGERGBA(r, g, b, a)  ((::ege::color_t)(((r) << 16) | ((g) << 8) | (b) | ((a) << 24)))
 #define EGERGB(r, g, b)      EGERGBA(r, g, b, 0xFF)
@@ -237,6 +429,7 @@ enum initmode_flag
     INIT_NOFORCEEXIT     = 0x10,  ///< Don't force exit program when closing window, only set internal flag, is_run() can get the flag
     INIT_UNICODE         = 0x20,  ///< Unicode character messages (equivalent to setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< Hidden window
+    INIT_OPENGL          = 0x80,  ///< OpenGL mode
     INIT_WITHLOGO        = 0x100, ///< Show EGE Logo animation on startup (not shown by default in Debug version)
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< Animation mode
 };
@@ -2493,6 +2686,13 @@ void EGEAPI floodfill     (int x, int y, int borderColor, PIMAGE pimg = NULL);
  */
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
+/**
+ * @brief Set global alpha transparency
+ * @param alpha Alpha value (0-255, 0 fully transparent, 255 fully opaque)
+ * @param pimg Target image pointer, NULL means current ege window
+ */
+void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
+
 #ifdef EGE_GDIPLUS
 /// @defgroup EGEGDIPlus EGE GDI+ enhanced functions
 /// Enhanced drawing functions that require EGE_GDIPLUS macro to be defined
@@ -2505,12 +2705,6 @@ void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NUL
  */
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
-/**
- * @brief Set global alpha transparency
- * @param alpha Alpha value (0-255, 0 fully transparent, 255 fully opaque)
- * @param pimg Target image pointer, NULL means current ege window
- */
-void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 
 /**
  * @brief Draw line (GDI+ enhanced version)

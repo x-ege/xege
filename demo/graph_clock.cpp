@@ -36,10 +36,10 @@ void draw()
 	ege::setfont(24, 0, "Courier New");
 	ege::setbkmode(TRANSPARENT);
 
-	ege::ege_enable_aa(true);
+	// ege::ege_enable_aa(true);
 	ege::setfillcolor(EGEARGB(0xff, 0x40, 0x40, 0x40));
 	ege::setcolor(EGEARGB(0xff, 0x80, 0x00, 0xf0));
-	ege::ege_fillellipse(center.x - r * 1.2f, center.y - r * 1.2f,
+	ege::fillellipse(center.x - r * 1.2f, center.y - r * 1.2f,
 		r * 1.2f * 2.0f, r * 1.2f * 2.0f);
 
 	ege::setcolor(ege::WHITE);
@@ -62,14 +62,14 @@ void draw()
 
     float h = float(t->tm_hour + t->tm_min / 60.0);
     p = getpos(center, float(h * pi2 / 12), r * 0.5f);
-    ege::ege_line(p.x, p.y, center.x, center.y);
+    ege::line(p.x, p.y, center.x, center.y);
 
     ege::setcolor(EGEARGB(0xff, 0xff, 0x0, 0xff));
     ege::setlinewidth(5.0f);
 
     float m = float(t->tm_min + t->tm_sec / 60.0);
     p = getpos(center, float(m * pi2 / 60), r * 0.9f);
-    ege::ege_line(p.x, p.y, center.x, center.y);
+    ege::line(p.x, p.y, center.x, center.y);
 
     ege::setcolor(EGEARGB(0xff, 0xff, 0xff, 0));
     ege::setfillcolor(EGEARGB(0xff, 0xff, 0xff, 0));
@@ -77,8 +77,8 @@ void draw()
 
     float s = float(t->tm_sec);
     p = getpos(center, float(s * pi2 / 60), r * 1.0f);
-    ege::ege_line(p.x, p.y, center.x, center.y);
-    ege::ege_fillellipse(center.x - r * 0.05f, center.y - r * 0.05f,
+    ege::line(p.x, p.y, center.x, center.y);
+    ege::fillellipse(center.x - r * 0.05f, center.y - r * 0.05f,
         r * 0.1f, r * 0.1f);
 
     sprintf(str, "%d/%02d/%02d %2d:%02d:%02d",
@@ -112,7 +112,7 @@ void mainloop()
  */
 int main()
 {
-	ege::setinitmode(ege::INIT_ANIMATION);
+	ege::setinitmode(ege::INIT_ANIMATION | ege::INIT_OPENGL);
 	ege::initgraph(400, 480);
 	ege::randomize();
 	mainloop();

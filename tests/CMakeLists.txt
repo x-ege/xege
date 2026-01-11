@@ -7,16 +7,20 @@ add_definitions(-DEGE_GRAPH_NO_LIB)
 add_definitions(-DNOMINMAX)
 
 # 添加Windows系统库
-set(SYSTEM_LIBS
-    gdi32
-    user32
-    kernel32
-    gdiplus
-    ole32
-    oleaut32
-    uuid
-    winmm
-)
+if(WIN32 OR NOT EGE_BUILD_FOR_LINUX)
+    set(SYSTEM_LIBS
+        gdi32
+        user32
+        kernel32
+        gdiplus
+        ole32
+        oleaut32
+        uuid
+        winmm
+    )
+else()
+    set(SYSTEM_LIBS "")
+endif()
 
 # 创建测试工具库
 add_library(test_framework STATIC

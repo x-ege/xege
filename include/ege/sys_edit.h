@@ -35,6 +35,7 @@ public:
 
     int create(bool multiline = false, int scrollbar = 2)
     {
+#ifdef _WIN32
         if (m_hwnd) {
             destroy();
         }
@@ -73,12 +74,13 @@ public:
         visible(false);
 
         ::CloseHandle(msg.hEvent);
-
+#endif
         return 0;
     }
 
     int destroy()
     {
+#ifdef _WIN32
         if (m_hwnd) {
             visible(false);
             msg_createwindow msg = {NULL};
@@ -95,6 +97,7 @@ public:
             m_hwnd = NULL;
             return 1;
         }
+#endif
         return 0;
     }
 
@@ -103,16 +106,21 @@ public:
     void visible(bool bvisible)
     {
         egeControlBase::visible(bvisible);
+#ifdef _WIN32
         ::ShowWindow(m_hwnd, (int)bvisible);
+#endif
     }
 
     void setfont(int h, int w, LPCSTR fontface)
     {
+#ifdef _WIN32
         EGE_CONVERT_TO_WSTR_WITH(fontface, { setfont(h, w, wStr); });
+#endif
     }
 
     void setfont(int h, int w, LPCWSTR fontface)
     {
+#ifdef _WIN32
         LOGFONTW lf         = {0};
         lf.lfHeight         = h;
         lf.lfWidth          = w;
@@ -134,59 +142,90 @@ public:
             ::DeleteObject(m_hFont);
             m_hFont = hFont;
         }
+#endif
     }
 
     void move(int x, int y)
     {
         egeControlBase::move(x, y);
+#ifdef _WIN32
         ::MoveWindow(m_hwnd, m_x, m_y, m_w, m_h, TRUE);
+#endif
     }
 
     void size(int w, int h)
     {
         egeControlBase::size(w, h);
+#ifdef _WIN32
         ::MoveWindow(m_hwnd, m_x, m_y, m_w, m_h, TRUE);
+#endif
     }
 
     void settext(LPCSTR text)
     {
+#ifdef _WIN32
         EGE_CONVERT_TO_WSTR_WITH(text, { settext(wStr); });
+#endif
     }
 
-    void settext(LPCWSTR text) { ::SendMessageW(m_hwnd, WM_SETTEXT, 0, (LPARAM)text); }
+    void settext(LPCWSTR text) { 
+#ifdef _WIN32
+        ::SendMessageW(m_hwnd, WM_SETTEXT, 0, (LPARAM)text); 
+#endif
+    }
 
-    void gettext(int maxlen, LPSTR text) { ::SendMessageA(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text); }
+    void gettext(int maxlen, LPSTR text) { 
+#ifdef _WIN32
+        ::SendMessageA(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text); 
+#endif
+    }
 
-    void gettext(int maxlen, LPWSTR text) { ::SendMessageW(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text); }
+    void gettext(int maxlen, LPWSTR text) { 
+#ifdef _WIN32
+        ::SendMessageW(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text); 
+#endif
+    }
 
-    void setmaxlen(int maxlen) { ::SendMessageW(m_hwnd, EM_LIMITTEXT, (WPARAM)maxlen, 0); }
+    void setmaxlen(int maxlen) { 
+#ifdef _WIN32
+        ::SendMessageW(m_hwnd, EM_LIMITTEXT, (WPARAM)maxlen, 0); 
+#endif
+    }
 
     void setcolor(color_t color)
     {
         m_color = color;
+#ifdef _WIN32
         ::InvalidateRect(m_hwnd, NULL, TRUE);
+#endif
     }
 
     void setbgcolor(color_t bgcolor)
     {
         m_bgcolor = bgcolor;
         //::RedrawWindow(m_hwnd, NULL, NULL, RDW_INVALIDATE);
+#ifdef _WIN32
         ::InvalidateRect(m_hwnd, NULL, TRUE);
+#endif
     }
 
     void setreadonly(bool readonly)
     {
+#ifdef _WIN32
         ::SendMessageW(m_hwnd, EM_SETREADONLY, (WPARAM)readonly, 0);
         ::InvalidateRect(m_hwnd, NULL, TRUE);
+#endif
     }
 
     void setfocus()
     {
+#ifdef _WIN32
         msg_createwindow msg = {NULL};
         msg.hwnd             = m_hwnd;
         msg.hEvent           = ::CreateEvent(NULL, TRUE, FALSE, NULL);
         ::PostMessageW(getHWnd(), WM_USER + 2, 0, (LPARAM)&msg);
         ::WaitForSingleObject(msg.hEvent, INFINITE);
+#endif
     }
 
 protected:

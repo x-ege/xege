@@ -3,6 +3,7 @@
 
 #include "external/sdefl.h"
 #include "external/sinfl.h"
+#include <cstring>
 
 namespace ege
 {

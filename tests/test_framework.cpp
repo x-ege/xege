@@ -56,7 +56,8 @@ void TestFramework::cleanup() {
 
 bool TestFramework::hideWindow() {
     if (graphicsWindow && !windowHidden) {
-        if (ShowWindow(graphicsWindow, SW_HIDE)) {
+#ifdef _WIN32
+        if (ShowWindow((HWND)graphicsWindow, SW_HIDE)) {
             windowHidden = true;
             logInfo("Graphics window hidden");
             return true;
@@ -64,13 +65,18 @@ bool TestFramework::hideWindow() {
             logError("Failed to hide graphics window");
             return false;
         }
+#else
+        windowHidden = true;
+        return true;
+#endif
     }
     return windowHidden;
 }
 
 bool TestFramework::showWindow() {
     if (graphicsWindow && windowHidden) {
-        if (ShowWindow(graphicsWindow, SW_SHOW)) {
+#ifdef _WIN32
+        if (ShowWindow((HWND)graphicsWindow, SW_SHOW)) {
             windowHidden = false;
             logInfo("Graphics window shown");
             return true;
@@ -78,6 +84,10 @@ bool TestFramework::showWindow() {
             logError("Failed to show graphics window");
             return false;
         }
+#else
+        windowHidden = false;
+        return true;
+#endif
     }
     return !windowHidden;
 }
@@ -104,7 +114,9 @@ bool TestFramework::setResolution(int width, int height) {
         
         // 如果之前是隐藏状态，保持隐藏
         if (windowHidden) {
-            ShowWindow(graphicsWindow, SW_HIDE);
+#ifdef _WIN32
+            ShowWindow((HWND)graphicsWindow, SW_HIDE);
+#endif
         }
         
         logInfo("Resolution changed to: " + std::to_string(width) + "x" + std::to_string(height));

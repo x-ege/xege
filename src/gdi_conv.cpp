@@ -9,9 +9,11 @@ namespace ege
  * @param[in]  from  输入的矩阵
  * @param[out] to    保存转换结果
  */
+#ifdef EGE_GDIPLUS
 void matrixConvert(const ege_transform_matrix& from, Gdiplus::Matrix& to)
 {
     to.SetElements(from.m11, from.m12, from.m21, from.m22, from.m31, from.m32);
 }
+#endif
 
 }

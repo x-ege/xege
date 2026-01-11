@@ -1,7 +1,9 @@
 #pragma once
 
+#ifdef _WIN32
 #include <windows.h>
 #include <windef.h>
+#endif
 #include <wchar.h>
 
 namespace ege

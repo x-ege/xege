@@ -22,10 +22,12 @@ void setcaption(const char* caption)
 void setcaption(const wchar_t* caption)
 {
     struct _graph_setting* pg = &graph_setting;
+#ifdef _WIN32
     if (pg->has_init) {
         ::SetWindowTextW(getHWnd(), caption);
         ::UpdateWindow(getHWnd()); // for vc6
     }
+#endif
 
     pg->window_caption = caption;
 }
@@ -33,6 +35,7 @@ void setcaption(const wchar_t* caption)
 void seticon(int icon_id)
 {
     struct _graph_setting* pg = &graph_setting;
+#ifdef _WIN32
     HICON hIcon = NULL;
     HINSTANCE instance = GetModuleHandle(NULL);
 
@@ -51,6 +54,7 @@ void seticon(int icon_id)
 #endif
         }
     }
+#endif
 }
 
 void showwindow()
@@ -78,9 +82,11 @@ void showwindow()
         cleardevice();
     }
 
+#ifdef _WIN32
     ShowWindow(pg->hwnd, SW_SHOWNORMAL);
     BringWindowToTop(pg->hwnd);
     SetForegroundWindow(pg->hwnd);
+#endif
 
     if (showLogo) {
         bool isRenderManual = pg->lock_window;
@@ -104,12 +110,16 @@ void showwindow()
 void hidewindow()
 {
     struct _graph_setting* pg = &graph_setting;
+#ifdef _WIN32
     ShowWindow(pg->hwnd, SW_HIDE);
+#endif
 }
 
 void movewindow(int x, int y, bool redraw)
 {
+#ifdef _WIN32
     ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);
+#endif
 }
 
 void flushwindow()
@@ -129,6 +139,7 @@ HWND getParentWindow()
 
 void getParentSize(int* width, int* height)
 {
+#ifdef _WIN32
     RECT rect;
     if (g_attach_hwnd) {
         GetClientRect(g_attach_hwnd, &rect);
@@ -138,6 +149,10 @@ void getParentSize(int* width, int* height)
 
     *width  = rect.right - rect.left;
     *height = rect.bottom - rect.top;
+#else
+    *width = 640;
+    *height = 480;
+#endif
 }
 
 void EGEAPI resizewindow(int width, int height)
@@ -179,14 +194,17 @@ int attachHWND(HWND hWnd)
 HWND createWindow(HWND parentWindow, const wchar_t* caption, DWORD style, DWORD exstyle, POINT pos, SIZE size)
 {
     HWND window = NULL;
+#ifdef _WIN32
     window = CreateWindowExW(exstyle, EGE_WNDCLSNAME_W, caption, style & ~WS_VISIBLE,
             pos.x, pos.y, size.cx,size.cy, parentWindow, NULL, getHInstance(), NULL);
+#endif
 
     return window;
 }
 
 ATOM register_classW(struct _graph_setting* pg, HINSTANCE hInstance)
 {
+#ifdef _WIN32
     WNDCLASSEXW wcex = {0};
 
     wcex.cbSize = sizeof(wcex);
@@ -202,6 +220,9 @@ ATOM register_classW(struct _graph_setting* pg, HINSTANCE hInstance)
     wcex.lpszClassName = EGE_WNDCLSNAME_W;
 
     return RegisterClassExW(&wcex);
+#else
+    return 0;
+#endif
 }
 
 } // namespace ege

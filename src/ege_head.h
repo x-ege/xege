@@ -28,6 +28,7 @@
 
 #include "ege.h"
 #include "ege/types.h"
+#include "backend/interface/Window.h"
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -89,11 +90,15 @@
 #   if defined(NOMINMAX) && defined(_MSC_VER)
 #       define max(a, b) (((a) > (b)) ? (a) : (b))
 #       define min(a, b) (((a) < (b)) ? (a) : (b))
-#       include <gdiplus.h>
+#       ifdef _WIN32
+#           include <gdiplus.h>
+#       endif
 #       undef max
 #       undef min
 #   else
-#       include <gdiplus.h>
+#       ifdef _WIN32
+#           include <gdiplus.h>
+#       endif
 #   endif
 #endif
 
@@ -197,6 +202,7 @@ struct _graph_setting
     std::wstring window_caption;
     HICON        window_hicon;
     color_t      window_initial_color;
+    Window*      window; // Abstract window interface
     int          exit_flag;
     int          exit_window;
     int          update_mark_count; // 更新标记
@@ -206,6 +212,7 @@ struct _graph_setting
     bool         timer_stop_mark;
     bool         skip_timer_mark;
     bool         first_show;
+    bool         use_opengl;
 
     thread_queue<EGEMSG>*msgkey_queue, *msgmouse_queue;
 
