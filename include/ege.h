@@ -90,6 +90,138 @@
 // Linux/Cross-platform definitions
 #include <stdint.h>
 #include <cstddef>
+#include <wchar.h>
+#include <string.h>
+#include <strings.h>
+
+// Some Windows-compatible constants/functions are referenced by legacy demos and user code.
+// Provide minimal shims on non-Windows platforms.
+
+// Code page constants (subset)
+#ifndef CP_ACP
+#define CP_ACP 0
+#endif
+#ifndef CP_UTF8
+#define CP_UTF8 65001
+#endif
+
+// Virtual-Key codes (subset used by demos)
+#ifndef VK_UP
+#define VK_UP 0x26
+#endif
+#ifndef VK_DOWN
+#define VK_DOWN 0x28
+#endif
+#ifndef VK_LEFT
+#define VK_LEFT 0x25
+#endif
+#ifndef VK_RIGHT
+#define VK_RIGHT 0x27
+#endif
+#ifndef VK_SPACE
+#define VK_SPACE 0x20
+#endif
+#ifndef VK_F2
+#define VK_F2 0x71
+#endif
+#ifndef VK_NUMPAD0
+#define VK_NUMPAD0 0x60
+#endif
+
+// ROP2 raster operation codes (subset used by demos)
+#ifndef R2_COPYPEN
+#define R2_COPYPEN 13
+#endif
+#ifndef R2_XORPEN
+#define R2_XORPEN 7
+#endif
+
+// Misc Win32 API shims used by legacy demos
+#ifndef MB_OK
+#define MB_OK 0
+#endif
+
+#ifndef stricmp
+#define stricmp strcasecmp
+#endif
+
+static inline int MessageBoxA(void* /*hWnd*/, const char* /*lpText*/, const char* /*lpCaption*/, unsigned int /*uType*/)
+{
+    // no-op fallback: keep demo code buildable on non-Windows platforms.
+    return 0;
+}
+
+#ifdef __cplusplus
+#include <string>
+#include <vector>
+#include <locale>
+#include <codecvt>
+
+// A small, header-only approximation of Win32 MultiByteToWideChar.
+// It primarily supports UTF-8 (CP_UTF8) and a best-effort fallback for other code pages.
+static inline int MultiByteToWideChar(unsigned int CodePage, unsigned long /*dwFlags*/, const char* lpMultiByteStr,
+    int cbMultiByte, wchar_t* lpWideCharStr, int cchWideChar)
+{
+    if (!lpMultiByteStr) {
+        return 0;
+    }
+
+    const bool nullTerminated = (cbMultiByte == -1);
+    const size_t inLen = nullTerminated ? strlen(lpMultiByteStr) : (cbMultiByte < 0 ? 0u : (size_t)cbMultiByte);
+
+    std::wstring out;
+    try {
+        if (CodePage == CP_UTF8) {
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+            out = conv.from_bytes(lpMultiByteStr, lpMultiByteStr + inLen);
+        } else {
+            // Best-effort: treat input as current locale multibyte.
+            std::mbstate_t st{};
+            const char* src = lpMultiByteStr;
+            size_t remaining = inLen;
+            while (remaining > 0) {
+                wchar_t wc;
+                size_t consumed = mbrtowc(&wc, src, remaining, &st);
+                if (consumed == (size_t)-1 || consumed == (size_t)-2) {
+                    // Invalid sequence: replace and move on one byte.
+                    out.push_back(L'?');
+                    ++src;
+                    --remaining;
+                    std::mbstate_t rst{};
+                    st = rst;
+                    continue;
+                }
+                if (consumed == 0) {
+                    break;
+                }
+                out.push_back(wc);
+                src += consumed;
+                remaining -= consumed;
+            }
+        }
+    } catch (...) {
+        return 0;
+    }
+
+    // Win32 semantics: if cbMultiByte == -1, the result includes the terminator.
+    const int required = (int)out.size() + (nullTerminated ? 1 : 0);
+    if (!lpWideCharStr || cchWideChar == 0) {
+        return required;
+    }
+    if (cchWideChar < required) {
+        return 0;
+    }
+
+    if (!out.empty()) {
+        wmemcpy(lpWideCharStr, out.data(), out.size());
+    }
+    if (nullTerminated) {
+        lpWideCharStr[out.size()] = L'\0';
+    }
+    return required;
+}
+#endif
+
 typedef void* HWND;
 typedef void* HDC;
 typedef void* HINSTANCE;
@@ -429,7 +561,9 @@ enum initmode_flag
     INIT_NOFORCEEXIT     = 0x10,  ///< Don't force exit program when closing window, only set internal flag, is_run() can get the flag
     INIT_UNICODE         = 0x20,  ///< Unicode character messages (equivalent to setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< Hidden window
-    INIT_OPENGL          = 0x80,  ///< OpenGL mode
+#if defined(EGE_BUILD_OPENGL)
+    INIT_OPENGL          = 0x80,  ///< OpenGL mode (only available when built with EGE_BUILD_OPENGL)
+#endif
     INIT_WITHLOGO        = 0x100, ///< Show EGE Logo animation on startup (not shown by default in Debug version)
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< Animation mode
 };
@@ -3593,6 +3727,48 @@ ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL);
  */
 ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);
 
+
+#else // !EGE_GDIPLUS
+
+// Cross-platform fallback declarations when GDI+ enhanced backend is not available.
+// These APIs are kept for source compatibility (e.g. demos) and are implemented
+// as lightweight wrappers or no-ops on non-Windows builds.
+
+void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
+
+void EGEAPI ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpoly(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpoly(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+
+void EGEAPI ege_circle       (float x, float y, float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_fillcircle   (float x, float y, float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_ellipse      (float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_fillellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
+
+void EGEAPI ege_fillrect     (float x, float y, float w, float h, PIMAGE pimg = NULL);
+
+void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
+void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
+
+void EGEAPI ege_setpattern_none(PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, float y2, color_t c2, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centerColor, int count, const ege_point* points, int colorCount, const color_t* pointColors, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor, float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
+
+void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
+void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
+
+void EGEAPI ege_transform_rotate(float angle, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_translate(float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_scale(float xScale, float yScale, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_reset(PIMAGE pimg = NULL);
+void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg = NULL);
+void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg = NULL);
+ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL);
+ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);
 
 #endif
 

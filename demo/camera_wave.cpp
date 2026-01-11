@@ -529,13 +529,18 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight, PIMAGE& target, Net
     float cameraRatio = (float)cameraWidth / cameraHeight;
 
     // 获取屏幕可用区域（考虑任务栏）
+    // 非 Windows 平台不依赖 Win32 API，跳过此限制（仍受 MIN/MAX_LONG_EDGE 约束）。
+    int screenAvailWidth = 1 << 30;
+    int screenAvailHeight = 1 << 30;
+#ifdef _WIN32
     RECT workArea;
     SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
-    int screenAvailWidth = workArea.right - workArea.left;
-    int screenAvailHeight = workArea.bottom - workArea.top;
+    screenAvailWidth = workArea.right - workArea.left;
+    screenAvailHeight = workArea.bottom - workArea.top;
     // 留一点边距，避免窗口贴边
     screenAvailWidth -= 20;
     screenAvailHeight -= 40;
+#endif
 
     // 计算目标窗口长边
     int targetLongEdge = cameraLongEdge;

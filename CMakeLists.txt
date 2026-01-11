@@ -50,8 +50,28 @@ message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
 message(STATUS "EGE_DISABLE_DEBUG_INFO: ${EGE_DISABLE_DEBUG_INFO}")
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
-option(EGE_BUILD_FOR_LINUX "Build for Linux native" ${CMAKE_HOST_UNIX})
+# OpenGL backend switch
+# IMPORTANT: When this is OFF, behavior should stay aligned with the main branch:
+# - No OpenGL/GLFW dependencies
+# - No public API flag ege::INIT_OPENGL
+# - On Linux/macOS, keep using the existing mingw-w64 + wine workflow
+option(EGE_BUILD_OPENGL "Build with OpenGL backend" OFF)
+message(STATUS "EGE_BUILD_OPENGL: ${EGE_BUILD_OPENGL}")
+
+# On Unix, default to cross-compile (mingw-w64) unless OpenGL backend is enabled.
+set(_EGE_BUILD_FOR_LINUX_DEFAULT OFF)
+if(CMAKE_HOST_UNIX AND EGE_BUILD_OPENGL)
+    set(_EGE_BUILD_FOR_LINUX_DEFAULT ON)
+endif()
+option(EGE_BUILD_FOR_LINUX "Build for Linux native" ${_EGE_BUILD_FOR_LINUX_DEFAULT})
+unset(_EGE_BUILD_FOR_LINUX_DEFAULT)
 message(STATUS "EGE_BUILD_FOR_LINUX: ${EGE_BUILD_FOR_LINUX}")
+
+# When OpenGL backend is enabled, Linux/macOS must be built natively.
+if(CMAKE_HOST_UNIX AND EGE_BUILD_OPENGL AND NOT EGE_BUILD_FOR_LINUX)
+    message(STATUS "EGE_BUILD_OPENGL=ON => forcing EGE_BUILD_FOR_LINUX=ON (native build)")
+    set(EGE_BUILD_FOR_LINUX ON CACHE BOOL "Build for Linux native" FORCE)
+endif()
 
 if(CMAKE_HOST_UNIX AND NOT EGE_BUILD_FOR_LINUX)
     set(CMAKE_SYSTEM_NAME Windows)
@@ -346,16 +366,28 @@ target_link_libraries(xege INTERFACE
 )
 endif()
 
-option(EGE_BUILD_OPENGL "Build with OpenGL backend" ON)
+# Backend sources
+# - win32 backend is required for Windows (including mingw-w64 cross-compile)
+if(WIN32 OR MINGW OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    file(GLOB EGE_BACKEND_WIN32_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/win32/*.cpp)
+    target_sources(xege PRIVATE ${EGE_BACKEND_WIN32_SRC})
+endif()
 
 if(EGE_BUILD_OPENGL)
     find_package(glfw3 REQUIRED)
     find_package(OpenGL REQUIRED)
+
     target_link_libraries(xege PRIVATE glfw OpenGL::GL)
-    target_compile_definitions(xege PRIVATE EGE_BUILD_OPENGL=1)
-    
-    file(GLOB_RECURSE EGE_BACKEND_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/*.cpp)
-    target_sources(xege PRIVATE ${EGE_BACKEND_SRC})
+
+    # Expose to public headers / user code for compile-time feature detection.
+    target_compile_definitions(xege PUBLIC EGE_BUILD_OPENGL=1)
+
+    file(GLOB EGE_BACKEND_OPENGL_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/opengl/*.cpp)
+    target_sources(xege PRIVATE ${EGE_BACKEND_OPENGL_SRC})
+elseif(CMAKE_HOST_UNIX AND EGE_BUILD_FOR_LINUX)
+    message(FATAL_ERROR "Invalid configuration: EGE_BUILD_FOR_LINUX=ON but EGE_BUILD_OPENGL=OFF.\n"
+        "On Linux/macOS, native build is only supported in OpenGL mode.\n"
+        "Either set -DEGE_BUILD_OPENGL=ON (native OpenGL) or set -DEGE_BUILD_FOR_LINUX=OFF (mingw-w64 + wine).")
 endif()
 
 if(EGE_BUILD_DEMO)

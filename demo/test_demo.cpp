@@ -1764,7 +1764,11 @@ private:
 int main()
 {
     // setcodepage(EGE_CODEPAGE_UTF8);
-    setinitmode(INIT_RENDERMANUAL | INIT_OPENGL);
+    int initmode = INIT_RENDERMANUAL;
+    #ifdef EGE_BUILD_OPENGL
+    initmode |= INIT_OPENGL;
+    #endif
+    setinitmode(initmode);
     initgraph(640, 480);
     SceneBase* scene = new SceneIntroduce; //SceneIntroduce; SceneMenu
     setbkmode(TRANSPARENT);

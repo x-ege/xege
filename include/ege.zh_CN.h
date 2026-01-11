@@ -237,6 +237,9 @@ enum initmode_flag
     INIT_NOFORCEEXIT     = 0x10,  ///< 关闭窗口时不强制退出程序，只设置内部标志位，is_run() 可以获取标志位
     INIT_UNICODE         = 0x20,  ///< Unicode字符消息 (等同于setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< 隐藏窗口
+#if defined(EGE_BUILD_OPENGL)
+    INIT_OPENGL          = 0x80,  ///< OpenGL 模式（仅当以 EGE_BUILD_OPENGL 构建时可用）
+#endif
     INIT_WITHLOGO        = 0x100, ///< 启动时显示EGE Logo 动画 (Debug版本下默认不显示)
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< 动画模式
 };

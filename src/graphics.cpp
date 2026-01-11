@@ -51,7 +51,9 @@
 #ifdef _WIN32
 #include "backend/win32/GDIWindow.h"
 #endif
+#if defined(EGE_BUILD_OPENGL)
 #include "backend/opengl/GLFWWindow.h"
+#endif
 
 #ifdef _ITERATOR_DEBUG_LEVEL
 #undef _ITERATOR_DEBUG_LEVEL
@@ -956,7 +958,15 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     int width  = (short)(*gmode & 0xFFFF);
     int height = (short)((unsigned int)(*gmode) >> 16);
 
+    // Backend selection:
+    // - When built with OpenGL backend, INIT_OPENGL can opt-in on Windows.
+    // - On non-Windows, OpenGL backend is the only supported native mode.
+#if defined(EGE_BUILD_OPENGL)
+    #ifdef _WIN32
     pg->use_opengl = (g_initoption & INIT_OPENGL) != 0;
+    #else
+    pg->use_opengl = true;
+    #endif
 
     if (g_initoption & INIT_OPENGL) {
         pg->window = new GLFWWindow();
@@ -966,6 +976,10 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         pg->hwnd = (HWND)pg->window->getNativeHandle();
         pg->has_init = true;
     } else {
+#else
+    pg->use_opengl = false;
+    {
+#endif
 #ifdef _WIN32
         pg->window = new GDIWindow();
         pg->instance = GetModuleHandle(NULL);
@@ -984,18 +998,29 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             ::Sleep(1);
         }
 #else
-        // Non-Windows fallback to OpenGL if not explicitly requested (though INIT_OPENGL should be used)
-        pg->window = new GLFWWindow();
-        if (!pg->window->create(width, height, "EGE Window")) {
-            return;
-        }
-        pg->hwnd = (HWND)pg->window->getNativeHandle();
-        pg->has_init = true;
+        // Native non-Windows build without OpenGL backend is not supported.
+        // This configuration should be rejected at CMake configure time.
+        #if defined(EGE_BUILD_OPENGL)
+            // Non-Windows: in OpenGL-enabled builds, OpenGL is effectively mandatory.
+            // (Whether INIT_OPENGL is set by user is treated as always-on at higher level.)
+            pg->window = new GLFWWindow();
+            if (!pg->window->create(width, height, "EGE Window")) {
+                return;
+            }
+            pg->hwnd = (HWND)pg->window->getNativeHandle();
+            pg->has_init = true;
+        #else
+            #error "EGE native build on non-Windows requires EGE_BUILD_OPENGL"
+        #endif
 #endif
     }
 
 #ifdef _WIN32
+    #if defined(EGE_BUILD_OPENGL)
     if (pg->hwnd && !(g_initoption & INIT_OPENGL)) {
+    #else
+    if (pg->hwnd) {
+    #endif
         UpdateWindow(pg->hwnd);
     }
 
@@ -1181,6 +1206,12 @@ BOOL init_instance(HINSTANCE hInstance)
 
 void setinitmode(initmode_flag mode, int x, int y)
 {
+    // When built with OpenGL backend, Linux/macOS should always use OpenGL and cannot be disabled.
+    // Keep Windows behavior as opt-in via INIT_OPENGL.
+#if defined(EGE_BUILD_OPENGL) && !defined(_WIN32)
+    mode = static_cast<initmode_flag>(mode | INIT_OPENGL);
+#endif
+
     g_initoption              = mode;
 
 #ifdef _WIN32

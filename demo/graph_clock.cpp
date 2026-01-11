@@ -112,7 +112,11 @@ void mainloop()
  */
 int main()
 {
-	ege::setinitmode(ege::INIT_ANIMATION | ege::INIT_OPENGL);
+	int initmode = ege::INIT_ANIMATION;
+	#ifdef EGE_BUILD_OPENGL
+	initmode |= ege::INIT_OPENGL;
+	#endif
+	ege::setinitmode(initmode);
 	ege::initgraph(400, 480);
 	ege::randomize();
 	mainloop();

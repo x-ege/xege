@@ -443,7 +443,11 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
         "$exe_path"
     else
         echo run "$exe_path"
-        if command -v wine64 &>/dev/null; then
+        # If the output is a native binary (no .exe suffix), run it directly.
+        # Otherwise, fall back to wine for the legacy cross-compile workflow.
+        if [[ "$exe_path" != *.exe ]]; then
+            "$exe_path"
+        elif command -v wine64 &>/dev/null; then
             wine64 "$exe_path"
         elif command -v wine &>/dev/null; then
             wine "$exe_path"
