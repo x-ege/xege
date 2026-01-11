@@ -91,7 +91,8 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
    - `EGE: 在当前工作区设置 ege 项目` - 使用预编译库创建项目
    - `EGE: 在当前工作区设置带有 EGE 源代码的 ege 项目` - 使用源码创建项目
    - `EGE: 构建并运行当前文件` - 快速编译运行单个 cpp 文件
-3. 插件支持 Windows、macOS（需 mingw-w64 + wine）和 Linux
+3. 插件支持 Windows、Linux 和 macOS。
+    - Linux/macOS：默认仍可使用 mingw-w64 + wine 的兼容路径；启用原生 OpenGL 模式（`-DEGE_BUILD_OPENGL=ON`）后可直接构建/运行原生程序（无需 wine）。
 
 > 更多详情请访问插件主页：[CLion 插件](https://github.com/x-ege/ege-clion-plugin) | [VS Code 插件](https://github.com/x-ege/ege-vscode-plugin)
 

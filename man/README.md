@@ -26,7 +26,10 @@
 
 在 Windows 上, EGE 支持`Visual Studio 6.0`(aka `vc6.0`), `Visual Studio 2010`, `Visual Studio 2015`, `Visual Studio 2017`, `Visual Studio 2019`, `Visual Studio 2022`(及以上版本), `MinGW`, `小熊猫C++`, `CLion`, `C-Free`, `Dev-C++`, `Code::Blocks` 等 IDE。
 
-在 Linux 和 macOS 上, EGE 支持基于 mingw-w64 的交叉编译环境。支持基于 mingw-w64 编译的 Windows 程序在 Linux 和 macOS 上运行(需要 `Wine` 支持)。
+在 Linux 和 macOS 上, EGE 支持两种路径：
+
+- 默认兼容路径：基于 mingw-w64 的交叉编译环境。支持在 Linux/macOS 上运行 mingw-w64 编译出来的 Windows 程序（需要 `Wine` 支持）。
+- 原生 OpenGL 路径：通过 CMake 选项 `-DEGE_BUILD_OPENGL=ON` 启用，走 native + GLFW/OpenGL 的真跨平台实现（无需 Wine）。
 
 在新版本中，特别增强了对于 `Visual Studio Code` 的支持， `Visual Studio Code` 使用者可以在插件市场直接搜索 `ege` 插件安装, 安装 ege 插件之后, 使用 `Visual Studio Code` 打开任意文件夹, 使用 `win + shift + p`(Windows/Linux) 或者 `cmd + shift + p`(macOS) 快捷键, 输入 `EGE: setup with this project` 等指令即可完成快速项目配置和运行。相关操作支持 Windows、Linux 和 macOS。
 

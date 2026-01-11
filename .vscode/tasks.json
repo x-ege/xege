@@ -351,6 +351,45 @@
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
+        },
+
+        // Native OpenGL mode (Linux/macOS): uses a separate build dir and does NOT require wine.
+        // Enable via -DEGE_BUILD_OPENGL=ON (also forces native toolchain on Unix).
+        {
+            "label": "Load And Build Demos (OpenGL Debug)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--build-dir", "build/opengl-debug", "--target", "demos", "--load", "--build", "--", "-DEGE_BUILD_OPENGL=ON"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": ["$msCompile", "$gcc"]
+        },
+        {
+            "label": "Load And Build Demos (OpenGL Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--release", "--build-dir", "build/opengl-release", "--target", "demos", "--load", "--build", "--", "-DEGE_BUILD_OPENGL=ON"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": ["$msCompile", "$gcc"]
+        },
+        {
+            "label": "Run Demo - XEGE Test (OpenGL Debug)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--build-dir", "build/opengl-debug", "--target", "test_main", "--build", "--run", "test_main", "--", "-DEGE_BUILD_DEMO=ON", "-DEGE_BUILD_OPENGL=ON"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": ["$msCompile", "$gcc"]
+        },
+        {
+            "label": "Run Demo - XEGE Test (OpenGL Release)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--release", "--build-dir", "build/opengl-release", "--target", "test_main", "--build", "--run", "test_main", "--", "-DEGE_BUILD_DEMO=ON", "-DEGE_BUILD_OPENGL=ON"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "build",
+            "problemMatcher": ["$msCompile", "$gcc"]
         }
     ]
 }
