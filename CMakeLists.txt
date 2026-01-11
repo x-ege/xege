@@ -74,6 +74,8 @@ if(CMAKE_HOST_UNIX AND EGE_BUILD_OPENGL AND NOT EGE_BUILD_FOR_LINUX)
 endif()
 
 if(CMAKE_HOST_UNIX AND NOT EGE_BUILD_FOR_LINUX)
+    message(STATUS "EGE legacy mode on Unix: cross-compiling to Windows via mingw-w64 (run demos with wine).")
+    message(STATUS "Tip: enable native build via -DEGE_BUILD_OPENGL=ON (Linux/macOS only).")
     set(CMAKE_SYSTEM_NAME Windows)
     set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
 
