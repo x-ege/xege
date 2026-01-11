@@ -86,6 +86,26 @@ brew install glfw
   bash -l tasks.sh --debug --build-dir build/opengl-debug --target demos --build -- -DEGE_BUILD_OPENGL=ON
   ```
 
+### OpenGL 原生模式：运行与排错
+
+- OpenGL 原生模式的 demo 运行需要可用的图形系统环境：
+  - Linux (X11)：需要可用的 `DISPLAY`（以及相应的 X11/GL 驱动）。
+  - Linux (Wayland)：需要相应的 Wayland/桌面环境支持（具体取决于发行版与 GLFW 构建方式）。
+  - macOS：需要图形会话（GUI）。
+
+- 如果你看到类似报错：
+  - `Failed to initialize GLFW ... Failed to open display`
+  - 通常表示当前环境是 headless（无图形会话）或 `DISPLAY` 不可用。
+
+  处理方式：
+  - 在本地桌面环境下运行（最常见）。
+  - 或在 CI/headless 环境里使用虚拟显示（例如 `xvfb-run`）。
+
+- `tasks.sh` 的运行策略：
+  - **原生可执行文件（无 `.exe` 后缀）**：直接运行。
+  - **Windows `.exe`（交叉编译产物）**：使用 wine 运行（legacy 兼容模式）。
+  - 当构建目录配置为 `-DEGE_BUILD_OPENGL=ON`（原生 OpenGL）时，`tasks.sh` 会拒绝用 wine 运行 `.exe`，避免混用两条工作流。
+
 ## 基本编译步骤
 
 1. 创建 build 文件夹并设为当前目录
