@@ -26,7 +26,7 @@
 #ifndef _STDINT_HEADER_NOT_SUPPORT
 #if defined(_MSC_VER) && (_MSC_VER < 1600)
 #define _STDINT_HEADER_NOT_SUPPORT
-#elif  defined(__GNUC__) && ((__GNUC__ < 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ < 5)))
+#elif defined(__GNUC__) && !defined(__clang__) && ((__GNUC__ < 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ < 5)))
 #define _STDINT_HEADER_NOT_SUPPORT
 #else
   /* Other compilers always assume support for <stdint.h>. */

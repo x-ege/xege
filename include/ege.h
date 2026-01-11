@@ -78,7 +78,12 @@
 #define __STDC_CONSTANT_MACROS
 #endif
 
+// The project historically shipped its own stdint.h for old Windows toolchains.
+// On modern non-Windows platforms (e.g. AppleClang on macOS), including it will
+// conflict with the system <stdint.h>/<cstdint>.
+#if defined(_WIN32) || defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include "ege/stdint.h"
+#endif
 
 #if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include <windef.h>

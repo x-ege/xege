@@ -313,21 +313,45 @@ int dealmessage(_graph_setting* pg, bool force_update)
 /*private function*/
 void guiupdate(_graph_setting* pg, egeControlBase* root)
 {
-    pg->msgkey_queue->process(ui_msg_process);
-    pg->msgmouse_queue->process(ui_msg_process);
+    // In native OpenGL backend (and during early init/shutdown), these pointers may be null.
+    if (pg == NULL || root == NULL) {
+        return;
+    }
+    if (pg->msgkey_queue) {
+        pg->msgkey_queue->process(ui_msg_process);
+    }
+    if (pg->msgmouse_queue) {
+        pg->msgmouse_queue->process(ui_msg_process);
+    }
     root->update();
 }
 
 /*private function*/
 int waitdealmessage(_graph_setting* pg)
 {
+    if (pg == NULL) {
+        return 0;
+    }
+
+    // For native backends (GLFW/OpenGL), we must pump events to keep the window responsive.
+    if (pg->window) {
+        pg->window->processEvents();
+        if (pg->window->isClosed()) {
+            pg->exit_window = 1;
+        }
+    }
+
     // MSG msg;
     if (pg->update_mark_count < UPDATE_MAX_CALL) {
         egeControlBase* root = pg->egectrl_root;
-        root->draw(NULL);
+        if (root) {
+            root->draw(NULL);
+        }
 
         graphupdate(pg);
-        guiupdate(pg, root);
+        if (root) {
+            guiupdate(pg, root);
+        }
     }
     ege_sleep(1);
     return !pg->exit_window;
@@ -982,6 +1006,12 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             return;
         }
         pg->hwnd = (HWND)pg->window->getNativeHandle();
+
+        // Initialize engine state (message queues, pages, timers) for native/OpenGL backend.
+        // On the legacy Win32 path this is done in the UI thread before has_init becomes true.
+        if (pg->dc == 0) {
+            graph_init(pg);
+        }
         pg->has_init = true;
     } else {
 #else
@@ -1022,6 +1052,11 @@ void initgraph(int* gdriver, int* gmode, const char* path)
                 return;
             }
             pg->hwnd = (HWND)pg->window->getNativeHandle();
+
+            // Initialize engine state (message queues, pages, timers) for native/OpenGL backend.
+            if (pg->dc == 0) {
+                graph_init(pg);
+            }
             pg->has_init = true;
         #else
             #error "EGE native build on non-Windows requires EGE_BUILD_OPENGL"
