@@ -453,6 +453,16 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
         "$exe_path"
     else
         cache_opengl="$(cmakeCacheGet EGE_BUILD_OPENGL)"
+
+        # In native OpenGL builds on Unix, demos are native binaries (usually without .exe).
+        # VS Code tasks historically pass *.exe; auto-map to the native name to keep tasks stable.
+        if [[ "$cache_opengl" == "ON" ]] && [[ "$exe_path" == *.exe ]]; then
+            native_path="${exe_path%.exe}"
+            if [[ -f "$native_path" ]]; then
+                exe_path="$native_path"
+            fi
+        fi
+
         echo run "$exe_path"
         # If the output is a native binary (no .exe suffix), run it directly.
         # Otherwise, fall back to wine for the legacy cross-compile workflow.
@@ -468,6 +478,7 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
             wine "$exe_path"
         else
             echo "Command 'wine64' not found, please install wine first." >&2
+            echo "Tip: On Linux/macOS you can also rebuild with -DEGE_BUILD_OPENGL=ON to run native demos without wine." >&2
             exit 127
         fi
     fi

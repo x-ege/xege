@@ -10,6 +10,14 @@ if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
     cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 endif()
 
+# Developer-only local overrides (not tracked by git).
+# Create a ./dev.cmake next to this CMakeLists.txt to preset cache options
+# (e.g. force EGE_BUILD_OPENGL=ON for local development).
+if(EGE_IS_ROOT_PROJECT AND EXISTS "${CMAKE_SOURCE_DIR}/dev.cmake")
+    message(STATUS "Including developer overrides: ${CMAKE_SOURCE_DIR}/dev.cmake")
+    include("${CMAKE_SOURCE_DIR}/dev.cmake")
+endif()
+
 # Clear CMake cache
 option(EGE_CLEAR_OPTIONS_CACHE "Clear caches before setting options" OFF)
 
