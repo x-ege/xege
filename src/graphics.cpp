@@ -971,6 +971,14 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     if (g_initoption & INIT_OPENGL) {
         pg->window = new GLFWWindow();
         if (!pg->window->create(width, height, "EGE Window")) {
+            // If window creation fails, make the engine enter a safe "not running" state
+            // to prevent demos from continuing and crashing.
+            delete pg->window;
+            pg->window = NULL;
+            pg->hwnd = NULL;
+            pg->has_init = false;
+            pg->exit_window = 1;
+            pg->exit_flag = 1;
             return;
         }
         pg->hwnd = (HWND)pg->window->getNativeHandle();
@@ -1005,6 +1013,12 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             // (Whether INIT_OPENGL is set by user is treated as always-on at higher level.)
             pg->window = new GLFWWindow();
             if (!pg->window->create(width, height, "EGE Window")) {
+                delete pg->window;
+                pg->window = NULL;
+                pg->hwnd = NULL;
+                pg->has_init = false;
+                pg->exit_window = 1;
+                pg->exit_flag = 1;
                 return;
             }
             pg->hwnd = (HWND)pg->window->getNativeHandle();
