@@ -12,7 +12,13 @@ GLFWWindow::~GLFWWindow() {
 
 bool GLFWWindow::create(int width, int height, const char* title) {
     if (!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
+        const char* desc = NULL;
+        int err = glfwGetError(&desc);
+        if (desc) {
+            fprintf(stderr, "Failed to initialize GLFW (%d): %s\n", err, desc);
+        } else {
+            fprintf(stderr, "Failed to initialize GLFW\n");
+        }
         return false;
     }
 
@@ -22,7 +28,13 @@ bool GLFWWindow::create(int width, int height, const char* title) {
     
     m_window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!m_window) {
-        fprintf(stderr, "Failed to create GLFW window\n");
+        const char* desc = NULL;
+        int err = glfwGetError(&desc);
+        if (desc) {
+            fprintf(stderr, "Failed to create GLFW window (%d): %s\n", err, desc);
+        } else {
+            fprintf(stderr, "Failed to create GLFW window\n");
+        }
         glfwTerminate();
         return false;
     }
