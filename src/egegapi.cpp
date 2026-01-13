@@ -2022,7 +2022,7 @@ static Gdiplus::GraphicsPath* createRoundRectPath(float x, float y, float w, flo
 
 void ege_roundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg)
 {
-    ege_roundrect(x, y, w, h, radius,  radius,  radius,  radius);
+    ege_roundrect(x, y, w, h, radius,  radius,  radius,  radius, pimg);
 }
 void ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg)
 {
