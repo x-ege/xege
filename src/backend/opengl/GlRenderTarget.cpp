@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -32,6 +33,92 @@ in vec4 vColor;
 out vec4 fragColor;
 void main() {
     fragColor = vColor;
+}
+)";
+
+// Image blit/blend vertex shader — passes src UVs with transform
+static const char* g_imgVertSrc = R"(
+#version 330 core
+layout(location = 0) in vec2 aPos;  // quad coords 0..1
+out vec2 vUV;
+
+uniform vec4 uSrcRect;  // srcX, srcY, srcW, srcH
+uniform float uAngle;
+uniform vec2 uCenter;
+uniform vec2 uZoom;
+
+void main() {
+    vec2 n = aPos; // 0..1
+    // Map to source pixel coords
+    float sx = uSrcRect.x + n.x * uSrcRect.z;
+    float sy = uSrcRect.y + n.y * uSrcRect.w;
+    // Zoom around center
+    float cx = uCenter.x, cy = uCenter.y;
+    sx = cx + (sx - cx) / uZoom.x;
+    sy = cy + (sy - cy) / uZoom.y;
+    // Rotation around center
+    float c = cos(uAngle), s = sin(uAngle);
+    float dx = sx - cx, dy = sy - cy;
+    float rx = c * dx + s * dy + cx;
+    float ry = -s * dx + c * dy + cy;
+    // Texture coords (flip Y for top-left origin)
+    vUV = vec2(rx / uSrcRect.z, 1.0 - ry / uSrcRect.w);
+    gl_Position = vec4(n * 2.0 - 1.0, 0.0, 1.0);
+}
+)";
+
+// Image fragment shader — simple sampling + optional color key discard + alpha scaling
+// ROP2 modes use destination texture for XOR/AND/OR operations
+static const char* g_imgFragSrc = R"(
+#version 330 core
+uniform sampler2D uTex;
+uniform sampler2D uDstTex;      // destination texture for ROP2
+uniform int uMode;               // 0=copy, 1=colorKey, 2=XOR, 3=AND, 4=OR
+uniform vec3 uKeyColor;          // for color key mode (normalized RGB)
+uniform float uKeyTol;           // tolerance for color key matching
+uniform float uAlphaOverride;    // if > 0, multiply source alpha by this
+in vec2 vUV;
+out vec4 fragColor;
+
+void main() {
+    vec4 src = texture(uTex, vUV);
+    vec4 dst = texture(uDstTex, vUV);
+
+    if (uMode == 1) {
+        // Transparent color key: discard if within tolerance
+        vec3 diff = abs(src.rgb - uKeyColor);
+        if (max(diff.r, max(diff.g, diff.b)) < uKeyTol) discard;
+    }
+
+    vec4 result = src;
+    if (uMode == 2) {
+        // XOR: (src XOR dst) per channel
+        ivec4 si = ivec4(src * 255.0);
+        ivec4 di = ivec4(dst * 255.0);
+        result = vec4(si ^ di) / 255.0;
+    } else if (uMode == 3) {
+        // AND: (src AND dst) per channel
+        ivec4 si = ivec4(src * 255.0);
+        ivec4 di = ivec4(dst * 255.0);
+        result = vec4(si & di) / 255.0;
+    } else if (uMode == 4) {
+        // OR: (src OR dst) per channel
+        ivec4 si = ivec4(src * 255.0);
+        ivec4 di = ivec4(dst * 255.0);
+        result = vec4(si | di) / 255.0;
+    }
+
+    if (uAlphaOverride > 0.0) {
+        result.a *= uAlphaOverride;
+    }
+
+    // For ROP2 modes, blend the result over destination using alpha
+    if (uMode >= 2 && uMode <= 4) {
+        float a = result.a;
+        result.rgb = mix(dst.rgb, result.rgb, a);
+    }
+
+    fragColor = result;
 }
 )";
 
@@ -113,7 +200,8 @@ GlRenderTarget::GlRenderTarget()
       m_rasterOp(ROP_COPY), m_writingMode(0),
       m_vpLeft(0), m_vpTop(0), m_vpRight(0), m_vpBottom(0), m_vpClip(false),
       m_curX(0), m_curY(0),
-      m_projectionDirty(true) {
+      m_projectionDirty(true),
+      m_imageShaderReady(false) {
     m_transformStack.push_back(std::vector<float>(identity3, identity3 + 9));
 }
 
@@ -339,6 +427,194 @@ void GlRenderTarget::submitBatch() {
     glBindVertexArray(0);
 
     m_vertices.clear();
+}
+
+// ============================================================
+// Image blit helpers
+// ============================================================
+
+// Sync source RenderTarget's CPU buffer to GPU texture if dirty
+static void syncSrcTexture(RenderTarget* src) {
+    if (!src) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    // Force GPU sync: getPixelBuffer ensures GPU→CPU sync first
+    glSrc->getPixelBuffer();
+    // Then sync CPU buffer to GPU texture
+    glSrc->syncToGpu();
+}
+
+void GlRenderTarget::ensureImageShader() {
+    if (m_imageShaderReady) return;
+    m_imageShader.compileVertex(g_imgVertSrc);
+    m_imageShader.compileFragment(g_imgFragSrc);
+    m_imageShader.link();
+    m_imageShaderReady = true;
+}
+
+// Draw source texture onto the current framebuffer with a full-screen quad.
+// The quad is rendered in normalized device coordinates (NDC: -1..1).
+// The source UV transformation (rotation, zoom) is applied in the vertex shader.
+// OpenGL blend function controls the compositing mode.
+void GlRenderTarget::drawImageQuad(GLuint srcTex, int srcW, int srcH,
+                                    int srcX, int srcY, int srcW2, int srcH2,
+                                    int dstX, int dstY, int dstW2, int dstH2,
+                                    float angle, float centerX, float centerY,
+                                    float zoomX, float zoomY,
+                                    int mode, color_t keyColor) {
+    drawImageQuadInternal(srcTex, srcW, srcH, srcX, srcY, srcW2, srcH2,
+                          dstX, dstY, dstW2, dstH2, angle, centerX, centerY,
+                          zoomX, zoomY, mode, keyColor, -1.0f);
+}
+
+void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
+                                            int srcX, int srcY, int srcW2, int srcH2,
+                                            int dstX, int dstY, int dstW2, int dstH2,
+                                            float angle, float centerX, float centerY,
+                                            float zoomX, float zoomY,
+                                            int mode, color_t keyColor,
+                                            float alphaOverride) {
+    if (!m_initialized || srcW <= 0 || srcH <= 0) return;
+
+    ensureImageShader();
+
+    // Save current GL state
+    GLint prevFbo;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFbo);
+    GLint prevTex;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
+    GLint prevProg;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prevProg);
+    GLint prevVao;
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prevVao);
+    GLboolean blendWas;
+    glGetBooleanv(GL_BLEND, &blendWas);
+    GLint prevBlendSrc, prevBlendDst;
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &prevBlendSrc);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &prevBlendDst);
+
+    // Bind destination framebuffer
+    if (m_isOnScreen) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    else glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+    // Compute NDC coordinates for destination quad
+    // NDC: x=-1 is left, x=+1 is right, y=-1 is bottom, y=+1 is top
+    float dstL =  2.0f * dstX        / m_width  - 1.0f;
+    float dstR =  2.0f * (dstX+dstW2) / m_width  - 1.0f;
+    float dstB = -2.0f * (dstY+dstH2) / m_height + 1.0f;
+    float dstT = -2.0f * dstY         / m_height + 1.0f;
+
+    // Quad vertices in NDC (top-left, top-right, bottom-right, bottom-left)
+    float quad[16] = {
+        dstL, dstT, dstR, dstT,
+        dstR, dstB, dstL, dstB
+    };
+
+    // Create VAO + VBO for this draw call
+    GLuint vao, vbo;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, quad, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    // Set up shader
+    m_imageShader.use();
+
+    // Source rectangle uniform (pixel coords in source texture)
+    float srcRect[4] = { (float)srcX, (float)srcY, (float)srcW2, (float)srcH2 };
+    m_imageShader.setUniform4f("uSrcRect", srcRect[0], srcRect[1], srcRect[2], srcRect[3]);
+
+    // Rotation and zoom uniforms
+    m_imageShader.setUniform1f("uAngle", angle);
+    m_imageShader.setUniform2f("uCenter", centerX, centerY);
+    m_imageShader.setUniform2f("uZoom", zoomX, zoomY);
+
+    // Mode uniform
+    m_imageShader.setUniform1i("uMode", mode);
+
+    // Key color uniform (normalized RGB)
+    float kr = ((keyColor >> 16) & 0xFF) / 255.0f;
+    float kg = ((keyColor >>  8) & 0xFF) / 255.0f;
+    float kb = ( keyColor        & 0xFF) / 255.0f;
+    m_imageShader.setUniform3f("uKeyColor", kr, kg, kb);
+    m_imageShader.setUniform1f("uKeyTol", 0.02f);
+    m_imageShader.setUniform1f("uAlphaOverride", alphaOverride > 0.0f ? alphaOverride : 0.0f);
+
+    // Bind source texture to unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, srcTex);
+    GLint loc = glGetUniformLocation(m_imageShader.getProgram(), "uTex");
+    glUniform1i(loc, 0);
+
+    // Bind destination texture to unit 1 for ROP2 modes
+    GLuint dstTexForShader = 0;
+    bool needDstTex = (mode >= 2 && mode <= 4);
+    if (needDstTex) {
+        if (!m_isOnScreen) {
+            // Offscreen: the FBO's texture is the destination
+            dstTexForShader = m_texture;
+        } else {
+            // On-screen: read current framebuffer into a temp texture
+            GLint prevReadFbo;
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevReadFbo);
+            std::vector<unsigned char> dstPixels(dstW2 * dstH2 * 4);
+            glReadPixels(dstX, m_height - dstY - dstH2, dstW2, dstH2, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels.data());
+            glGenTextures(1, &dstTexForShader);
+            glBindTexture(GL_TEXTURE_2D, dstTexForShader);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstW2, dstH2, 0, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels.data());
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, dstTexForShader);
+        loc = glGetUniformLocation(m_imageShader.getProgram(), "uDstTex");
+        glUniform1i(loc, 1);
+    } else {
+        // For non-ROP modes, bind a dummy texture to unit 1
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, srcTex); // reuse source as dummy
+        loc = glGetUniformLocation(m_imageShader.getProgram(), "uDstTex");
+        glUniform1i(loc, 1);
+    }
+
+    // Configure blend mode based on the operation
+    if (mode == 0) {
+        // Copy mode: disable blending (source overwrites destination)
+        glDisable(GL_BLEND);
+    } else if (mode >= 2 && mode <= 4) {
+        // ROP2 modes: shader handles compositing, disable OpenGL blending
+        glDisable(GL_BLEND);
+    } else {
+        // Enable alpha blending for color key and alpha override modes
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    glViewport(0, 0, m_width, m_height);
+
+    // Draw
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    // Restore state
+    glBindVertexArray(prevVao);
+    glBindBuffer(GL_ARRAY_BUFFER, prevTex); // not needed but safe
+    glBindTexture(GL_TEXTURE_2D, prevTex);
+    glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+    if (prevProg) glUseProgram(prevProg);
+    if (blendWas) glEnable(GL_BLEND);
+    else glDisable(GL_BLEND);
+    glBlendFunc(prevBlendSrc, prevBlendDst);
+
+    // Clean up temporary on-screen dst texture
+    if (needDstTex && m_isOnScreen && dstTexForShader) {
+        glDeleteTextures(1, &dstTexForShader);
+    }
+
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
 }
 
 // ============================================================
@@ -754,32 +1030,175 @@ void GlRenderTarget::clear(color_t color) {
 }
 
 // ============================================================
-// Image transfer — Phase 3 stubs
+// Image transfer — Phase 3 implementation
 // ============================================================
+
 void GlRenderTarget::blit(int dstX, int dstY, RenderTarget* src, int srcX, int srcY, int w, int h) {
-    // TODO: Phase 3
+    if (!src || w <= 0 || h <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) {
+        // Fallback: CPU pixel copy for non-GL render targets
+        return;
+    }
+    syncSrcTexture(glSrc);
+    // Map RasterOp to shader mode: COPY=0, XOR=2, AND=3, OR=4
+    int shaderMode = 0;
+    switch (m_rasterOp) {
+        case ROP_XOR: shaderMode = 2; break;
+        case ROP_AND: shaderMode = 3; break;
+        case ROP_OR:  shaderMode = 4; break;
+        default:      shaderMode = 0; break; // ROP_COPY, ROP_NOP
+    }
+    drawImageQuad(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                  srcX, srcY, w, h, dstX, dstY, w, h,
+                  0, 0, 0, 1.0f, 1.0f, shaderMode, 0);
 }
+
 void GlRenderTarget::blitStretch(int dstX, int dstY, int dstW, int dstH,
-                     RenderTarget* src, int srcX, int srcY, int srcW, int srcH) {}
+                     RenderTarget* src, int srcX, int srcY, int srcW, int srcH) {
+    if (!src || dstW <= 0 || dstH <= 0 || srcW <= 0 || srcH <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    syncSrcTexture(glSrc);
+    drawImageQuad(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                  srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH,
+                  0, 0, 0, 1.0f, 1.0f, 0, 0);
+}
+
 void GlRenderTarget::alphaBlend(int dstX, int dstY, int dstW, int dstH,
                     RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
-                    unsigned char alpha) {}
+                    unsigned char alpha) {
+    if (!src || alpha == 0 || dstW <= 0 || dstH <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    syncSrcTexture(glSrc);
+    float af = alpha / 255.0f;
+    drawImageQuadInternal(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                          srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH,
+                          0, 0, 0, 1.0f, 1.0f, 0, 0, af);
+}
+
 void GlRenderTarget::alphaTransparent(int dstX, int dstY, RenderTarget* src,
                           int srcX, int srcY, int w, int h,
-                          color_t transparentColor) {}
+                          color_t transparentColor) {
+    if (!src || w <= 0 || h <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    syncSrcTexture(glSrc);
+    drawImageQuad(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                  srcX, srcY, w, h, dstX, dstY, w, h,
+                  0, 0, 0, 1.0f, 1.0f,
+                  1, transparentColor); // mode=1 = transparent color key
+}
+
 void GlRenderTarget::withAlpha(int dstX, int dstY, int dstW, int dstH,
-                   RenderTarget* src, int srcX, int srcY, int srcW, int srcH) {}
+                   RenderTarget* src, int srcX, int srcY, int srcW, int srcH) {
+    if (!src || dstW <= 0 || dstH <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    syncSrcTexture(glSrc);
+    // withAlpha uses per-pixel alpha from the source (PRGB32 pre-multiplied)
+    drawImageQuad(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                  srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH,
+                  0, 0, 0, 1.0f, 1.0f, 0, 0);
+}
+
 void GlRenderTarget::alphaFilter(int dstX, int dstY, int w, int h,
                      RenderTarget* src, int srcX, int srcY,
-                     unsigned char alpha) {}
+                     unsigned char alpha) {
+    if (!src || w <= 0 || h <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    syncSrcTexture(glSrc);
+    // alphaFilter uses source image's alpha channel modulated by uniform alpha
+    float af = alpha / 255.0f;
+    drawImageQuadInternal(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                          srcX, srcY, w, h, dstX, dstY, w, h,
+                          0, 0, 0, 1.0f, 1.0f, 0, 0, af);
+}
+
 void GlRenderTarget::rotateBlend(int dstX, int dstY, int dstW, int dstH,
                      RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
-                     float angle, float centerX, float centerY) {}
+                     float angle, float centerX, float centerY) {
+    if (!src || dstW <= 0 || dstH <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    syncSrcTexture(glSrc);
+    drawImageQuad(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                  srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH,
+                  angle, centerX, centerY, 1.0f, 1.0f, 0, 0);
+}
+
 void GlRenderTarget::rotateZoomBlend(int dstX, int dstY, int dstW, int dstH,
                          RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
                          float angle, float centerX, float centerY,
-                         float zoomX, float zoomY) {}
-void GlRenderTarget::filterBlur(int dstX, int dstY, int w, int h, float intensity) {}
+                         float zoomX, float zoomY) {
+    if (!src || dstW <= 0 || dstH <= 0) return;
+    GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
+    if (!glSrc) return;
+    syncSrcTexture(glSrc);
+    drawImageQuad(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
+                  srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH,
+                  angle, centerX, centerY, zoomX, zoomY, 0, 0);
+}
+
+void GlRenderTarget::filterBlur(int dstX, int dstY, int w, int h, float intensity) {
+    if (w <= 0 || h <= 0 || intensity <= 0) return;
+    // Read pixels from GPU, apply box blur on CPU, write back
+    if (m_isOnScreen) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    else glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+    std::vector<unsigned char> rgba(w * h * 4);
+    glReadPixels(dstX, m_height - dstY - h, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Apply simple box blur
+    int radius = (int)(intensity / 2.0f) + 1;
+    std::vector<unsigned char> out(rgba.size());
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            float r = 0, g = 0, b = 0, a = 0;
+            int count = 0;
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dx = -radius; dx <= radius; dx++) {
+                    int nx = x + dx, ny = y + dy;
+                    if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                        int idx = (ny * w + nx) * 4;
+                        r += rgba[idx]; g += rgba[idx+1]; b += rgba[idx+2]; a += rgba[idx+3];
+                        count++;
+                    }
+                }
+            }
+            int oi = (y * w + x) * 4;
+            out[oi]   = (unsigned char)(r / count);
+            out[oi+1] = (unsigned char)(g / count);
+            out[oi+2] = (unsigned char)(b / count);
+            out[oi+3] = (unsigned char)(a / count);
+        }
+    }
+
+    // Write back to texture
+    if (m_isOnScreen) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    else glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, dstX, m_height - dstY - h, w, h,
+                    GL_RGBA, GL_UNSIGNED_BYTE, out.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Update CPU buffer
+    if (m_cpuBuffer) {
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int oi = (y * w + x) * 4;
+                unsigned char r = out[oi], g = out[oi+1], b = out[oi+2], a = out[oi+3];
+                if (y + dstY < m_height && x + dstX < m_width) {
+                    m_cpuBuffer[(y + dstY) * m_width + (x + dstX)] =
+                        ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+                }
+            }
+        }
+    }
+    m_gpuDirty = true;
+}
 
 // ============================================================
 // Text — Phase 4 stubs
@@ -822,6 +1241,53 @@ color_t* GlRenderTarget::getPixelBuffer() {
 
 const color_t* GlRenderTarget::getPixelBuffer() const {
     return const_cast<GlRenderTarget*>(this)->getPixelBuffer();
+}
+
+void GlRenderTarget::syncToGpu() {
+    if (!m_cpuBuffer || !m_initialized) return;
+    int w = m_width, h = m_height;
+    // Convert ARGB CPU buffer to RGBA for OpenGL upload
+    std::vector<unsigned char> rgba(w * h * 4);
+    for (int i = 0; i < w * h; i++) {
+        color_t c = m_cpuBuffer[i];
+        rgba[i*4+0] = (c >> 16) & 0xFF; // R
+        rgba[i*4+1] = (c >>  8) & 0xFF; // G
+        rgba[i*4+2] = (c >>  0) & 0xFF; // B
+        rgba[i*4+3] = (c >> 24) & 0xFF; // A
+    }
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+    m_gpuDirty = false;
+}
+
+void GlRenderTarget::rebuild(int width, int height) {
+    if (!m_initialized) return;
+
+    // Delete old GPU resources
+    glDeleteTextures(1, &m_texture);
+    if (!m_isOnScreen) glDeleteFramebuffers(1, &m_fbo);
+
+    // Recreate texture
+    glGenTextures(1, &m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    if (!m_isOnScreen) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glGenFramebuffers(1, &m_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    // Recreate CPU buffer
+    delete[] m_cpuBuffer;
+    m_cpuBuffer = new color_t[width * height];
+    memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
+    m_gpuDirty = true;
+
+    m_width = width;
+    m_height = height;
 }
 
 // ============================================================

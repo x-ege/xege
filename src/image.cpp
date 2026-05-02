@@ -474,6 +474,12 @@ int IMAGE::resize_f(int width, int height)
 
     setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
 
+    // Rebuild GPU texture when dimensions change
+    if (m_renderTarget && (width != oldWindowSize.width || height != oldWindowSize.height)) {
+        GlRenderTarget* glRT = dynamic_cast<GlRenderTarget*>(m_renderTarget);
+        if (glRT) glRT->rebuild(width, height);
+    }
+
     return grOk;
 }
 
@@ -505,6 +511,11 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
     inittest(L"IMAGE::getimage");
     PCIMAGE img = CONVERT_IMAGE_CONST(pSrcImg);
     this->resize_f(srcWidth, srcHeight);
+    if (this->m_renderTarget && img->m_renderTarget) {
+        img->m_renderTarget->blit(0, 0, this->m_renderTarget, xSrc, ySrc, srcWidth, srcHeight);
+        CONVERT_IMAGE_END;
+        return grOk;
+    }
 #ifdef _WIN32
     BitBlt(this->m_hDC, 0, 0, srcWidth, srcHeight, img->m_hDC, xSrc, ySrc, SRCCOPY);
 #endif
@@ -525,6 +536,11 @@ void IMAGE::putimage(
 {
     inittest(L"IMAGE::putimage");
     PIMAGE img = CONVERT_IMAGE(imgDest);
+    if (img && img->m_renderTarget && this->m_renderTarget) {
+        img->m_renderTarget->blit(xDest, yDest, this->m_renderTarget, xSrc, ySrc, widthDest, heightDest);
+        CONVERT_IMAGE_END;
+        return;
+    }
 #ifdef _WIN32
     BitBlt(img->m_hDC, xDest, yDest, widthDest, heightDest, m_hDC, xSrc, ySrc, dwRop);
 #endif
@@ -830,6 +846,12 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
     inittest(L"IMAGE::putimage");
     const PCIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
+        if (img->m_renderTarget && this->m_renderTarget) {
+            img->m_renderTarget->blitStretch(xDest, yDest, widthDest, heightDest,
+                                             this->m_renderTarget, xSrc, ySrc, srcWidth, srcHeight);
+            CONVERT_IMAGE_END;
+            return;
+        }
 #ifdef _WIN32
         SetStretchBltMode(img->m_hDC, COLORONCOLOR);
         StretchBlt(img->m_hDC, xDest, yDest, widthDest, heightDest, m_hDC, xSrc, ySrc, srcWidth, srcHeight, dwRop);
@@ -909,6 +931,12 @@ int IMAGE::putimage_transparent(PIMAGE imgDest,           // handle to dest
     inittest(L"IMAGE::putimage_transparent");
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
+        if (img->m_renderTarget && this->m_renderTarget) {
+            img->m_renderTarget->alphaTransparent(xDest, yDest, this->m_renderTarget,
+                                                  xSrc, ySrc, widthSrc, heightSrc, transparentColor);
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
         PCIMAGE imgSrc = this;
         int     y, x;
         DWORD   ddx, dsx;
@@ -955,6 +983,13 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
     if (img) {
         if (alpha == 0)
             return grOk;
+
+        if (img->m_renderTarget && this->m_renderTarget) {
+            img->m_renderTarget->alphaBlend(xDest, yDest, widthSrc, heightSrc,
+                                            this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc, alpha);
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
 
         PCIMAGE imgSrc = this;
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
@@ -1034,6 +1069,18 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
     if (img) {
         if (alpha == 0)
             return grOk;
+
+        if (img->m_renderTarget && this->m_renderTarget) {
+            PCIMAGE imgSrc = this;
+            if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
+            if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
+            if (widthDest  <= 0) widthDest  = widthSrc;
+            if (heightDest <= 0) heightDest = heightSrc;
+            img->m_renderTarget->alphaBlend(xDest, yDest, widthDest, heightDest,
+                                            this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc, alpha);
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
 
         PCIMAGE imgSrc = this;
 
@@ -1125,6 +1172,17 @@ int IMAGE::putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
     inittest(L"IMAGE::putimage_alphatransparent");
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
+        if (img->m_renderTarget && this->m_renderTarget) {
+            // Use alphaTransparent then alphaFilter for combined effect
+            img->m_renderTarget->alphaTransparent(xDest, yDest, this->m_renderTarget,
+                                                  xSrc, ySrc, widthSrc, heightSrc, transparentColor);
+            if (alpha < 255) {
+                img->m_renderTarget->alphaFilter(xDest, yDest, widthSrc, heightSrc,
+                                                 this->m_renderTarget, xSrc, ySrc, alpha);
+            }
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
         PCIMAGE imgSrc = this;
         int     y, x;
         DWORD   ddx, dsx;
@@ -1167,6 +1225,12 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
     inittest(L"IMAGE::putimage_withalpha");
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
+        if (img->m_renderTarget && this->m_renderTarget) {
+            img->m_renderTarget->withAlpha(xDest, yDest, widthSrc, heightSrc,
+                                           this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc);
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
         PCIMAGE imgSrc = this;
         int     y, x;
         DWORD   ddx, dsx;
@@ -1207,6 +1271,17 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
     inittest(L"IMAGE::putimage_withalpha");
     imgDest = CONVERT_IMAGE(imgDest);
     if (imgDest) {
+        if (imgDest->m_renderTarget && this->m_renderTarget) {
+            PCIMAGE imgSrc = this;
+            if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
+            if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
+            if (widthDest  <= 0) widthDest  = widthSrc;
+            if (heightDest <= 0) heightDest = heightSrc;
+            imgDest->m_renderTarget->withAlpha(xDest, yDest, widthDest, heightDest,
+                                               this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc);
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
         PCIMAGE imgSrc = this;
         #if 0
         int     x, y;
@@ -1286,6 +1361,9 @@ int IMAGE::putimage_alphafilter(PIMAGE imgDest,     // handle to dest
     inittest(L"IMAGE::putimage_alphafilter");
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
+        // OpenGL path: only when source also has RenderTarget
+        // Note: per-pixel alpha from imgAlpha is not yet supported in OpenGL
+        // Fall through to CPU path for full accuracy
         PCIMAGE imgSrc = this;
         int     y, x;
         DWORD   ddx, dsx;
@@ -2623,6 +2701,21 @@ int putimage_rotate(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, fl
     PCIMAGE dc_src  = imgTexture;
 
     if (dc_dest) {
+        // OpenGL path
+        if (dc_dest->m_renderTarget && dc_src->m_renderTarget) {
+            int sw = dc_src->getwidth(), sh = dc_src->getheight();
+            if (alpha >= 256) alpha = 255;
+            if (transparent) {
+                dc_dest->m_renderTarget->rotateBlend(xDest, yDest, sw, sh,
+                    dc_src->m_renderTarget, 0, 0, sw, sh, radian, centerx * sw, centery * sh);
+            } else {
+                dc_dest->m_renderTarget->rotateBlend(xDest, yDest, sw, sh,
+                    dc_src->m_renderTarget, 0, 0, sw, sh, radian, centerx * sw, centery * sh);
+            }
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
+
         struct trangle2d _tt[2];
         struct trangle2d _dt[2];
         double dx, dy, cr = cos(radian), sr = sin(radian);
@@ -2666,6 +2759,15 @@ int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest
     PIMAGE  dc_dest = CONVERT_IMAGE(imgDest);
     PCIMAGE dc_src  = imgTexture;
     if (dc_dest) {
+        // OpenGL path
+        if (dc_dest->m_renderTarget && dc_src->m_renderTarget) {
+            int sw = dc_src->getwidth(), sh = dc_src->getheight();
+            dc_dest->m_renderTarget->rotateZoomBlend(xDest, yDest, sw, sh,
+                dc_src->m_renderTarget, 0, 0, sw, sh, radian, centerx * sw, centery * sh, zoom, zoom);
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
+
         struct trangle2d _tt[2];
         struct trangle2d _dt[2];
         double dx, dy, cr = cos(radian), sr = sin(radian);

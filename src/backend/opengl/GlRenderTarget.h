@@ -152,12 +152,34 @@ public:
     void flush() override;
     void present() override;
 
+    // Internal: sync CPU buffer to GPU texture (used by image blit)
+    void syncToGpu();
+
+    // Internal: rebuild GPU resources after resize (called from IMAGE::resize_f)
+    void rebuild(int width, int height);
+
 private:
     void initShaders();
     void initVBO();
     void ensureProjection();
     void bindForDrawing();
     void submitBatch();
+
+    // Image blit helpers
+    void ensureImageShader();
+    void drawImageQuad(GLuint srcTex, int srcW, int srcH,
+                       int srcX, int srcY, int srcW2, int srcH2,
+                       int dstX, int dstY, int dstW2, int dstH2,
+                       float angle, float centerX, float centerY,
+                       float zoomX, float zoomY,
+                       int mode, color_t keyColor);
+    void drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
+                               int srcX, int srcY, int srcW2, int srcH2,
+                               int dstX, int dstY, int dstW2, int dstH2,
+                               float angle, float centerX, float centerY,
+                               float zoomX, float zoomY,
+                               int mode, color_t keyColor,
+                               float alphaOverride); // alphaOverride != -1 to scale alpha
 
     // GPU resources
     GLuint  m_texture;       // GL_TEXTURE_2D for this RT
@@ -166,6 +188,8 @@ private:
     GLuint  m_vbo;
 
     GlShader m_primShader;   // Primitive shader (lines, filled shapes)
+    GlShader m_imageShader;  // Image blit/blend shader
+    bool     m_imageShaderReady;
 
     // CPU pixel buffer
     color_t* m_cpuBuffer;
