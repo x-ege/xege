@@ -3,6 +3,7 @@
 #pragma once
 #include "../interface/RenderTarget.h"
 #include "GlShader.h"
+#include "GlFontCache.h"
 #include <vector>
 
 namespace ege {
@@ -181,6 +182,14 @@ private:
                                int mode, color_t keyColor,
                                float alphaOverride); // alphaOverride != -1 to scale alpha
 
+    // Text rendering helpers
+    void ensureTextShader();
+    void drawGlyphTexture(GLuint tex, int texW, int texH,
+                          int srcX, int srcY, int srcW, int srcH,
+                          int dstX, int dstY, int dstW, int dstH,
+                          float angle, float r, float g, float b, float a);
+    void renderText(float x, float y, const wchar_t* text);
+
     // GPU resources
     GLuint  m_texture;       // GL_TEXTURE_2D for this RT
     GLuint  m_fbo;           // Framebuffer (0 for on-screen)
@@ -190,6 +199,8 @@ private:
     GlShader m_primShader;   // Primitive shader (lines, filled shapes)
     GlShader m_imageShader;  // Image blit/blend shader
     bool     m_imageShaderReady;
+    GlShader m_textShader;   // Text rendering shader
+    bool     m_textShaderReady;
 
     // CPU pixel buffer
     color_t* m_cpuBuffer;
@@ -236,6 +247,12 @@ private:
 
     // Projection dirty flag
     bool m_projectionDirty;
+
+    // Font state
+    FontConfig m_fontConfig;
+    TextHAlign m_hAlign;
+    TextVAlign m_vAlign;
+    GlyphAtlas m_glyphAtlas;
 };
 
 } // namespace ege

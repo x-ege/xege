@@ -4,6 +4,8 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <cwchar>
+#include <string>
 #include <vector>
 
 #ifndef M_PI
@@ -119,6 +121,30 @@ void main() {
     }
 
     fragColor = result;
+}
+)";
+
+// Text shader — samples glyph atlas (grayscale-as-alpha) and outputs text color
+static const char* g_textVertSrc = R"(
+#version 330 core
+layout(location = 0) in vec2 aPos;
+layout(location = 1) in vec2 aUV;
+out vec2 vUV;
+void main() {
+    vUV = aUV;
+    gl_Position = vec4(aPos * 2.0 - 1.0, 0.0, 1.0);
+}
+)";
+
+static const char* g_textFragSrc = R"(
+#version 330 core
+uniform sampler2D uGlyphTex;
+uniform vec4 uTextColor;  // RGB = text color, A = alpha
+in vec2 vUV;
+out vec4 fragColor;
+void main() {
+    float a = texture(uGlyphTex, vUV).a;
+    fragColor = vec4(uTextColor.rgb, uTextColor.a * a);
 }
 )";
 
@@ -1201,18 +1227,342 @@ void GlRenderTarget::filterBlur(int dstX, int dstY, int w, int h, float intensit
 }
 
 // ============================================================
-// Text — Phase 4 stubs
+// Text — Phase 4 implementation
 // ============================================================
-void GlRenderTarget::setFont(int, int, const char*, int, int, int, bool, bool, bool) {}
-void GlRenderTarget::setTextJustify(TextHAlign, TextVAlign) {}
-void GlRenderTarget::drawText(float, float, const char*) {}
-void GlRenderTarget::drawText(float, float, const wchar_t*) {}
-int  GlRenderTarget::getTextWidth(const char*) const { return 0; }
-int  GlRenderTarget::getTextWidth(const wchar_t*) const { return 0; }
-int  GlRenderTarget::getTextHeight(const char*) const { return 0; }
-int  GlRenderTarget::getTextHeight(const wchar_t*) const { return 0; }
-void GlRenderTarget::measureText(const char*, float*, float*) const {}
-void GlRenderTarget::measureText(const wchar_t*, float*, float*) const {}
+
+void GlRenderTarget::setFont(int height, int width, const char* face,
+                             int escapement, int orientation, int weight,
+                             bool italic, bool underline, bool strikeout) {
+    // Store font configuration
+    m_fontConfig.height = height > 0 ? height : 16;
+    m_fontConfig.width = width;
+    m_fontConfig.escapement = escapement;
+    m_fontConfig.weight = weight;
+    m_fontConfig.italic = italic;
+    m_fontConfig.underline = underline;
+    m_fontConfig.strikeout = strikeout;
+    if (face && face[0]) {
+        strncpy(m_fontConfig.face, face, sizeof(m_fontConfig.face) - 1);
+        m_fontConfig.face[sizeof(m_fontConfig.face) - 1] = '\0';
+    } else {
+        strncpy(m_fontConfig.face, "Arial", sizeof(m_fontConfig.face) - 1);
+        m_fontConfig.face[sizeof(m_fontConfig.face) - 1] = '\0';
+    }
+
+    // Load the font into the glyph atlas
+    m_glyphAtlas.loadFont(m_fontConfig.face, m_fontConfig.height,
+                          m_fontConfig.weight, m_fontConfig.italic);
+}
+
+void GlRenderTarget::setTextJustify(TextHAlign h, TextVAlign v) {
+    m_hAlign = h;
+    m_vAlign = v;
+}
+
+// Render a single glyph quad using the text shader
+void GlRenderTarget::drawGlyphTexture(GLuint tex, int texW, int texH,
+                                      int srcX, int srcY, int srcW, int srcH,
+                                      int dstX, int dstY, int dstW, int dstH,
+                                      float angle, float r, float g, float b, float a) {
+    if (srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0) return;
+    if (!m_initialized) return;
+
+    ensureTextShader();
+
+    // Save GL state
+    GLint prevFbo, prevTex, prevProg, prevVao;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFbo);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prevProg);
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prevVao);
+    GLboolean blendWas;
+    glGetBooleanv(GL_BLEND, &blendWas);
+    GLint prevBlendSrc, prevBlendDst;
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &prevBlendSrc);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &prevBlendDst);
+
+    // Bind destination FBO
+    if (m_isOnScreen) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    else glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+    // Compute NDC for destination quad
+    float dstL =  2.0f * dstX          / m_width  - 1.0f;
+    float dstR =  2.0f * (dstX+dstW)   / m_width  - 1.0f;
+    float dstB = -2.0f * (dstY+dstH)   / m_height + 1.0f;
+    float dstT = -2.0f * dstY           / m_height + 1.0f;
+
+    // Compute UVs for the glyph sub-rect in the atlas
+    float uL = (float)srcX / texW;
+    float uR = (float)(srcX + srcW) / texW;
+    float vT = (float)srcY / texH;  // top-left origin for texture
+    float vB = (float)(srcY + srcH) / texH;
+
+    // Interleaved vertex data: 2 pos (NDC) + 2 UV per vertex
+    float verts[24] = {
+        dstL, dstT,  uL, vT,  // top-left
+        dstR, dstT,  uR, vT,  // top-right
+        dstR, dstB,  uR, vB,  // bottom-right
+        dstL, dstB,  uL, vB,  // bottom-left
+    };
+
+    // Build VAO+VBO
+    GLuint vao, vbo;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    // Use text shader
+    m_textShader.use();
+
+    // Bind glyph atlas texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    GLint loc = glGetUniformLocation(m_textShader.getProgram(), "uGlyphTex");
+    glUniform1i(loc, 0);
+
+    // Set text color
+    m_textShader.setUniform4f("uTextColor", r, g, b, a);
+
+    // Render
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glViewport(0, 0, m_width, m_height);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    // Restore state
+    glBindVertexArray(prevVao);
+    glBindBuffer(GL_ARRAY_BUFFER, prevTex);
+    glBindTexture(GL_TEXTURE_2D, prevTex);
+    glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+    if (prevProg) glUseProgram(prevProg);
+    if (blendWas) glEnable(GL_BLEND);
+    else glDisable(GL_BLEND);
+    glBlendFunc(prevBlendSrc, prevBlendDst);
+
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
+
+    // Mark GPU dirty so CPU buffer stays in sync
+    m_gpuDirty = true;
+}
+
+void GlRenderTarget::ensureTextShader() {
+    if (m_textShaderReady) return;
+    m_textShader.compileVertex(g_textVertSrc);
+    m_textShader.compileFragment(g_textFragSrc);
+    m_textShader.link();
+    m_textShaderReady = true;
+}
+
+// Core text rendering: render a wchar_t string
+void GlRenderTarget::renderText(float x, float y, const wchar_t* text) {
+    if (!text || !text[0] || !m_glyphAtlas.isLoaded()) return;
+
+    GlyphAtlas& atlas = m_glyphAtlas;
+    const FontConfig& fc = m_fontConfig;
+
+    // Compute escapement rotation in radians
+    float angleRad = -fc.escapement / 10.0f * (float)M_PI / 180.0f;
+    float cosA = cosf(angleRad);
+    float sinA = sinf(angleRad);
+
+    // Compute starting x offset based on horizontal alignment
+    // First pass: measure total width
+    float totalWidth = 0;
+    const wchar_t* p = text;
+    while (*p) {
+        GlyphInfo gi = m_glyphAtlas.ensureGlyph(*p);
+        if (gi.valid) {
+            totalWidth += gi.advance;
+        } else {
+            totalWidth += atlas.getAscent() * 0.5f; // fallback advance
+        }
+        p++;
+    }
+
+    float cursorX = 0;
+    switch (m_hAlign) {
+        case TEXT_LEFT:   cursorX = 0; break;
+        case TEXT_CENTER: cursorX = -totalWidth * 0.5f; break;
+        case TEXT_RIGHT:  cursorX = -totalWidth; break;
+    }
+
+    // Vertical alignment offset
+    float cursorY = 0;
+    switch (m_vAlign) {
+        case TEXT_TOP:    cursorY = 0; break;
+        case TEXT_MIDDLE: cursorY = -(atlas.getAscent() + atlas.getDescent()) * 0.5f; break;
+        case TEXT_BOTTOM: cursorY = -(atlas.getAscent() + atlas.getDescent()); break;
+    }
+
+    // Get text color
+    float tr, tg, tb, ta;
+    color_t_to_rgba(m_textColor, tr, tg, tb, ta);
+
+    // Second pass: render each glyph
+    p = text;
+    while (*p) {
+        GlyphInfo gi = atlas.ensureGlyph(*p);
+
+        if (gi.valid) {
+            // Compute glyph position relative to baseline
+            float gx = cursorX + gi.bearingX;
+            float gy = cursorY - gi.bearingY; // stb y-down convention
+
+            // Apply escapement rotation
+            float rx = gx * cosA - gy * sinA + x;
+            float ry = gx * sinA + gy * cosA + y;
+
+            // Draw glyph quad
+            drawGlyphTexture(
+                atlas.getTexture(), atlas.getAtlasSize(), atlas.getAtlasSize(),
+                gi.atlasX, gi.atlasY, gi.width, gi.height,
+                (int)rx, (int)ry, gi.width, gi.height,
+                angleRad, tr, tg, tb, ta
+            );
+        } else {
+            // Space character or missing glyph — just advance
+            float spaceAdvance = atlas.getAscent() * 0.3f;
+            float gx = cursorX;
+            float gy = cursorY;
+            float rx = gx * cosA - gy * sinA + x;
+            float ry = gx * sinA + gy * cosA + y;
+        }
+
+        cursorX += gi.advance;
+        p++;
+    }
+}
+
+void GlRenderTarget::drawText(float x, float y, const char* text) {
+    // Convert UTF-8/ANSI to wchar_t
+    if (!text) return;
+    int len = (int)strlen(text);
+    if (len == 0) return;
+
+    // Simple UTF-8 to wchar_t conversion
+    std::wstring wtext;
+    wtext.reserve(len);
+    const unsigned char* p = (const unsigned char*)text;
+    while (*p) {
+        if (*p < 0x80) {
+            wtext += (wchar_t)*p;
+            p++;
+        } else if ((*p & 0xE0) == 0xC0) {
+            wchar_t cp = ((p[0] & 0x1F) << 6) | (p[1] & 0x3F);
+            wtext += cp;
+            p += 2;
+        } else if ((*p & 0xF0) == 0xE0) {
+            wchar_t cp = ((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F);
+            wtext += cp;
+            p += 3;
+        } else if ((*p & 0xF8) == 0xF0) {
+            // Surrogate pair for > U+FFFF
+            uint32_t cp = ((uint32_t)(p[0] & 0x07) << 18) |
+                          ((uint32_t)(p[1] & 0x3F) << 12) |
+                          ((uint32_t)(p[2] & 0x3F) << 6) |
+                          (p[3] & 0x3F);
+            if (cp >= 0x10000) {
+                cp -= 0x10000;
+                wtext += (wchar_t)(0xD800 + (cp >> 10));
+                wtext += (wchar_t)(0xDC00 + (cp & 0x3FF));
+            }
+            p += 4;
+        } else {
+            p++; // skip invalid
+        }
+    }
+    wtext += L'\0';
+    drawText(x, y, wtext.c_str());
+}
+
+void GlRenderTarget::drawText(float x, float y, const wchar_t* text) {
+    renderText(x, y, text);
+}
+
+int GlRenderTarget::getTextWidth(const char* text) const {
+    if (!text || !m_glyphAtlas.isLoaded()) return 0;
+    // Convert to wchar_t and measure
+    int len = (int)strlen(text);
+    if (len == 0) return 0;
+    std::wstring wtext;
+    wtext.reserve(len);
+    const unsigned char* p = (const unsigned char*)text;
+    while (*p) {
+        if (*p < 0x80) { wtext += (wchar_t)*p; p++; }
+        else if ((*p & 0xE0) == 0xC0) {
+            wtext += (wchar_t)(((p[0] & 0x1F) << 6) | (p[1] & 0x3F)); p += 2;
+        } else if ((*p & 0xF0) == 0xE0) {
+            wtext += (wchar_t)(((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F)); p += 3;
+        } else { p++; }
+    }
+    return getTextWidth(wtext.c_str());
+}
+
+int GlRenderTarget::getTextWidth(const wchar_t* text) const {
+    if (!text || !m_glyphAtlas.isLoaded()) return 0;
+    float w = 0, h = 0;
+    const_cast<GlRenderTarget*>(this)->measureText(text, &w, &h);
+    return (int)(w + 0.5f);
+}
+
+int GlRenderTarget::getTextHeight(const char* text) const {
+    (void)text;
+    if (!m_glyphAtlas.isLoaded()) return 0;
+    return m_glyphAtlas.getAscent() - m_glyphAtlas.getDescent();
+}
+
+int GlRenderTarget::getTextHeight(const wchar_t* text) const {
+    (void)text;
+    if (!m_glyphAtlas.isLoaded()) return 0;
+    return m_glyphAtlas.getAscent() - m_glyphAtlas.getDescent();
+}
+
+void GlRenderTarget::measureText(const char* text, float* width, float* height) const {
+    if (!text) { if (width) *width = 0; if (height) *height = 0; return; }
+    int len = (int)strlen(text);
+    if (len == 0) { if (width) *width = 0; if (height) *height = 0; return; }
+    std::wstring wtext;
+    wtext.reserve(len);
+    const unsigned char* p = (const unsigned char*)text;
+    while (*p) {
+        if (*p < 0x80) { wtext += (wchar_t)*p; p++; }
+        else if ((*p & 0xE0) == 0xC0) {
+            wtext += (wchar_t)(((p[0] & 0x1F) << 6) | (p[1] & 0x3F)); p += 2;
+        } else if ((*p & 0xF0) == 0xE0) {
+            wtext += (wchar_t)(((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F)); p += 3;
+        } else { p++; }
+    }
+    measureText(wtext.c_str(), width, height);
+}
+
+void GlRenderTarget::measureText(const wchar_t* text, float* width, float* height) const {
+    if (!m_glyphAtlas.isLoaded()) { if (width) *width = 0; if (height) *height = 0; return; }
+
+    float totalWidth = 0;
+    if (text) {
+        const wchar_t* p = text;
+        while (*p) {
+            // Cast away const to allow glyph caching (side-effect of measuring)
+            GlyphInfo gi = const_cast<GlyphAtlas&>(m_glyphAtlas).ensureGlyph(*p);
+            if (gi.valid) {
+                totalWidth += gi.advance;
+            } else {
+                totalWidth += m_glyphAtlas.getAscent() * 0.5f;
+            }
+            p++;
+        }
+    }
+
+    if (width) *width = totalWidth;
+    if (height) *height = (float)(m_glyphAtlas.getAscent() - m_glyphAtlas.getDescent());
+}
 
 // ============================================================
 // Pixel buffer access
