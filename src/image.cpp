@@ -43,6 +43,9 @@ inline FILE* _wfopen(const wchar_t* filename, const wchar_t* mode) {
 
 #include "image.h"
 #include "backend/opengl/OpenGLGraphicsContext.h"
+#ifdef EGE_BUILD_OPENGL
+#include "backend/opengl/GlRenderTarget.h"
+#endif
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL
 // #endif
@@ -62,6 +65,8 @@ void IMAGE::reset()
     m_initflag  = IMAGE_INIT_FLAG;
     m_hDC       = NULL;
     m_gc        = NULL;
+    m_renderTarget = NULL;
+    m_glDirty   = true;
     m_hBmp      = NULL;
     m_width     = 0;
     m_height    = 0;
@@ -213,6 +218,12 @@ void IMAGE::gentexture(bool gen)
 
 int IMAGE::deleteimage()
 {
+    if (m_renderTarget) {
+        delete m_renderTarget;
+        m_renderTarget = NULL;
+        m_glDirty = true;
+    }
+
     if (m_gc) {
         delete m_gc;
         m_gc = NULL;
@@ -313,7 +324,17 @@ void IMAGE::initimage(HDC refDC, int width, int height)
 #else
     m_hDC     = NULL;
     m_hBmp    = NULL;
-    m_pBuffer = NULL;
+    // Allocate CPU pixel buffer for OpenGL backend
+    m_pBuffer = new DWORD[width * height];
+    memset(m_pBuffer, 0, sizeof(DWORD) * width * height);
+#ifdef EGE_BUILD_OPENGL
+    // Create offscreen GlRenderTarget for this IMAGE
+    m_renderTarget = new GlRenderTarget();
+    if (width > 0 && height > 0) {
+        ((GlRenderTarget*)m_renderTarget)->initOffscreen(width, height);
+    }
+    m_glDirty = false;
+#endif
 #endif
     m_width   = width;
     m_height  = height;

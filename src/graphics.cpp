@@ -1012,6 +1012,24 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         if (pg->dc == 0) {
             graph_init(pg);
         }
+
+        // Wire up the screen RenderTarget to the screen image pages.
+        // The IMAGE constructor created offscreen RTs; replace with the on-screen one.
+        {
+            GLFWWindow* glWin = (GLFWWindow*)pg->window;
+            GlRenderTarget* screenRT = glWin->getRenderTarget();
+            for (int p = 0; p < BITMAP_PAGE_SIZE; p++) {
+                if (pg->img_page[p]) {
+                    // Replace the offscreen RT with the screen RT
+                    if (pg->img_page[p]->m_renderTarget && pg->img_page[p]->m_renderTarget != screenRT) {
+                        delete pg->img_page[p]->m_renderTarget;
+                    }
+                    pg->img_page[p]->m_renderTarget = screenRT;
+                    pg->img_page[p]->m_glDirty = false;
+                }
+            }
+        }
+
         pg->has_init = true;
     } else {
 #else
@@ -1057,6 +1075,22 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             if (pg->dc == 0) {
                 graph_init(pg);
             }
+
+            // Wire up the screen RenderTarget to the screen image pages.
+            {
+                GLFWWindow* glWin = (GLFWWindow*)pg->window;
+                GlRenderTarget* screenRT = glWin->getRenderTarget();
+                for (int p = 0; p < BITMAP_PAGE_SIZE; p++) {
+                    if (pg->img_page[p]) {
+                        if (pg->img_page[p]->m_renderTarget && pg->img_page[p]->m_renderTarget != screenRT) {
+                            delete pg->img_page[p]->m_renderTarget;
+                        }
+                        pg->img_page[p]->m_renderTarget = screenRT;
+                        pg->img_page[p]->m_glDirty = false;
+                    }
+                }
+            }
+
             pg->has_init = true;
         #else
             #error "EGE native build on non-Windows requires EGE_BUILD_OPENGL"

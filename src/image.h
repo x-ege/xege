@@ -2,6 +2,7 @@
 
 #include "ege_head.h"
 #include "backend/interface/GraphicsContext.h"
+#include "backend/interface/RenderTarget.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -88,6 +89,8 @@ private:
 public:
     HDC     m_hDC;
     GraphicsContext* m_gc;
+    RenderTarget* m_renderTarget;  // OpenGL RenderTarget (null for GDI backend)
+    bool    m_glDirty;             // CPU buffer vs GPU texture out of sync
     HBITMAP m_hBmp;
     int     m_width;
     int     m_height;

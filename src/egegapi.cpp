@@ -81,6 +81,10 @@ color_t getpixel(int x, int y, PCIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
 
+    if (img->m_renderTarget) {
+        return img->m_renderTarget->getPixel(x, y);
+    }
+
     if (img->m_gc) {
         return img->m_gc->getPixel(x, y);
     }
@@ -99,7 +103,9 @@ void putpixel(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        if (img->m_gc) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->putPixel(x, y, color);
+        } else if (img->m_gc) {
             img->m_gc->putPixel(x, y, color);
         } else {
             img->m_pBuffer[y * img->m_width + x] = color;
@@ -271,7 +277,9 @@ void line(int x1, int y1, int x2, int y2, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_linestyle.linestyle != NULL_LINE) {
-            if (img->m_gc) {
+            if (img->m_renderTarget) {
+                img->m_renderTarget->drawLine(x1, y1, x2, y2);
+            } else if (img->m_gc) {
                 img->m_gc->drawLine(x1, y1, x2, y2);
             } else {
 #ifdef _WIN32
@@ -820,7 +828,9 @@ void cleardevice(PIMAGE pimg)
 
     if (img) {
         color_t c = getbkcolor(img);
-        if (img->m_gc) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->clear(c);
+        } else if (img->m_gc) {
             img->m_gc->clear(c);
         } else if (img->m_hDC) {
             for (color_t *p = (color_t*)img->getbuffer(), *e = (color_t*)&img->getbuffer()[img->m_width * img->m_height];
@@ -1717,6 +1727,14 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
     Bound viewport(left, top, right, bottom, false);
 
     if (!viewport.isNormalized()) {
+        return;
+    }
+
+    if (img->m_renderTarget) {
+        img->m_vpt = viewport;
+        img->m_enableclip = clip;
+        img->m_renderTarget->setViewport(left, top, right, bottom, clip);
+        CONVERT_IMAGE_END;
         return;
     }
 

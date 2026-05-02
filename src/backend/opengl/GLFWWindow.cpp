@@ -1,9 +1,10 @@
 #include "GLFWWindow.h"
-#include <stdio.h>
+#include "glad/gl.h"
+#include <cstdio>
 
 namespace ege {
 
-GLFWWindow::GLFWWindow() : m_window(NULL), m_context(NULL), m_width(0), m_height(0) {
+GLFWWindow::GLFWWindow() : m_window(NULL), m_renderTarget(NULL), m_width(0), m_height(0) {
 }
 
 GLFWWindow::~GLFWWindow() {
@@ -22,10 +23,14 @@ bool GLFWWindow::create(int width, int height, const char* title) {
         return false;
     }
 
-    // Use legacy OpenGL for compatibility with immediate mode drawing
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    
+    // Request OpenGL 3.3 Core profile
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
     m_window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!m_window) {
         const char* desc = NULL;
@@ -40,18 +45,33 @@ bool GLFWWindow::create(int width, int height, const char* title) {
     }
 
     glfwMakeContextCurrent(m_window);
+
+    // Load OpenGL functions with GLAD
+    if (!gladLoadGL(glfwGetProcAddress)) {
+        fprintf(stderr, "Failed to initialize GLAD\n");
+        glfwDestroyWindow(m_window);
+        glfwTerminate();
+        return false;
+    }
+
     m_width = width;
     m_height = height;
-    m_context = new OpenGLGraphicsContext();
-    
+
+    // Create screen render target
+    m_renderTarget = new GlRenderTarget();
+    if (!m_renderTarget->initOnScreen(width, height)) {
+        fprintf(stderr, "Failed to initialize screen RenderTarget\n");
+        delete m_renderTarget;
+        m_renderTarget = NULL;
+        glfwDestroyWindow(m_window);
+        glfwTerminate();
+        return false;
+    }
+
     // Setup basic GL state
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, width, height, 0, -1, 1); // Top-left origin
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     return true;
 }
 
@@ -64,9 +84,9 @@ void GLFWWindow::hide() {
 }
 
 void GLFWWindow::close() {
-    if (m_context) {
-        delete m_context;
-        m_context = NULL;
+    if (m_renderTarget) {
+        delete m_renderTarget;
+        m_renderTarget = NULL;
     }
     if (m_window) {
         glfwDestroyWindow(m_window);
@@ -84,11 +104,18 @@ void GLFWWindow::processEvents() {
 }
 
 void GLFWWindow::swapBuffers() {
-    if (m_window) glfwSwapBuffers(m_window);
+    if (m_window) {
+        if (m_renderTarget) m_renderTarget->flush();
+        glfwSwapBuffers(m_window);
+    }
 }
 
 GraphicsContext* GLFWWindow::getGraphicsContext() {
-    return m_context;
+    // Return the GlRenderTarget as a GraphicsContext for backward compatibility.
+    // GlRenderTarget inherits from RenderTarget, not GraphicsContext.
+    // This returns NULL — callers should use getRenderTarget() instead.
+    // The drawing functions in egegapi.cpp are updated to use m_renderTarget.
+    return NULL;
 }
 
 void* GLFWWindow::getNativeHandle() {
@@ -103,4 +130,4 @@ int GLFWWindow::getHeight() const {
     return m_height;
 }
 
-}
+} // namespace ege

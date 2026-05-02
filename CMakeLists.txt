@@ -400,8 +400,16 @@ if(EGE_BUILD_OPENGL)
     # Expose to public headers / user code for compile-time feature detection.
     target_compile_definitions(xege PUBLIC EGE_BUILD_OPENGL=1)
 
-    file(GLOB EGE_BACKEND_OPENGL_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/opengl/*.cpp)
+    # GLAD include directory (parent of glad/ so that #include "glad/gl.h" works)
+    target_include_directories(xege PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/opengl)
+
+    file(GLOB EGE_BACKEND_OPENGL_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/opengl/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/opengl/glad/*.cpp)
     target_sources(xege PRIVATE ${EGE_BACKEND_OPENGL_SRC})
+
+    # Suppress OpenGL deprecation warnings on macOS
+    if(APPLE)
+        target_compile_options(xege PRIVATE -Wno-deprecated-declarations)
+    endif()
 elseif(CMAKE_HOST_UNIX AND EGE_BUILD_FOR_LINUX)
     message(FATAL_ERROR "Invalid configuration: EGE_BUILD_FOR_LINUX=ON but EGE_BUILD_OPENGL=OFF.\n"
         "On Linux/macOS, native build is only supported in OpenGL mode.\n"

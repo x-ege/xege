@@ -1,6 +1,6 @@
 #pragma once
 #include "../interface/Window.h"
-#include "OpenGLGraphicsContext.h"
+#include "GlRenderTarget.h"
 #include <GLFW/glfw3.h>
 
 namespace ege {
@@ -21,9 +21,12 @@ public:
     int getWidth() const override;
     int getHeight() const override;
 
+    // OpenGL-specific
+    GlRenderTarget* getRenderTarget() { return m_renderTarget; }
+
 private:
     GLFWwindow* m_window;
-    OpenGLGraphicsContext* m_context;
+    GlRenderTarget* m_renderTarget;  // Screen render target
     int m_width;
     int m_height;
 };
