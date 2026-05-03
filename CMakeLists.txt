@@ -62,8 +62,15 @@ message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 # IMPORTANT: When this is OFF, behavior should stay aligned with the main branch:
 # - No OpenGL/GLFW dependencies
 # - No public API flag ege::INIT_OPENGL
-# - On Linux/macOS, keep using the existing mingw-w64 + wine workflow
-option(EGE_BUILD_OPENGL "Build with OpenGL backend" OFF)
+# - On Linux/macOS, legacy mode uses mingw-w64 + wine (deprecated, will be removed)
+#
+# Phase B (Current): Linux/macOS default to OpenGL native for true cross-platform support
+# Phase C (Future): mingw-w64 path will be completely removed
+if(CMAKE_HOST_UNIX)
+    option(EGE_BUILD_OPENGL "Build with OpenGL backend (default ON for Linux/macOS native)" ON)
+else()
+    option(EGE_BUILD_OPENGL "Build with OpenGL backend (Windows: opt-in via INIT_OPENGL flag)" OFF)
+endif()
 message(STATUS "EGE_BUILD_OPENGL: ${EGE_BUILD_OPENGL}")
 
 # On Unix, default to cross-compile (mingw-w64) unless OpenGL backend is enabled.
@@ -82,8 +89,10 @@ if(CMAKE_HOST_UNIX AND EGE_BUILD_OPENGL AND NOT EGE_BUILD_FOR_LINUX)
 endif()
 
 if(CMAKE_HOST_UNIX AND NOT EGE_BUILD_FOR_LINUX)
+    message(WARNING "EGE DEPRECATION: mingw-w64 + wine cross-compilation is deprecated.")
+    message(WARNING "  Native OpenGL backend is now the recommended approach for Linux/macOS.")
+    message(WARNING "  Set -DEGE_BUILD_OPENGL=ON (default) for native build, or -DEGE_BUILD_OPENGL=OFF to force legacy mode.")
     message(STATUS "EGE legacy mode on Unix: cross-compiling to Windows via mingw-w64 (run demos with wine).")
-    message(STATUS "Tip: enable native build via -DEGE_BUILD_OPENGL=ON (Linux/macOS only).")
     set(CMAKE_SYSTEM_NAME Windows)
     set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
 
