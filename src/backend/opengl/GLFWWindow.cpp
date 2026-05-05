@@ -29,6 +29,10 @@ bool GLFWWindow::create(int width, int height, const char* title) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    // Disable Retina framebuffer to avoid framebuffer size mismatch
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+    // Use single-buffered context to avoid swap issues
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 #endif
 
     m_window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -59,7 +63,7 @@ bool GLFWWindow::create(int width, int height, const char* title) {
 
     // Create screen render target
     m_renderTarget = new GlRenderTarget();
-    if (!m_renderTarget->initOnScreen(width, height)) {
+    if (!m_renderTarget->initOnScreen(m_width, m_height)) {
         fprintf(stderr, "Failed to initialize screen RenderTarget\n");
         delete m_renderTarget;
         m_renderTarget = NULL;
@@ -105,7 +109,10 @@ void GLFWWindow::processEvents() {
 
 void GLFWWindow::swapBuffers() {
     if (m_window) {
-        if (m_renderTarget) m_renderTarget->flush();
+        if (m_renderTarget) {
+            m_renderTarget->flush();
+            m_renderTarget->captureScreenToTexture();
+        }
         glfwSwapBuffers(m_window);
     }
 }

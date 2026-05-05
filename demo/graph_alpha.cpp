@@ -1,5 +1,6 @@
 #include <graphics.h>
 #include <math.h>
+#include <stdio.h>
 
 int main()
 {
@@ -40,7 +41,18 @@ int main()
 	// @note Step 4: 清除图像对象
 	delimage(img);
 	
-	// @note 暂停程序，等待用户按下任意键继续
-	getch();
+	// @note Step 5: Save screenshot at frame 10 (simulated with delay)
+	for (int frame = 1; frame <= 10; frame++) {
+		delay_fps(10); // Small delay between frames, also pumps OS events
+	}
+
+	// Save screenshot
+	PIMAGE screenshot = newimage(getwidth(), getheight());
+	getimage(screenshot, 0, 0, getwidth(), getheight());
+	saveimage(screenshot, "graph_alpha_frame10.png");
+	delimage(screenshot);
+	printf("Screenshot saved: graph_alpha_frame10.png\n");
+
+	closegraph();
 	return 0;
 }

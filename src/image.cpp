@@ -17,6 +17,10 @@
 #include "ege_common.h"
 #include "ege_dllimport.h"
 
+#ifdef EGE_BUILD_OPENGL
+#include "glad/gl.h"
+#endif
+
 #include <cstring>
 #include <cwctype>
 #include <cstdio>
@@ -474,11 +478,13 @@ int IMAGE::resize_f(int width, int height)
 
     setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
 
-    // Rebuild GPU texture when dimensions change
+    // Rebuild GPU texture when dimensions change (OpenGL backend only)
+#ifdef EGE_BUILD_OPENGL
     if (m_renderTarget && (width != oldWindowSize.width || height != oldWindowSize.height)) {
         GlRenderTarget* glRT = dynamic_cast<GlRenderTarget*>(m_renderTarget);
         if (glRT) glRT->rebuild(width, height);
     }
+#endif
 
     return grOk;
 }
@@ -508,14 +514,87 @@ void IMAGE::copyimage(PCIMAGE pSrcImg)
 
 int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHeight)
 {
+    FILE* dbg = fopen("/tmp/ege_getimage_debug.txt", "a"); if(dbg){fprintf(dbg,"getimage called srcW=%d srcH=%d this=%p img=%p\n",srcWidth,srcHeight,(void*)this,(void*)pSrcImg);fclose(dbg);}
     inittest(L"IMAGE::getimage");
     PCIMAGE img = CONVERT_IMAGE_CONST(pSrcImg);
+    FILE* dbg2 = fopen("/tmp/ege_getimage_debug.txt", "a"); if(dbg2){fprintf(dbg2,"after CONVERT: img=%p img->m_renderTarget=%p this->m_pBuffer=%p this->m_renderTarget=%p\n",(void*)img,(void*)img->m_renderTarget,(void*)this->m_pBuffer,(void*)this->m_renderTarget);fclose(dbg2);}
     this->resize_f(srcWidth, srcHeight);
+    // Both have render targets: GPU-to-GPU blit (correct order: src->blit onto dest)
     if (this->m_renderTarget && img->m_renderTarget) {
-        img->m_renderTarget->blit(0, 0, this->m_renderTarget, xSrc, ySrc, srcWidth, srcHeight);
+        // Check source RT pixels before blit
+        const color_t* srcBefore = img->m_renderTarget->getPixelBuffer();
+        FILE* dbgsrc = fopen("/tmp/ege_getimage_debug.txt", "a");
+        if(dbgsrc){
+            fprintf(dbgsrc,"SRC before blit: w=%d h=%d isOnScreen=%d px0=0x%08X\n",
+                img->m_renderTarget->getWidth(), img->m_renderTarget->getHeight(),
+                img->m_renderTarget->isOnScreen(),
+                srcBefore?srcBefore[0]:0xDEAD);
+            if(srcBefore && img->m_renderTarget->getWidth()*img->m_renderTarget->getHeight() > 320+240*640)
+                fprintf(dbgsrc,"  px[320,240]=0x%08X\n", srcBefore[240*640+320]);
+            fclose(dbgsrc);
+        }
+
+        this->m_renderTarget->blit(0, 0, img->m_renderTarget, xSrc, ySrc, srcWidth, srcHeight);
+        // Sync GPU texture to CPU buffer so saveimage can read the pixels
+        const color_t* pixels = this->m_renderTarget->getPixelBuffer();
+        if (pixels && this->m_pBuffer) {
+            int rtW = this->m_renderTarget->getWidth();
+            for (int y = 0; y < srcHeight; y++) {
+                for (int x = 0; x < srcWidth; x++) {
+                    this->m_pBuffer[y * srcWidth + x] = pixels[y * rtW + x];
+                }
+            }
+            this->m_glDirty = true;
+            FILE* dbgs = fopen("/tmp/ege_getimage_debug.txt", "a"); if(dbgs){fprintf(dbgs,"BLIT synced px0=0x%08X\n",this->m_pBuffer[0]);fclose(dbgs);}
+        } else {
+            FILE* dbgf = fopen("/tmp/ege_getimage_debug.txt", "a"); if(dbgf){fprintf(dbgf,"BLIT sync failed: pixels=%p pBuffer=%p\n",(void*)pixels,(void*)this->m_pBuffer);fclose(dbgf);}
+        }
         CONVERT_IMAGE_END;
         return grOk;
     }
+    // OpenGL backend: read pixels from source render target into dest image's CPU buffer
+#ifdef EGE_BUILD_OPENGL
+    if (img->m_renderTarget && this->m_pBuffer && srcWidth > 0 && srcHeight > 0) {
+        FILE* df = fopen("/tmp/ege_getimage_debug.txt", "a"); if(df){fprintf(df,"PATH1\n");fclose(df);}
+        const color_t* srcPixels = img->m_renderTarget->getPixelBuffer();
+        if (srcPixels) {
+            int srcW = img->m_renderTarget->getWidth();
+            FILE* df2 = fopen("/tmp/ege_getimage_debug.txt", "a"); if(df2){fprintf(df2,"PATH1 pixels srcW=%d px0=0x%08X\n",srcW,srcPixels[0]);fclose(df2);}
+            for (int y = 0; y < srcHeight; y++) {
+                for (int x = 0; x < srcWidth; x++) {
+                    this->m_pBuffer[y * srcWidth + x] = srcPixels[(ySrc + y) * srcW + (xSrc + x)];
+                }
+            }
+            this->m_glDirty = true;
+        } else {
+            FILE* df3 = fopen("/tmp/ege_getimage_debug.txt", "a"); if(df3){fprintf(df3,"PATH1 null\n");fclose(df3);}
+        }
+        CONVERT_IMAGE_END;
+        return grOk;
+    }
+    // Fallback: read from default framebuffer via glReadPixels
+    if (this->m_pBuffer && srcWidth > 0 && srcHeight > 0) {
+        FILE* df4 = fopen("/tmp/ege_getimage_debug.txt", "a"); if(df4){fprintf(df4,"PATH2 glReadPixels\n");fclose(df4);}
+        glFinish();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        unsigned char* tmpBuf = new unsigned char[srcWidth * srcHeight * 4];
+        glReadPixels(xSrc, ySrc, srcWidth, srcHeight, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
+        for (int y = 0; y < srcHeight; y++) {
+            for (int x = 0; x < srcWidth; x++) {
+                int ri = ((srcHeight - 1 - y) * srcWidth + x) * 4;
+                unsigned char r = tmpBuf[ri + 0];
+                unsigned char g = tmpBuf[ri + 1];
+                unsigned char b = tmpBuf[ri + 2];
+                unsigned char a = tmpBuf[ri + 3];
+                this->m_pBuffer[y * srcWidth + x] = ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+            }
+        }
+        delete[] tmpBuf;
+        this->m_glDirty = true;
+        CONVERT_IMAGE_END;
+        return grOk;
+    }
+#endif
 #ifdef _WIN32
     BitBlt(this->m_hDC, 0, 0, srcWidth, srcHeight, img->m_hDC, xSrc, ySrc, SRCCOPY);
 #endif

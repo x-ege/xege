@@ -304,6 +304,13 @@ int graphupdate(_graph_setting* pg)
 
 int dealmessage(_graph_setting* pg, bool force_update)
 {
+    // For native backends (GLFW/OpenGL), pump OS events to keep window responsive.
+    if (pg->window) {
+        pg->window->processEvents();
+        if (pg->window->isClosed()) {
+            pg->exit_window = 1;
+        }
+    }
     if (force_update || pg->update_mark_count < UPDATE_MAX_CALL) {
         graphupdate(pg);
     }

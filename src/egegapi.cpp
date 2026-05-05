@@ -63,9 +63,13 @@ int mousepos(int* x, int* y)
 void setwritemode(int mode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img->m_renderTarget) {
+        img->m_renderTarget->setRasterOp((RasterOp)mode);
+    } else {
 #ifdef _WIN32
-    SetROP2(img->m_hDC, mode);
+        SetROP2(img->m_hDC, mode);
 #endif
+    }
     CONVERT_IMAGE_END;
 }
 
@@ -253,22 +257,30 @@ void putpixel_alphablend_f(int x, int y, color_t color, unsigned char alphaFacto
 void moveto(int x, int y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img->m_renderTarget) {
+        img->m_renderTarget->moveTo(x, y);
+    } else {
 #ifdef _WIN32
-    MoveToEx(img->m_hDC, x, y, NULL);
+        MoveToEx(img->m_hDC, x, y, NULL);
 #endif
+    }
     CONVERT_IMAGE_END;
 }
 
 void moverel(int dx, int dy, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img->m_renderTarget) {
+        img->m_renderTarget->moveRel(dx, dy);
+    } else {
 #ifdef _WIN32
-    POINT pt;
-    GetCurrentPositionEx(img->m_hDC, &pt);
-    dx += pt.x;
-    dy += pt.y;
-    MoveToEx(img->m_hDC, dx, dy, NULL);
+        POINT pt;
+        GetCurrentPositionEx(img->m_hDC, &pt);
+        dx += pt.x;
+        dy += pt.y;
+        MoveToEx(img->m_hDC, dx, dy, NULL);
 #endif
+    }
     CONVERT_IMAGE_END;
 }
 
@@ -297,17 +309,21 @@ void linerel(int dx, int dy, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-#ifdef _WIN32
-        POINT pt;
-        GetCurrentPositionEx(img->m_hDC, &pt);
-        dx += pt.x;
-        dy += pt.y;
-        if (img->m_linestyle.linestyle != NULL_LINE) {
-            LineTo(img->m_hDC, dx, dy);
+        if (img->m_renderTarget) {
+            img->m_renderTarget->moveRel(dx, dy);
         } else {
-            MoveToEx(img->m_hDC, dx, dy, NULL);
-        }
+#ifdef _WIN32
+            POINT pt;
+            GetCurrentPositionEx(img->m_hDC, &pt);
+            dx += pt.x;
+            dy += pt.y;
+            if (img->m_linestyle.linestyle != NULL_LINE) {
+                LineTo(img->m_hDC, dx, dy);
+            } else {
+                MoveToEx(img->m_hDC, dx, dy, NULL);
+            }
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -316,13 +332,17 @@ void lineto(int x, int y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-#ifdef _WIN32
-        if (img->m_linestyle.linestyle != NULL_LINE) {
-            LineTo(img->m_hDC, x, y);
+        if (img->m_renderTarget) {
+            img->m_renderTarget->lineTo(x, y);
         } else {
-            MoveToEx(img->m_hDC, x, y, NULL);
-        }
+#ifdef _WIN32
+            if (img->m_linestyle.linestyle != NULL_LINE) {
+                LineTo(img->m_hDC, x, y);
+            } else {
+                MoveToEx(img->m_hDC, x, y, NULL);
+            }
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -535,12 +555,18 @@ static int saveBrush(PIMAGE img, int save) // 此函数调用前，已经有Lock
 void rectangle(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img->m_renderTarget) {
+        img->m_renderTarget->drawRect(left, top, right - left, bottom - top);
+    } else if (img->m_gc) {
+        img->m_gc->drawRect(left, top, right - left, bottom - top);
+    } else {
 #ifdef _WIN32
-    if (saveBrush(img, 1)) {
-        Rectangle(img->m_hDC, left, top, right, bottom);
-        saveBrush(img, 0);
-    }
+        if (saveBrush(img, 1)) {
+            Rectangle(img->m_hDC, left, top, right, bottom);
+            saveBrush(img, 0);
+        }
 #endif
+    }
     CONVERT_IMAGE_END;
 }
 
@@ -685,12 +711,18 @@ void setfillcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
+    if (img->m_renderTarget) {
+        img->m_renderTarget->setFillColor(color);
+    } else if (img->m_gc) {
+        img->m_gc->setFillColor(color);
+    } else {
 #ifdef _WIN32
-    HBRUSH hbr = CreateSolidBrush(ARGBTOZBGR(color));
-    if (hbr) {
-        DeleteObject(SelectObject(img->m_hDC, hbr));
-    }
+        HBRUSH hbr = CreateSolidBrush(ARGBTOZBGR(color));
+        if (hbr) {
+            DeleteObject(SelectObject(img->m_hDC, hbr));
+        }
 #endif
+    }
 #ifdef EGE_GDIPLUS
     img->set_pattern(NULL);
 #endif
@@ -758,6 +790,9 @@ void EGEAPI setbkcolor_f(color_t color, PIMAGE pimg)
             SetBkColor(img->m_hDC, ARGBTOZBGR(color));
 #endif
         }
+        if (img->m_renderTarget) {
+            img->m_renderTarget->setBkColor(color);
+        }
     } else {
         _graph_setting* pg = &graph_setting;
         if (!pg->has_init) {
@@ -778,6 +813,9 @@ void settextcolor(color_t color, PIMAGE pimg)
         SetTextColor(img->m_hDC, ARGBTOZBGR(color));
 #endif
     }
+    if (img && img->m_renderTarget) {
+        img->m_renderTarget->setTextColor(color);
+    }
     CONVERT_IMAGE_END;
 }
 
@@ -790,6 +828,9 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
         SetBkColor(img->m_hDC, ARGBTOZBGR(color));
 #endif
     }
+    if (img && img->m_renderTarget) {
+        img->m_renderTarget->setBkColor(color);
+    }
     CONVERT_IMAGE_END;
 }
 
@@ -800,6 +841,9 @@ void setbkmode(int bkMode, PIMAGE pimg)
 #ifdef _WIN32
         SetBkMode(img->m_hDC, bkMode);
 #endif
+    }
+    if (img && img->m_renderTarget) {
+        img->m_renderTarget->setBkMode(bkMode != TRANSPARENT);
     }
     CONVERT_IMAGE_END;
 }
@@ -865,17 +909,21 @@ void ellipse(int x, int y, int startAngle, int endAngle, int xRadius, int yRadiu
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
 
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->drawEllipse(x - xRadius, y - yRadius, startAngle, endAngle, 2 * xRadius, 2 * yRadius);
+        } else {
 #ifdef _WIN32
-        Arc(img->m_hDC,
-            x - xRadius,
-            y - yRadius,
-            x + xRadius,
-            y + yRadius,
-            (int)(x + xRadius * cos(sr)),
-            (int)(y - yRadius * sin(sr)),
-            (int)(x + xRadius * cos(er)),
-            (int)(y - yRadius * sin(er)));
+            Arc(img->m_hDC,
+                x - xRadius,
+                y - yRadius,
+                x + xRadius,
+                y + yRadius,
+                (int)(x + xRadius * cos(sr)),
+                (int)(y - yRadius * sin(sr)),
+                (int)(x + xRadius * cos(er)),
+                (int)(y - yRadius * sin(er)));
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -949,17 +997,21 @@ void fillpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadiu
     PIMAGE img = CONVERT_IMAGE(pimg);
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->fillPie(x - xRadius, y - yRadius, startAngle, endAngle, 2 * xRadius, 2 * yRadius);
+        } else {
 #ifdef _WIN32
-        Pie(img->m_hDC,
-            x - xRadius,
-            y - yRadius,
-            x + xRadius,
-            y + yRadius,
-            (int)round(x + xRadius * cos(sr)),
-            (int)round(y - yRadius * sin(sr)),
-            (int)round(x + xRadius * cos(er)),
-            (int)round(y - yRadius * sin(er)));
+            Pie(img->m_hDC,
+                x - xRadius,
+                y - yRadius,
+                x + xRadius,
+                y + yRadius,
+                (int)round(x + xRadius * cos(sr)),
+                (int)round(y - yRadius * sin(sr)),
+                (int)round(x + xRadius * cos(er)),
+                (int)round(y - yRadius * sin(er)));
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1010,9 +1062,13 @@ void fillellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->fillEllipse(x - xRadius, y - yRadius, 0, 360, 2 * xRadius, 2 * yRadius);
+        } else {
 #ifdef _WIN32
-        Ellipse(img->m_hDC, x - xRadius, y - yRadius, x + xRadius, y + yRadius);
+            Ellipse(img->m_hDC, x - xRadius, y - yRadius, x + xRadius, y + yRadius);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1085,14 +1141,20 @@ void solidcirclef(float x, float y, float radius, PIMAGE pimg)
 void bar(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img->m_renderTarget) {
+        img->m_renderTarget->fillRect(left, top, right - left, bottom - top);
+    } else if (img->m_gc) {
+        img->m_gc->fillRect(left, top, right - left, bottom - top);
+    } else {
 #ifdef _WIN32
-    RECT rect = {left, top, right, bottom};
-    HBRUSH hbr_last = (HBRUSH)GetCurrentObject(img->m_hDC, OBJ_BRUSH); //(HBRUSH)SelectObject(pg->g_hdc, hbr);
+        RECT rect = {left, top, right, bottom};
+        HBRUSH hbr_last = (HBRUSH)GetCurrentObject(img->m_hDC, OBJ_BRUSH); //(HBRUSH)SelectObject(pg->g_hdc, hbr);
 
-    if (img) {
-        FillRect(img->m_hDC, &rect, hbr_last);
-    }
+        if (img) {
+            FillRect(img->m_hDC, &rect, hbr_last);
+        }
 #endif
+    }
     CONVERT_IMAGE_END;
 }
 
@@ -1100,11 +1162,15 @@ void roundrect(int left, int top, int right, int bottom, int xRadius, int yRadiu
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->drawRoundRect(left, top, right - left, bottom - top, xRadius * 2, yRadius * 2);
+        } else {
 #ifdef _WIN32
-        HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
-        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2 , yRadius * 2);
-        SelectObject(img->m_hDC, oldBrush);
+            HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
+            RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2 , yRadius * 2);
+            SelectObject(img->m_hDC, oldBrush);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1134,9 +1200,13 @@ void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yR
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->fillRoundRect(left, top, right - left, bottom - top, xRadius * 2, yRadius * 2);
+        } else {
 #ifdef _WIN32
-        RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2, yRadius * 2);
+            RoundRect(img->m_hDC, left, top, right, bottom, xRadius * 2, yRadius * 2);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1155,7 +1225,11 @@ void solidroundrect(int left, int top, int right, int bottom, int xRadius, int y
 void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
+    if (img->m_renderTarget) {
+        img->m_renderTarget->fillRect(left, top, right - left, bottom - top);
+    } else if (img->m_gc) {
+        img->m_gc->fillRect(left, top, right - left, bottom - top);
+    } else {
 #ifdef _WIN32
         Rectangle(img->m_hDC, left, top, right, bottom);
 #endif
@@ -1223,9 +1297,13 @@ void fillpoly(int numOfPoints, const int* points, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->fillPolygon(points, points + 1, numOfPoints);
+        } else {
 #ifdef _WIN32
-        Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
+            Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1245,9 +1323,13 @@ void polyline(int numOfPoints, const int *points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->drawPolyline(points, points + 1, numOfPoints);
+        } else {
 #ifdef _WIN32
-        Polyline(img->m_hDC, (const POINT*)points, numOfPoints);
+            Polyline(img->m_hDC, (const POINT*)points, numOfPoints);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1256,11 +1338,15 @@ void polygon(int numOfPoints, const int *points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->drawPolygon(points, points + 1, numOfPoints);
+        } else {
 #ifdef _WIN32
-        HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
-        Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
-        SelectObject(img->m_hDC, oldBrush);
+            HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
+            Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
+            SelectObject(img->m_hDC, oldBrush);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1337,9 +1423,13 @@ void floodfill(int x, int y, int borderColor, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            img->m_renderTarget->floodFill(x, y, (color_t)borderColor);
+        } else {
 #ifdef _WIN32
-        FloodFill(img->m_hDC, x, y, ARGBTOZBGR(borderColor));
+            FloodFill(img->m_hDC, x, y, ARGBTOZBGR(borderColor));
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -1374,17 +1464,20 @@ void setlinestyle(int linestyle, unsigned short pattern, int thickness, PIMAGE p
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (!(img && img->m_hDC)) {
-        CONVERT_IMAGE_END;
-        return;
+    if (img) {
+        img->m_linestyle.thickness = thickness;
+        img->m_linewidth = (float)thickness;
+        img->m_linestyle.linestyle = linestyle;
+        img->m_linestyle.upattern = pattern;
+
+        if (img->m_renderTarget) {
+            img->m_renderTarget->setLineStyle((LineStyle)linestyle, pattern, thickness);
+        }
+
+#ifdef _WIN32
+        update_pen(img);
+#endif
     }
-
-    img->m_linestyle.thickness = thickness;
-    img->m_linewidth = (float)thickness;
-    img->m_linestyle.linestyle = linestyle;
-    img->m_linestyle.upattern = pattern;
-
-    update_pen(img);
 
     CONVERT_IMAGE_END;
 }
@@ -1393,11 +1486,19 @@ void setlinewidth(float width, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img && img->m_hDC) {
+    if (img) {
         img->m_linestyle.thickness = (int)width;
         img->m_linewidth = width;
 
-        update_pen(img);
+        if (img->m_renderTarget) {
+            img->m_renderTarget->setLineWidth(width);
+        }
+
+#ifdef _WIN32
+        if (img->m_hDC) {
+            update_pen(img);
+        }
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -1432,11 +1533,19 @@ void setlinecap(line_cap_type linecap, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img && img->m_hDC) {
+    if (img) {
         img->m_linestartcap = linecap;
         img->m_lineendcap   = linecap;
 
-        update_pen(img);
+        if (img->m_renderTarget) {
+            img->m_renderTarget->setLineCap((RTLineCap)linecap, (RTLineCap)linecap);
+        }
+
+#ifdef _WIN32
+        if (img->m_hDC) {
+            update_pen(img);
+        }
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -1445,11 +1554,19 @@ void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img && img->m_hDC) {
+    if (img) {
         img->m_linestartcap = startCap;
         img->m_lineendcap   = endCap;
 
-        update_pen(img);
+        if (img->m_renderTarget) {
+            img->m_renderTarget->setLineCap((RTLineCap)startCap, (RTLineCap)endCap);
+        }
+
+#ifdef _WIN32
+        if (img->m_hDC) {
+            update_pen(img);
+        }
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -1491,11 +1608,20 @@ void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img && img->m_hDC) {
+    if (img) {
         miterLimit = MAX(1.0f, miterLimit);
         img->m_linejoin = linejoin;
         img->m_linejoinmiterlimit = miterLimit;
-        update_pen(img);
+
+        if (img->m_renderTarget) {
+            img->m_renderTarget->setLineJoin((RTLineJoin)linejoin, miterLimit);
+        }
+
+#ifdef _WIN32
+        if (img->m_hDC) {
+            update_pen(img);
+        }
+#endif
     }
     CONVERT_IMAGE_END;
 }
@@ -2209,9 +2335,13 @@ void ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        Gdiplus::Graphics* graphics = img->getGraphics();
-        Gdiplus::Brush* brush = img->getBrush();
-        graphics->FillEllipse(brush, x, y, w, h);
+        if (img->m_renderTarget) {
+            img->m_renderTarget->fillEllipse((int)x, (int)y, (int)w, (int)h);
+        } else {
+            Gdiplus::Graphics* graphics = img->getGraphics();
+            Gdiplus::Brush* brush = img->getBrush();
+            graphics->FillEllipse(brush, x, y, w, h);
+        }
     }
     CONVERT_IMAGE_END;
 }

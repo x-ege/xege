@@ -1770,16 +1770,57 @@ int main()
     #endif
     setinitmode(initmode);
     initgraph(640, 480);
-    SceneBase* scene = new SceneIntroduce; //SceneIntroduce; SceneMenu
     setbkmode(TRANSPARENT);
 
-    for (SceneBase* newscene = scene; newscene != NULL; delay_fps(60))
-    {
-        newscene = scene->Update();
-        if (newscene != scene)
-        {
-            delete scene;
-            scene = newscene;
+    // Simplified headless rendering: render 10 frames of demo content
+    for (int frameCount = 1; frameCount <= 10; frameCount++) {
+        setbkcolor_f(BLACK);
+        cleardevice();
+        setcolor(LIGHTGRAY);
+
+        // Draw basic demo content from SceneHelloWorld
+        setfont(20, 0, "Arial");
+        outtextxy(100, 0, "Hello World");
+
+        // Draw shapes from various scenes
+        setcolor(RED);
+        arc(100, 100, 0, 180, 50);
+        arc(200, 100, 0, 180, 50);
+        line(50, 100, 150, 200);
+        line(250, 100, 150, 200);
+
+        setcolor(GREEN);
+        circle(200, 100, 80);
+
+        setfillstyle(SOLID_FILL, GREEN);
+        bar(100, 100, 200, 400);
+
+        setcolor(YELLOW);
+        fillellipse(150, 200, 50, 100);
+
+        // Checker pattern
+        for (int y = 0; y < 480; y += 40) {
+            for (int x = 0; x < 640; x += 40) {
+                setfillcolor(((x / 40 + y / 40) & 1) ? BLACK : WHITE);
+                bar(x + 320, y, x + 40 + 320, y + 40);
+            }
+        }
+
+        // Move circle animation
+        int cx = frameCount * 30;
+        setcolor(0xFF0080);
+        circle(cx, 300, 50);
+
+        // Pump OS events (needed on macOS to keep window responsive)
+        delay_fps(10);
+
+        if (frameCount == 10) {
+            PIMAGE img = newimage(getwidth(), getheight());
+            getimage(img, 0, 0, getwidth(), getheight());
+            saveimage(img, "test_demo_frame10.png");
+            delimage(img);
+            printf("Screenshot saved: test_demo_frame10.png\n");
+            break;
         }
     }
 

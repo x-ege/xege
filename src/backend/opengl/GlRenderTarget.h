@@ -156,6 +156,9 @@ public:
     // Internal: sync CPU buffer to GPU texture (used by image blit)
     void syncToGpu();
 
+    // Internal: capture screen framebuffer to texture before swap
+    void captureScreenToTexture();
+
     // Internal: rebuild GPU resources after resize (called from IMAGE::resize_f)
     void rebuild(int width, int height);
 

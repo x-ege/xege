@@ -416,6 +416,11 @@ void GlRenderTarget::ensureProjection() {
     float bottom = (float)m_vpBottom;  // top-left origin
     float top    = (float)m_vpTop;
     ortho2D(proj, left, right, bottom, top);
+
+    FILE* dbg = fopen("/tmp/ege_capture_debug.txt", "a");
+    if(dbg) { fprintf(dbg, "  proj: l=%g r=%g b=%g t=%g m[0]=%g m[5]=%g m[12]=%g m[13]=%g\n",
+        left, right, bottom, top, proj[0], proj[5], proj[12], proj[13]); fclose(dbg); }
+
     m_primShader.use();
     m_primShader.setUniformMatrix4("uProj", proj);
     m_projectionDirty = false;
@@ -423,11 +428,15 @@ void GlRenderTarget::ensureProjection() {
 
 void GlRenderTarget::bindForDrawing() {
     if (m_isOnScreen) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // For screen, bind framebuffer 0 but ensure proper state
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glDrawBuffer(GL_BACK);
     } else {
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     }
     glViewport(0, 0, m_width, m_height);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     if (m_vpClip) {
@@ -440,17 +449,54 @@ void GlRenderTarget::bindForDrawing() {
 
 void GlRenderTarget::submitBatch() {
     if (m_vertices.empty()) return;
+
     bindForDrawing();
     ensureProjection();
 
     glLineWidth(m_lineWidth);
 
+    // Create fresh VAO/VBO
+    GLuint vao, vbo;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GlVertex) * m_vertices.size(), m_vertices.data(), GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GlVertex), (void*)offsetof(GlVertex, x));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(GlVertex), (void*)offsetof(GlVertex, r));
+
+    // Test: try drawing without shader first (fixed-function, but that doesn't exist in Core)
+    // Instead, check the shader program
+    GLint prog;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+    GLint linked;
+    glGetProgramiv(prog, GL_LINK_STATUS, &linked);
+
+    FILE* dbg = fopen("/tmp/ege_submit_debug.txt", "a");
+    if(dbg) {
+        fprintf(dbg, "submit: %d verts prog=%d linked=%d\n", (int)m_vertices.size(), prog, linked);
+    }
+
+    // Check vertex attrib state
+    GLint maxAttribs, attrib0, attrib1;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxAttribs);
+    glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &attrib0);
+    glGetVertexAttribiv(1, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &attrib1);
+    if(dbg) {
+        fprintf(dbg, "  attrib0: enabled=%d attrib1: enabled=%d maxAttribs=%d\n", attrib0, attrib1, maxAttribs);
+    }
+
     m_primShader.use();
-    glBindVertexArray(m_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GlVertex) * m_vertices.size(), m_vertices.data());
     glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m_vertices.size());
+
+    GLenum err = glGetError();
+    if(dbg) { fprintf(dbg, "  err=0x%x\n", err); fclose(dbg); }
+
     glBindVertexArray(0);
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
 
     m_vertices.clear();
 }
@@ -1568,11 +1614,22 @@ void GlRenderTarget::measureText(const wchar_t* text, float* width, float* heigh
 // Pixel buffer access
 // ============================================================
 color_t* GlRenderTarget::getPixelBuffer() {
-    if (m_gpuDirty && m_initialized) {
-        // Read back from GPU
-        if (m_isOnScreen) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        else glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-        // glReadPixels returns RGBA, need to convert to EGE ARGB
+    if (m_initialized) {
+        // Flush any pending draw commands before reading back
+        submitBatch();
+
+        // For on-screen render targets:
+        // If not dirty, the CPU buffer was already synced by captureScreenToTexture()
+        // during the last swap. If dirty, new draws happened after capture, so we need
+        // to re-read from the GPU.
+        if (m_isOnScreen) {
+            if (!m_gpuDirty && m_cpuBuffer) {
+                return m_cpuBuffer; // Already captured by swapBuffers
+            }
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        } else {
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+        }
         unsigned char* tmpBuf = new unsigned char[m_width * m_height * 4];
         glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
         for (int i = 0; i < m_width * m_height; i++) {
@@ -1591,6 +1648,60 @@ color_t* GlRenderTarget::getPixelBuffer() {
 
 const color_t* GlRenderTarget::getPixelBuffer() const {
     return const_cast<GlRenderTarget*>(this)->getPixelBuffer();
+}
+
+void GlRenderTarget::captureScreenToTexture() {
+    if (!m_isOnScreen || !m_initialized || !m_texture) return;
+
+    // Flush pending draw commands first
+    submitBatch();
+
+    // Ensure GPU has completed all rendering
+    glFinish();
+
+    // Read pixels from default framebuffer (back buffer, before swap)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    unsigned char* tmpBuf = new unsigned char[m_width * m_height * 4];
+    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
+
+    FILE* dbg = fopen("/tmp/ege_capture_debug.txt", "a");
+    GLenum glErr = glGetError();
+    GLint curProg = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &curProg);
+    GLboolean masks[4];
+    glGetBooleanv(GL_COLOR_WRITEMASK, masks);
+    if(dbg) {
+        fprintf(dbg, "capture: px0=0x%02x%02x%02x%02x glErrPre=0x%x prog=%d colorMask=%d%d%d%d\n",
+            tmpBuf[3], tmpBuf[0], tmpBuf[1], tmpBuf[2], glErr, curProg, masks[0], masks[1], masks[2], masks[3]);
+        // Count non-zero pixels
+        int colored = 0, alpha0 = 0;
+        for (int i = 0; i < m_width * m_height; i++) {
+            if (tmpBuf[i*4+0] != 0 || tmpBuf[i*4+1] != 0 || tmpBuf[i*4+2] != 0) colored++;
+            if (tmpBuf[i*4+3] == 0) alpha0++;
+        }
+        fprintf(dbg, "  coloredPixels=%d/%d alphaZero=%d\n", colored, m_width * m_height, alpha0);
+        fclose(dbg);
+    }
+
+    // Upload to texture
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
+
+    // Also update CPU buffer
+    if (m_cpuBuffer) {
+        for (int i = 0; i < m_width * m_height; i++) {
+            unsigned char r = tmpBuf[i*4+0];
+            unsigned char g = tmpBuf[i*4+1];
+            unsigned char b = tmpBuf[i*4+2];
+            unsigned char a = tmpBuf[i*4+3];
+            m_cpuBuffer[i] = ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+        }
+    }
+    m_gpuDirty = false;
+
+    delete[] tmpBuf;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GlRenderTarget::syncToGpu() {
@@ -1644,6 +1755,15 @@ void GlRenderTarget::rebuild(int width, int height) {
 // Submit
 // ============================================================
 void GlRenderTarget::flush() {
+    static int totalVerts = 0;
+    static int flushCount = 0;
+    totalVerts += (int)m_vertices.size();
+    flushCount++;
+    FILE* dbg = fopen("/tmp/ege_capture_debug.txt", "a");
+    if(dbg) {
+        fprintf(dbg, "flush #%d: pendingVerts=%d totalVerts=%d\n", flushCount, (int)m_vertices.size(), totalVerts);
+        fclose(dbg);
+    }
     submitBatch();
     glFlush();
 }
