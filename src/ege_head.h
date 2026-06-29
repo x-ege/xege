@@ -257,6 +257,13 @@ struct _graph_setting
 
 public:
     _graph_setting();
+
+    ~_graph_setting()
+    {
+        if (threadui.joinable()) {
+            threadui.join();
+        }
+    }
 };
 
 template <typename T> struct count_ptr
