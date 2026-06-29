@@ -84,6 +84,9 @@
 #define EGE_WNDCLSNAME_W EGE_L(EGE_WNDCLSNAME)
 
 #include <string>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
 
 #ifdef EGE_GDIPLUS
 #   if defined(NOMINMAX) && defined(_MSC_VER)
@@ -166,6 +169,9 @@ class egeControlBase;   // egeControlBase 前置声明
 struct _graph_setting
 {
     bool has_init;
+    std::condition_variable has_init_cv;
+    std::mutex              has_init_mut;
+
     bool unicode_char_message;
 
     struct _graph
@@ -209,7 +215,7 @@ struct _graph_setting
 
     thread_queue<EGEMSG>*msgkey_queue, *msgmouse_queue;
 
-    HANDLE threadui_handle;
+    std::thread threadui;
 
     /* 鼠标状态记录 */
     Point mouse_pos;

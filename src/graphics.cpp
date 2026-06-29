@@ -16,6 +16,7 @@
 */
 
 // 整个项目和其他源文件中不需要定义 UNICODE 宏, 这里是为了解决 VC6 下 initicon 中代码的编译问题加的
+#include <mutex>
 #define UNICODE 1
 
 #ifndef _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
@@ -889,13 +890,11 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     // 注册窗口类，设置默认消息处理函数, 此处创建 Unicode 窗口
     register_classW(pg, pg->instance);
 
-    // SECURITY_ATTRIBUTES sa = {0};
-    DWORD pid;
-    pg->threadui_handle = CreateThread(NULL, 0, messageloopthread, pg, CREATE_SUSPENDED, &pid);
-    ResumeThread(pg->threadui_handle);
+    pg->threadui = std::thread{messageloopthread, pg};
 
-    while (!pg->has_init) {
-        ::Sleep(1);
+    {
+        std::unique_lock lock{pg->has_init_mut};
+        pg->has_init_cv.wait(lock, [pg] { return pg->has_init; });
     }
 
     UpdateWindow(pg->hwnd);
@@ -977,7 +976,11 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
     pg->skip_timer_mark = false;
     SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
 
-    pg->has_init = true;
+    {
+        std::lock_guard lock{pg->has_init_mut};
+        pg->has_init = true;
+        pg->has_init_cv.notify_one();
+    }
 
     while (!pg->exit_window) {
         if (GetMessageW(&msg, NULL, 0, 0)) {
