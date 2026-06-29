@@ -3064,8 +3064,7 @@ static double static_lastFrameTime = 0.0;     /* 上一帧更新时间 */
  */
 void updateFrameRate(bool addFrameCount)
 {
-    struct _graph_setting* pg = &graph_setting;
-    double currentTime = get_highfeq_time_ls(pg);
+    double currentTime = get_highfeq_time_ls();
 
     if (static_lastFrameTime == 0.0) {
         static_lastFrameTime = currentTime;
