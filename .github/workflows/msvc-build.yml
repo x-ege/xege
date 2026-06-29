@@ -15,39 +15,52 @@ jobs:
       matrix:
         build_type: ["Release", "Debug"]
     steps:
-      - name: Check VS2026 (v144 toolset) availability
+      - name: Check VS2026 toolset availability
         id: check_vs2026
         run: |
-          # Check if VS2026 toolset (v144) is available using vswhere
+          # Check if VS2026 toolset is available using vswhere
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           
           # Check for VS2026 installation
           $vs2026 = & $vswhere -version "[18.0,19.0)" -property installationPath 2>$null
           
-          # Also check if v144 toolset exists in any VS installation
-          $vsInstalls = & $vswhere -all -property installationPath 2>$null
-          $v144Found = $false
-          foreach ($install in $vsInstalls) {
-            $v144Path = Join-Path $install "MSBuild\Microsoft\VC\v144"
-            if (Test-Path $v144Path) {
-              $v144Found = $true
-              echo "✅ v144 toolset found at: $v144Path"
-              break
+          # VS2026 runners may have either v180 (new naming) or v144 toolset
+          $supportedToolsets = @("v180", "v144")
+          $toolset = $null
+          if ($vs2026) {
+            foreach ($candidate in $supportedToolsets) {
+              $toolsetPath = Join-Path $vs2026 "MSBuild\Microsoft\VC\$candidate"
+              if (Test-Path $toolsetPath) {
+                $toolset = $candidate
+                echo "✅ $candidate toolset found at: $toolsetPath"
+                break
+              }
             }
           }
           
-          if ($vs2026) {
+          if ($toolset) {
             echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
+            echo "VS2026_TOOLSET=$toolset" >> $env:GITHUB_OUTPUT
             echo "✅ Visual Studio 2026 is installed at: $vs2026"
-          } elseif ($v144Found) {
-            echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
+            echo "✅ Using toolset: $toolset"
           } else {
             echo "VS2026_AVAILABLE=false" >> $env:GITHUB_OUTPUT
-            echo "⏭️ VS2026 (v144 toolset) is not available on this runner."
-            echo "⏭️ Skipping VS2026 build. This is expected until GitHub adds VS2026 support to windows-latest runners."
+            echo "VS2026_TOOLSET=" >> $env:GITHUB_OUTPUT
+            if ($vs2026) {
+              echo "⏭️ Visual Studio 2026 is installed at: $vs2026"
+              echo "⏭️ But no supported toolset found (expected one of: $($supportedToolsets -join ', '))."
+            } else {
+              echo "⏭️ Visual Studio 2026 is not available on this runner."
+            }
+            echo "⏭️ Skipping VS2026 build."
             echo ""
             echo "=== Available Visual Studio Installations (via vswhere) ==="
             & $vswhere -all -format text
+            if ($vs2026) {
+              echo ""
+              echo "=== Available VC toolset directories under VS2026 ==="
+              Get-ChildItem -Path (Join-Path $vs2026 "MSBuild\Microsoft\VC") -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+            }
           }
         shell: powershell
 
@@ -64,7 +77,7 @@ jobs:
         run: |
           mkdir build-vs2026
           cd build-vs2026
-          cmake .. -T v144 -DEGE_BUILD_DEMO=ON
+          cmake .. -T ${{ steps.check_vs2026.outputs.VS2026_TOOLSET }} -DEGE_BUILD_DEMO=ON
 
       - name: Build
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
