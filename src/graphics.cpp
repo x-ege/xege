@@ -101,10 +101,17 @@ unsigned long getlogodatasize();
 
 DWORD WINAPI messageloopthread(LPVOID lpParameter);
 
-_graph_setting::_graph_setting()
+_graph_setting::_graph_setting() : init_sem{0}
 {
     window_caption = EGE_TITLE_W;
     window_initial_color = IMAGE::initial_bk_color;
+}
+
+_graph_setting::~_graph_setting()
+{
+    if (threadui.joinable()) {
+        threadui.join();
+    }
 }
 
 /*private function*/
@@ -799,7 +806,7 @@ void logoscene()
 
 inline void init_img_page(struct _graph_setting* pg)
 {
-    if (!pg->has_init) {
+    if (!pg->init_sem.acquirable()) {
 #ifdef EGE_GDIPLUS
     gdiplusinit();
 #endif
@@ -867,7 +874,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     dll::loadDllsIfNot();
 
     // 已创建则转为改变窗口大小
-    if (pg->has_init) {
+    if (pg->init_sem.acquirable()) {
         int width  = (short)(*gmode & 0xFFFF);
         int height = (short)((unsigned int)(*gmode) >> 16);
         resizewindow(width, height);
@@ -890,10 +897,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     register_classW(pg, pg->instance);
 
     pg->threadui = std::thread{messageloopthread, pg};
-    {
-        std::unique_lock lock{pg->has_init_mut};
-        pg->has_init_cv.wait(lock, [pg] { return pg->has_init; });
-    }
+    pg->init_sem.acquire();
+    pg->init_sem.add_permit();
 
     UpdateWindow(pg->hwnd);
 
@@ -974,11 +979,7 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
     pg->skip_timer_mark = false;
     SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
 
-    {
-        std::lock_guard lock{pg->has_init_mut};
-        pg->has_init = true;
-        pg->has_init_cv.notify_one();
-    }
+    pg->init_sem.add_permit();
 
     while (!pg->exit_window) {
         if (GetMessageW(&msg, NULL, 0, 0)) {

@@ -41,7 +41,7 @@ bool is_run()
 
 bool isinitialized()
 {
-    return graph_setting.has_init;
+    return graph_setting.init_sem.acquirable();
 }
 
 int showmouse(int bShow)
@@ -675,7 +675,7 @@ color_t getbkcolor(PCIMAGE pimg)
         }
     } else {
         _graph_setting* pg = &graph_setting;
-        if (!pg->has_init) {
+        if (!pg->init_sem.acquirable()) {
             return pg->window_initial_color;
         }
     }
@@ -714,7 +714,7 @@ void setbkcolor_f(color_t color, PIMAGE pimg)
         }
     } else {
         _graph_setting* pg = &graph_setting;
-        if (!pg->has_init) {
+        if (!pg->init_sem.acquirable()) {
             pg->window_initial_color = color;
         }
     }

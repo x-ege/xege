@@ -85,8 +85,6 @@
 
 #include <string>
 #include <thread>
-#include <condition_variable>
-#include <mutex>
 
 #ifdef EGE_GDIPLUS
 #   if defined(NOMINMAX) && defined(_MSC_VER)
@@ -101,6 +99,7 @@
 #endif
 
 #include "thread_queue.h"
+#include "sync/semaphore.h"
 
 #ifndef ERROR_SUCCESS
 #define ERROR_SUCCESS 0
@@ -168,9 +167,7 @@ class egeControlBase;   // egeControlBase 前置声明
 // 定义ege全局状态对象
 struct _graph_setting
 {
-    bool has_init;
-    std::condition_variable has_init_cv;
-    std::mutex              has_init_mut;
+    Semaphore init_sem;
 
     bool unicode_char_message;
 
@@ -257,13 +254,7 @@ struct _graph_setting
 
 public:
     _graph_setting();
-
-    ~_graph_setting()
-    {
-        if (threadui.joinable()) {
-            threadui.join();
-        }
-    }
+    ~_graph_setting();
 };
 
 template <typename T> struct count_ptr

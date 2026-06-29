@@ -129,7 +129,7 @@ if(EGE_ENABLE_CPP17)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-file(GLOB EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_library(xege STATIC ${EGE_CPP_SRC})
 
 target_include_directories(xege PUBLIC include)

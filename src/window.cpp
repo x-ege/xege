@@ -22,7 +22,7 @@ void setcaption(const char* caption)
 void setcaption(const wchar_t* caption)
 {
     struct _graph_setting* pg = &graph_setting;
-    if (pg->has_init) {
+    if (pg->init_sem.acquirable()) {
         ::SetWindowTextW(getHWnd(), caption);
         ::UpdateWindow(getHWnd()); // for vc6
     }
@@ -43,7 +43,7 @@ void seticon(int icon_id)
     }
     if (hIcon) {
         pg->window_hicon = hIcon;
-        if (pg->has_init) {
+        if (pg->init_sem.acquirable()) {
 #ifdef _WIN64
             ::SetClassLongPtrW(getHWnd(), GCLP_HICON, (LONG_PTR)hIcon);
 #else
