@@ -58,6 +58,7 @@ void IMAGE::reset()
     m_graphics = NULL;
     m_pen      = NULL;
     m_brush    = NULL;
+    m_font     = NULL;
 #endif
 }
 
@@ -184,6 +185,10 @@ int IMAGE::deleteimage()
         delete m_brush;
     }
     m_brush = NULL;
+    if (NULL != m_font) {
+        delete m_font;
+    }
+    m_font = NULL;
 #endif
 
     HBITMAP hbmp  = (HBITMAP)GetCurrentObject(m_hDC, OBJ_BITMAP);
