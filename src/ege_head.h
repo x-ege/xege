@@ -238,7 +238,6 @@ struct _graph_setting
 #ifdef EGE_GDIPLUS
     ULONG_PTR g_gdiplusToken;
 #endif
-    LARGE_INTEGER get_highfeq_time_start;
     DWORD         fclock_start;
     // double delay_dwLast;
     double delay_ms_dwLast;
