@@ -101,10 +101,17 @@ unsigned long getlogodatasize();
 
 DWORD WINAPI messageloopthread(LPVOID lpParameter);
 
-_graph_setting::_graph_setting()
+_graph_setting::_graph_setting() : init_sem{0}
 {
     window_caption = EGE_TITLE_W;
     window_initial_color = IMAGE::initial_bk_color;
+}
+
+_graph_setting::~_graph_setting()
+{
+    if (threadui.joinable()) {
+        threadui.join();
+    }
 }
 
 /*private function*/
@@ -799,7 +806,7 @@ void logoscene()
 
 inline void init_img_page(struct _graph_setting* pg)
 {
-    if (!pg->has_init) {
+    if (!pg->init_sem.acquirable()) {
 #ifdef EGE_GDIPLUS
     gdiplusinit();
 #endif
@@ -867,7 +874,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     dll::loadDllsIfNot();
 
     // 已创建则转为改变窗口大小
-    if (pg->has_init) {
+    if (pg->init_sem.acquirable()) {
         int width  = (short)(*gmode & 0xFFFF);
         int height = (short)((unsigned int)(*gmode) >> 16);
         resizewindow(width, height);
@@ -889,14 +896,9 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     // 注册窗口类，设置默认消息处理函数, 此处创建 Unicode 窗口
     register_classW(pg, pg->instance);
 
-    // SECURITY_ATTRIBUTES sa = {0};
-    DWORD pid;
-    pg->threadui_handle = CreateThread(NULL, 0, messageloopthread, pg, CREATE_SUSPENDED, &pid);
-    ResumeThread(pg->threadui_handle);
-
-    while (!pg->has_init) {
-        ::Sleep(1);
-    }
+    pg->threadui = std::thread{messageloopthread, pg};
+    pg->init_sem.acquire();
+    pg->init_sem.add_permit();
 
     UpdateWindow(pg->hwnd);
 
@@ -977,7 +979,7 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
     pg->skip_timer_mark = false;
     SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
 
-    pg->has_init = true;
+    pg->init_sem.add_permit();
 
     while (!pg->exit_window) {
         if (GetMessageW(&msg, NULL, 0, 0)) {
