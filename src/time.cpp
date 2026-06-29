@@ -183,9 +183,9 @@ void delay_jfps(double fps)
 double get_highfeq_time_ls()
 {
     using namespace std::chrono;
-    static auto start_time_point = high_resolution_clock::now();
+    static auto start_time_point = steady_clock::now();
 
-    auto durationTime = high_resolution_clock::now() - start_time_point;
+    auto durationTime = steady_clock::now() - start_time_point;
     return duration<double>(durationTime).count();
 }
 
