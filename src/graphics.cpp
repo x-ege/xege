@@ -16,7 +16,6 @@
 */
 
 // 整个项目和其他源文件中不需要定义 UNICODE 宏, 这里是为了解决 VC6 下 initicon 中代码的编译问题加的
-#include <mutex>
 #define UNICODE 1
 
 #ifndef _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
@@ -891,7 +890,6 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     register_classW(pg, pg->instance);
 
     pg->threadui = std::thread{messageloopthread, pg};
-
     {
         std::unique_lock lock{pg->has_init_mut};
         pg->has_init_cv.wait(lock, [pg] { return pg->has_init; });
