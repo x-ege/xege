@@ -1,53 +1,20 @@
 #pragma once
 
-#ifdef _WIN32
-#include <windows.h>
-#else
 #include <mutex>
-#endif
 
 #define QUEUE_LEN 1024
 
 namespace ege
 {
 
-#ifdef _WIN32
-class Lock
-{
-public:
-    Lock(LPCRITICAL_SECTION p_) : _psection(p_) { ::EnterCriticalSection(_psection); }
-
-    ~Lock() { ::LeaveCriticalSection(_psection); }
-
-private:
-    LPCRITICAL_SECTION _psection;
-};
-#endif
-
 template <typename T> class thread_queue
 {
 public:
-    thread_queue(void)
-    {
-#ifdef _WIN32
-        ::InitializeCriticalSection(&_section);
-#endif
-        _begin = _end = 0;
-    }
-
-    ~thread_queue(void) {
-#ifdef _WIN32
-        ::DeleteCriticalSection(&_section);
-#endif
-    }
+    thread_queue(void) { _begin = _end = 0; }
 
     void push(const T& d_)
     {
-#ifdef _WIN32
-        Lock lock(&_section);
-#else
-        std::lock_guard<std::mutex> lock(_mutex);
-#endif
+        std::lock_guard g{_mutex};
         int  w       = (_end + 1) % QUEUE_LEN;
         _queue[_end] = d_;
         if (w == _begin) {
@@ -58,11 +25,7 @@ public:
 
     int pop(T& d_)
     {
-#ifdef _WIN32
-        Lock lock(&_section);
-#else
-        std::lock_guard<std::mutex> lock(_mutex);
-#endif
+        std::lock_guard g{_mutex};
         if (_end == _begin) {
             return 0;
         }
@@ -74,11 +37,7 @@ public:
 
     int unpop()
     {
-#ifdef _WIN32
-        Lock lock(&_section);
-#else
-        std::lock_guard<std::mutex> lock(_mutex);
-#endif
+        std::lock_guard g{_mutex};
         if (_begin == (_end + 1) % QUEUE_LEN) {
             return 0;
         }
@@ -90,11 +49,7 @@ public:
 
     void process(void (*process_func)(T&))
     {
-#ifdef _WIN32
-        Lock lock(&_section);
-#else
-        std::lock_guard<std::mutex> lock(_mutex);
-#endif
+        std::lock_guard g{_mutex};
         int  r = _begin;
         int  w = _end;
         if (r != w) {
@@ -110,20 +65,12 @@ public:
 
     bool empty()
     {
-#ifdef _WIN32
-        Lock lock(&_section);
-#else
-        std::lock_guard<std::mutex> lock(_mutex);
-#endif
+        std::lock_guard g{_mutex};
         return _begin == _end;
     }
 
 private:
-#ifdef _WIN32
-    CRITICAL_SECTION _section;
-#else
     std::mutex       _mutex;
-#endif
     T                _queue[QUEUE_LEN];
     T                _last;
     int              _begin, _end;

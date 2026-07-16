@@ -6,9 +6,10 @@
 #include <mmsystem.h>
 #include <digitalv.h>
 #else
-#include <time.h>
 #include <unistd.h>
 #endif
+#include <chrono>
+#include <thread>
 
 namespace ege
 {
@@ -31,44 +32,7 @@ void ege_sleep(long ms)
     if (ms <= 0) {
         return;
     }
-
-#ifdef _WIN32
-    if (0) { // 经济模式，占CPU极少
-        ::Sleep(ms);
-    } else if (0) { // 精确模式，占CPU略高
-        static HANDLE hTimer = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-        static MMRESULT resTimer = 0;
-        ::ResetEvent(hTimer);
-        if (resTimer) {
-            dll::timeKillEvent(resTimer);
-        }
-        resTimer = dll::timeSetEvent(ms, 1, (LPTIMECALLBACK)hTimer, 0, TIME_ONESHOT | TIME_CALLBACK_EVENT_SET);
-        if (resTimer) {
-            ::WaitForSingleObject(hTimer, INFINITE);
-        } else {
-            ::Sleep(1);
-        }
-        //::CloseHandle(hTimer);
-    } else if (1) { // 高精模式，占CPU更高
-        static HANDLE hTimer = ::CreateWaitableTimer(NULL, TRUE, NULL);
-        LARGE_INTEGER liDueTime;
-
-        dll::timeBeginPeriod(1);
-        liDueTime.QuadPart = ms * (LONGLONG)-10000;
-
-        if (hTimer) {
-            if (::SetWaitableTimer(hTimer, &liDueTime, 0, NULL, NULL, FALSE)) {
-                ::WaitForSingleObject(hTimer, INFINITE); // != WAIT_OBJECT_0;
-            }
-            //::CloseHandle(hTimer);
-        } else {
-            ::Sleep(ms);
-        }
-        dll::timeEndPeriod(1);
-    }
-#else
-    usleep(ms * 1000);
-#endif
+    std::this_thread::sleep_for(std::chrono::milliseconds{ms});
 }
 
 void delay(long ms)
@@ -86,7 +50,7 @@ void delay_ms(long ms)
     egeControlBase* root = pg->egectrl_root;
     pg->skip_timer_mark = true;
 
-    const double targetTime = get_highfeq_time_ls(pg) * 1000.0 + ms;
+    const double targetTime = get_highfeq_time_ls() * 1000.0 + ms;
 
     /* 处理 UI 事件，更新 UI 控件数据 */
     guiupdate(pg, root);
@@ -99,14 +63,10 @@ void delay_ms(long ms)
 
     /* 延时 */
     if (ms == 0) {
-        /* Sleep(0): 让出 CPU 时间片，处理后立即返回 */
-#ifdef _WIN32
-        ::Sleep(0);
-#else
-        usleep(0);
-#endif
+        /* 让出 CPU 时间片，处理后立即返回 */
+        std::this_thread::yield();
     } else if (ms > 0) {
-        double currentTime = get_highfeq_time_ls(pg) * 1000.0;
+        double currentTime = get_highfeq_time_ls() * 1000.0;
 
         if (currentTime < targetTime) {
             ege_sleep((long)(targetTime - currentTime));
@@ -138,11 +98,11 @@ void delay_fps(double fps)
     pg->skip_timer_mark = true;
     double delay_time = 1000.0 / fps;
     double avg_max_time = delay_time * 10.0; // 误差时间在这个数值以内做平衡
-    double dw = get_highfeq_time_ls(pg) * 1000.0;
+    double dw                   = get_highfeq_time_ls() * 1000.0;
     int nloop = 0;
 
     if (pg->delay_fps_dwLast == 0) {
-        pg->delay_fps_dwLast = get_highfeq_time_ls(pg) * 1000.0;
+        pg->delay_fps_dwLast = get_highfeq_time_ls() * 1000.0;
     }
 
     if (pg->delay_fps_dwLast + delay_time + avg_max_time > dw) {
@@ -152,14 +112,14 @@ void delay_fps(double fps)
     root->draw(NULL);
 
     for (; nloop >= 0; --nloop) {
-        if ((dw + delay_time + (100.0) >= get_highfeq_time_ls(pg) * 1000.0)) {
+        if ((dw + delay_time + (100.0) >= get_highfeq_time_ls() * 1000.0)) {
             do {
-                ege_sleep((int)(dw + delay_time - get_highfeq_time_ls(pg) * 1000.0));
-            } while (dw + delay_time >= get_highfeq_time_ls(pg) * 1000.0);
+                ege_sleep((int)(dw + delay_time - get_highfeq_time_ls() * 1000.0));
+            } while (dw + delay_time >= get_highfeq_time_ls() * 1000.0);
         }
 
         dealmessage(pg, FORCE_UPDATE);
-        dw = get_highfeq_time_ls(pg) * 1000.0;
+        dw = get_highfeq_time_ls() * 1000.0;
         guiupdate(pg, root);
 
         if (pg->delay_fps_dwLast + delay_time + avg_max_time <= dw || pg->delay_fps_dwLast > dw) {
@@ -191,11 +151,11 @@ void delay_jfps(double fps)
     pg->skip_timer_mark = true;
     double delay_time = 1000.0 / fps;
     double avg_max_time = delay_time * 10.0;
-    double dw = get_highfeq_time_ls(pg) * 1000.0;
+    double dw                   = get_highfeq_time_ls() * 1000.0;
     int nloop = 0;
 
     if (pg->delay_fps_dwLast == 0) {
-        pg->delay_fps_dwLast = get_highfeq_time_ls(pg) * 1000.0;
+        pg->delay_fps_dwLast = get_highfeq_time_ls() * 1000.0;
     }
 
     if (pg->delay_fps_dwLast + delay_time + avg_max_time > dw) {
@@ -207,8 +167,8 @@ void delay_jfps(double fps)
     for (; nloop >= 0; --nloop) {
         int bSleep = 0;
 
-        while (dw + delay_time >= get_highfeq_time_ls(pg) * 1000.0) {
-            ege_sleep((int)(dw + delay_time - get_highfeq_time_ls(pg) * 1000.0));
+        while (dw + delay_time >= get_highfeq_time_ls() * 1000.0) {
+            ege_sleep((int)(dw + delay_time - get_highfeq_time_ls() * 1000.0));
             bSleep = 1;
         }
 
@@ -218,7 +178,7 @@ void delay_jfps(double fps)
             updateFrameRate(false);
         }
 
-        dw = get_highfeq_time_ls(pg) * 1000.0;
+        dw = get_highfeq_time_ls() * 1000.0;
         guiupdate(pg, root);
 
         if (pg->delay_fps_dwLast + delay_time + avg_max_time <= dw || pg->delay_fps_dwLast > dw) {
@@ -230,56 +190,13 @@ void delay_jfps(double fps)
     pg->skip_timer_mark = false;
 }
 
-double get_highfeq_time_ls(struct _graph_setting* pg)
+double get_highfeq_time_ls()
 {
-    static LARGE_INTEGER llFeq = {{0}}; /* 此实为常数 */
-    LARGE_INTEGER llNow = {{0}};
+    using namespace std::chrono;
+    static auto start_time_point = steady_clock::now();
 
-#ifdef _WIN32
-    if (pg->get_highfeq_time_start.QuadPart == 0) {
-        if (1) {
-            SetThreadAffinityMask(::GetCurrentThread(), 0);
-            QueryPerformanceCounter(&pg->get_highfeq_time_start);
-            QueryPerformanceFrequency(&llFeq);
-        } else if (0) {
-            dll::timeBeginPeriod(1);
-            pg->get_highfeq_time_start.QuadPart = ::timeGetTime();
-            dll::timeEndPeriod(1);
-            llFeq.QuadPart = 1000;
-        } else if (1) {
-            pg->get_highfeq_time_start.QuadPart = ::GetTickCount();
-            llFeq.QuadPart = 1000;
-        } else if (0) {
-            ::GetSystemTimeAsFileTime((LPFILETIME)&pg->get_highfeq_time_start);
-            llFeq.QuadPart = 10000000;
-        }
-        return 0;
-    } else {
-        if (1) {
-            QueryPerformanceCounter(&llNow);
-        } else if (0) {
-            dll::timeBeginPeriod(1);
-            llNow.QuadPart = ::timeGetTime();
-            dll::timeEndPeriod(1);
-        } else if (1) {
-            llNow.QuadPart = ::GetTickCount();
-        } else if (0) {
-            ::GetSystemTimeAsFileTime((LPFILETIME)&llNow);
-        }
-        llNow.QuadPart -= pg->get_highfeq_time_start.QuadPart;
-        return (double)llNow.QuadPart / llFeq.QuadPart;
-    }
-#else
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    if (pg->get_highfeq_time_start.QuadPart == 0) {
-        pg->get_highfeq_time_start.QuadPart = (long long)ts.tv_sec * 1000000000LL + ts.tv_nsec;
-        return 0;
-    } else {
-        long long now = (long long)ts.tv_sec * 1000000000LL + ts.tv_nsec;
-        return (double)(now - pg->get_highfeq_time_start.QuadPart) / 1000000000.0;
-    }
-#endif
+    auto durationTime = steady_clock::now() - start_time_point;
+    return duration<double>(durationTime).count();
 }
 
 
