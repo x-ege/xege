@@ -341,7 +341,11 @@ int main() {
     testFramework.printResults();    // 保存结果到文件
     testFramework.saveResultsToFile("putimage_performance_results.txt");
     
-    // 清理
+    // Release global image owners while the OpenGL context is still alive.
+    // Cross-translation-unit static destruction order is unspecified and can
+    // otherwise destroy graph_setting before ImageSetManager on Linux.
+    cleanupDestinationImage();
+    imageManager.cleanup();
     testFramework.cleanup();
 
     std::cout << "\nAll tests completed!" << std::endl;
