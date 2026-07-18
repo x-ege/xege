@@ -3,21 +3,20 @@
 - 更新日期：2026-07-19
 - 分支：`feature/opengl-backend`
 - 对比基线：`origin/master@e85aa27`
-- 已验证代码提交：`a23a3f7d0e06aba26aa13a6fa292e64140bec16f`
+- 报告范围：以本报告所在提交为准；最终 SHA 与最新 checks 以 PR 页面为准
 - 子模块：`3rdparty/ccap@d1876005be7e7cc0c370fadd05dbac6c658c4a17`
-- 代码候选相对 master：0 behind / 30 ahead，101 个文件，40,447 行新增、1,111 行删除
 
 ## 执行结论
 
 当前结论是 **Conditional Go（代码层面具备合入条件，流程与硬件验收仍有前置项）**。
 
-所有已知的确定性代码问题都已完成修复，并在最终代码提交上取得完整的 Native、MSVC、MinGW、交叉编译和 release package 远端证据。没有发现 Windows 公共 API/source breaking change，Windows 默认构建仍走 GDI，OpenGL 仍是显式 opt-in。
+所有已知的确定性代码问题都已完成修复。此前候选已取得完整的 Native、MSVC、MinGW、交叉编译和 release package 远端证据；后续默认配置、Linux GLFW 和 camera provider 测试改进还必须由本 PR 的最新 checks 重新确认。没有发现 Windows 公共 API/source breaking change，Windows 默认构建仍走 GDI，OpenGL 仍是显式 opt-in。
 
 不建议绕过 PR 直接合入 master。合入前仍应完成三件事：
 
 1. 由维护者审查手写后端与兼容层，并把生成的 GLAD/STB 文件与手写代码分开看。
 2. 在真实 Windows 设备上做相机与窗口退出 smoke test；在物理 macOS 上人工确认 Escape、Command+Q 和窗口关闭。
-3. 给 master 配置 required checks。当前 GitHub API 返回 master 未启用 branch protection，且本分支还没有 PR。
+3. 给 master 配置 required checks，并以 PR 最新提交的完整 checks 作为合入依据。
 
 | 维度 | 证据 | 判定 |
 | --- | --- | --- |
@@ -26,7 +25,7 @@
 | 事件循环与退出 | Escape、Command+Q、WM_CLOSE、默认进程退出、NOFORCE 重用测试 | Go |
 | Windows 默认兼容 | MSVC/MinGW GDI、raw static-library consumer、x86/x64 release package 全绿 | Go |
 | Windows/macOS 真实硬件 | hosted runner 无摄像头，Windows 无可靠 WGL，系统级按键注入未作为证据 | 人工前置项 |
-| PR 与分支治理 | 无 PR，master 无 required checks | 流程前置项 |
+| PR 与分支治理 | PR 最新提交仍需完整 checks；master required checks 需由维护者确认 | 流程前置项 |
 
 ## 本轮完成的修复
 
@@ -61,20 +60,26 @@
 - 37 个核心 demo 在 macOS、Linux 和 Windows 矩阵中构建。
 - GMP demo 仍是可选项，但现在只有 `gmpxx.h` 与实际 GMP library 同时可用时才加入；不完整的 runner 环境会正确跳过，而不是在编译/链接中途失败。
 - macOS Homebrew 交叉编译移除无意义的 `brew update` 和重复 CMake 安装，关闭自动更新，并只对 `mingw-w64` 做三次短重试。
+- 新增空构建目录的默认配置契约：Windows 必须默认 GDI，Linux/macOS 必须默认 OpenGL，单配置生成器必须默认 Release。
+- Linux bundled GLFW 与文档保持一致，默认 X11、显式 opt-in Wayland；调用者显式设置的 GLFW 选项不会被覆盖。
+- Native workflow 新增 Wayland-only 编译任务，并让 Linux 主构建直接使用项目的 X11 默认值，不再用 CI 参数掩盖默认配置。
+- 新增无 GUI、无 fixture 的 camera device lifecycle 测试；Linux CI 会实际加载 V4L2 provider 并验证枚举、失败打开和清理路径。
 
 ## 测试证据
 
 ### 当前 macOS 本地
 
 - 37/37 核心 demo 编译、链接成功。
-- 功能测试：9/9 passed，7.02s。
-- canonical performance：1/1 passed，22.94s，并正常完成进程析构。
-- Debug 与 Release 功能套件均为 9/9；camera-off ASan+UBSan 功能套件为 7/7。
+- 功能测试：11/11 passed，7.85s；新增默认配置契约和 camera device lifecycle 均通过。
+- canonical performance：1/1 passed，7.04s，并正常完成进程析构。
+- Debug、Release 与 camera-on ASan+UBSan 功能套件均为 11/11。
 - ASan+UBSan canonical performance 为 1/1，覆盖此前的进程退出阶段崩溃。
 - demo startup smoke：37/37 在观察窗口内无启动崩溃；两个 camera demo 均完成设备枚举并产生新帧。
 - macOS 系统级按键注入没有可靠送达目标进程，因此没有把该操作包装成人工退出证据；退出结论来自确定性的 callback、状态与子进程测试。
 
-### 最终代码提交的 GitHub Actions
+### 此前候选的 GitHub Actions 基线
+
+以下记录证明重构基线曾完整通过；它们不能替代本报告所在提交在 PR 上触发的最新 checks。
 
 | Workflow | 结果 | 覆盖 |
 | --- | --- | --- |
@@ -94,10 +99,13 @@ release dry-run 使用 `workflow_dispatch`，不会创建 GitHub Release。最�
 
 当前 CI 能阻断以下回归：
 
+- Windows/macOS/Linux 的默认后端、bundled GLFW provider 和单配置构建类型漂移；
 - OpenGL/GDI 基础渲染、图片操作、保存格式和公开状态语义；
 - camera bridge 的越界、stride、状态机和 fixture 生命周期；
+- Linux V4L2 provider 的创建、枚举、失败打开和幂等清理；
 - Escape、Command+Q、WM_CLOSE、默认退出、NOFORCE 重用与 teardown；
 - Windows 默认 GDI、OpenGL opt-in 编译、MSVC/MinGW/交叉编译；
+- bundled GLFW 的 Linux X11 默认构建，以及显式 Wayland-only 编译；
 - 旧 VS toolset、x86 frame layout、预编译包目录与 raw static-library consumer；
 - release package 漏库、错误 archive、错误目标平台和不可消费的发布包。
 
@@ -106,6 +114,7 @@ release dry-run 使用 `workflow_dispatch`，不会创建 GitHub Release。最�
 仍未自动化覆盖的边界：
 
 - Windows MSMF/DirectShow 的真实设备枚举、权限、无帧回退、分辨率切换与设备切换；
+- Linux V4L2 的真实设备首帧、格式协商、分辨率切换与长时间稳定性；
 - hosted Windows runner 上可靠的 WGL runtime；当前显式 OpenGL tests 会编译，运行门禁使用确定性的 GDI compatibility tests；
 - hosted macOS 的完整 accelerated NSGL 渲染；像素与窗口 runtime 由 Linux Xvfb 和物理 Mac 补位；
 - OS 真实菜单触发的 Command+Q 与真实键盘 Escape；
@@ -142,7 +151,7 @@ release dry-run 使用 `workflow_dispatch`，不会创建 GitHub Release。最�
 
 ## 范围与清理审计
 
-- `git diff --check origin/master...a23a3f7` clean。
+- 提交前必须执行 `git diff --check`，并只显式暂存本轮跨平台构建、测试、CI 和文档文件。
 - `3rdparty/ccap` 固定在已验证 SHA；没有把临时 vendor 副本作为普通源码提交。
 - 无关的未跟踪 `3rdparty/libpng/` 与 `3rdparty/zlib/` 已移出工作树，未进入 Git 历史。
 - build 产物、测试 PNG/BMP 和下载压缩包均未进入提交。
@@ -151,14 +160,14 @@ release dry-run 使用 `workflow_dispatch`，不会创建 GitHub Release。最�
 
 ## 合入前清单
 
-自动化条件已经满足。真正 merge 前建议只保留以下阻断项：
+本地自动化条件已经满足；远端条件以 PR 最新 checks 全绿为准。真正 merge 前建议只保留以下阻断项：
 
-1. 创建 PR，复核最终 diff、submodule SHA 和本报告所列五个 workflow。
+1. 复核 PR 最终 diff、submodule SHA 和本报告所列 workflow，并确认最新提交全绿。
 2. master required checks 至少包含 Native Linux Release、Linux sanitizer、ccap、MSVC v143 Release、MSYS2 Release、Ubuntu cross Release 和 release package。
 3. 真实 Windows：相机枚举/首帧/切换/关闭，Escape、窗口关闭、进程退出；真实 macOS：Escape、Command+Q、窗口关闭。
 4. 对 ccap orientation harness 的三个临时排除项建立 owner 和后续修复记录，避免永久静默过滤。
 5. 在 release notes 明确 macOS/Linux 默认构建语义变化，以及 Windows OpenGL 仍为 opt-in/experimental。
 
-非阻断后续项：逐 API family 增加测试和覆盖率统计、为固定 WinLibs 下载增加 SHA-256、升级产生 Node runtime warning 的 GitHub Actions、扩展 Linux V4L2/Windows MSMF 真机测试。
+非阻断后续项：逐 API family 增加测试和覆盖率统计、为固定 WinLibs 下载增加 SHA-256、升级产生 Node runtime warning 的 GitHub Actions、扩展 Linux V4L2/Windows MSMF 真机测试，以及在 headless Wayland compositor 上增加 runtime smoke。
 
-最终建议：以 `a23a3f7` 作为代码候选进入 PR。若上述人工硬件与分支治理项完成，可以合入；若团队选择把真实 Windows 相机验证延后，必须在 PR 中显式记录风险与 owner，而不是把它当作 CI 已覆盖。
+最终建议：以 PR 最新全绿提交作为代码候选。若上述人工硬件与分支治理项完成，可以合入；若团队选择把真实 Windows/Linux 相机验证延后，必须在 PR 中显式记录风险与 owner，而不是把它当作 CI 已覆盖。

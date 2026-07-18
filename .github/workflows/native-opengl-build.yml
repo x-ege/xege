@@ -56,7 +56,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
           -DEGE_BUILD_OPENGL=ON
           -DEGE_USE_BUNDLED_GLFW=ON
-          -DGLFW_BUILD_WAYLAND=OFF
           -DEGE_ENABLE_CAMERA_CAPTURE=ON
           -DEGE_BUILD_DEMO=ON
           -DEGE_BUILD_TEST=ON
@@ -83,7 +82,7 @@ jobs:
             # context; full macOS graphics tests run on physical hardware.
             ctest --test-dir build/native --output-on-failure --timeout 180 \
               --no-tests=error \
-              -R '^(public_headers|camera_frame_copy|camera_capture_headless)$'
+              -R '^(default_build_contract|public_headers|camera_frame_copy|camera_device_lifecycle|camera_capture_headless)$'
           fi
 
       - name: Run the canonical performance suite once
@@ -131,6 +130,44 @@ jobs:
               --no-tests=error \
               -LE performance
 
+  linux-wayland-build:
+    name: Linux bundled GLFW Wayland opt-in build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Wayland build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libwayland-bin \
+            libxkbcommon-dev
+
+      - name: Configure the explicit Wayland backend
+        run: >-
+          cmake -S . -B build/wayland -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DEGE_BUILD_OPENGL=ON
+          -DEGE_USE_BUNDLED_GLFW=ON
+          -DGLFW_BUILD_X11=OFF
+          -DGLFW_BUILD_WAYLAND=ON
+          -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEST=ON
+          -DEGE_BUILD_TEMP=OFF
+
+      - name: Build library, demos, and tests
+        run: |
+          cmake --build build/wayland --parallel 4
+          cmake --build build/wayland --target demos --parallel 4
+
   linux-sanitizers:
     name: Linux ASan and UBSan
     runs-on: ubuntu-latest
@@ -152,7 +189,6 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug \
             -DEGE_BUILD_OPENGL=ON \
             -DEGE_USE_BUNDLED_GLFW=ON \
-            -DGLFW_BUILD_WAYLAND=OFF \
             -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
             -DEGE_BUILD_DEMO=OFF \
             -DEGE_BUILD_TEST=ON \
@@ -202,13 +238,13 @@ jobs:
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: |
           cmake --build build/camera-sanitizers \
-            --target camera_frame_copy_test camera_capture_test \
+            --target camera_frame_copy_test camera_device_lifecycle_test camera_capture_test \
             --parallel 4
           ctest --test-dir build/camera-sanitizers \
             --output-on-failure \
             --timeout 180 \
             --no-tests=error \
-            -R '^(camera_frame_copy|camera_capture_headless)$'
+            -R '^(camera_frame_copy|camera_device_lifecycle|camera_capture_headless)$'
 
   windows-opengl-build:
     name: Windows OpenGL opt-in build and test
@@ -246,7 +282,7 @@ jobs:
           --output-on-failure
           --timeout 180
           --no-tests=error
-          -R "^(rendering_correctness|public_headers|camera_frame_copy|gdi_lifecycle|gdi_process_exit)$"
+          -R "^(default_build_contract|rendering_correctness|public_headers|camera_frame_copy|gdi_lifecycle|gdi_process_exit)$"
 
   ccap-regression:
     name: Bundled ccap core and media regression

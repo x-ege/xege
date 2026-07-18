@@ -64,6 +64,19 @@ xcode-select --install
 如果希望改用系统 GLFW，可配置 `-DEGE_USE_BUNDLED_GLFW=OFF`，并自行安装
 `libglfw3-dev`（Ubuntu）、`glfw`（Arch/Homebrew）等对应开发包。
 
+Linux 的 bundled GLFW 默认只启用 X11（`GLFW_BUILD_X11=ON`、
+`GLFW_BUILD_WAYLAND=OFF`），与上面的默认依赖列表一致。Wayland 是显式 opt-in：
+
+```sh
+sudo apt-get install libwayland-dev libwayland-bin libxkbcommon-dev
+cmake -S . -B build/wayland -G Ninja \
+  -DGLFW_BUILD_X11=OFF \
+  -DGLFW_BUILD_WAYLAND=ON
+```
+
+调用者显式传入的两个 GLFW 选项不会被 EGE 覆盖，因此也可以同时构建 X11 与
+Wayland。当前 CI 会编译 Wayland 配置，但自动化窗口运行测试仍以 X11 + Xvfb 为主。
+
 ### 遗留 mingw-w64 依赖（已弃用）
 
 > ⚠️ **仅在强制使用 `-DEGE_BUILD_OPENGL=OFF` 时需要**
@@ -82,6 +95,8 @@ brew install mingw-w64 wine
 ## Linux/macOS：OpenGL 原生模式（默认）
 
 从 Phase B 开始，Linux/macOS **默认使用 OpenGL 原生模式**，无需额外配置。
+对 Ninja、Unix Makefiles 等单配置生成器，如果没有指定 `CMAKE_BUILD_TYPE`，
+项目默认使用 `Release`；Visual Studio、Xcode 等多配置生成器继续在构建阶段选择配置。
 
 如需显式指定（通常不需要）：
 

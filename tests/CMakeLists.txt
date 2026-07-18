@@ -94,6 +94,10 @@ add_test_executable(putimage_alphablend_comprehensive_test tests/putimage_alphab
 add_test_executable(rendering_correctness_test tests/rendering_correctness_test.cpp)
 add_test_executable(public_headers_test tests/public_headers_test.cpp)
 add_test_executable(camera_frame_copy_test tests/camera_frame_copy_test.cpp)
+if(EGE_ENABLE_CAMERA_CAPTURE)
+    add_test_executable(camera_device_lifecycle_test
+        tests/camera_device_lifecycle_test.cpp)
+endif()
 if(WIN32)
     add_test_executable(gdi_lifecycle_test tests/gdi_lifecycle_test.cpp)
     add_test_executable(gdi_process_exit_test tests/gdi_process_exit_test.cpp)
@@ -138,6 +142,11 @@ set_target_properties(
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+if(EGE_ENABLE_CAMERA_CAPTURE)
+    set_target_properties(camera_device_lifecycle_test PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+endif()
 if(EGE_ENABLE_CAMERA_CAPTURE AND (APPLE OR WIN32))
     set_target_properties(camera_capture_test PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -157,6 +166,13 @@ endif()
 
 # 创建测试目标
 enable_testing()
+add_test(
+    NAME default_build_contract
+    COMMAND ${CMAKE_COMMAND}
+        "-DEGE_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DEGE_BINARY_DIR=${CMAKE_BINARY_DIR}/default-build-contract"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/default_build_contract_test.cmake"
+)
 add_test(NAME putimage_performance COMMAND putimage_performance_test)
 add_test(NAME putimage_basic COMMAND putimage_basic_test)
 add_test(NAME putimage_alphablend COMMAND putimage_alphablend_test)
@@ -167,6 +183,9 @@ add_test(NAME putimage_alphablend_comprehensive COMMAND putimage_alphablend_comp
 add_test(NAME rendering_correctness COMMAND rendering_correctness_test)
 add_test(NAME public_headers COMMAND public_headers_test)
 add_test(NAME camera_frame_copy COMMAND camera_frame_copy_test)
+if(EGE_ENABLE_CAMERA_CAPTURE)
+    add_test(NAME camera_device_lifecycle COMMAND camera_device_lifecycle_test)
+endif()
 if(WIN32)
     add_test(NAME gdi_lifecycle COMMAND gdi_lifecycle_test)
     add_test(NAME gdi_process_exit COMMAND gdi_process_exit_test)
@@ -191,9 +210,19 @@ set_tests_properties(
     putimage_alphablend_comprehensive
     PROPERTIES LABELS "performance"
 )
+set_tests_properties(default_build_contract PROPERTIES
+    LABELS "correctness;configure"
+    TIMEOUT 180
+)
 set_tests_properties(rendering_correctness PROPERTIES LABELS "correctness")
 set_tests_properties(public_headers PROPERTIES LABELS "correctness;compile")
 set_tests_properties(camera_frame_copy PROPERTIES LABELS "correctness;camera")
+if(EGE_ENABLE_CAMERA_CAPTURE)
+    set_tests_properties(camera_device_lifecycle PROPERTIES
+        LABELS "correctness;camera;headless"
+        TIMEOUT 30
+    )
+endif()
 if(WIN32)
     set_tests_properties(gdi_lifecycle PROPERTIES LABELS "correctness;window;input;gdi")
     set_tests_properties(gdi_process_exit PROPERTIES

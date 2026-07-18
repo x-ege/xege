@@ -179,9 +179,13 @@ endif()
 
 project(XEGE)
 
-# Build type
-if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose build type")
+# Build type.  project() creates an empty CMAKE_BUILD_TYPE cache entry for
+# single-config generators, so checking DEFINED does not detect a fresh
+# configuration.  Multi-config generators intentionally keep this empty.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        Debug Release RelWithDebInfo MinSizeRel)
     message(STATUS "CMAKE_BUILD_TYPE: defaulting to Release")
 else()
     message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
@@ -436,6 +440,17 @@ if(EGE_BUILD_OPENGL)
         set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build GLFW documentation" FORCE)
         set(GLFW_INSTALL OFF CACHE BOOL "Generate GLFW install target" FORCE)
         set(GLFW_LIBRARY_TYPE STATIC CACHE STRING "Build GLFW as a static library" FORCE)
+        if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+            # Match XEGE's documented out-of-the-box Linux dependency set.
+            # Preserve explicit caller choices so Wayland or dual-backend GLFW
+            # builds remain available with -DGLFW_BUILD_WAYLAND=ON.
+            if(NOT DEFINED GLFW_BUILD_X11)
+                set(GLFW_BUILD_X11 ON CACHE BOOL "Build GLFW X11 support")
+            endif()
+            if(NOT DEFINED GLFW_BUILD_WAYLAND)
+                set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "Build GLFW Wayland support")
+            endif()
+        endif()
         add_subdirectory("${_EGE_BUNDLED_GLFW_DIR}"
                          "${CMAKE_CURRENT_BINARY_DIR}/_deps/ege_glfw"
                          EXCLUDE_FROM_ALL)

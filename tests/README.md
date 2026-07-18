@@ -6,9 +6,11 @@
 
 | 测试 | 主要覆盖内容 |
 | --- | --- |
+| `default_build_contract` | 从空目录重新配置，验证 Windows 默认 GDI、Linux/macOS 默认 OpenGL、单配置生成器默认 Release，以及 Linux bundled GLFW 的 X11/Wayland 默认值 |
 | `rendering_correctness` | 基础图元、线型、填充、viewport、变换、文字、图片混合、旧版 blur 像素矩阵、PNG/BMP 保存与重新加载 |
 | `public_headers` | 公共头文件、Win32 兼容类型及常量的可编译性 |
 | `camera_frame_copy` | 不依赖设备的 BGRA stride/长度/溢出预检、逐行复制与目标缓冲 guard（所有平台） |
+| `camera_device_lifecycle` | 不依赖视频 fixture 或 GUI 的 provider 创建、设备枚举、失败打开、状态与重复关闭；Linux CI 会实际加载 V4L2 provider |
 | `camera_capture` | 视频 fixture 驱动的相机 open/start/grab/image-copy/stop/close 生命周期（macOS/Windows） |
 | `camera_capture_headless` | 同一 fixture 的无窗口 provider 状态机与原始帧测试，用于无 GPU 的 hosted runner 和 sanitizer |
 | `input_backend` | 键盘、鼠标、Escape、Command+Q 和事件队列语义（OpenGL 后端） |
@@ -104,7 +106,7 @@ ctest --test-dir build/native-sanitize \
   -LE performance
 ```
 
-`camera_frame_copy` 在关闭相机模块时仍会运行，因此 Linux sanitizer 能覆盖帧布局算法。macOS 的相机集成 sanitizer 需启用 camera，并同时给 `CMAKE_CXX_FLAGS` 与 `CMAKE_OBJCXX_FLAGS` 增加相同参数。
+`camera_frame_copy` 在关闭相机模块时仍会运行，因此 Linux sanitizer 能覆盖帧布局算法。启用相机模块时，`camera_device_lifecycle` 会在没有物理设备的 hosted runner 上验证 provider 的枚举、失败与清理路径；发现设备时还会尝试无自动启动地打开并关闭。macOS 的相机集成 sanitizer 需启用 camera，并同时给 `CMAKE_CXX_FLAGS` 与 `CMAKE_OBJCXX_FLAGS` 增加相同参数。
 
 `detect_leaks=0` 表示该命令不提供泄漏门禁；越界访问和未定义行为检查仍然启用。macOS 的 AddressSanitizer 不支持 LeakSanitizer，因此 CI 明确关闭该选项。
 
@@ -115,5 +117,6 @@ ctest --test-dir build/native-sanitize \
 3. 修复共享 API/`RenderTarget` 实现，避免只在测试中绕过真实入口。
 4. 先运行目标测试，再运行全部功能测试，最后运行 Release 全量测试和 demo 构建。
 5. 涉及文件格式时，必须保存到临时文件后重新加载，验证尺寸、方向、颜色和 alpha，而不只检查返回码。
+6. 修改平台默认值时，必须从空构建目录配置且不传被测选项；不得用 CI 显式参数掩盖默认配置错误。
 
 新增测试源文件后，在 `tests/CMakeLists.txt` 中通过 `add_test_executable` 和 `add_test` 注册；窗口测试应能在 Xvfb 下自动完成，不等待人工输入。
