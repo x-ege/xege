@@ -1,4 +1,5 @@
 #include "test_framework.h"
+#include "test_shutdown.h"
 #include "ege.h"
 #include <iostream>
 #include <iomanip>
@@ -47,8 +48,8 @@ bool TestFramework::initialize(int windowWidth, int windowHeight) {
 }
 
 void TestFramework::cleanup() {
-    if (ege::is_run()) {
-        ege::closegraph();
+    if (graphicsWindow && !shutdown_graphics_for_test()) {
+        logWarning("Timed out while shutting down the graphics test window");
     }
     graphicsWindow = nullptr;
     windowHidden = false;

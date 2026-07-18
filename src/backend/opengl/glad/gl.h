@@ -22054,15 +22054,8 @@ int gladLoadGLUserPtr( GLADuserptrloadfunc load, void *userptr) {
 int gladLoadGL( GLADloadfunc load) {
     return gladLoadGLUserPtr( glad_gl_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
 }
-
-
-
- 
-
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* GLAD_GL_IMPLEMENTATION */
-

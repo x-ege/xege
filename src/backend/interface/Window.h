@@ -9,13 +9,17 @@ public:
     virtual bool create(int width, int height, const char* title) = 0;
     virtual void show() = 0;
     virtual void hide() = 0;
+    virtual void setTitle(const char*) {}
+    virtual void setSize(int, int) {}
+    virtual void setPosition(int, int) {}
+    virtual void setCursorVisible(bool) {}
     virtual void close() = 0;
     virtual bool isClosed() = 0;
     virtual void processEvents() = 0;
     virtual void swapBuffers() = 0;
     virtual GraphicsContext* getGraphicsContext() = 0;
     virtual void* getNativeHandle() = 0;
-    
+
     virtual int getWidth() const = 0;
     virtual int getHeight() const = 0;
 };

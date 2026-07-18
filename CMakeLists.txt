@@ -86,6 +86,18 @@ else()
 endif()
 message(STATUS "EGE_BUILD_OPENGL: ${EGE_BUILD_OPENGL}")
 
+set(_EGE_BUNDLED_GLFW_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ccap/examples/desktop/glfw")
+set(_EGE_USE_BUNDLED_GLFW_DEFAULT OFF)
+if(CMAKE_HOST_UNIX AND EGE_BUILD_OPENGL)
+    # Native Unix builds already require the ccap submodule.  Reusing its
+    # pinned GLFW source avoids host-architecture mismatches on macOS and
+    # removes an otherwise implicit glfw3 package dependency on Linux.  Keep
+    # this default even before CMake initializes a missing submodule below.
+    set(_EGE_USE_BUNDLED_GLFW_DEFAULT ON)
+endif()
+option(EGE_USE_BUNDLED_GLFW "Build the GLFW source bundled with the ccap submodule" ${_EGE_USE_BUNDLED_GLFW_DEFAULT})
+message(STATUS "EGE_USE_BUNDLED_GLFW: ${EGE_USE_BUNDLED_GLFW}")
+
 # Derive EGE_BUILD_FOR_LINUX from EGE_BUILD_OPENGL on Unix
 # STRICT ISOLATION: These two flags must be consistent
 if(CMAKE_HOST_UNIX)
@@ -146,9 +158,20 @@ endif()
 if(EGE_IS_ROOT_PROJECT AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
     find_program(CCACHE_FOUND ccache)
     if(CCACHE_FOUND)
-        set(CMAKE_C_COMPILER_LAUNCHER ccache)
-        set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
-        message(STATUS "ccache: enabled")
+        execute_process(
+            COMMAND "${CCACHE_FOUND}" --version
+            RESULT_VARIABLE _EGE_CCACHE_RESULT
+            OUTPUT_QUIET
+            ERROR_QUIET
+        )
+        if(_EGE_CCACHE_RESULT EQUAL 0)
+            set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_FOUND}")
+            set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_FOUND}")
+            message(STATUS "ccache: enabled (${CCACHE_FOUND})")
+        else()
+            message(WARNING "ccache was found but cannot run; building without it")
+        endif()
+        unset(_EGE_CCACHE_RESULT)
     else()
         message(STATUS "ccache: not found")
     endif()
@@ -198,6 +221,10 @@ message(STATUS "EGE_ENABLE_CAMERA_CAPTURE: ${EGE_ENABLE_CAMERA_CAPTURE}")
 # ============================================================================
 
 file(GLOB_RECURSE EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+# Backend implementations are selected explicitly below.  Keeping them in the
+# recursive common-source glob silently compiled both Win32 and OpenGL backends
+# into native Unix builds and defeated the advertised isolation.
+list(FILTER EGE_CPP_SRC EXCLUDE REGEX "/src/backend/(opengl|win32)/")
 add_library(xege STATIC ${EGE_CPP_SRC})
 
 target_include_directories(xege PUBLIC include)
@@ -273,6 +300,31 @@ if(EGE_ENABLE_CAMERA_CAPTURE)
     endif()
     target_include_directories(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/include)
     file(GLOB CCAP_SOURCE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/*.cpp)
+    if(APPLE)
+        # ccap's native provider, file reader and writer are Objective-C++.
+        # Compiling only its *.cpp files produces a library that builds but
+        # fails to link every camera consumer on macOS.
+        # Enable both languages so GLFW's *.m files remain Objective-C while
+        # ccap's *.mm files are compiled as Objective-C++.
+        enable_language(OBJC OBJCXX)
+        file(GLOB CCAP_APPLE_SOURCE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/*.mm)
+        list(APPEND CCAP_SOURCE ${CCAP_APPLE_SOURCE})
+        set_source_files_properties(${CCAP_APPLE_SOURCE} PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+        target_link_libraries(xege PRIVATE
+            "-framework Foundation"
+            "-framework AVFoundation"
+            "-framework CoreVideo"
+            "-framework CoreMedia"
+            "-framework Accelerate"
+        )
+        target_compile_definitions(xege PRIVATE CCAP_ENABLE_FILE_PLAYBACK=1)
+    elseif(UNIX)
+        find_package(Threads REQUIRED)
+        target_link_libraries(xege PRIVATE Threads::Threads)
+    elseif(WIN32)
+        target_link_libraries(xege PRIVATE mf mfplat mfreadwrite mfuuid shlwapi propsys)
+        target_compile_definitions(xege PRIVATE CCAP_ENABLE_FILE_PLAYBACK=1)
+    endif()
     target_sources(xege PRIVATE ${CCAP_SOURCE})
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
 endif()
@@ -373,7 +425,25 @@ endif()
 
 # OpenGL backend (MUTUALLY EXCLUSIVE with GDI on macOS/Linux)
 if(EGE_BUILD_OPENGL)
-    find_package(glfw3 REQUIRED)
+    if(EGE_USE_BUNDLED_GLFW)
+        if(NOT EXISTS "${_EGE_BUNDLED_GLFW_DIR}/CMakeLists.txt")
+            message(FATAL_ERROR
+                "EGE_USE_BUNDLED_GLFW=ON requires the ccap submodule. "
+                "Run 'git submodule update --init --recursive' or set EGE_USE_BUNDLED_GLFW=OFF.")
+        endif()
+        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build GLFW examples" FORCE)
+        set(GLFW_BUILD_TESTS OFF CACHE BOOL "Build GLFW tests" FORCE)
+        set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build GLFW documentation" FORCE)
+        set(GLFW_INSTALL OFF CACHE BOOL "Generate GLFW install target" FORCE)
+        set(GLFW_LIBRARY_TYPE STATIC CACHE STRING "Build GLFW as a static library" FORCE)
+        add_subdirectory("${_EGE_BUNDLED_GLFW_DIR}"
+                         "${CMAKE_CURRENT_BINARY_DIR}/_deps/ege_glfw"
+                         EXCLUDE_FROM_ALL)
+        message(STATUS "GLFW provider: bundled source")
+    else()
+        find_package(glfw3 REQUIRED)
+        message(STATUS "GLFW provider: system package")
+    endif()
     find_package(OpenGL REQUIRED)
     target_link_libraries(xege PRIVATE glfw OpenGL::GL)
     target_compile_definitions(xege PUBLIC EGE_BUILD_OPENGL=1)
@@ -398,6 +468,9 @@ if(EGE_BUILD_DEMO AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/demo/CMakeLists.txt")
 endif()
 
 if(EGE_BUILD_TEST AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+    # enable_testing() must run in the top-level directory for ctest to discover
+    # tests registered by a subdirectory.
+    enable_testing()
     add_subdirectory(tests)
 endif()
 
@@ -406,6 +479,10 @@ if(EGE_BUILD_TEMP AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/temp/CMakeLists.txt")
 endif()
 
 message(STATUS "EGE configuration complete")
-message(STATUS "  Backend: $<IF:$<BOOL:${EGE_BUILD_OPENGL}>,OpenGL,GDI>")
+if(EGE_BUILD_OPENGL)
+    message(STATUS "  Backend: OpenGL")
+else()
+    message(STATUS "  Backend: GDI")
+endif()
 message(STATUS "  Platform: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")

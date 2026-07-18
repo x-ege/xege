@@ -114,17 +114,25 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     elseif(CMAKE_HOST_UNIX)
         set(osLibDir "mingw-w64-debian")
     elseif(MINGW)
-        # Note: Automatic detection of MinGW variant (MSYS2/Code::Blocks/RedPanda) is not reliable
-        # Default to mingw64 (MSYS2). Users should download the package matching their compiler.
-        # Available variants: mingw64 (MSYS2), codeblocks, redpanda (CLion/小熊猫C++)
-        # To use a specific variant, use the matching release package
-        set(osLibDir "mingw64")
-        message(STATUS "Using default MinGW libraries (mingw64). Ensure you downloaded the correct package for your compiler.")
+        set(EGE_MINGW_VARIANT "mingw64" CACHE STRING
+            "EGE MinGW library variant: mingw64, codeblocks, or redpanda")
+        set_property(CACHE EGE_MINGW_VARIANT PROPERTY STRINGS
+            mingw64 codeblocks redpanda)
+        set(_EGE_MINGW_VARIANTS mingw64 codeblocks redpanda)
+        if(NOT EGE_MINGW_VARIANT IN_LIST _EGE_MINGW_VARIANTS)
+            message(FATAL_ERROR
+                "Unsupported EGE_MINGW_VARIANT='${EGE_MINGW_VARIANT}'. "
+                "Choose mingw64, codeblocks, or redpanda.")
+        endif()
+        set(osLibDir "${EGE_MINGW_VARIANT}")
+        message(STATUS "Using MinGW library variant: ${EGE_MINGW_VARIANT}")
     endif()
 
     target_compile_options(ege-common INTERFACE -D_FORTIFY_SOURCE=0)
     target_link_options(ege-common INTERFACE -mwindows -static -static-libgcc -static-libstdc++)
-    target_link_libraries(ege-common INTERFACE graphics gdiplus gdi32 imm32 msimg32 ole32 oleaut32 winmm uuid)
+    target_link_libraries(ege-common INTERFACE
+        graphics gdiplus gdi32 imm32 msimg32 ole32 oleaut32 winmm uuid
+        mf mfplat mfreadwrite mfuuid shlwapi propsys)
 endif()
 
 if(DEFINED osLibDir)

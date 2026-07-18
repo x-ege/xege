@@ -16,7 +16,7 @@ EGE 的子模块已使用 git submodule 进行管理，在克隆源代码后运�
 - **推荐：OpenGL 原生模式（默认）**
   - **这是 Linux/macOS 的默认构建方式**，使用 OpenGL + GLFW 实现真正的原生跨平台。
   - 运行产物为原生可执行文件（无 `.exe` 后缀），无需 wine 模拟层。
-  - 需要系统 OpenGL 与 GLFW 依赖（例如 Ubuntu 上的 `libglfw3-dev` 与 OpenGL 开发包）。
+  - 默认编译子模块中固定版本的 GLFW；系统只需提供 OpenGL 与窗口系统开发文件。
   - 构建时自动启用，无需额外配置。
 
 - **遗留（兼容）模式：交叉编译到 Windows `.exe`（已弃用）**
@@ -50,15 +50,19 @@ windows端可以通过运行根目录下的`build_commands.bat`批处理脚本�
 ### OpenGL 原生模式依赖（推荐，默认启用）
 
 ```sh
-# Ubuntu 16.04及以上发行版
-sudo apt-get install libglfw3-dev libgl1-mesa-dev
+# Ubuntu（默认的 bundled GLFW + X11）
+sudo apt-get install cmake ninja-build xorg-dev libgl1-mesa-dev
 
-# Arch Linux
-sudo pacman -S glfw mesa
+# Arch Linux（默认的 bundled GLFW + X11）
+sudo pacman -S cmake ninja libx11 libxrandr libxinerama libxcursor libxi mesa
 
-# MacOS
-brew install glfw
+# macOS
+xcode-select --install
 ```
+
+默认值 `EGE_USE_BUNDLED_GLFW=ON` 使用 `3rdparty/ccap` 子模块内固定版本的 GLFW。
+如果希望改用系统 GLFW，可配置 `-DEGE_USE_BUNDLED_GLFW=OFF`，并自行安装
+`libglfw3-dev`（Ubuntu）、`glfw`（Arch/Homebrew）等对应开发包。
 
 ### 遗留 mingw-w64 依赖（已弃用）
 
@@ -86,10 +90,13 @@ brew install mingw-w64 wine
   2. 配置并编译
 
   ```sh
-  mkdir -p build/opengl-debug
-  cd build/opengl-debug
-  cmake -DCMAKE_BUILD_TYPE=Debug -DEGE_BUILD_DEMO=ON -DEGE_BUILD_OPENGL=ON ../..
-  cmake --build . --target demos
+  cmake -S . -B build/opengl-debug -G Ninja \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DEGE_BUILD_OPENGL=ON \
+    -DEGE_BUILD_DEMO=ON \
+    -DEGE_BUILD_TEST=ON
+  cmake --build build/opengl-debug
+  cmake --build build/opengl-debug --target demos
   ```
 
 - 使用仓库脚本 `tasks.sh`（示例为 Debug）：
@@ -117,6 +124,30 @@ brew install mingw-w64 wine
   - **原生可执行文件（无 `.exe` 后缀）**：直接运行。
   - **Windows `.exe`（交叉编译产物）**：使用 wine 运行（legacy 兼容模式）。
   - 当构建目录配置为 `-DEGE_BUILD_OPENGL=ON`（原生 OpenGL）时，`tasks.sh` 会拒绝用 wine 运行 `.exe`，避免混用两条工作流。
+
+### 构建与运行测试
+
+`EGE_BUILD_TEST=ON` 会构建旧版图片回归测试，以及渲染、窗口、输入、页面和公共头文件测试：
+
+```sh
+cmake -S . -B build/native-test -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DEGE_BUILD_OPENGL=ON \
+  -DEGE_BUILD_TEST=ON \
+  -DEGE_BUILD_TEMP=OFF
+cmake --build build/native-test
+ctest --test-dir build/native-test --output-on-failure
+```
+
+Linux 的无桌面 CI 可通过 Xvfb 运行窗口测试：
+
+```sh
+xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX" \
+  ctest --test-dir build/native-test --output-on-failure
+```
+
+耗时基准用例名为 `putimage_performance`。只运行功能测试时可加
+`-E '^putimage_performance$'`；发布前建议运行完整测试集。
 
 ## 基本编译步骤
 
@@ -374,11 +405,15 @@ int main(int argc, char const *argv[])
 
 ```
 
-执行前文所述编译步骤后在 `build/temp` 目录下就会生成可执行文件 `temp_test.exe`。
+执行前文所述编译步骤后会在 `build/temp` 目录下生成可执行文件。Windows/legacy
+交叉编译产物为 `temp_test.exe`，Linux/macOS 原生构建产物为 `temp_test`。
 
 ## Linux 环境下编译例程
 
-在 Linux 系统下，编译依赖 EGE 的程序，同样要使用 `mingw-w64` 工具链中的 `g++`，并且根据
-环境可能需要添加额外的编译参数 `-D_FORTIFY_SOURCE=0`
-（参考链接 [undefined reference to `__memcpy_chk'](https://github.com/msys2/MINGW-packages/issues/5868)。
-为了简化单文件编译指令，EGE `utils` 目录下提供了`ege_g++.sh` 脚本，可按需使用。
+Linux 默认使用本机 C++ 编译器和 OpenGL 后端。推荐把应用作为 CMake 目标链接到 `xege`，
+或者链接构建生成的 `libgraphics.a` 及其 GLFW/OpenGL 依赖，不需要 mingw-w64 或 wine。
+
+只有显式配置 `-DEGE_BUILD_OPENGL=OFF` 的遗留路径才使用 mingw-w64。该路径在部分环境下
+可能还需要 `-D_FORTIFY_SOURCE=0`（参考
+[undefined reference to `__memcpy_chk'](https://github.com/msys2/MINGW-packages/issues/5868)）；
+`utils/ege_g++.sh` 也仅用于这条遗留单文件编译流程。

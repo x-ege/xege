@@ -6,7 +6,6 @@ namespace ege
 
 static int _getkey(_graph_setting* pg)
 {
-#ifdef _WIN32
     EGEMSG msg;
 
     while (pg->msgkey_queue->pop(msg)) {
@@ -18,20 +17,29 @@ static int _getkey(_graph_setting* pg)
             return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
         }
     }
-#endif
     return 0;
 }
 
 /*private function*/
 static int peekkey(_graph_setting* pg)
 {
-#ifdef _WIN32
     EGEMSG msg;
 
     while (pg->msgkey_queue->pop(msg)) {
         if (msg.message == WM_CHAR || msg.message == WM_KEYDOWN) {
             if (msg.message == WM_KEYDOWN) {
-                if (msg.wParam <= key_space || (msg.wParam >= key_0 && msg.wParam < key_f1) ||
+                // Printable keys are followed by WM_CHAR and kbhit() should
+                // report that translated character.  GLFW does not emit char
+                // callbacks for controls such as Escape, Enter or Backspace,
+                // so discarding every key below Space loses those keys on the
+                // native backend.
+                if (
+#ifdef _WIN32
+                    msg.wParam <= key_space ||
+#else
+                    msg.wParam == key_space ||
+#endif
+                    (msg.wParam >= key_0 && msg.wParam < key_f1) ||
                     (msg.wParam >= key_semicolon && msg.wParam <= key_quote))
                 {
                     continue;
@@ -50,14 +58,12 @@ static int peekkey(_graph_setting* pg)
             }
         }
     }
-#endif
     return 0;
 }
 
 /*private function*/
 static int peekallkey(_graph_setting* pg, int flag)
 {
-#ifdef _WIN32
     EGEMSG msg;
 
     while (pg->msgkey_queue->pop(msg)) {
@@ -75,7 +81,6 @@ static int peekallkey(_graph_setting* pg, int flag)
             }
         }
     }
-#endif
     return 0;
 }
 
@@ -84,7 +89,6 @@ int getflush()
     struct _graph_setting* pg = &graph_setting;
     int                    lastkey = 0;
 
-#ifdef _WIN32
     EGEMSG                 msg;
     if (!pg->msgkey_queue->empty()) {
         while (pg->msgkey_queue->pop(msg)) {
@@ -95,7 +99,6 @@ int getflush()
             }
         }
     }
-#endif
     return lastkey;
 }
 

@@ -157,10 +157,8 @@ static inline int MessageBoxA(void* /*hWnd*/, const char* /*lpText*/, const char
 }
 
 #ifdef __cplusplus
+#include <cwchar>
 #include <string>
-#include <vector>
-#include <locale>
-#include <codecvt>
 
 // A small, header-only approximation of Win32 MultiByteToWideChar.
 // It primarily supports UTF-8 (CP_UTF8) and a best-effort fallback for other code pages.
@@ -177,8 +175,72 @@ static inline int MultiByteToWideChar(unsigned int CodePage, unsigned long /*dwF
     std::wstring out;
     try {
         if (CodePage == CP_UTF8) {
-            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
-            out = conv.from_bytes(lpMultiByteStr, lpMultiByteStr + inLen);
+            const unsigned char* bytes = reinterpret_cast<const unsigned char*>(lpMultiByteStr);
+            size_t offset = 0;
+            while (offset < inLen) {
+                const unsigned char lead = bytes[offset];
+                uint32_t codepoint = 0xFFFDU;
+                size_t sequenceLength = 1;
+                bool valid = true;
+
+                if (lead < 0x80U) {
+                    codepoint = lead;
+                } else if (lead >= 0xC2U && lead <= 0xDFU) {
+                    sequenceLength = 2;
+                    valid = offset + sequenceLength <= inLen &&
+                            (bytes[offset + 1] & 0xC0U) == 0x80U;
+                    if (valid) {
+                        codepoint = ((lead & 0x1FU) << 6) |
+                                    (bytes[offset + 1] & 0x3FU);
+                    }
+                } else if (lead >= 0xE0U && lead <= 0xEFU) {
+                    sequenceLength = 3;
+                    valid = offset + sequenceLength <= inLen &&
+                            (bytes[offset + 1] & 0xC0U) == 0x80U &&
+                            (bytes[offset + 2] & 0xC0U) == 0x80U;
+                    if (valid) {
+                        valid = !(lead == 0xE0U && bytes[offset + 1] < 0xA0U) &&
+                                !(lead == 0xEDU && bytes[offset + 1] >= 0xA0U);
+                    }
+                    if (valid) {
+                        codepoint = ((lead & 0x0FU) << 12) |
+                                    ((bytes[offset + 1] & 0x3FU) << 6) |
+                                    (bytes[offset + 2] & 0x3FU);
+                    }
+                } else if (lead >= 0xF0U && lead <= 0xF4U) {
+                    sequenceLength = 4;
+                    valid = offset + sequenceLength <= inLen &&
+                            (bytes[offset + 1] & 0xC0U) == 0x80U &&
+                            (bytes[offset + 2] & 0xC0U) == 0x80U &&
+                            (bytes[offset + 3] & 0xC0U) == 0x80U;
+                    if (valid) {
+                        valid = !(lead == 0xF0U && bytes[offset + 1] < 0x90U) &&
+                                !(lead == 0xF4U && bytes[offset + 1] > 0x8FU);
+                    }
+                    if (valid) {
+                        codepoint = ((lead & 0x07U) << 18) |
+                                    ((bytes[offset + 1] & 0x3FU) << 12) |
+                                    ((bytes[offset + 2] & 0x3FU) << 6) |
+                                    (bytes[offset + 3] & 0x3FU);
+                    }
+                } else {
+                    valid = false;
+                }
+
+                if (!valid) {
+                    codepoint = 0xFFFDU;
+                    sequenceLength = 1;
+                }
+                offset += sequenceLength;
+
+                if (sizeof(wchar_t) == 2 && codepoint > 0xFFFFU) {
+                    codepoint -= 0x10000U;
+                    out.push_back(static_cast<wchar_t>(0xD800U + (codepoint >> 10)));
+                    out.push_back(static_cast<wchar_t>(0xDC00U + (codepoint & 0x3FFU)));
+                } else {
+                    out.push_back(static_cast<wchar_t>(codepoint));
+                }
+            }
         } else {
             // Best-effort: treat input as current locale multibyte.
             std::mbstate_t st{};
@@ -236,18 +298,18 @@ typedef void* HMODULE;
 typedef void* LPVOID;
 typedef void* PVOID;
 typedef void* HANDLE;
-typedef unsigned long DWORD;
-typedef unsigned short WORD;
-typedef unsigned char BYTE;
-typedef unsigned int UINT;
-typedef long LONG;
+typedef uint32_t DWORD;
+typedef uint16_t WORD;
+typedef uint8_t BYTE;
+typedef uint32_t UINT;
+typedef int32_t LONG;
 typedef int BOOL;
 typedef const char* LPCSTR;
 typedef char* LPSTR;
 typedef const wchar_t* LPCWSTR;
 typedef wchar_t* LPWSTR;
-typedef long long LONG_PTR;
-typedef unsigned long long ULONG_PTR;
+typedef intptr_t LONG_PTR;
+typedef uintptr_t ULONG_PTR;
 typedef LONG_PTR LRESULT;
 typedef ULONG_PTR WPARAM;
 typedef LONG_PTR LPARAM;
@@ -257,7 +319,7 @@ typedef union _LARGE_INTEGER {
         DWORD LowPart;
         LONG HighPart;
     } u;
-    long long QuadPart;
+    int64_t QuadPart;
 } LARGE_INTEGER;
 
 typedef void* HBRUSH;
@@ -384,6 +446,50 @@ typedef struct tagLOGFONTW {
 #ifndef FALSE
 #define FALSE 0
 #endif
+
+// Win32-compatible input message constants used by the portable event queue.
+#define WM_KEYFIRST       0x0100
+#define WM_KEYDOWN        0x0100
+#define WM_KEYUP          0x0101
+#define WM_CHAR           0x0102
+#define WM_KEYLAST        0x0109
+#define WM_MOUSEFIRST     0x0200
+#define WM_MOUSEMOVE      0x0200
+#define WM_LBUTTONDOWN    0x0201
+#define WM_LBUTTONUP      0x0202
+#define WM_LBUTTONDBLCLK  0x0203
+#define WM_RBUTTONDOWN    0x0204
+#define WM_RBUTTONUP      0x0205
+#define WM_RBUTTONDBLCLK  0x0206
+#define WM_MBUTTONDOWN    0x0207
+#define WM_MBUTTONUP      0x0208
+#define WM_MBUTTONDBLCLK  0x0209
+#define WM_XBUTTONDOWN    0x020B
+#define WM_XBUTTONUP      0x020C
+#define WM_XBUTTONDBLCLK  0x020D
+#define WM_MOUSELAST      0x020D
+
+#define MK_LBUTTON  0x0001
+#define MK_RBUTTON  0x0002
+#define MK_SHIFT    0x0004
+#define MK_CONTROL  0x0008
+#define MK_MBUTTON  0x0010
+#define MK_XBUTTON1 0x0020
+#define MK_XBUTTON2 0x0040
+
+#define VK_LBUTTON  0x01
+#define VK_RBUTTON  0x02
+#define VK_MBUTTON  0x04
+#define VK_XBUTTON1 0x05
+#define VK_XBUTTON2 0x06
+
+#define MAKELPARAM(low, high) ((LPARAM)((uint16_t)(low) | ((uint32_t)(uint16_t)(high) << 16)))
+#define GET_X_LPARAM(value) ((int)(int16_t)((uintptr_t)(value) & 0xFFFFU))
+#define GET_Y_LPARAM(value) ((int)(int16_t)(((uintptr_t)(value) >> 16) & 0xFFFFU))
+#define GET_WHEEL_DELTA_WPARAM(value) ((int)(int16_t)(((uintptr_t)(value) >> 16) & 0xFFFFU))
+#define GET_XBUTTON_WPARAM(value) ((unsigned int)(((uintptr_t)(value) >> 16) & 0xFFFFU))
+#define XBUTTON1 0x0001
+#define XBUTTON2 0x0002
 
 #define CW_USEDEFAULT ((int)0x80000000)
 
@@ -3736,8 +3842,8 @@ ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);
 #else // !EGE_GDIPLUS
 
 // Cross-platform fallback declarations when GDI+ enhanced backend is not available.
-// These APIs are kept for source compatibility (e.g. demos) and are implemented
-// as lightweight wrappers or no-ops on non-Windows builds.
+// These APIs provide the portable enhanced-drawing subset used by existing EGE
+// programs. Platform-specific GDI+ objects remain available only on Windows.
 
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 

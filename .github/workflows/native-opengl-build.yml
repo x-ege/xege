@@ -1,0 +1,297 @@
+name: Native OpenGL Build and Test
+
+on:
+  push:
+    branches: [master, feature/opengl-backend]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-opengl-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-build-and-test:
+    name: ${{ matrix.os-name }} ${{ matrix.build-type }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os-name: Linux
+            runner: ubuntu-latest
+            build-type: Debug
+          - os-name: Linux
+            runner: ubuntu-latest
+            build-type: Release
+          - os-name: macOS ARM64
+            runner: macos-15
+            build-type: Debug
+          - os-name: macOS ARM64
+            runner: macos-15
+            build-type: Release
+          - os-name: macOS Intel
+            runner: macos-15-intel
+            build-type: Release
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Linux build and display dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build xorg-dev libgl1-mesa-dev xvfb
+
+      - name: Configure native OpenGL build
+        run: >-
+          cmake -S . -B build/native -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+          -DEGE_BUILD_OPENGL=ON
+          -DEGE_USE_BUNDLED_GLFW=ON
+          -DGLFW_BUILD_WAYLAND=OFF
+          -DEGE_ENABLE_CAMERA_CAPTURE=ON
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEST=ON
+          -DEGE_BUILD_TEMP=OFF
+
+      - name: Build library, demos, and tests
+        run: |
+          cmake --build build/native --parallel 4
+          cmake --build build/native --target demos --parallel 4
+
+      - name: Run native functional tests
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX" \
+              ctest --test-dir build/native --output-on-failure --timeout 180 \
+                --no-tests=error \
+                -E '^putimage_performance$'
+          else
+            ctest --test-dir build/native --output-on-failure --timeout 180 \
+              --no-tests=error \
+              -E '^putimage_performance$'
+          fi
+
+      - name: Run the performance suite once
+        if: runner.os == 'Linux' && matrix.build-type == 'Release'
+        run: >
+          xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX"
+          ctest --test-dir build/native
+          --output-on-failure
+          --no-tests=error
+          --timeout 300
+          -R "^putimage_performance$"
+
+  linux-system-glfw:
+    name: Linux system GLFW Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build, GLFW, and display dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build xorg-dev libgl1-mesa-dev libglfw3-dev xvfb
+
+      - name: Configure with the system GLFW package
+        run: >-
+          cmake -S . -B build/system-glfw -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DEGE_BUILD_OPENGL=ON
+          -DEGE_USE_BUNDLED_GLFW=OFF
+          -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEST=ON
+          -DEGE_BUILD_TEMP=OFF
+
+      - name: Build and test
+        run: |
+          cmake --build build/system-glfw --parallel 4
+          cmake --build build/system-glfw --target demos --parallel 4
+          xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX" \
+            ctest --test-dir build/system-glfw --output-on-failure --timeout 180 \
+              --no-tests=error \
+              -E '^putimage_performance$'
+
+  linux-sanitizers:
+    name: Linux ASan and UBSan
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build and display dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build xorg-dev libgl1-mesa-dev xvfb
+
+      - name: Configure sanitizer build
+        run: |
+          cmake -S . -B build/sanitizers -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DEGE_BUILD_OPENGL=ON \
+            -DEGE_USE_BUNDLED_GLFW=ON \
+            -DGLFW_BUILD_WAYLAND=OFF \
+            -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
+            -DEGE_BUILD_DEMO=OFF \
+            -DEGE_BUILD_TEST=ON \
+            -DEGE_BUILD_TEMP=OFF \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer" \
+            -DCMAKE_OBJCXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build and run functional tests under sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: |
+          cmake --build build/sanitizers --parallel 4
+          xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX" \
+            ctest --test-dir build/sanitizers --output-on-failure --timeout 300 \
+              --no-tests=error \
+              -E '^putimage_performance$'
+
+  macos-camera-sanitizers:
+    name: macOS camera ASan and UBSan
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure camera sanitizer build
+        run: |
+          cmake -S . -B build/camera-sanitizers -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DEGE_BUILD_OPENGL=ON \
+            -DEGE_USE_BUNDLED_GLFW=ON \
+            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
+            -DEGE_BUILD_DEMO=OFF \
+            -DEGE_BUILD_TEST=ON \
+            -DEGE_BUILD_TEMP=OFF \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer" \
+            -DCMAKE_OBJCXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build and run camera copy regressions under sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: |
+          cmake --build build/camera-sanitizers \
+            --target camera_frame_copy_test camera_capture_test \
+            --parallel 4
+          ctest --test-dir build/camera-sanitizers \
+            --output-on-failure \
+            --timeout 180 \
+            --no-tests=error \
+            -R '^(camera_frame_copy|camera_capture)$'
+
+  windows-opengl-build:
+    name: Windows OpenGL opt-in build and test
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure explicit OpenGL backend
+        run: >
+          cmake -S . -B build/windows-opengl
+          -A x64
+          -DEGE_BUILD_OPENGL=ON
+          -DEGE_USE_BUNDLED_GLFW=ON
+          -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEST=ON
+          -DEGE_BUILD_TEMP=OFF
+
+      - name: Build the opt-in backend, tests, and demos
+        run: |
+          cmake --build build/windows-opengl --config Release --parallel
+          cmake --build build/windows-opengl --config Release --target demos --parallel
+
+      - name: Run GDI compatibility and opt-in OpenGL tests
+        run: >
+          ctest --test-dir build/windows-opengl
+          -C Release
+          --output-on-failure
+          --timeout 180
+          --no-tests=error
+          -E "^putimage_performance$"
+
+  ccap-regression:
+    name: Bundled ccap core and media regression
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Ensure media test tooling is available
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            brew install ffmpeg
+          fi
+
+      # ccap currently locates test-data by walking up from the process cwd,
+      # so keep its standalone build below the submodule source tree.  Running
+      # it as a separate root also avoids its tests/CMakeLists.txt use of
+      # CMAKE_SOURCE_DIR from accidentally resolving to XEGE.
+      - name: Configure ccap standalone tests
+        run: >-
+          cmake -S 3rdparty/ccap -B 3rdparty/ccap/build/ci -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCCAP_BUILD_TESTS=ON
+          -DCCAP_BUILD_EXAMPLES=OFF
+          -DCCAP_BUILD_CLI=ON
+          -DCCAP_ENABLE_FILE_PLAYBACK=ON
+          -DCCAP_ENABLE_VIDEO_WRITER=ON
+          -DCCAP_INSTALL=OFF
+
+      - name: Build ccap tests
+        run: cmake --build 3rdparty/ccap/build/ci --parallel 4
+
+      - name: Run ccap conversion and helper tests
+        working-directory: 3rdparty/ccap/build/ci
+        run: |
+          ./tests/ccap_example_helper_test --gtest_brief=1
+          ./tests/ccap_cli_args_parser_test --gtest_brief=1
+          ./tests/ccap_convert_test --gtest_brief=1
+
+      - name: Run device-independent ccap CLI tests
+        working-directory: 3rdparty/ccap/build/ci
+        run: >-
+          ./tests/ccap_cli_test
+          '--gtest_filter=-CCAPCLIDeviceTest.*:CCAPCLITest.FrameOrientationMatchesFFmpeg_BMP:CCAPCLITest.FrameOrientationMatchesFFmpeg_PNG:CCAPCLITest.FrameOrientationMatchesFFmpeg_JPG'
+          --gtest_brief=1
+
+      - name: Run ccap file, memory, and writer tests sequentially
+        working-directory: 3rdparty/ccap/build/ci
+        run: |
+          ./tests/ccap_file_playback_test --gtest_brief=1
+          ./tests/ccap_memory_safety_test --gtest_brief=1
+          ./tests/ccap_video_writer_test --gtest_brief=1

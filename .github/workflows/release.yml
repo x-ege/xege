@@ -12,9 +12,25 @@ on:
       - 'v*'
     branches:
       - master
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - '.github/release-assets/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'include/**'
+      - 'src/**'
+      - 'demo/**'
+      - 'tests/**'
+      - '3rdparty/ccap'
+      - '.gitmodules'
 
 permissions:
-  contents: write  # Required for creating releases and uploading assets
+  contents: read
+
+concurrency:
+  group: release-package-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Job 0: Validate and determine release type
@@ -37,35 +53,49 @@ jobs:
       
       - name: Validate release and extract version
         id: validate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          set -e
+          set -euo pipefail
           
           # Extract version from ege.h
-          EGE_VERSION_MAJOR=$(grep -oP '#define\s+EGE_VERSION_MAJOR\s+\K\d+' include/ege.h)
-          EGE_VERSION_MINOR=$(grep -oP '#define\s+EGE_VERSION_MINOR\s+\K\d+' include/ege.h)
-          EGE_VERSION_PATCH=$(grep -oP '#define\s+EGE_VERSION_PATCH\s+\K\d+' include/ege.h)
+          EGE_VERSION_MAJOR=$(awk '$1 == "#define" && $2 == "EGE_VERSION_MAJOR" { print $3 }' include/ege.h)
+          EGE_VERSION_MINOR=$(awk '$1 == "#define" && $2 == "EGE_VERSION_MINOR" { print $3 }' include/ege.h)
+          EGE_VERSION_PATCH=$(awk '$1 == "#define" && $2 == "EGE_VERSION_PATCH" { print $3 }' include/ege.h)
+          if [[ ! "$EGE_VERSION_MAJOR" =~ ^[0-9]+$ ]] || \
+             [[ ! "$EGE_VERSION_MINOR" =~ ^[0-9]+$ ]] || \
+             [[ ! "$EGE_VERSION_PATCH" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: EGE_VERSION components in include/ege.h must be single numeric values."
+            exit 1
+          fi
           HEADER_VERSION="${EGE_VERSION_MAJOR}.${EGE_VERSION_MINOR}.${EGE_VERSION_PATCH}"
           
           echo "Header version: $HEADER_VERSION"
-          
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+
+          IS_OFFICIAL_RELEASE=false
+          CREATE_GITHUB_RELEASE=false
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             # Manual trigger - test release
-            VERSION="${{ inputs.version }}"
+            VERSION="$INPUT_VERSION"
+            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9_]+)?$ ]]; then
+              echo "ERROR: Manual version '$VERSION' must match major.minor[.patch][-suffix]."
+              exit 1
+            fi
             echo "Manual test release triggered with version: $VERSION"
-            echo "is_official_release=false" >> $GITHUB_OUTPUT
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "version_tag=test-$VERSION" >> $GITHUB_OUTPUT
-            echo "create_github_release=false" >> $GITHUB_OUTPUT
+            VERSION_TAG="test-$VERSION"
             
-          elif [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.ref_name }}" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            # Tag push - try official release, fallback to test release if validation fails
-            TAG_NAME="${{ github.ref_name }}"
+          elif [ "$EVENT_NAME" = "push" ] && [[ "$REF" == refs/tags/* ]]; then
+            # A v* tag is an official-release request. Invalid release tags must
+            # fail instead of silently producing a non-release package.
+            TAG_NAME="$REF_NAME"
             echo "Tag push detected: $TAG_NAME"
-            
-            # Flag to track if tag validation passed
-            TAG_VALIDATION_PASSED=false
-            TAG_VALIDATION_ERROR=""
-            
+
             # Validate tag format: v(\d+)\.(\d+)(\.(\d+))?(-\w+)?
             if [[ "$TAG_NAME" =~ ^v([0-9]+)\.([0-9]+)(\.([0-9]+))?(-[a-zA-Z0-9_]+)?$ ]]; then
               # Extract version components from tag
@@ -81,80 +111,67 @@ jobs:
               
               TAG_VERSION="${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}"
               echo "Parsed tag version: $TAG_VERSION (suffix: ${TAG_SUFFIX:-none})"
-              
-              # Validate version matches header
-              if [ "$TAG_VERSION" = "$HEADER_VERSION" ]; then
-                # Check if tag is on master branch
-                # Use git merge-base to check if tag is reachable from origin/master
-                if git merge-base --is-ancestor "$TAG_NAME" origin/master 2>/dev/null; then
-                  echo "✓ Tag validation passed"
-                  TAG_VALIDATION_PASSED=true
-                else
-                  TAG_VALIDATION_ERROR="Tag '$TAG_NAME' is not on the master branch"
-                fi
-              else
-                TAG_VALIDATION_ERROR="Tag version ($TAG_VERSION) does not match EGE_VERSION in ege.h ($HEADER_VERSION)"
-              fi
             else
-              TAG_VALIDATION_ERROR="Tag '$TAG_NAME' does not match required format: v{major}.{minor}[.{patch}][-suffix]. Examples: v25.11, v25.11.0, v25.11-rc, v25.11.1-beta"
+              echo "ERROR: Tag '$TAG_NAME' does not match v{major}.{minor}[.{patch}][-suffix]."
+              exit 1
             fi
-            
-            if [ "$TAG_VALIDATION_PASSED" = true ]; then
-              echo "is_official_release=true" >> $GITHUB_OUTPUT
-              
-              # Use version without 'v' prefix for package name
-              VERSION="${TAG_MAJOR}.${TAG_MINOR}"
-              if [ "$TAG_PATCH" != "0" ]; then
-                VERSION="${VERSION}.${TAG_PATCH}"
-              fi
-              if [ -n "$TAG_SUFFIX" ]; then
-                VERSION="${VERSION}${TAG_SUFFIX}"
-              fi
-              
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-              echo "version_tag=$TAG_NAME" >> $GITHUB_OUTPUT
-              echo "create_github_release=true" >> $GITHUB_OUTPUT
-            else
-              # Tag validation failed, fallback to test release
-              echo "⚠ Tag validation failed: $TAG_VALIDATION_ERROR"
-              echo "Falling back to test release with tag name as version suffix"
-              echo "is_official_release=false" >> $GITHUB_OUTPUT
-              
-              VERSION="${EGE_VERSION_MAJOR}.${EGE_VERSION_MINOR}"
-              if [ "$EGE_VERSION_PATCH" != "0" ]; then
-                VERSION="${VERSION}.${EGE_VERSION_PATCH}"
-              fi
-              # Use tag name as version suffix for identification
-              VERSION="${VERSION}-tag-${TAG_NAME}"
-              
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-              echo "version_tag=test-${TAG_NAME}" >> $GITHUB_OUTPUT
-              echo "create_github_release=false" >> $GITHUB_OUTPUT
+
+            if [ "$TAG_VERSION" != "$HEADER_VERSION" ]; then
+              echo "ERROR: Tag version ($TAG_VERSION) does not match EGE_VERSION ($HEADER_VERSION)."
+              exit 1
             fi
+            if ! git merge-base --is-ancestor "$COMMIT_SHA" origin/master; then
+              echo "ERROR: Tag '$TAG_NAME' is not reachable from origin/master."
+              exit 1
+            fi
+
+            echo "✓ Official release tag validation passed"
+            IS_OFFICIAL_RELEASE=true
+            CREATE_GITHUB_RELEASE=true
+            VERSION="${TAG_MAJOR}.${TAG_MINOR}"
+            if [ "$TAG_PATCH" != "0" ]; then
+              VERSION="${VERSION}.${TAG_PATCH}"
+            fi
+            if [ -n "$TAG_SUFFIX" ]; then
+              VERSION="${VERSION}${TAG_SUFFIX}"
+            fi
+            VERSION_TAG="$TAG_NAME"
             
-          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/master" ]; then
+          elif [ "$EVENT_NAME" = "push" ] && [ "$REF" = "refs/heads/master" ]; then
             # Push to master - test release with header version
             VERSION="${EGE_VERSION_MAJOR}.${EGE_VERSION_MINOR}"
             if [ "$EGE_VERSION_PATCH" != "0" ]; then
               VERSION="${VERSION}.${EGE_VERSION_PATCH}"
             fi
-            COMMIT_SHA="${{ github.sha }}"
             COMMIT_SHORT=$(echo "$COMMIT_SHA" | cut -c1-7)
             VERSION="${VERSION}-dev-${COMMIT_SHORT}"
             
             echo "Master branch push detected"
             echo "Creating test release with version: $VERSION"
-            echo "is_official_release=false" >> $GITHUB_OUTPUT
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "version_tag=dev-${COMMIT_SHORT}" >> $GITHUB_OUTPUT
-            echo "create_github_release=false" >> $GITHUB_OUTPUT
+            VERSION_TAG="dev-${COMMIT_SHORT}"
+
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            VERSION="${EGE_VERSION_MAJOR}.${EGE_VERSION_MINOR}"
+            if [ "$EGE_VERSION_PATCH" != "0" ]; then
+              VERSION="${VERSION}.${EGE_VERSION_PATCH}"
+            fi
+            COMMIT_SHORT=$(echo "$COMMIT_SHA" | cut -c1-7)
+            VERSION="${VERSION}-pr-${PR_NUMBER}-${COMMIT_SHORT}"
+            VERSION_TAG="pr-${PR_NUMBER}-${COMMIT_SHORT}"
+            echo "Pull request dry-run package: $VERSION"
             
           else
             echo "Error: Unexpected trigger condition"
             exit 1
           fi
-          
-          echo "Final version: $(cat $GITHUB_OUTPUT | grep '^version=' | cut -d= -f2)"
+
+          {
+            echo "is_official_release=$IS_OFFICIAL_RELEASE"
+            echo "version=$VERSION"
+            echo "version_tag=$VERSION_TAG"
+            echo "create_github_release=$CREATE_GITHUB_RELEASE"
+          } >> "$GITHUB_OUTPUT"
+          echo "Final version: $VERSION"
   
   # Job 1: Build MSVC libraries
   build-msvc-libraries:
@@ -163,29 +180,30 @@ jobs:
     permissions:
       contents: read
     strategy:
+      fail-fast: false
       matrix:
         include:
           # VS2022 - x64 and x86, Debug and Release
           - name: VS2022
-            os: windows-latest
+            os: windows-2022
             toolset: v143
             arch: x64
             config: Release
             cmake_arch: x64
           - name: VS2022
-            os: windows-latest
+            os: windows-2022
             toolset: v143
             arch: x64
             config: Debug
             cmake_arch: x64
           - name: VS2022
-            os: windows-latest
+            os: windows-2022
             toolset: v143
             arch: x86
             config: Release
             cmake_arch: Win32
           - name: VS2022
-            os: windows-latest
+            os: windows-2022
             toolset: v143
             arch: x86
             config: Debug
@@ -193,63 +211,101 @@ jobs:
           
           # VS2019 - x64 and x86, Debug and Release
           - name: VS2019
-            os: windows-2019
+            os: windows-2022
             toolset: v142
             arch: x64
             config: Release
             cmake_arch: x64
           - name: VS2019
-            os: windows-2019
+            os: windows-2022
             toolset: v142
             arch: x64
             config: Debug
             cmake_arch: x64
           - name: VS2019
-            os: windows-2019
+            os: windows-2022
             toolset: v142
             arch: x86
             config: Release
             cmake_arch: Win32
           - name: VS2019
-            os: windows-2019
+            os: windows-2022
             toolset: v142
             arch: x86
             config: Debug
             cmake_arch: Win32
-          
-          # VS2017 - x64 and x86, Debug and Release
+
+          # VS2017 compatibility - build with the v141 toolset hosted by VS2022.
+          # The component is installed explicitly because it is optional on the
+          # windows-2022 runner image.
           - name: VS2017
-            os: windows-2019
+            os: windows-2022
             toolset: v141
             arch: x64
             config: Release
             cmake_arch: x64
           - name: VS2017
-            os: windows-2019
+            os: windows-2022
             toolset: v141
             arch: x64
             config: Debug
             cmake_arch: x64
           - name: VS2017
-            os: windows-2019
+            os: windows-2022
             toolset: v141
             arch: x86
             config: Release
             cmake_arch: Win32
           - name: VS2017
-            os: windows-2019
+            os: windows-2022
             toolset: v141
             arch: x86
             config: Debug
             cmake_arch: Win32
     
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Install VS2017 v141 compatibility toolset
+        if: matrix.toolset == 'v141'
+        shell: powershell
+        run: |
+          $component = "Microsoft.VisualStudio.Component.VC.v141.x86.x64"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
+          $installPath = & $vswhere -latest -products * -version "[17.0,18.0)" -property installationPath
+          if (-not $installPath) {
+            throw "Visual Studio 2022 installation not found"
+          }
+
+          $componentPath = & $vswhere -latest -products * -version "[17.0,18.0)" -requires $component -property installationPath
+          if (-not $componentPath) {
+            Write-Host "Installing $component into $installPath"
+            $quotedInstallPath = '"' + $installPath + '"'
+            $arguments = @(
+              "modify",
+              "--installPath", $quotedInstallPath,
+              "--add", $component,
+              "--quiet",
+              "--norestart"
+            )
+            $process = Start-Process -FilePath $installer -ArgumentList $arguments -Wait -PassThru
+            if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
+              throw "Visual Studio Installer failed with exit code $($process.ExitCode)"
+            }
+          }
+
+          $componentPath = & $vswhere -latest -products * -version "[17.0,18.0)" -requires $component -property installationPath
+          if (-not $componentPath) {
+            throw "$component was not registered after installation"
+          }
+          Write-Host "VS2017 v141 compatibility toolset is available"
       
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
@@ -258,15 +314,46 @@ jobs:
         run: |
           mkdir build-${{ matrix.config }}-${{ matrix.arch }}
           cd build-${{ matrix.config }}-${{ matrix.arch }}
-          cmake .. -A ${{ matrix.cmake_arch }} -T ${{ matrix.toolset }} -DEGE_BUILD_DEMO=ON
+          cmake .. -A ${{ matrix.cmake_arch }} -T ${{ matrix.toolset }} `
+            -DEGE_BUILD_OPENGL=OFF `
+            -DEGE_ENABLE_CAMERA_CAPTURE=ON `
+            -DEGE_BUILD_DEMO=ON `
+            -DEGE_BUILD_TEST=ON `
+            -DEGE_BUILD_TEMP=OFF
           cmake --build . --config ${{ matrix.config }} --parallel
+          cmake --build . --config ${{ matrix.config }} --target demos --parallel
+
+      - name: Run release-library functional tests
+        if: matrix.arch == 'x64'
+        run: >
+          ctest --test-dir build-${{ matrix.config }}-${{ matrix.arch }}
+          -C ${{ matrix.config }}
+          --output-on-failure
+          --timeout 300
+          --no-tests=error
+          -E "^putimage_performance$"
+
+      - name: Run 32-bit frame-layout compatibility test
+        if: matrix.arch == 'x86'
+        run: >
+          ctest --test-dir build-${{ matrix.config }}-${{ matrix.arch }}
+          -C ${{ matrix.config }}
+          --output-on-failure
+          --timeout 60
+          --no-tests=error
+          -R "^camera_frame_copy$"
       
       - name: Collect artifacts
         shell: powershell
         run: |
           $libDir = "${{ matrix.name }}/${{ matrix.arch }}/${{ matrix.config }}"
           New-Item -ItemType Directory -Force -Path "artifacts/$libDir"
-          Get-ChildItem -Path "build-${{ matrix.config }}-${{ matrix.arch }}" -Recurse -Filter "*.lib" | Copy-Item -Destination "artifacts/$libDir/"
+          $libraryName = if ("${{ matrix.config }}" -eq "Debug") { "graphicsd.lib" } else { "graphics.lib" }
+          $libraryPath = "build-${{ matrix.config }}-${{ matrix.arch }}/${{ matrix.config }}/$libraryName"
+          if (-not (Test-Path $libraryPath)) {
+            throw "Expected EGE library not found: $libraryPath"
+          }
+          Copy-Item $libraryPath -Destination "artifacts/$libDir/$libraryName"
           Write-Host "Collected libraries:"
           Get-ChildItem "artifacts/$libDir/"
       
@@ -304,7 +391,7 @@ jobs:
             # URL from: https://github.com/brechtsanders/winlibs_mingw/releases
             gcc_url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip"
     
-    runs-on: windows-latest
+    runs-on: windows-2022
     
     steps:
       - name: Checkout repository
@@ -334,11 +421,19 @@ jobs:
           mkdir -p build-release
           cd build-release
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
+          cmake .. -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DEGE_BUILD_OPENGL=OFF \
+            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
+            -DEGE_BUILD_DEMO=ON \
+            -DEGE_BUILD_TEST=ON \
+            -DEGE_BUILD_TEMP=OFF
           cmake --build . --parallel $(nproc)
+          cmake --build . --target demos --parallel $(nproc)
+          ctest --output-on-failure --timeout 300 --no-tests=error -E '^putimage_performance$'
           
           mkdir -p ../artifacts/${{ matrix.lib_dir }}
-          find . -name "*.a" -exec cp {} ../artifacts/${{ matrix.lib_dir }}/ \;
+          cp libgraphics.a ../artifacts/${{ matrix.lib_dir }}/libgraphics.a
           
           echo "Collected libraries:"
           ls -la ../artifacts/${{ matrix.lib_dir }}/
@@ -378,15 +473,17 @@ jobs:
           mkdir build-release
           cd build-release
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_OPENGL=OFF -DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_BUILD_DEMO=ON -DEGE_BUILD_TEST=ON -DEGE_BUILD_TEMP=OFF
           cmake --build . --parallel
+          cmake --build . --target demos --parallel
+          ctest --output-on-failure --timeout 300 --no-tests=error -E "^putimage_performance$"
       
       - name: Collect WinLibs artifacts
         if: ${{ !matrix.use_msys2 }}
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path "artifacts/${{ matrix.lib_dir }}"
-          Get-ChildItem -Path "build-release" -Recurse -Filter "*.a" | Copy-Item -Destination "artifacts/${{ matrix.lib_dir }}/"
+          Copy-Item "build-release/libgraphics.a" -Destination "artifacts/${{ matrix.lib_dir }}/libgraphics.a"
           Write-Host "Collected libraries:"
           Get-ChildItem "artifacts/${{ matrix.lib_dir }}/"
       
@@ -440,11 +537,23 @@ jobs:
           mkdir -p build-release
           cd build-release
           
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DEGE_BUILD_OPENGL=OFF \
+            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
+            -DEGE_BUILD_DEMO=ON \
+            -DEGE_BUILD_TEST=OFF \
+            -DEGE_BUILD_TEMP=OFF
+          grep -Eq '^EGE_BUILD_FOR_LINUX:BOOL=OFF$' CMakeCache.txt
+          grep -R -Eq '^set\(CMAKE_SYSTEM_NAME "Windows"\)$' CMakeFiles/*/CMakeSystem.cmake
           cmake --build . --parallel
+          cmake --build . --target demos --parallel
+          test -f libgraphics.a
+          x86_64-w64-mingw32-objdump -f libgraphics.a | \
+            grep -Eq 'file format (pe|pei)-x86-64'
           
           mkdir -p ../artifacts/${{ matrix.lib_dir }}
-          find . -name "*.a" -exec cp {} ../artifacts/${{ matrix.lib_dir }}/ \;
+          cp libgraphics.a ../artifacts/${{ matrix.lib_dir }}/libgraphics.a
           
           echo "Collected libraries:"
           ls -la ../artifacts/${{ matrix.lib_dir }}/
@@ -461,7 +570,7 @@ jobs:
     name: Create Release Package
     needs: [validate-and-setup, build-msvc-libraries, build-mingw-windows-libraries, build-cross-libraries]
     permissions:
-      contents: write  # Required for creating releases and uploading assets
+      contents: read
     runs-on: ubuntu-latest
     
     steps:
@@ -472,22 +581,28 @@ jobs:
       
       - name: Use validated version
         id: version
+        env:
+          VERSION: ${{ needs.validate-and-setup.outputs.version }}
+          IS_OFFICIAL_RELEASE: ${{ needs.validate-and-setup.outputs.is_official_release }}
+          CREATE_GITHUB_RELEASE: ${{ needs.validate-and-setup.outputs.create_github_release }}
         run: |
-          VERSION="${{ needs.validate-and-setup.outputs.version }}"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Release version: $VERSION"
-          echo "Is official release: ${{ needs.validate-and-setup.outputs.is_official_release }}"
-          echo "Create GitHub Release: ${{ needs.validate-and-setup.outputs.create_github_release }}"
+          echo "Is official release: $IS_OFFICIAL_RELEASE"
+          echo "Create GitHub Release: $CREATE_GITHUB_RELEASE"
       
       - name: Verify official release configuration
         if: needs.validate-and-setup.outputs.is_official_release == 'true'
+        env:
+          CREATE_GITHUB_RELEASE: ${{ needs.validate-and-setup.outputs.create_github_release }}
+          VERSION_TAG: ${{ needs.validate-and-setup.outputs.version_tag }}
         run: |
           echo "✓ Official release detected"
-          echo "  create_github_release=${{ needs.validate-and-setup.outputs.create_github_release }}"
-          echo "  version_tag=${{ needs.validate-and-setup.outputs.version_tag }}"
+          echo "  create_github_release=$CREATE_GITHUB_RELEASE"
+          echo "  version_tag=$VERSION_TAG"
           
           # Ensure create_github_release is true for official releases
-          if [ "${{ needs.validate-and-setup.outputs.create_github_release }}" != "true" ]; then
+          if [ "$CREATE_GITHUB_RELEASE" != "true" ]; then
             echo "ERROR: Official release should have create_github_release=true"
             exit 1
           fi
@@ -501,7 +616,7 @@ jobs:
       - name: Install packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y p7zip-full tree rsync
+          sudo apt-get install -y p7zip-full tree rsync mingw-w64 gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
       
       - name: Create release package structure
         env:
@@ -576,12 +691,15 @@ jobs:
                 
                 if [ -d "$artifact_dir" ]; then
                   mkdir -p "$target_dir"
-                  lib_count=$(find "$artifact_dir" -name "*.lib" -type f | wc -l)
-                  if [ "$lib_count" -gt 0 ]; then
-                    find "$artifact_dir" -name "*.lib" -exec cp {} "$target_dir/" \;
-                    echo "✓ Copied $lib_count library files for ${vsname}-${arch}-${config} to lib/${vsdir}/${arch}"
+                  library_name="graphics.lib"
+                  if [ "$config" = "Debug" ]; then
+                    library_name="graphicsd.lib"
+                  fi
+                  if [ -f "$artifact_dir/$library_name" ]; then
+                    cp "$artifact_dir/$library_name" "$target_dir/$library_name"
+                    echo "✓ Copied $library_name for ${vsname}-${arch}-${config} to lib/${vsdir}/${arch}"
                   else
-                    echo "ERROR: No .lib files found for ${vsname}-${arch}-${config}"
+                    echo "ERROR: $library_name not found for ${vsname}-${arch}-${config}"
                     exit 1
                   fi
                 else
@@ -615,10 +733,9 @@ jobs:
             
             if [ -d "$artifact_dir" ]; then
               mkdir -p "$RELEASE_DIR/lib/${target_dir}"
-              lib_count=$(find "$artifact_dir" -name "*.a" -type f | wc -l)
-              if [ "$lib_count" -gt 0 ]; then
-                find "$artifact_dir" -name "*.a" -exec cp {} "$RELEASE_DIR/lib/${target_dir}/" \;
-                echo "✓ Copied $lib_count library files for ${artifact_name} to lib/${target_dir}"
+              if [ -f "$artifact_dir/libgraphics.a" ]; then
+                cp "$artifact_dir/libgraphics.a" "$RELEASE_DIR/lib/${target_dir}/libgraphics.a"
+                echo "✓ Copied libgraphics.a for ${artifact_name} to lib/${target_dir}"
               else
                 echo "ERROR: No .a files found for ${artifact_name}"
                 exit 1
@@ -638,6 +755,27 @@ jobs:
           
           # Create version.txt
           echo "$VERSION" > "$RELEASE_DIR/version.txt"
+
+      - name: Verify assembled package consumers
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          set -euo pipefail
+          RELEASE_DIR="ege-${VERSION}"
+
+          # Validate the package exactly as users receive it: public headers,
+          # library layout, camera link dependencies, and demo sources.
+          cmake -S "$RELEASE_DIR" -B package-smoke \
+            -DCMAKE_BUILD_TYPE=Release
+          grep -R -Eq '^set\(CMAKE_SYSTEM_NAME "Windows"\)$' \
+            package-smoke/CMakeFiles/*/CMakeSystem.cmake
+          cmake --build package-smoke \
+            --target camera_base graph_5star \
+            --parallel
+          test -f package-smoke/camera_base.exe
+          test -f package-smoke/graph_5star.exe
+          x86_64-w64-mingw32-objdump -f package-smoke/camera_base.exe | \
+            grep -Eq 'file format (pe|pei)-x86-64'
       
       - name: Create archives
         env:
@@ -662,24 +800,43 @@ jobs:
             ege-*.7z
             ege-*.zip
           retention-days: 90
-      
+
+  # Publishing is deliberately isolated from PR and test-package builds. It is
+  # the only job granted contents:write.
+  publish-release:
+    name: Publish Draft GitHub Release
+    needs: [validate-and-setup, create-release-package]
+    if: >-
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      needs.validate-and-setup.outputs.create_github_release == 'true'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download validated release package
+        uses: actions/download-artifact@v4
+        with:
+          name: ege-release-${{ needs.validate-and-setup.outputs.version }}
+          path: release-assets
+
       - name: Create GitHub Release
-        if: needs.validate-and-setup.outputs.create_github_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.validate-and-setup.outputs.version_tag }}
-          name: EGE ${{ steps.version.outputs.VERSION }}
+          name: EGE ${{ needs.validate-and-setup.outputs.version }}
           draft: true
           files: |
-            ege-*.7z
-            ege-*.zip
+            release-assets/ege-*.7z
+            release-assets/ege-*.zip
           body: |
-            # EGE ${{ steps.version.outputs.VERSION }} Release
+            # EGE ${{ needs.validate-and-setup.outputs.version }} Release
             
             ## 下载说明 / Download Instructions
             
-            - **ege-${{ steps.version.outputs.VERSION }}.7z** - 完整发布包 (推荐，体积更小)
-            - **ege-${{ steps.version.outputs.VERSION }}.zip** - 完整发布包 (ZIP 格式)
+            - **ege-${{ needs.validate-and-setup.outputs.version }}.7z** - 完整发布包 (推荐，体积更小)
+            - **ege-${{ needs.validate-and-setup.outputs.version }}.zip** - 完整发布包 (ZIP 格式)
             
             ## 包含内容 / Contents
             
@@ -697,11 +854,11 @@ jobs:
             - **CMakeLists.txt** - CMake 项目文件
       
       - name: Verify official release completion
-        if: needs.validate-and-setup.outputs.is_official_release == 'true'
+        env:
+          VERSION: ${{ needs.validate-and-setup.outputs.version }}
+          VERSION_TAG: ${{ needs.validate-and-setup.outputs.version_tag }}
         run: |
           echo "✓ Official release workflow completed successfully"
-          echo "  Release version: ${{ steps.version.outputs.VERSION }}"
-          echo "  Version tag: ${{ needs.validate-and-setup.outputs.version_tag }}"
+          echo "  Release version: $VERSION"
+          echo "  Version tag: $VERSION_TAG"
           echo "  GitHub Release created and artifacts uploaded"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

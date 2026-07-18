@@ -1,3 +1,11 @@
+// The localized header historically duplicated all declarations and platform
+// shims from ege.h.  On native Unix that copy still included <windows.h> and
+// had already drifted from the OpenGL API surface.  Use the canonical public
+// header there; Windows keeps the localized declarations and documentation.
+#if !defined(_WIN32) && !defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
+#include "ege.h"
+#else
+
 /*********************************************************
  * EGE (Easy Graphics Engine)  25.11
  * FileName:    ege.h
@@ -5334,4 +5342,6 @@ uint32_t EGEAPI ege_uncompress_size(const void* compressData, uint32_t compressS
     #endif
 #endif
 
-#endif
+#endif // EGE_H
+
+#endif // native Unix uses the canonical ege.h declarations

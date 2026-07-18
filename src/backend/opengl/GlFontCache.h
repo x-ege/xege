@@ -27,18 +27,20 @@ struct FontConfig {
     int     width;        // Font width (0 = auto based on height)
     char    face[128];    // Font face name
     int     escapement;   // Rotation in tenths of degrees
+    int     orientation;  // Individual glyph orientation, in tenths of degrees
     int     weight;       // Font weight (400 = normal, 700 = bold)
     bool    italic;
     bool    underline;
     bool    strikeout;
 
-    FontConfig() : height(16), width(0), escapement(0), weight(400),
+    FontConfig() : height(16), width(0), escapement(0), orientation(0), weight(400),
                    italic(false), underline(false), strikeout(false) {
         face[0] = '\0';
     }
 
     bool operator==(const FontConfig& o) const {
         return height == o.height && width == o.width && escapement == o.escapement &&
+               orientation == o.orientation &&
                weight == o.weight && italic == o.italic && underline == o.underline &&
                strikeout == o.strikeout && std::string(face) == std::string(o.face);
     }
@@ -53,7 +55,7 @@ public:
     ~GlyphAtlas();
 
     // Load a font file; returns true on success
-    bool loadFont(const char* face, int height, int weight, bool italic);
+    bool loadFont(const char* face, int height, int width, int weight, bool italic);
 
     // Ensure a character glyph is rasterized in the atlas; returns glyph info
     GlyphInfo ensureGlyph(uint32_t codepoint);
@@ -83,6 +85,8 @@ private:
     int             m_descent;
     int             m_lineGap;
     float           m_widthScale;   // Scale for non-default width
+    int             m_weight;
+    bool            m_italic;
 
     GLuint          m_texture;      // Atlas texture
     unsigned char*  m_atlasPixels;  // CPU-side RGBA atlas
@@ -95,7 +99,7 @@ private:
     std::unordered_map<uint32_t, GlyphInfo> m_glyphs;
 };
 
-// Find a system font file path for a given face name (macOS)
-std::string findFontPath(const char* face);
+// Find a system font file path for a given face name (macOS/Linux)
+std::string findFontPath(const char* face, int weight = 400, bool italic = false);
 
 } // namespace ege

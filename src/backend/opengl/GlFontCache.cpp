@@ -4,81 +4,172 @@
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <unordered_map>
+#include <vector>
 
 namespace ege {
 
 // ============================================================
-// Font path resolution (macOS)
+// Font path resolution (macOS/Linux)
 // ============================================================
-std::string findFontPath(const char* face) {
-    static const char* fontDirs[] = {
-        "/System/Library/Fonts/",
-        "/Library/Fonts/",
-        "/System/Library/Fonts/Supplemental/",
-        nullptr
+namespace {
+
+std::string lowerAscii(std::string value) {
+    for (char& c : value) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return value;
+}
+
+std::string normalizedFontName(const std::string& value) {
+    std::string result;
+    for (unsigned char c : value) {
+        if (std::isalnum(c)) result.push_back(static_cast<char>(std::tolower(c)));
+    }
+    return result;
+}
+
+std::string baseName(const std::string& path) {
+    const std::string::size_type slash = path.find_last_of('/');
+    return slash == std::string::npos ? path : path.substr(slash + 1);
+}
+
+bool isFontFile(const std::string& name) {
+    const std::string lower = lowerAscii(name);
+    return lower.size() > 4 &&
+        (lower.compare(lower.size() - 4, 4, ".ttf") == 0 ||
+         lower.compare(lower.size() - 4, 4, ".ttc") == 0 ||
+         lower.compare(lower.size() - 4, 4, ".otf") == 0 ||
+         lower.compare(lower.size() - 4, 4, ".otc") == 0);
+}
+
+void collectFontFiles(const std::string& directory, int depth, std::vector<std::string>& files) {
+    if (depth < 0) return;
+    DIR* dir = opendir(directory.c_str());
+    if (!dir) return;
+    while (dirent* entry = readdir(dir)) {
+        if (entry->d_name[0] == '.' &&
+            (entry->d_name[1] == '\0' ||
+             (entry->d_name[1] == '.' && entry->d_name[2] == '\0'))) continue;
+        const std::string path = directory + "/" + entry->d_name;
+        struct stat info;
+        if (stat(path.c_str(), &info) != 0) continue;
+        if (S_ISDIR(info.st_mode)) collectFontFiles(path, depth - 1, files);
+        else if (S_ISREG(info.st_mode) && isFontFile(entry->d_name)) files.push_back(path);
+    }
+    closedir(dir);
+}
+
+std::vector<std::string> systemFontFiles() {
+    std::vector<std::string> roots;
+#ifdef __APPLE__
+    roots.push_back("/System/Library/Fonts");
+    roots.push_back("/Library/Fonts");
+#else
+    roots.push_back("/usr/share/fonts");
+    roots.push_back("/usr/local/share/fonts");
+#endif
+    const char* home = std::getenv("HOME");
+    if (home && home[0]) {
+#ifdef __APPLE__
+        roots.push_back(std::string(home) + "/Library/Fonts");
+#else
+        const char* xdgDataHome = std::getenv("XDG_DATA_HOME");
+        roots.push_back(xdgDataHome && xdgDataHome[0]
+                            ? std::string(xdgDataHome) + "/fonts"
+                            : std::string(home) + "/.local/share/fonts");
+        roots.push_back(std::string(home) + "/.fonts");
+#endif
+    }
+
+    std::vector<std::string> files;
+    for (const std::string& root : roots) collectFontFiles(root, 8, files);
+    std::sort(files.begin(), files.end());
+    files.erase(std::unique(files.begin(), files.end()), files.end());
+    return files;
+}
+
+void appendAliasCandidates(const std::string& faceKey, std::vector<std::string>& candidates) {
+    static const std::unordered_map<std::string, std::vector<std::string>> aliases = {
+        {"arial", {"Arial.ttf", "Arial Unicode.ttf", "LiberationSans-Regular.ttf", "DejaVuSans.ttf"}},
+        {"timesnewroman", {"Times New Roman.ttf", "LiberationSerif-Regular.ttf", "DejaVuSerif.ttf"}},
+        {"times", {"Times New Roman.ttf", "LiberationSerif-Regular.ttf", "DejaVuSerif.ttf"}},
+        {"courier", {"Courier New.ttf", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"}},
+        {"couriernew", {"Courier New.ttf", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"}},
+        {"helvetica", {"Helvetica.ttc", "Arial.ttf", "LiberationSans-Regular.ttf", "DejaVuSans.ttf"}},
+        {"helveticaneue", {"HelveticaNeue.ttc", "Helvetica.ttc", "LiberationSans-Regular.ttf"}},
+        {"consolas", {"Consolas.ttf", "Menlo.ttc", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"}},
+        {"menlo", {"Menlo.ttc", "DejaVuSansMono.ttf", "LiberationMono-Regular.ttf"}},
+        {"monaco", {"Monaco.ttf", "Menlo.ttc", "DejaVuSansMono.ttf"}},
+        {"simsun", {"Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf", "DroidSansFallbackFull.ttf"}},
+        {"simhei", {"Heiti.ttc", "PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
+        {"microsoftyahei", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
+        {"pingfangsc", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
+        {"pingfangtc", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKtc-Regular.otf"}},
+        {"songtisc", {"Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf"}},
+        {"kaiti", {"STKaiti.ttf", "Kaiti.ttc", "NotoSerifCJK-Regular.ttc"}},
     };
+    const auto found = aliases.find(faceKey);
+    if (found != aliases.end()) candidates.insert(candidates.end(), found->second.begin(), found->second.end());
+}
 
-    struct FontMap { const char* face; const char* filename; };
-    static const FontMap fontMap[] = {
-        {"Arial",               "Arial.ttf"},
-        {"Arial",               "Arial Unicode.ttf"},
-        {"Times New Roman",     "Times New Roman.ttf"},
-        {"Times",               "Times New Roman.ttf"},
-        {"Courier",             "Courier New.ttf"},
-        {"Courier New",         "Courier New.ttf"},
-        {"Helvetica",           "Helvetica.ttc"},
-        {"Helvetica Neue",      "HelveticaNeue.ttc"},
-        {"PingFang SC",         "PingFang.ttc"},
-        {"PingFang TC",         "PingFang.ttc"},
-        {"PingFang HK",         "PingFang.ttc"},
-        {"STHeiti",             "STHeiti Medium.ttc"},
-        {"Songti SC",           "Songti.ttc"},
-        {"Songti TC",           "Songti.ttc"},
-        {"KaiTi",               "STKaiti.ttf"},
-        {"SimSun",              "Songti.ttc"},
-        {"SimHei",              "Heiti.ttc"},
-        {"Microsoft YaHei",     "PingFang.ttc"},
-        {"Consolas",            "Consolas.ttf"},
-        {"Georgia",             "Georgia.ttf"},
-        {"Verdana",             "Verdana.ttf"},
-        {"Impact",              "Impact.ttf"},
-        {"Comic Sans MS",       "Comic Sans.ttf"},
-        {"Menlo",               "Menlo.ttc"},
-        {"Monaco",              "Monaco.ttf"},
-        {nullptr, nullptr}
-    };
+} // anonymous namespace
 
-    const char* filename = nullptr;
-    for (const FontMap* m = fontMap; m->face; ++m) {
-        if (strcasecmp(face, m->face) == 0) {
-            filename = m->filename;
-            break;
+std::string findFontPath(const char* face, int weight, bool italic) {
+    const std::string requested = face && face[0] ? face : "Arial";
+    const std::string faceKey = normalizedFontName(requested);
+    std::vector<std::string> candidates;
+    const bool bold = weight >= 600;
+    if (bold && italic) {
+        candidates.push_back(requested + " Bold Italic.ttf");
+        candidates.push_back(requested + "-BoldItalic.ttf");
+    }
+    if (bold) {
+        candidates.push_back(requested + " Bold.ttf");
+        candidates.push_back(requested + "-Bold.ttf");
+    }
+    if (italic) {
+        candidates.push_back(requested + " Italic.ttf");
+        candidates.push_back(requested + "-Italic.ttf");
+    }
+    candidates.push_back(requested + ".ttf");
+    candidates.push_back(requested + ".ttc");
+    candidates.push_back(requested + ".otf");
+    appendAliasCandidates(faceKey, candidates);
+
+    static const std::vector<std::string> files = systemFontFiles();
+    for (const std::string& candidate : candidates) {
+        const std::string wanted = lowerAscii(candidate);
+        for (const std::string& path : files) {
+            if (lowerAscii(baseName(path)) == wanted) return path;
         }
     }
 
-    if (!filename) {
-        std::string tryName = std::string(face) + ".ttf";
-        for (const char** dir = fontDirs; *dir; ++dir) {
-            std::string path = std::string(*dir) + tryName;
-            FILE* f = fopen(path.c_str(), "rb");
-            if (f) { fclose(f); return path; }
-        }
-        tryName = std::string(face) + ".ttc";
-        for (const char** dir = fontDirs; *dir; ++dir) {
-            std::string path = std::string(*dir) + tryName;
-            FILE* f = fopen(path.c_str(), "rb");
-            if (f) { fclose(f); return path; }
-        }
-        return "/System/Library/Fonts/PingFang.ttc";
+    // A family name often differs from its exact filename only by spaces and
+    // punctuation (for example DejaVu Sans -> DejaVuSans.ttf).
+    for (const std::string& path : files) {
+        std::string stem = baseName(path);
+        const std::string::size_type dot = stem.find_last_of('.');
+        if (dot != std::string::npos) stem.resize(dot);
+        if (normalizedFontName(stem) == faceKey) return path;
     }
 
-    for (const char** dir = fontDirs; *dir; ++dir) {
-        std::string path = std::string(*dir) + filename;
-        FILE* f = fopen(path.c_str(), "rb");
-        if (f) { fclose(f); return path; }
+    static const char* fallbackNames[] = {
+#ifdef __APPLE__
+        "PingFang.ttc", "Helvetica.ttc", "Arial.ttf",
+#else
+        "DejaVuSans.ttf", "LiberationSans-Regular.ttf", "NotoSans-Regular.ttf",
+#endif
+        nullptr};
+    for (const char** fallback = fallbackNames; *fallback; ++fallback) {
+        const std::string wanted = lowerAscii(*fallback);
+        for (const std::string& path : files) {
+            if (lowerAscii(baseName(path)) == wanted) return path;
+        }
     }
-
-    return "/System/Library/Fonts/PingFang.ttc";
+    return std::string();
 }
 
 // ============================================================
@@ -87,15 +178,17 @@ std::string findFontPath(const char* face) {
 
 GlyphAtlas::GlyphAtlas()
     : m_fontData(nullptr), m_ascent(0), m_descent(0), m_lineGap(0),
-      m_scale(0), m_widthScale(1.0f), m_texture(0),
+      m_scale(0), m_widthScale(1.0f), m_weight(400), m_italic(false), m_texture(0),
       m_rowHeight(0), m_cursorX(0), m_cursorY(0), m_atlasPixels(nullptr) {
+    GLint previousTexture = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, previousTexture);
 
     m_atlasPixels = new unsigned char[ATLAS_SIZE * ATLAS_SIZE * 4];
     memset(m_atlasPixels, 0, ATLAS_SIZE * ATLAS_SIZE * 4);
@@ -111,8 +204,12 @@ GlyphAtlas::~GlyphAtlas() {
     delete[] m_atlasPixels;
 }
 
-bool GlyphAtlas::loadFont(const char* face, int height, int weight, bool italic) {
-    std::string path = findFontPath(face);
+bool GlyphAtlas::loadFont(const char* face, int height, int width, int weight, bool italic) {
+    std::string path = findFontPath(face, weight, italic);
+    if (path.empty()) {
+        fprintf(stderr, "[GlFontCache] No usable system font found for: %s\n", face ? face : "(null)");
+        return false;
+    }
     FILE* f = fopen(path.c_str(), "rb");
     if (!f) {
         fprintf(stderr, "[GlFontCache] Failed to open font: %s (resolved to %s)\n", face, path.c_str());
@@ -130,7 +227,14 @@ bool GlyphAtlas::loadFont(const char* face, int height, int weight, bool italic)
     fread(m_fontData, 1, size, f);
     fclose(f);
 
-    if (!stbtt_InitFont(&m_fontInfo, m_fontData, 0)) {
+    int styleFlags = 0;
+    if (weight >= 600) styleFlags |= STBTT_MACSTYLE_BOLD;
+    if (italic) styleFlags |= STBTT_MACSTYLE_ITALIC;
+    if (styleFlags == 0) styleFlags = STBTT_MACSTYLE_NONE;
+    int fontOffset = stbtt_FindMatchingFont(m_fontData, face, styleFlags);
+    if (fontOffset < 0) fontOffset = stbtt_FindMatchingFont(m_fontData, face, STBTT_MACSTYLE_DONTCARE);
+    if (fontOffset < 0) fontOffset = stbtt_GetFontOffsetForIndex(m_fontData, 0);
+    if (fontOffset < 0 || !stbtt_InitFont(&m_fontInfo, m_fontData, fontOffset)) {
         fprintf(stderr, "[GlFontCache] Failed to parse font: %s\n", path.c_str());
         delete[] m_fontData;
         m_fontData = nullptr;
@@ -138,10 +242,16 @@ bool GlyphAtlas::loadFont(const char* face, int height, int weight, bool italic)
     }
 
     // Compute scale for target pixel height
-    m_scale = stbtt_ScaleForPixelHeight(&m_fontInfo, (float)height);
+    const int pixelHeight = height == 0 ? 16 : std::abs(height);
+    m_scale = stbtt_ScaleForPixelHeight(&m_fontInfo, (float)pixelHeight);
 
-    // Font width parameter: if width != 0, scale X differently
-    m_widthScale = 1.0f;
+    int referenceAdvance = 0, referenceBearing = 0;
+    stbtt_GetCodepointHMetrics(&m_fontInfo, '0', &referenceAdvance, &referenceBearing);
+    const float naturalWidth = referenceAdvance * m_scale;
+    m_widthScale = width != 0 && naturalWidth > 0.0f
+        ? std::abs((float)width) / naturalWidth : 1.0f;
+    m_weight = weight;
+    m_italic = italic;
 
     // Get font metrics
     int asc, desc, lgap;
@@ -156,9 +266,12 @@ bool GlyphAtlas::loadFont(const char* face, int height, int weight, bool italic)
     m_cursorY = 0;
     m_rowHeight = 0;
     memset(m_atlasPixels, 0, ATLAS_SIZE * ATLAS_SIZE * 4);
+    GLint previousTexture = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, previousTexture);
 
     return true;
 }
@@ -175,17 +288,22 @@ void GlyphAtlas::findAtlasSlot(int w, int h, int& outX, int& outY) {
         m_rowHeight = 0;
         m_glyphs.clear();
         memset(m_atlasPixels, 0, ATLAS_SIZE * ATLAS_SIZE * 4);
+        GLint previousTexture = 0;
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
         glBindTexture(GL_TEXTURE_2D, m_texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0,
                      GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glBindTexture(GL_TEXTURE_2D, previousTexture);
     }
     outX = m_cursorX;
     outY = m_cursorY;
 }
 
 void GlyphAtlas::uploadToTexture(int x, int y, int w, int h, const unsigned char* data) {
+    std::vector<unsigned char> upload(static_cast<size_t>(w) * h * 4);
     for (int row = 0; row < h; row++) {
         unsigned char* dst = m_atlasPixels + ((y + row) * ATLAS_SIZE + x) * 4;
+        unsigned char* uploadRow = upload.data() + static_cast<size_t>(row) * w * 4;
         const unsigned char* src = data + row * w;
         for (int col = 0; col < w; col++) {
             unsigned char a = src[col];
@@ -193,28 +311,48 @@ void GlyphAtlas::uploadToTexture(int x, int y, int w, int h, const unsigned char
             dst[col * 4 + 1] = 0xFF;
             dst[col * 4 + 2] = 0xFF;
             dst[col * 4 + 3] = a;
+            uploadRow[col * 4 + 0] = 0xFF;
+            uploadRow[col * 4 + 1] = 0xFF;
+            uploadRow[col * 4 + 2] = 0xFF;
+            uploadRow[col * 4 + 3] = a;
         }
     }
+    GLint previousTexture = 0;
+    GLint previousUnpackAlignment = 4;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousUnpackAlignment);
     glBindTexture(GL_TEXTURE_2D, m_texture);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE,
-                    m_atlasPixels + (y * ATLAS_SIZE + x) * 4);
+                    upload.data());
+    glPixelStorei(GL_UNPACK_ALIGNMENT, previousUnpackAlignment);
+    glBindTexture(GL_TEXTURE_2D, previousTexture);
 }
 
 void GlyphAtlas::rasterizeGlyph(uint32_t codepoint) {
     int glyphIdx = stbtt_FindGlyphIndex(&m_fontInfo, (int)codepoint);
     if (glyphIdx == 0) {
-        m_glyphs[codepoint] = GlyphInfo();
-        return;
+        glyphIdx = stbtt_FindGlyphIndex(&m_fontInfo, '?');
     }
+
+    GlyphInfo info;
+    int advance = 0, lsb = 0;
+    stbtt_GetGlyphHMetrics(&m_fontInfo, glyphIdx, &advance, &lsb);
+    info.advance = (int)std::lround(advance * m_scale * m_widthScale);
 
     // Get bitmap box using the actual font scale
     int x0, y0, x1, y1;
-    stbtt_GetGlyphBitmapBox(&m_fontInfo, glyphIdx, m_scale, m_scale, &x0, &y0, &x1, &y1);
+    const float scaleX = m_scale * m_widthScale;
+    stbtt_GetGlyphBitmapBox(&m_fontInfo, glyphIdx, scaleX, m_scale, &x0, &y0, &x1, &y1);
 
     int w = x1 - x0;
     int h = y1 - y0;
     if (w <= 0 || h <= 0) {
-        GlyphInfo info;
+        info.valid = false;
+        m_glyphs[codepoint] = info;
+        return;
+    }
+    if (w + 1 > ATLAS_SIZE || h + 1 > ATLAS_SIZE) {
         info.valid = false;
         m_glyphs[codepoint] = info;
         return;
@@ -224,7 +362,7 @@ void GlyphAtlas::rasterizeGlyph(uint32_t codepoint) {
     findAtlasSlot(w + 1, h + 1, atlasX, atlasY);
 
     unsigned char* bitmap = new unsigned char[w * h];
-    stbtt_MakeGlyphBitmap(&m_fontInfo, bitmap, w, h, w, m_scale, m_scale, glyphIdx);
+    stbtt_MakeGlyphBitmap(&m_fontInfo, bitmap, w, h, w, scaleX, m_scale, glyphIdx);
 
     // Faux bold: dilate bitmap by 1 pixel if weight >= 700
     // (skipped for simplicity — the font's bold weight is usually enough)
@@ -233,17 +371,13 @@ void GlyphAtlas::rasterizeGlyph(uint32_t codepoint) {
     delete[] bitmap;
 
     // Store glyph info
-    GlyphInfo info;
     info.atlasX = atlasX;
     info.atlasY = atlasY;
     info.width = w;
     info.height = h;
 
-    int advance, lsb;
-    stbtt_GetGlyphHMetrics(&m_fontInfo, glyphIdx, &advance, &lsb);
-    info.advance  = (int)(advance * m_scale + 0.5f);
-    info.bearingX = (int)(x0 + 0.5f); // already in pixel coords
-    info.bearingY = (int)(y0 + 0.5f);
+    info.bearingX = x0;
+    info.bearingY = y0;
     info.valid = true;
 
     m_glyphs[codepoint] = info;

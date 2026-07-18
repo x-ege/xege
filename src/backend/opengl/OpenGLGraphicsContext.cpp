@@ -132,16 +132,16 @@ void OpenGLGraphicsContext::setViewport(int x, int y, int w, int h) {
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
     int windowHeight = viewport[3]; // Assuming current viewport covers full window
-    
+
     // glViewport(x, windowHeight - y - h, w, h);
     // But this changes the mapping from NDC to window coordinates.
     // EGE expects (0,0) at top-left of viewport.
-    
+
     // We should probably use glScissor for clipping and projection matrix for translation.
     // But for now, let's leave it empty and rely on EGE's logical coordinates if possible.
     // But EGE's logical coordinates are handled by GDI's SetViewportOrgEx.
     // We need to replicate that.
-    
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, w, h, 0, -1, 1); // Top-left origin
@@ -151,7 +151,7 @@ void OpenGLGraphicsContext::setViewport(int x, int y, int w, int h) {
     // If we use glOrtho(0, w, h, 0), then (0,0) is top-left of viewport.
     // But we need to position the viewport in the window.
     // This is getting complicated for legacy OpenGL.
-    
+
     // Let's just set glViewport for now, assuming full window for simplicity in this step.
     // We will refine this later.
 }

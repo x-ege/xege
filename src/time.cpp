@@ -8,6 +8,7 @@
 #else
 #include <unistd.h>
 #endif
+#include <algorithm>
 #include <chrono>
 #include <thread>
 
@@ -56,20 +57,53 @@ void delay_ms(long ms)
     guiupdate(pg, root);
 
     /* 绘图后重绘UI并交换缓冲区 */
-    if (needToUpdate(pg)) {
+    const bool updateNeeded = needToUpdate(pg);
+    if (root && updateNeeded) {
         root->draw(NULL);
-        graphupdate(pg);
     }
+
+#ifdef _WIN32
+    if (!pg->use_opengl) {
+        // The legacy GDI backend already owns a dedicated Win32 message
+        // thread. Preserve its established refresh/sleep timing instead of
+        // pumping the new drawing-thread Window abstraction.
+        if (root && updateNeeded) {
+            graphupdate(pg);
+        }
+        if (ms == 0) {
+            std::this_thread::yield();
+        } else if (ms > 0) {
+            const double currentTime = get_highfeq_time_ls() * 1000.0;
+            if (currentTime < targetTime) {
+                ege_sleep(static_cast<long>(targetTime - currentTime));
+            }
+        }
+        pg->skip_timer_mark = false;
+        return;
+    }
+#endif
+
+    dealmessage(pg, FORCE_UPDATE);
 
     /* 延时 */
     if (ms == 0) {
         /* 让出 CPU 时间片，处理后立即返回 */
         std::this_thread::yield();
     } else if (ms > 0) {
-        double currentTime = get_highfeq_time_ls() * 1000.0;
-
-        if (currentTime < targetTime) {
-            ege_sleep((long)(targetTime - currentTime));
+        // GLFW runs its event loop on the drawing thread.  Sleeping for the
+        // entire delay would make close, keyboard and mouse events appear to
+        // hang, so wait in short slices and keep pumping native events.
+        for (double currentTime = get_highfeq_time_ls() * 1000.0;
+             currentTime < targetTime && is_run();
+             currentTime = get_highfeq_time_ls() * 1000.0) {
+            const long remaining = static_cast<long>(targetTime - currentTime);
+            if (remaining > 0) {
+                ege_sleep(std::min(remaining, 10L));
+            } else {
+                std::this_thread::yield();
+            }
+            dealmessage(pg, false);
+            guiupdate(pg, root);
         }
     } else {
         /* ms < 0: Do nothing.*/

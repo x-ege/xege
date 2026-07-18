@@ -20,13 +20,13 @@ public:
     virtual void fillEllipse(int x, int y, int w, int h) = 0;
     virtual void drawCircle(int x, int y, int r) = 0;
     virtual void fillCircle(int x, int y, int r) = 0;
-    
+
     virtual void putPixel(int x, int y, color_t color) = 0;
     virtual color_t getPixel(int x, int y) = 0;
 
     virtual void clear(color_t color) = 0;
     virtual void flush() = 0;
-    
+
     virtual void setViewport(int x, int y, int w, int h) = 0;
 };
 

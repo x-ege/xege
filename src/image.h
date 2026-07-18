@@ -142,7 +142,7 @@ public:
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
-    color_t* getbuffer() const { return (color_t*)m_pBuffer; }
+    color_t* getbuffer() const;
 #ifdef EGE_GDIPLUS
     // TODO: thread safe?
     Gdiplus::Graphics* getGraphics();

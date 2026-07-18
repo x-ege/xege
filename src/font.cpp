@@ -3,6 +3,9 @@
 
 #include <cstdarg>
 #include <cwchar>
+#include <algorithm>
+#include <string>
+#include <vector>
 
 #include "font.h"
 
@@ -99,6 +102,76 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
+        if (img->m_renderTarget) {
+            if (text && *text && w > 0 && h > 0) {
+                std::vector<std::wstring> lines;
+                std::wstring current;
+                for (const wchar_t* cursor = text; ; ++cursor) {
+                    wchar_t character = *cursor;
+                    if (character == L'\r') continue;
+                    if (character == L'\t') character = L' ';
+                    if (character == L'\n' || character == L'\0') {
+                        lines.push_back(current);
+                        current.clear();
+                        if (character == L'\0') break;
+                        continue;
+                    }
+
+                    current.push_back(character);
+                    if (current.size() > 1 && img->m_renderTarget->getTextWidth(current.c_str()) > w) {
+                        current.pop_back();
+                        lines.push_back(current);
+                        current.clear();
+                        if (character != L' ') current.push_back(character);
+                    }
+                }
+
+                const int lineHeight = std::max(1, img->m_renderTarget->getTextHeight(L"Ag"));
+                const int blockHeight = static_cast<int>(lines.size()) * lineHeight;
+                int topOffset = 0;
+                if (img->m_texttype.vert == CENTER_TEXT) topOffset = (h - blockHeight) / 2;
+                else if (img->m_texttype.vert == BOTTOM_TEXT) topOffset = h - blockHeight;
+
+                int oldLeft, oldTop, oldRight, oldBottom, oldClip;
+                img->m_renderTarget->getViewport(
+                    &oldLeft, &oldTop, &oldRight, &oldBottom, &oldClip);
+                const int boxLeft = oldLeft + x;
+                const int boxTop = oldTop + y;
+                const int previousClipLeft = oldClip ? oldLeft : 0;
+                const int previousClipTop = oldClip ? oldTop : 0;
+                const int previousClipRight = oldClip ? oldRight : img->m_width;
+                const int previousClipBottom = oldClip ? oldBottom : img->m_height;
+                const int clipLeft = std::max(previousClipLeft, boxLeft);
+                const int clipTop = std::max(previousClipTop, boxTop);
+                const int clipRight = std::min(previousClipRight, boxLeft + w);
+                const int clipBottom = std::min(previousClipBottom, boxTop + h);
+
+                if (clipLeft < clipRight && clipTop < clipBottom) {
+                    img->m_renderTarget->setViewport(clipLeft, clipTop, clipRight, clipBottom, true);
+                    img->m_renderTarget->setTextJustify(TEXT_LEFT, TEXT_TOP);
+                    for (size_t lineIndex = 0; lineIndex < lines.size(); ++lineIndex) {
+                        const int lineWidth = img->m_renderTarget->getTextWidth(lines[lineIndex].c_str());
+                        int lineX = boxLeft;
+                        if (img->m_texttype.horiz == CENTER_TEXT) lineX += (w - lineWidth) / 2;
+                        else if (img->m_texttype.horiz == RIGHT_TEXT) lineX += w - lineWidth;
+                        const int lineY = boxTop + topOffset + static_cast<int>(lineIndex) * lineHeight;
+                        if (lineY < boxTop + h && lineY + lineHeight > boxTop) {
+                            img->m_renderTarget->drawText(
+                                static_cast<float>(lineX - clipLeft),
+                                static_cast<float>(lineY - clipTop),
+                                lines[lineIndex].c_str());
+                        }
+                    }
+                    img->m_renderTarget->setTextJustify(
+                        img->m_texttype.horiz == CENTER_TEXT ? TEXT_CENTER :
+                        img->m_texttype.horiz == RIGHT_TEXT ? TEXT_RIGHT : TEXT_LEFT,
+                        img->m_texttype.vert == CENTER_TEXT ? TEXT_MIDDLE :
+                        img->m_texttype.vert == BOTTOM_TEXT ? TEXT_BOTTOM : TEXT_TOP);
+                    img->m_renderTarget->setViewport(
+                        oldLeft, oldTop, oldRight, oldBottom, oldClip != 0);
+                }
+            }
+        } else {
 #ifdef _WIN32
         if ((text == NULL) || (w <= 0) || (h <= 0)) {
             return;
@@ -176,6 +249,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
             }
         }
 #endif
+        }
     }
 
     CONVERT_IMAGE_END;
@@ -271,6 +345,11 @@ int textwidth(const wchar_t* text, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            const int width = img->m_renderTarget->getTextWidth(text);
+            CONVERT_IMAGE_END;
+            return width;
+        }
 #ifdef _WIN32
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
@@ -304,6 +383,11 @@ int textheight(const wchar_t* text, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            const int height = img->m_renderTarget->getTextHeight(text);
+            CONVERT_IMAGE_END;
+            return height;
+        }
 #ifdef _WIN32
         SIZE sz;
         GetTextExtentPoint32W(img->m_hDC, text, (int)lstrlenW(text), &sz);
@@ -337,7 +421,9 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
 {
     float textWidth = 0.0f, textHeight = 0.0f;
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (!isEmpty(text) && img && img->m_hDC) {
+    if (!isEmpty(text) && img && img->m_renderTarget) {
+        img->m_renderTarget->measureText(text, &textWidth, &textHeight);
+    } else if (!isEmpty(text) && img && img->m_hDC) {
 #ifdef EGE_GDIPLUS
         using namespace Gdiplus;
 
@@ -462,6 +548,9 @@ void settextjustify(int horiz, int vert, PIMAGE pimg)
     if (img) {
         img->m_texttype.horiz = horiz;
         img->m_texttype.vert = vert;
+        if (img->m_renderTarget) {
+            img->m_renderTarget->setTextJustify((TextHAlign)horiz, (TextVAlign)vert);
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -482,6 +571,13 @@ void setfont(int height,
     BYTE pitchAndFamily,
     PIMAGE pimg)
 {
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_renderTarget) {
+        img->m_renderTarget->setFont(height, width, typeface, escapement, orientation,
+                                     weight, italic, underline, strikeOut);
+        CONVERT_IMAGE_END;
+        return;
+    }
     const std::wstring& wFace = mb2w(typeface);
 
     setfont(
@@ -499,7 +595,7 @@ void setfont(int height,
         clipPrecision,
         quality,
         pitchAndFamily,
-        pimg
+        img
     );
 }
 
@@ -519,6 +615,14 @@ void setfont(int height,
     BYTE pitchAndFamily,
     PIMAGE pimg)
 {
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->m_renderTarget) {
+        const std::string face = w2mb(typeface);
+        img->m_renderTarget->setFont(height, width, face.c_str(), escapement, orientation,
+                                     weight, italic, underline, strikeOut);
+        CONVERT_IMAGE_END;
+        return;
+    }
 #ifdef _WIN32
     LOGFONTW lf = {0};
     lf.lfHeight = height;
@@ -567,6 +671,9 @@ void setfont(int height,
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#else
+    setfont(height, width, typeface, escapement, orientation, weight,
+            italic, underline, strikeOut, 0, 0, 0, 0, 0, pimg);
 #endif
 }
 
@@ -597,6 +704,9 @@ void setfont(int height,
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#else
+    setfont(height, width, typeface, escapement, orientation, weight,
+            italic, underline, strikeOut, 0, 0, 0, 0, 0, pimg);
 #endif
 }
 
@@ -618,6 +728,9 @@ void setfont(int height, int width, const char* typeface, PIMAGE pimg)
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#else
+    setfont(height, width, typeface, 0, 0, 0, false, false, false,
+            0, 0, 0, 0, 0, pimg);
 #endif
 }
 
@@ -639,6 +752,9 @@ void setfont(int height, int width, const wchar_t* typeface, PIMAGE pimg)
         DEFAULT_QUALITY,
         DEFAULT_PITCH,
         pimg);
+#else
+    setfont(height, width, typeface, 0, 0, 0, false, false, false,
+            0, 0, 0, 0, 0, pimg);
 #endif
 }
 
@@ -649,10 +765,16 @@ void setfont(const LOGFONTA* font, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget && font) {
+            img->m_renderTarget->setFont(font->lfHeight, font->lfWidth, font->lfFaceName,
+                                         font->lfEscapement, font->lfOrientation, font->lfWeight,
+                                         font->lfItalic != 0, font->lfUnderline != 0, font->lfStrikeOut != 0);
+        } else {
 #ifdef _WIN32
         HFONT hfont = CreateFontIndirectA(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -661,10 +783,17 @@ void setfont(const LOGFONTW* font, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget && font) {
+            const std::string face = w2mb(font->lfFaceName);
+            img->m_renderTarget->setFont(font->lfHeight, font->lfWidth, face.c_str(),
+                                         font->lfEscapement, font->lfOrientation, font->lfWeight,
+                                         font->lfItalic != 0, font->lfUnderline != 0, font->lfStrikeOut != 0);
+        } else {
 #ifdef _WIN32
         HFONT hfont = CreateFontIndirectW(font);
         DeleteObject(SelectObject(img->m_hDC, hfont));
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -672,11 +801,26 @@ void setfont(const LOGFONTW* font, PIMAGE pimg)
 void getfont(LOGFONTA* font, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (img) {
+    if (img && font) {
+        if (img->m_renderTarget) {
+            bool italic = false;
+            bool underline = false;
+            bool strikeOut = false;
+            std::memset(font, 0, sizeof(*font));
+            img->m_renderTarget->getFont(
+                &font->lfHeight, &font->lfWidth,
+                font->lfFaceName, static_cast<int>(sizeof(font->lfFaceName)),
+                &font->lfEscapement, &font->lfOrientation, &font->lfWeight,
+                &italic, &underline, &strikeOut);
+            font->lfItalic = static_cast<BYTE>(italic);
+            font->lfUnderline = static_cast<BYTE>(underline);
+            font->lfStrikeOut = static_cast<BYTE>(strikeOut);
+        } else {
 #ifdef _WIN32
-        HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
-        GetObjectA(hf, sizeof(LOGFONTA), font);
+            HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+            GetObjectA(hf, sizeof(LOGFONTA), font);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -684,11 +828,32 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
 void getfont(LOGFONTW* font, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (img) {
+    if (img && font) {
+        if (img->m_renderTarget) {
+            char faceName[128] = {};
+            bool italic = false;
+            bool underline = false;
+            bool strikeOut = false;
+            std::memset(font, 0, sizeof(*font));
+            img->m_renderTarget->getFont(
+                &font->lfHeight, &font->lfWidth,
+                faceName, static_cast<int>(sizeof(faceName)),
+                &font->lfEscapement, &font->lfOrientation, &font->lfWeight,
+                &italic, &underline, &strikeOut);
+            font->lfItalic = static_cast<BYTE>(italic);
+            font->lfUnderline = static_cast<BYTE>(underline);
+            font->lfStrikeOut = static_cast<BYTE>(strikeOut);
+            const std::wstring wideFace = mb2w(faceName);
+            const size_t copyLength = std::min(
+                wideFace.size(), sizeof(font->lfFaceName) / sizeof(font->lfFaceName[0]) - 1);
+            std::copy_n(wideFace.c_str(), copyLength, font->lfFaceName);
+            font->lfFaceName[copyLength] = L'\0';
+        } else {
 #ifdef _WIN32
-        HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
-        GetObjectW(hf, sizeof(LOGFONTW), font);
+            HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
+            GetObjectW(hf, sizeof(LOGFONTW), font);
 #endif
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -696,7 +861,9 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
 void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_hDC) {
+    if (img && img->m_renderTarget) {
+        img->m_renderTarget->drawText(x, y, text);
+    } else if (img && img->m_hDC) {
 #ifdef _WIN32
         int bufferSize = MultiByteToWideChar(getcodepage(), 0, text, -1, NULL, 0);
         if (bufferSize <= 2048) {
@@ -715,7 +882,9 @@ void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
 void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_hDC) {
+    if (img && img->m_renderTarget) {
+        img->m_renderTarget->drawText(x, y, text);
+    } else if (img && img->m_hDC) {
         ege_drawtext_p(text, x, y, img);
     }
     CONVERT_IMAGE_END;
@@ -783,6 +952,11 @@ static Point private_escapementToOffset(int textHeight, int textEscapement)
 
 static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
 {
+    if (img->m_renderTarget) {
+        img->m_renderTarget->drawText((float)img->m_renderTarget->getCurrentX(),
+                                      (float)img->m_renderTarget->getCurrentY(), text);
+        return;
+    }
 #ifdef _WIN32
     SetTextAlign(img->m_hDC, TA_UPDATECP | private_gettextmode(img));
 
@@ -813,6 +987,10 @@ static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
 
 static void private_textout(PIMAGE img, const wchar_t* text, int x, int y)
 {
+    if (img->m_renderTarget) {
+        img->m_renderTarget->drawText((float)x, (float)y, text);
+        return;
+    }
 #ifdef _WIN32
     SetTextAlign(img->m_hDC, private_gettextmode(img));
 

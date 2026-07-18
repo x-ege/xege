@@ -168,27 +168,27 @@ public:
 #endif
     }
 
-    void settext(LPCWSTR text) { 
+    void settext(LPCWSTR text) {
 #ifdef _WIN32
-        ::SendMessageW(m_hwnd, WM_SETTEXT, 0, (LPARAM)text); 
+        ::SendMessageW(m_hwnd, WM_SETTEXT, 0, (LPARAM)text);
 #endif
     }
 
-    void gettext(int maxlen, LPSTR text) { 
+    void gettext(int maxlen, LPSTR text) {
 #ifdef _WIN32
-        ::SendMessageA(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text); 
+        ::SendMessageA(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text);
 #endif
     }
 
-    void gettext(int maxlen, LPWSTR text) { 
+    void gettext(int maxlen, LPWSTR text) {
 #ifdef _WIN32
-        ::SendMessageW(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text); 
+        ::SendMessageW(m_hwnd, WM_GETTEXT, (WPARAM)maxlen, (LPARAM)text);
 #endif
     }
 
-    void setmaxlen(int maxlen) { 
+    void setmaxlen(int maxlen) {
 #ifdef _WIN32
-        ::SendMessageW(m_hwnd, EM_LIMITTEXT, (WPARAM)maxlen, 0); 
+        ::SendMessageW(m_hwnd, EM_LIMITTEXT, (WPARAM)maxlen, 0);
 #endif
     }
 

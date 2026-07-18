@@ -28,7 +28,7 @@
 #define TEXT_WINDOW_TITLE        "排序算法可视化演示"
 #define TEXT_CONTROLS_TITLE      "按键说明："
 #define TEXT_CONTROLS_START      "S/空格/回车 - 开始排序当前算法"
-#define TEXT_CONTROLS_SHUFFLE    "R/ESC - 重新打乱数组"
+#define TEXT_CONTROLS_SHUFFLE    "R - 重新打乱数组"
 #define TEXT_CONTROLS_NEXT       "->  切换到下一个算法"
 #define TEXT_CONTROLS_PREV       "<-  切换到上一个算法"
 #define TEXT_CONTROLS_AUTO       "A - 自动演示所有算法"
@@ -81,7 +81,7 @@
 #define TEXT_WINDOW_TITLE         "Sort Algorithm Visualization"
 #define TEXT_CONTROLS_TITLE       "Controls:"
 #define TEXT_CONTROLS_START       "S/Space/Enter - Start sorting current algorithm"
-#define TEXT_CONTROLS_SHUFFLE     "R/ESC - Shuffle array"
+#define TEXT_CONTROLS_SHUFFLE     "R - Shuffle array"
 #define TEXT_CONTROLS_NEXT        "->  Switch to next algorithm"
 #define TEXT_CONTROLS_PREV        "<-  Switch to previous algorithm"
 #define TEXT_CONTROLS_AUTO        "A - Auto demo all algorithms"
@@ -405,6 +405,7 @@ public:
         using pointer           = MyElement*;
         using reference         = MyElement&;
 
+        MyIterator() : m_arrayPtr(nullptr), m_index(0) {}
         MyIterator(MyArray* arr, int idx) : m_arrayPtr(arr), m_index(idx) {}
 
         // 解引用操作
@@ -1321,7 +1322,9 @@ public:
             startSorting();
             break;
 
-        case 27:  // ESC键 - 退出或重新打乱
+        case 27: // ESC键 - 退出程序
+            return false;
+
         case 'r': // R键
         case 'R': // R键（大写）
             shuffleArray();
@@ -1349,14 +1352,15 @@ public:
         return true;
     }
 
-    void handleKeyMsg()
+    bool handleKeyMsg()
     {
         while (kbhit()) {
             char ch = getch();
             if (!handleInput(ch)) {
-                break;
+                return false;
             }
         }
+        return true;
     }
 
     /**
@@ -1367,7 +1371,9 @@ public:
         showInterface();
 
         while (is_run()) {
-            handleKeyMsg();
+            if (!handleKeyMsg()) {
+                break;
+            }
             showInterface();
         }
     }

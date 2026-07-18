@@ -48,9 +48,7 @@
 #include "ege_head.h"
 #include "ege_common.h"
 #include "ege_extension.h"
-#ifdef _WIN32
-#include "backend/win32/GDIWindow.h"
-#endif
+#include "window.h"
 #if defined(EGE_BUILD_OPENGL)
 #include "backend/opengl/GLFWWindow.h"
 #endif
@@ -101,6 +99,9 @@ static DWORD g_windowexstyle = 0;
 #endif
 static int   g_windowpos_x   = CW_USEDEFAULT;
 static int   g_windowpos_y   = CW_USEDEFAULT;
+#ifdef _WIN32
+static const UINT EGE_WM_PROCESS_SHUTDOWN = WM_APP + 0x3E0;
+#endif
 
 #ifdef __cplusplus
 extern "C"
@@ -122,9 +123,58 @@ _graph_setting::_graph_setting() : init_sem{0}
 
 _graph_setting::~_graph_setting()
 {
+#ifdef _WIN32
+    // closegraph() intentionally only hides the reusable legacy window. At
+    // process teardown, however, the UI thread must destroy its own HWND so
+    // GetMessage() can finish before join(). A private window message avoids
+    // invoking an application close callback during static destruction.
+    if (threadui.joinable() && hwnd != NULL && IsWindow(hwnd)) {
+        PostMessageW(hwnd, EGE_WM_PROCESS_SHUTDOWN, 0, 0);
+    }
+#endif
     if (threadui.joinable()) {
         threadui.join();
     }
+
+    // closegraph() keeps resources alive so legacy programs can initialize
+    // the same environment again. Static destruction is the final ownership
+    // boundary: release EGE-owned pages while an OpenGL context still exists,
+    // then destroy queues and the native window/context itself.
+    PIMAGE ownedPages[BITMAP_PAGE_SIZE] = {};
+    for (int index = 0; index < BITMAP_PAGE_SIZE; ++index) {
+        ownedPages[index] = img_page[index];
+        img_page[index] = NULL;
+    }
+    PIMAGE timerImage = img_timer_update;
+    img_timer_update = NULL;
+    imgtarget = NULL;
+    imgtarget_set = NULL;
+
+    for (int index = 0; index < BITMAP_PAGE_SIZE; ++index) {
+        bool alreadyDeleted = false;
+        for (int previous = 0; previous < index; ++previous) {
+            alreadyDeleted = alreadyDeleted || ownedPages[index] == ownedPages[previous];
+        }
+        if (ownedPages[index] != NULL && !alreadyDeleted) {
+            delete ownedPages[index];
+        }
+    }
+    bool timerIsPage = false;
+    for (int index = 0; index < BITMAP_PAGE_SIZE; ++index) {
+        timerIsPage = timerIsPage || timerImage == ownedPages[index];
+    }
+    if (timerImage != NULL && !timerIsPage) {
+        delete timerImage;
+    }
+
+    delete msgkey_queue;
+    msgkey_queue = NULL;
+    delete msgmouse_queue;
+    msgmouse_queue = NULL;
+
+    delete window;
+    window = NULL;
+    hwnd = NULL;
 }
 
 /*private function*/
@@ -237,7 +287,25 @@ int swapbuffers()
 
     struct _graph_setting* pg = &graph_setting;
 
-    if (pg->window) {
+    if (pg->use_opengl && pg->window) {
+#if defined(EGE_BUILD_OPENGL)
+        if (pg->use_opengl) {
+            GLFWWindow* glWindow = dynamic_cast<GLFWWindow*>(pg->window);
+            PIMAGE visualPage = (pg->visual_page >= 0 && pg->visual_page < BITMAP_PAGE_SIZE)
+                ? pg->img_page[pg->visual_page] : NULL;
+            if (glWindow != NULL && visualPage != NULL && visualPage->m_renderTarget != NULL) {
+                GlRenderTarget* screen = glWindow->getRenderTarget();
+                if (screen != NULL) {
+                    const int screenWidth = screen->getWidth();
+                    const int screenHeight = screen->getHeight();
+                    screen->setViewport(0, 0, screenWidth, screenHeight, false);
+                    screen->blitStretch(0, 0, screenWidth, screenHeight,
+                                        visualPage->m_renderTarget, 0, 0,
+                                        visualPage->getwidth(), visualPage->getheight());
+                }
+            }
+        }
+#endif
         pg->window->swapBuffers();
         return grOk;
     }
@@ -309,13 +377,23 @@ int graphupdate(_graph_setting* pg)
     return grOk;
 }
 
+static void handle_native_window_close(_graph_setting* pg)
+{
+    pg->exit_window = 1;
+    // Match the legacy Win32 WM_DESTROY policy: default-mode applications
+    // terminate even when their own loop does not poll is_run().
+    if (pg->close_manually && pg->use_force_exit) {
+        exit(0);
+    }
+}
+
 int dealmessage(_graph_setting* pg, bool force_update)
 {
     // For native backends (GLFW/OpenGL), pump OS events to keep window responsive.
-    if (pg->window) {
+    if (pg->use_opengl && pg->window) {
         pg->window->processEvents();
         if (pg->window->isClosed()) {
-            pg->exit_window = 1;
+            handle_native_window_close(pg);
         }
     }
     if (force_update || pg->update_mark_count < UPDATE_MAX_CALL) {
@@ -348,10 +426,10 @@ int waitdealmessage(_graph_setting* pg)
     }
 
     // For native backends (GLFW/OpenGL), we must pump events to keep the window responsive.
-    if (pg->window) {
+    if (pg->use_opengl && pg->window) {
         pg->window->processEvents();
         if (pg->window->isClosed()) {
-            pg->exit_window = 1;
+            handle_native_window_close(pg);
         }
     }
 
@@ -714,6 +792,13 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
             on_paint(pg, hWnd);
         }
         break;
+    case EGE_WM_PROCESS_SHUTDOWN:
+        if (pg == pg_w) {
+            pg->close_manually = false;
+            pg->use_force_exit = false;
+            DestroyWindow(hWnd);
+        }
+        break;
     case WM_CLOSE:
         if (pg == pg_w) {
             if (pg->callback_close) {
@@ -981,9 +1066,17 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         int height = (short)((unsigned int)(*gmode) >> 16);
         resizewindow(width, height);
 #ifdef _WIN32
-        HWND hwnd = getHWnd();
-        if (!::IsWindowVisible(hwnd)) {
-            ::ShowWindow(hwnd, SW_SHOW);
+        if (pg->use_opengl && pg->window != NULL) {
+            pg->window->show();
+        } else {
+            HWND hwnd = getHWnd();
+            if (!::IsWindowVisible(hwnd)) {
+                ::ShowWindow(hwnd, SW_SHOW);
+            }
+        }
+#else
+        if (pg->window != NULL) {
+            pg->window->show();
         }
 #endif
         return;
@@ -993,8 +1086,17 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     setmode(*gdriver, *gmode);
     init_img_page(pg);
 
-    int width  = (short)(*gmode & 0xFFFF);
-    int height = (short)((unsigned int)(*gmode) >> 16);
+#ifndef _WIN32
+    pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT) == 0;
+    pg->close_manually = true;
+    SetCloseHandler((g_initoption & INIT_NOFORCEEXIT) ? DefCloseHandler : NULL);
+#endif
+
+    // setmode() resolves legacy negative dimensions (for example -1 means the
+    // default/desktop-sized canvas). Window creation must use those resolved
+    // values rather than the raw packed request.
+    int width  = pg->dc_w;
+    int height = pg->dc_h;
 
     // Backend selection:
     // - When built with OpenGL backend, INIT_OPENGL can opt-in on Windows.
@@ -1007,6 +1109,13 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     #endif
 
     if (g_initoption & INIT_OPENGL) {
+#ifdef _WIN32
+        // The GDI path initializes these fields in messageloopthread. GLFW
+        // runs on the caller thread, so initialize the same close policy here.
+        pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT) == 0;
+        pg->close_manually = true;
+        SetCloseHandler((g_initoption & INIT_NOFORCEEXIT) ? DefCloseHandler : NULL);
+#endif
         pg->window = new GLFWWindow();
         if (!pg->window->create(width, height, "EGE Window")) {
             // If window creation fails, make the engine enter a safe "not running" state
@@ -1026,23 +1135,6 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             graph_init(pg);
         }
 
-        // Wire up the screen RenderTarget to the screen image pages.
-        // The IMAGE constructor created offscreen RTs; replace with the on-screen one.
-        {
-            GLFWWindow* glWin = (GLFWWindow*)pg->window;
-            GlRenderTarget* screenRT = glWin->getRenderTarget();
-            for (int p = 0; p < BITMAP_PAGE_SIZE; p++) {
-                if (pg->img_page[p]) {
-                    // Replace the offscreen RT with the screen RT
-                    if (pg->img_page[p]->m_renderTarget && pg->img_page[p]->m_renderTarget != screenRT) {
-                        delete pg->img_page[p]->m_renderTarget;
-                    }
-                    pg->img_page[p]->m_renderTarget = screenRT;
-                    pg->img_page[p]->m_glDirty = false;
-                }
-            }
-        }
-
         pg->init_sem.add_permit();
     } else {
 #else
@@ -1050,7 +1142,10 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     {
 #endif
 #ifdef _WIN32
-        pg->window = new GDIWindow();
+        // Preserve the established HWND/message-thread/BitBlt implementation
+        // for the default Windows GDI backend. The Window abstraction owns
+        // and pumps its native window, which is only wired up for OpenGL here.
+        pg->window = NULL;
         pg->instance = GetModuleHandle(NULL);
 
         initicon();
@@ -1081,21 +1176,6 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             // Initialize engine state (message queues, pages, timers) for native/OpenGL backend.
             if (pg->dc == 0) {
                 graph_init(pg);
-            }
-
-            // Wire up the screen RenderTarget to the screen image pages.
-            {
-                GLFWWindow* glWin = (GLFWWindow*)pg->window;
-                GlRenderTarget* screenRT = glWin->getRenderTarget();
-                for (int p = 0; p < BITMAP_PAGE_SIZE; p++) {
-                    if (pg->img_page[p]) {
-                        if (pg->img_page[p]->m_renderTarget && pg->img_page[p]->m_renderTarget != screenRT) {
-                            delete pg->img_page[p]->m_renderTarget;
-                        }
-                        pg->img_page[p]->m_renderTarget = screenRT;
-                        pg->img_page[p]->m_glDirty = false;
-                    }
-                }
             }
 
             pg->init_sem.add_permit();
@@ -1132,6 +1212,21 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->mouse_pos = Point(pt.x, pt.y);
 #endif
 
+#ifndef _WIN32
+    if (pg->window != NULL) {
+        const std::string utf8Caption = w2mb(pg->window_caption.c_str());
+        pg->window->setTitle(utf8Caption.c_str());
+        if (g_windowpos_x != CW_USEDEFAULT && g_windowpos_y != CW_USEDEFAULT) {
+            pg->window->setPosition(g_windowpos_x, g_windowpos_y);
+        }
+        if (g_initoption & INIT_HIDE) {
+            pg->window->hide();
+        } else {
+            pg->window->show();
+        }
+    }
+#endif
+
     static egeControlBase _egeControlBase;
 
     if ((g_initoption & INIT_WITHLOGO) && !(g_initoption & INIT_HIDE)) {
@@ -1148,7 +1243,10 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 
 void initgraph(int width, int height, initmode_flag mode)
 {
-    int g = TRUECOLORSIZE, m = (width) | (height << 16);
+    const unsigned int packedMode =
+        (static_cast<unsigned int>(width) & 0xFFFFU) |
+        ((static_cast<unsigned int>(height) & 0xFFFFU) << 16);
+    int g = TRUECOLORSIZE, m = static_cast<int>(packedMode);
     setinitmode(mode, g_windowpos_x, g_windowpos_y);
     initgraph(&g, &m, "");
 }
@@ -1162,16 +1260,17 @@ void detectgraph(int* gdriver, int* gmode)
 void closegraph()
 {
     struct _graph_setting* pg = &graph_setting;
-    if (pg->window) {
-        pg->window->close();
-        delete pg->window;
-        pg->window = NULL;
-        pg->hwnd = NULL;
-    } else {
 #ifdef _WIN32
+    if (pg->use_opengl && pg->window != NULL) {
+        pg->window->hide();
+    } else {
         ShowWindow(pg->hwnd, SW_HIDE);
-#endif
     }
+#else
+    if (pg->window != NULL) {
+        pg->window->hide();
+    }
+#endif
 }
 
 /*private function*/

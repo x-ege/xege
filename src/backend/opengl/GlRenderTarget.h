@@ -12,6 +12,19 @@ namespace ege {
 struct GlVertex {
     float x, y;
     float r, g, b, a;
+    float pattern;
+    float br, bg, bb, ba;
+
+    GlVertex()
+        : x(0), y(0), r(0), g(0), b(0), a(0), pattern(1),
+          br(0), bg(0), bb(0), ba(0) {}
+    GlVertex(float xValue, float yValue, float red, float green, float blue, float alpha,
+             float patternValue = 1.0f,
+             float backgroundRed = 0.0f, float backgroundGreen = 0.0f,
+             float backgroundBlue = 0.0f, float backgroundAlpha = 0.0f)
+        : x(xValue), y(yValue), r(red), g(green), b(blue), a(alpha),
+          pattern(patternValue), br(backgroundRed), bg(backgroundGreen),
+          bb(backgroundBlue), ba(backgroundAlpha) {}
 };
 
 class GlRenderTarget : public RenderTarget {
@@ -89,9 +102,9 @@ public:
     void drawArc(int x, int y, int sa, int ea, int rx, int ry) override;
     void drawChord(int x, int y, int sa, int ea, int rx, int ry) override;
 
-    void drawPolygon(const int* x, const int* y, int count) override;
-    void fillPolygon(const int* x, const int* y, int count) override;
-    void drawPolyline(const int* x, const int* y, int count) override;
+    void drawPolygon(const int* points, int count) override;
+    void fillPolygon(const int* points, int count) override;
+    void drawPolyline(const int* points, int count) override;
 
     // --- Pixel ---
     void putPixel(int x, int y, color_t color) override;
@@ -103,38 +116,48 @@ public:
 
     // --- Flood fill ---
     void floodFill(int x, int y, color_t borderColor) override;
+    void floodFillSurface(int x, int y, color_t surfaceColor) override;
 
     // --- Clear ---
     void clear(color_t color) override;
 
-    // --- Image transfer (Phase 3 stubs) ---
+    // --- Image transfer ---
     void blit(int dstX, int dstY, RenderTarget* src, int srcX, int srcY, int w, int h) override;
     void blitStretch(int dstX, int dstY, int dstW, int dstH,
                      RenderTarget* src, int srcX, int srcY, int srcW, int srcH) override;
     void alphaBlend(int dstX, int dstY, int dstW, int dstH,
-                    RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
-                    unsigned char alpha) override;
+                     RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
+                     unsigned char alpha, ImageAlphaFormat format, bool smooth) override;
     void alphaTransparent(int dstX, int dstY, RenderTarget* src,
                           int srcX, int srcY, int w, int h,
-                          color_t transparentColor) override;
+                          color_t transparentColor, unsigned char alpha) override;
     void withAlpha(int dstX, int dstY, int dstW, int dstH,
-                   RenderTarget* src, int srcX, int srcY, int srcW, int srcH) override;
+                    RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
+                    bool smooth) override;
     void alphaFilter(int dstX, int dstY, int w, int h,
                      RenderTarget* src, int srcX, int srcY,
                      unsigned char alpha) override;
     void rotateBlend(int dstX, int dstY, int dstW, int dstH,
                      RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
-                     float angle, float centerX, float centerY) override;
+                     float angle, float centerX, float centerY,
+                     bool transparent, int alpha, bool smooth) override;
     void rotateZoomBlend(int dstX, int dstY, int dstW, int dstH,
                          RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
                          float angle, float centerX, float centerY,
-                         float zoomX, float zoomY) override;
+                         float zoomX, float zoomY,
+                         bool transparent, int alpha, bool smooth) override;
+    void blitAffine(RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
+                    const float* destinationPoints, bool premultipliedAlpha,
+                    bool smooth) override;
     void filterBlur(int dstX, int dstY, int w, int h, float intensity) override;
 
-    // --- Text (Phase 4 stubs) ---
+    // --- Text ---
     void setFont(int height, int width, const char* face,
                  int escapement, int orientation, int weight,
                  bool italic, bool underline, bool strikeout) override;
+    void getFont(int* height, int* width, char* face, int faceCapacity,
+                 int* escapement, int* orientation, int* weight,
+                 bool* italic, bool* underline, bool* strikeout) const override;
     void setTextJustify(TextHAlign h, TextVAlign v) override;
     void drawText(float x, float y, const char* text) override;
     void drawText(float x, float y, const wchar_t* text) override;
@@ -163,11 +186,18 @@ public:
     void rebuild(int width, int height);
 
 private:
+    void appendFillTriangle(float x0, float y0, float x1, float y1,
+                            float x2, float y2, float r, float g, float b, float a);
+    void appendFillQuad(float x0, float y0, float x1, float y1,
+                        float x2, float y2, float x3, float y3,
+                        float r, float g, float b, float a);
+    void drawPolylineInternal(const int* points, int count, bool closed);
     void initShaders();
     void initVBO();
     void ensureProjection();
     void bindForDrawing();
     void submitBatch();
+    void downloadFromGpu();
 
     // Image blit helpers
     void ensureImageShader();
@@ -176,22 +206,26 @@ private:
                        int dstX, int dstY, int dstW2, int dstH2,
                        float angle, float centerX, float centerY,
                        float zoomX, float zoomY,
-                       int mode, color_t keyColor);
+                       int mode, color_t keyColor, bool smooth = false);
     void drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
                                int srcX, int srcY, int srcW2, int srcH2,
-                               int dstX, int dstY, int dstW2, int dstH2,
+                               float dstX, float dstY, float dstW2, float dstH2,
                                float angle, float centerX, float centerY,
                                float zoomX, float zoomY,
                                int mode, color_t keyColor,
-                               float alphaOverride); // alphaOverride != -1 to scale alpha
+                               float alphaOverride, bool smooth = false,
+                               const float* destinationPoints = nullptr);
 
     // Text rendering helpers
     void ensureTextShader();
     void drawGlyphTexture(GLuint tex, int texW, int texH,
                           int srcX, int srcY, int srcW, int srcH,
-                          int dstX, int dstY, int dstW, int dstH,
+                          float dstX, float dstY, float dstW, float dstH,
                           float angle, float r, float g, float b, float a);
     void renderText(float x, float y, const wchar_t* text);
+    void renderCodepoints(float x, float y, const std::vector<uint32_t>& codepoints);
+    void measureCodepoints(const std::vector<uint32_t>& codepoints,
+                           float* width, float* height) const;
 
     // GPU resources
     GLuint  m_texture;       // GL_TEXTURE_2D for this RT
@@ -207,7 +241,8 @@ private:
 
     // CPU pixel buffer
     color_t* m_cpuBuffer;
-    mutable bool m_gpuDirty;   // GPU texture differs from CPU buffer
+    mutable bool m_gpuDirty;   // GPU content is newer than the CPU buffer
+    bool m_cpuDirty;           // CPU buffer may have been changed through getbuffer()
 
     // Dimensions
     int      m_width;

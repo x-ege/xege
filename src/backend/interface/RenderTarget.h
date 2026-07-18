@@ -9,40 +9,62 @@ namespace ege {
 typedef uint32_t color_t;
 
 enum RasterOp {
-    ROP_COPY     = 13,  // SRCCOPY
-    ROP_XOR      = 7,   // R2_XORPEN
-    ROP_AND      = 1,   // R2_MASKPEN
-    ROP_OR       = 15,  // R2_MERGEPEN
-    ROP_NOP      = 11,  // R2_NOP
-    ROP_NOTSRC   = 6,   // R2_NOTSRCPEN
+    ROP_BLACK          = 1,
+    ROP_NOTMERGEPEN    = 2,
+    ROP_MASKNOTPEN     = 3,
+    ROP_NOTCOPYPEN     = 4,
+    ROP_MASKPENNOT     = 5,
+    ROP_NOT            = 6,
+    ROP_XOR            = 7,
+    ROP_NOTMASKPEN     = 8,
+    ROP_AND            = 9,
+    ROP_NOTXORPEN      = 10,
+    ROP_NOP            = 11,
+    ROP_MERGENOTPEN    = 12,
+    ROP_COPY           = 13,
+    ROP_MERGEPENNOT    = 14,
+    ROP_OR             = 15,
+    ROP_WHITE          = 16,
 };
 
 enum LineStyle {
-    LINE_SOLID,
-    LINE_DASHED,
-    LINE_DOTTED,
-    LINE_DASHDOT,
-    LINE_DASHDOTDOT,
-    LINE_USER,
+    LINE_SOLID      = 0,
+    LINE_DASHED     = 1,
+    LINE_DOTTED     = 2,
+    LINE_DASHDOT    = 3,
+    LINE_DASHDOTDOT = 4,
+    LINE_NONE       = 5,
+    LINE_INSIDE     = 6,
+    LINE_USER       = 7,
 };
 
 // Line cap types (prefixed to avoid conflict with ege.h enums)
 enum RTLineCap {
     RT_LINECAP_FLAT,
-    RT_LINECAP_ROUND,
     RT_LINECAP_SQUARE,
+    RT_LINECAP_ROUND,
 };
 
 enum RTLineJoin {
     RT_LINEJOIN_MITER,
-    RT_LINEJOIN_ROUND,
     RT_LINEJOIN_BEVEL,
+    RT_LINEJOIN_ROUND,
 };
 
 enum FillStyle {
+    FILL_EMPTY = 0,
     FILL_SOLID,
-    FILL_EMPTY,
-    FILL_HATCHED,
+    FILL_HORIZONTAL,
+    FILL_LIGHT_SLASH,
+    FILL_SLASH,
+    FILL_BACKSLASH,
+    FILL_LIGHT_BACKSLASH,
+    FILL_HATCH,
+    FILL_CROSS_HATCH,
+    FILL_INTERLEAVE,
+    FILL_WIDE_DOT,
+    FILL_CLOSE_DOT,
+    FILL_USER,
 };
 
 enum TextHAlign {
@@ -63,6 +85,15 @@ enum AlphaMode {
     ALPHA_TRANSPARENT,
     ALPHA_PREMULTIPLIED,
     ALPHA_FILTER,
+};
+
+// Describes how RGB relates to the source alpha channel. This is kept in the
+// backend interface so platform renderers can choose the correct blend factors
+// without depending on the public ege.h color_type declaration.
+enum ImageAlphaFormat {
+    IMAGE_ALPHA_PREMULTIPLIED,
+    IMAGE_ALPHA_STRAIGHT,
+    IMAGE_ALPHA_OPAQUE,
 };
 
 // ============================================================
@@ -139,9 +170,10 @@ public:
     virtual void drawArc(int x, int y, int sa, int ea, int rx, int ry) = 0;
     virtual void drawChord(int x, int y, int sa, int ea, int rx, int ry) = 0;
 
-    virtual void drawPolygon(const int* x, const int* y, int count) = 0;
-    virtual void fillPolygon(const int* x, const int* y, int count) = 0;
-    virtual void drawPolyline(const int* x, const int* y, int count) = 0;
+    // Coordinates use the public EGE layout: x0, y0, x1, y1, ...
+    virtual void drawPolygon(const int* points, int count) = 0;
+    virtual void fillPolygon(const int* points, int count) = 0;
+    virtual void drawPolyline(const int* points, int count) = 0;
 
     // --- Pixel operations ---
     virtual void putPixel(int x, int y, color_t color) = 0;
@@ -153,6 +185,7 @@ public:
 
     // --- Flood fill ---
     virtual void floodFill(int x, int y, color_t borderColor) = 0;
+    virtual void floodFillSurface(int x, int y, color_t surfaceColor) = 0;
 
     // --- Clear ---
     virtual void clear(color_t color) = 0;
@@ -164,28 +197,40 @@ public:
                               RenderTarget* src, int srcX, int srcY, int srcW, int srcH) = 0;
     virtual void alphaBlend(int dstX, int dstY, int dstW, int dstH,
                              RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
-                             unsigned char alpha) = 0;
+                             unsigned char alpha, ImageAlphaFormat format, bool smooth) = 0;
     virtual void alphaTransparent(int dstX, int dstY, RenderTarget* src,
                                    int srcX, int srcY, int w, int h,
-                                   color_t transparentColor) = 0;
+                                   color_t transparentColor, unsigned char alpha) = 0;
     virtual void withAlpha(int dstX, int dstY, int dstW, int dstH,
-                            RenderTarget* src, int srcX, int srcY, int srcW, int srcH) = 0;
+                            RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
+                            bool smooth) = 0;
     virtual void alphaFilter(int dstX, int dstY, int w, int h,
                               RenderTarget* src, int srcX, int srcY,
                               unsigned char alpha) = 0;
     virtual void rotateBlend(int dstX, int dstY, int dstW, int dstH,
                               RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
-                              float angle, float centerX, float centerY) = 0;
+                              float angle, float centerX, float centerY,
+                              bool transparent, int alpha, bool smooth) = 0;
     virtual void rotateZoomBlend(int dstX, int dstY, int dstW, int dstH,
                                   RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
                                   float angle, float centerX, float centerY,
-                                  float zoomX, float zoomY) = 0;
+                                  float zoomX, float zoomY,
+                                  bool transparent, int alpha, bool smooth) = 0;
+    // Destination points are top-left, top-right, bottom-right, bottom-left in
+    // logical EGE pixel coordinates. Enhanced ege_drawimage uses PARGB source
+    // pixels, matching the GDI+ PixelFormat32bppPARGB implementation.
+    virtual void blitAffine(RenderTarget* src, int srcX, int srcY, int srcW, int srcH,
+                            const float* destinationPoints, bool premultipliedAlpha,
+                            bool smooth) = 0;
     virtual void filterBlur(int dstX, int dstY, int w, int h, float intensity) = 0;
 
     // --- Text rendering ---
     virtual void setFont(int height, int width, const char* face,
                           int escapement, int orientation, int weight,
                           bool italic, bool underline, bool strikeout) = 0;
+    virtual void getFont(int* height, int* width, char* face, int faceCapacity,
+                         int* escapement, int* orientation, int* weight,
+                         bool* italic, bool* underline, bool* strikeout) const = 0;
     virtual void setTextJustify(TextHAlign h, TextVAlign v) = 0;
     virtual void drawText(float x, float y, const char* text) = 0;
     virtual void drawText(float x, float y, const wchar_t* text) = 0;

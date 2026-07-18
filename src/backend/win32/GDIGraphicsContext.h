@@ -23,13 +23,13 @@ public:
     void fillEllipse(int x, int y, int w, int h) override;
     void drawCircle(int x, int y, int r) override;
     void fillCircle(int x, int y, int r) override;
-    
+
     void putPixel(int x, int y, color_t color) override;
     color_t getPixel(int x, int y) override;
 
     void clear(color_t color) override;
     void flush() override;
-    
+
     void setViewport(int x, int y, int w, int h) override;
 
 private:

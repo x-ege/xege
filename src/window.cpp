@@ -23,9 +23,17 @@ void setcaption(const wchar_t* caption)
 {
     struct _graph_setting* pg = &graph_setting;
 #ifdef _WIN32
-    if (pg->init_sem.acquirable()) {
+    if (pg->use_opengl && pg->window != NULL) {
+        const std::string utf8Caption = w2mb(caption);
+        pg->window->setTitle(utf8Caption.c_str());
+    } else if (pg->init_sem.acquirable()) {
         ::SetWindowTextW(getHWnd(), caption);
         ::UpdateWindow(getHWnd()); // for vc6
+    }
+#else
+    if (pg->window != NULL) {
+        const std::string utf8Caption = w2mb(caption);
+        pg->window->setTitle(utf8Caption.c_str());
     }
 #endif
 
@@ -46,7 +54,7 @@ void seticon(int icon_id)
     }
     if (hIcon) {
         pg->window_hicon = hIcon;
-        if (pg->init_sem.acquirable()) {
+        if (!pg->use_opengl && pg->init_sem.acquirable()) {
 #ifdef _WIN64
             ::SetClassLongPtrW(getHWnd(), GCLP_HICON, (LONG_PTR)hIcon);
 #else
@@ -83,9 +91,17 @@ void showwindow()
     }
 
 #ifdef _WIN32
-    ShowWindow(pg->hwnd, SW_SHOWNORMAL);
-    BringWindowToTop(pg->hwnd);
-    SetForegroundWindow(pg->hwnd);
+    if (pg->use_opengl && pg->window != NULL) {
+        pg->window->show();
+    } else {
+        ShowWindow(pg->hwnd, SW_SHOWNORMAL);
+        BringWindowToTop(pg->hwnd);
+        SetForegroundWindow(pg->hwnd);
+    }
+#else
+    if (pg->window != NULL) {
+        pg->window->show();
+    }
 #endif
 
     if (showLogo) {
@@ -111,14 +127,34 @@ void hidewindow()
 {
     struct _graph_setting* pg = &graph_setting;
 #ifdef _WIN32
-    ShowWindow(pg->hwnd, SW_HIDE);
+    if (pg->use_opengl && pg->window != NULL) {
+        pg->window->hide();
+    } else {
+        ShowWindow(pg->hwnd, SW_HIDE);
+    }
+#else
+    if (pg->window != NULL) {
+        pg->window->hide();
+    }
 #endif
 }
 
 void movewindow(int x, int y, bool redraw)
 {
 #ifdef _WIN32
-    ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);
+    _graph_setting* pg = &graph_setting;
+    if (pg->use_opengl && pg->window != NULL) {
+        (void)redraw;
+        pg->window->setPosition(x, y);
+    } else {
+        ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);
+    }
+#else
+    (void)redraw;
+    _graph_setting* pg = &graph_setting;
+    if (pg->window != NULL) {
+        pg->window->setPosition(x, y);
+    }
 #endif
 }
 
@@ -155,6 +191,25 @@ void getParentSize(int* width, int* height)
 #endif
 }
 
+void resize_window_surface(int width, int height)
+{
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    _graph_setting* pg = &graph_setting;
+    setmode(TRUECOLORSIZE, width | (height << 16));
+    for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
+        if (pg->img_page[i] != NULL &&
+            (pg->img_page[i]->getwidth() != width || pg->img_page[i]->getheight() != height)) {
+            resize(pg->img_page[i], width, height);
+        }
+    }
+
+    pg->base_w = width;
+    pg->base_h = height;
+}
+
 void EGEAPI resizewindow(int width, int height)
 {
     int parentW, parentH;
@@ -167,22 +222,12 @@ void EGEAPI resizewindow(int width, int height)
         height = parentH;
     }
 
-    if ((width == getwidth() && height == getheight())) {
-        return;
-    }
-
-    setmode(TRUECOLORSIZE, width | (height << 16));
     _graph_setting* pg = &graph_setting;
+    resize_window_surface(width, height);
 
-    for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
-        if (pg->img_page[i] != NULL) {
-            resize(pg->img_page[i], width, height);
-        }
+    if (pg->use_opengl && pg->window != NULL) {
+        pg->window->setSize(width, height);
     }
-
-    /* 修改窗口宽高参数 */
-    pg->base_w = width;
-    pg->base_h = height;
 }
 
 int attachHWND(HWND hWnd)
