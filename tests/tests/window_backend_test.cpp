@@ -139,8 +139,10 @@ int main()
     expect(windowSizeCallback != nullptr, "GLFW logical-window-size callback is installed");
     if (windowSizeCallback) {
         glfwSetWindowSizeCallback(firstWindow, windowSizeCallback);
-        glfwSetWindowSize(firstWindow, 64, 48);
-        glfwPollEvents();
+        // Invoke the registered handler directly, as above for framebuffer
+        // changes. X11 delivers programmatic ConfigureNotify asynchronously,
+        // so a single glfwPollEvents() is not a deterministic callback gate.
+        windowSizeCallback(firstWindow, 64, 48);
         expect(ege::getwidth() == 64 && ege::getheight() == 48,
                "logical resize events keep EGE dimensions in sync (got " +
                    std::to_string(ege::getwidth()) + "x" + std::to_string(ege::getheight()) + ")");
