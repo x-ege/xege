@@ -1,211 +1,164 @@
 # 跨平台重构分支合入与影响分析报告
 
 - 更新日期：2026-07-19
-- 本地证据快照：2026-07-19
 - 分支：`feature/opengl-backend`
 - 对比基线：`origin/master@e85aa27`
-- 审计起点 HEAD：`7a63b58`
-- 首个候选提交：`d968a85`
+- 已验证代码提交：`a23a3f7d0e06aba26aa13a6fa292e64140bec16f`
+- 子模块：`3rdparty/ccap@d1876005be7e7cc0c370fadd05dbac6c658c4a17`
+- 代码候选相对 master：0 behind / 30 ahead，101 个文件，40,447 行新增、1,111 行删除
 
 ## 执行结论
 
-当前判定是 **No-Go，暂不建议直接合入 master**。
+当前结论是 **Conditional Go（代码层面具备合入条件，流程与硬件验收仍有前置项）**。
 
-这里的 No-Go 已不是“本地仍有已知代码失败”：本轮发现的绘图、图片保存、相机帧越界、相机状态机、窗口关闭和事件循环问题均已完成 TDD 修复，本地 Release、Debug 和 sanitizer 门禁均为绿色。首个远端 Actions 运行又发现 Linux 标准头、Windows OpenGL 跨编译器兼容和 macOS hosted runner 环境边界，确定性代码问题已修复并在本机重建复验。
+所有已知的确定性代码问题都已完成修复，并在最终代码提交上取得完整的 Native、MSVC、MinGW、交叉编译和 release package 远端证据。没有发现 Windows 公共 API/source breaking change，Windows 默认构建仍走 GDI，OpenGL 仍是显式 opt-in。
 
-真正缺少的是完整且最新的远端证据：首个 Native OpenGL 运行中 ccap regression 已全绿，但其余 job 在后续修复前失败；MSVC 默认 GDI、MinGW、cross 和 release package 流程仍需 PR 触发；master 目前没有 branch protection。因此后续修复必须 rerun 全绿，且 PR 矩阵和 required checks 建立后才适合合入。
+不建议绕过 PR 直接合入 master。合入前仍应完成三件事：
 
-| 判定维度 | 当前状态 | 结论 |
+1. 由维护者审查手写后端与兼容层，并把生成的 GLAD/STB 文件与手写代码分开看。
+2. 在真实 Windows 设备上做相机与窗口退出 smoke test；在物理 macOS 上人工确认 Escape、Command+Q 和窗口关闭。
+3. 给 master 配置 required checks。当前 GitHub API 返回 master 未启用 branch protection，且本分支还没有 PR。
+
+| 维度 | 证据 | 判定 |
 | --- | --- | --- |
-| macOS 本地实现与 TDD | Release/Debug/ASan+UBSan 全绿 | Go |
-| workflow 静态结构 | YAML、Shell、权限、矩阵表达式审计通过；首跑日志已回灌修复 | Go |
-| Linux runner | 首跑发现缺失 `<cstring>`，已修复，等待 rerun | 待验证 |
-| Windows GDI/OpenGL | OpenGL 首跑发现 3 类 MSVC 编译错误并已修复；默认 GDI 矩阵待 PR | 待验证 |
-| MinGW cross/release package | 目标断言和 consumer smoke 已补，尚未实跑 | 待验证 |
-| 真实 Windows 相机与交互退出 | hosted runner 无法覆盖 | 待人工验证 |
-| 提交/PR/required checks | `d968a85` 已推送，首跑修复纳入后续提交；PR 与 required checks 仍未完成 | No-Go |
+| 基础绘图、图片与保存 | 像素、状态、文件格式和往返测试；本地与 Linux/macOS CI 全绿 | Go |
+| 相机状态机与帧安全 | fixture、headless provider、stride/长度 guard、ASan/UBSan、ccap regression | Go |
+| 事件循环与退出 | Escape、Command+Q、WM_CLOSE、默认进程退出、NOFORCE 重用测试 | Go |
+| Windows 默认兼容 | MSVC/MinGW GDI、raw static-library consumer、x86/x64 release package 全绿 | Go |
+| Windows/macOS 真实硬件 | hosted runner 无摄像头，Windows 无可靠 WGL，系统级按键注入未作为证据 | 人工前置项 |
+| PR 与分支治理 | 无 PR，master 无 required checks | 流程前置项 |
 
-## 分支和提交范围
+## 本轮完成的修复
 
-- 审计起点相对 `origin/master`：0 behind / 23 ahead；首个候选提交 `d968a85` 已推送到 `feature/opengl-backend`。
-- `d968a85` 纳入 62 个文件、7,891 行新增、1,902 行删除；无关的 `3rdparty/libpng/` 与 `3rdparty/zlib/` 临时源码树已移出工作树，未进入提交。
-- 审计时 `git diff --stat origin/master` 的 tracked 快照为 84 个文件、37,084 行新增、1,099 行删除；最大部分是 vendored GLAD/STB 与 OpenGL 后端，整体仍属于高审查成本重构。最终范围应以候选提交的 PR diff 为准。
-- `git diff --check origin/master` 当前为 clean。
-- GitHub 上仍没有本分支 PR；首个 [Native OpenGL Build and Test](https://github.com/x-ege/xege/actions/runs/29654242753) 已完成，ccap regression 成功，其余失败已用于本轮修复；master branch protection API 返回未保护。
+### 绘图、图像与保存工具
 
-## 本轮完成的关键修复
-
-### 绘图和图像工具
-
-- 补齐基础图元、线型、填充、viewport、page、图片混合/透明/旋转、文字及状态行为的像素和场景测试。
-- 恢复 `imagefilter_blurring_4/8` 与旧版本一致的核、强度和 alpha 行为，避免公开像素语义变化。
-- `saveimage`/`savepng`/`savebmp` 覆盖 PNG、大小写混合 BMP、无扩展名默认 PNG、宽字符非 ASCII 路径、空路径和非法目录。
-- 保存结果除 EGE 重新加载外，还独立解析 PNG signature/IHDR 与 BMP file/DIB header、尺寸、位深、压缩和 channel masks。
-- 修复 Unix 宽字符路径使用 locale-dependent `wcstombs` 导致保存失败的问题，统一使用 UTF-8 转换。
+- 为基础图元、像素、线型、填充、viewport、page、文字、变换、`putimage*`、alpha/transparent/rotate/blur 建立确定性的像素和状态断言。
+- `saveimage`、`savepng`、`savebmp` 覆盖 PNG、BMP、大小写混合扩展名、无扩展名默认 PNG、宽字符非 ASCII 路径、空路径和非法目录。
+- 保存结果不仅由 EGE 重新加载，还独立校验 PNG signature/IHDR 与 BMP file/DIB header、尺寸、位深、压缩和 channel mask。
+- Unix 宽字符路径改为稳定的 UTF-8 转换，避免 locale-dependent `wcstombs` 导致保存失败。
+- 修复 OpenGL image 的 `setbkcolor` 像素替换、Windows alpha 路径 viewport 二次平移，以及编译了 OpenGL 但实际运行 GDI 时错误调用 `glReadPixels` 的问题。
+- 恢复 blur 核、强度与 alpha 的旧版像素语义，防止跨平台重构悄然改变公开行为。
 
 ### 相机
 
-- 修复 `CameraCapture::open(-1, false)` 丢失 `autoStart=false` 的状态机错误。
-- camera fixture 覆盖 open/start/grab/getImage/copyImage/stop/restart/close/reopen。
-- ASan 实际复现：320×240 `IMAGE` 为 307,200 bytes，而 ccap provider 缓冲区为 307,264 bytes；旧代码按 `sizeInBytes` 整块复制，产生 64-byte heap-buffer-overflow。
-- 现在先验证宽高、packed byte count、stride、源缓冲长度和目标长度，再分配 `IMAGE`；只逐行复制有效 BGRA 像素，并在分辨率变化时重建缓存图像。
-- 新增平台无关 `camera_frame_copy` 测试，确定性覆盖 padded stride、tight stride + provider trailing bytes、截断尾行、短 stride、null source、短 destination、整数边界和 destination guard；即使关闭 camera 模块也会执行，因此 Linux sanitizer 能覆盖核心算法。
-- 新 helper 通过 `-std=c++98 -pedantic-errors` 单独编译，避免给 camera-off 的旧工具链新增 C++11 要求。
+- 修复 `CameraCapture::open(..., false)` 丢失 `autoStart=false` 的状态机错误，并允许 `close()` 后重新 `open()`。
+- ASan 复现并修复 provider buffer 比目标 `IMAGE` 多 64 bytes 时的 heap-buffer-overflow。
+- 帧复制现在先验证宽高、packed byte count、stride、源长度、目标长度和整数边界，再逐行复制有效 BGRA 像素；分辨率变化会重建缓存图像。
+- `camera_frame_copy` 在 camera-off 构建中也执行，覆盖 padded/tight stride、provider trailing bytes、截断尾行、短 stride、null、短 destination 和 guard 区。
+- fixture 覆盖 open/start/grab/getImage/copyImage/stop/restart/close/reopen；camera demo 启动 smoke 能完成设备枚举并收到新帧。
 
-### 事件循环和退出
+### 事件循环与退出
 
-- OpenGL 默认窗口关闭现在与 Win32 兼容：默认模式结束进程，`INIT_NOFORCEEXIT` 保持可关闭后重用。
-- 新增独立进程测试，若默认 Command+Q/close 错误返回、或退出路径挂住，CTest 会失败/超时。
-- Win32 默认 GDI 不再被未绑定 HWND 的抽象 `Window` 错误接管；仍使用旧 HWND、UI message thread 和 BitBlt。
-- Win32 进程析构通过 UI owner thread 销毁窗口、`PostQuitMessage` 后 join，不改变公开 `closegraph()` 的“隐藏并可重用”语义。
-- 静态析构在 OpenGL context 存活时释放页面、timer image、输入队列和 Window，避免 teardown 顺序错误。
-- 修复 `graph_sort_visualization` 的 Escape 分支只更新 UI、不退出循环的问题。
+- OpenGL 后端加入与旧 Win32 语义对齐的默认强制退出和 `INIT_NOFORCEEXIT` 可重用路径。
+- Command+Q 进入统一 close callback；Escape 保留为 EGE key message；`delay_ms` 持续泵送窗口事件。
+- 添加独立子进程测试：默认关闭若返回到调用点或进程挂住，CTest 会失败或超时。
+- Win32 UI owner thread 负责销毁 HWND、`PostQuitMessage` 和 join，避免程序从 `main` 返回后消息线程阻止退出。
+- 修复 `graph_sort_visualization` 收到 Escape 后只刷新界面却不退出循环的问题。
+- 修复静态析构顺序：在 OpenGL context 仍存活时清理 image manager，消除 performance 测试通过后在进程退出阶段崩溃的问题。
 
-## GitHub CI 审计与补充
+### Demo 与构建系统
 
-### 修改前的主要缺口
+- 37 个核心 demo 在 macOS、Linux 和 Windows 矩阵中构建。
+- GMP demo 仍是可选项，但现在只有 `gmpxx.h` 与实际 GMP library 同时可用时才加入；不完整的 runner 环境会正确跳过，而不是在编译/链接中途失败。
+- macOS Homebrew 交叉编译移除无意义的 `brew update` 和重复 CMake 安装，关闭自动更新，并只对 `mingw-w64` 做三次短重试。
 
-- native OpenGL workflow 尚未进入版本控制，也没有远端运行。
-- Windows workflow 多数只编译，不执行 CTest；demo target 和 raw prebuilt consumer 覆盖不完整。
-- Windows OpenGL 只有 compile-only，不能证明 GDI 默认与 OpenGL opt-in 共存。
-- sanitizer 没有覆盖相机 bridge；ccap 子模块的 1,000+ 测试没有稳定门禁。
-- MinGW cross 可能把宿主 native archive 当 Windows 库打包，原 cache 断言也检查了错误文件。
-- release workflow 缺 PR dry-run、严格 tag/version 校验、完整旧目录兼容和 assembled package consumer。
-- MSVC 主 workflow 曾在 PowerShell 中使用 Bash `\` 续行，会确定性失败。
-- 两个 MinGW workflow 未显式收紧 token 权限，手动 `build_type` 输入也未真正裁剪矩阵。
+## 测试证据
 
-### 当前矩阵
+### 当前 macOS 本地
 
-| workflow 路径 | 构建/运行范围 | 关键门禁 |
+- 37/37 核心 demo 编译、链接成功。
+- 功能测试：9/9 passed，7.02s。
+- canonical performance：1/1 passed，22.94s，并正常完成进程析构。
+- Debug 与 Release 功能套件均为 9/9；camera-off ASan+UBSan 功能套件为 7/7。
+- ASan+UBSan canonical performance 为 1/1，覆盖此前的进程退出阶段崩溃。
+- demo startup smoke：37/37 在观察窗口内无启动崩溃；两个 camera demo 均完成设备枚举并产生新帧。
+- macOS 系统级按键注入没有可靠送达目标进程，因此没有把该操作包装成人工退出证据；退出结论来自确定性的 callback、状态与子进程测试。
+
+### 最终代码提交的 GitHub Actions
+
+| Workflow | 结果 | 覆盖 |
 | --- | --- | --- |
-| Native OpenGL | Linux Debug/Release；macOS ARM64 Debug/Release；macOS Intel Release | 全部 demos；Linux 15 项功能测试及 Release performance；macOS 编译 + 3 项无 NSGL 的 headless 测试 |
-| Linux system GLFW | Ubuntu Release | 非 bundled GLFW + Xvfb 功能测试 |
-| Linux sanitizer | Debug，camera off | ASan+UBSan 全功能；平台无关 camera frame copy 仍运行 |
-| macOS camera sanitizer | ARM64 Debug，camera on | C++/Objective-C++ ASan+UBSan；synthetic helper + headless camera provider fixture |
-| Windows OpenGL opt-in | windows-2022 Release | 同一构建运行默认 GDI lifecycle/exit 与显式 `INIT_OPENGL` 测试；全部 demos |
-| ccap regression | macOS ARM64 Release | 1016 个选择用例顺序运行，避免设备/并行基础设施误报 |
-| MSVC default GDI | v143/v142 × Debug/Release | GDI CTest、全部 demos；v143 Release raw `graphics.lib` camera/drawing consumer |
-| MinGW Windows | MSYS2、Code::Blocks WinLibs、CLion/RedPanda WinLibs | demos；MSYS2 CTest/raw consumer；release workflow 对三种工具链均测试 |
-| MinGW cross | Ubuntu/macOS × Debug/Release | 强制 GDI/OFF；检查 `CMAKE_SYSTEM_NAME=Windows` 与 PE/COFF archive；显式 demos |
-| Release package | v143/v142/v141 × x86/x64 × Debug/Release；三种 Windows MinGW；两种 cross | x64 功能测试、x86 frame-layout test、精确 artifact、整包 camera/drawing consumer |
+| [Native OpenGL Build and Test](https://github.com/x-ege/xege/actions/runs/29657327825) | 10/10 jobs success | Linux Debug/Release/system GLFW/ASan+UBSan；macOS ARM64 Debug/Release、Intel Release、camera sanitizer；Windows OpenGL opt-in build；ccap |
+| [MSVC GDI Build and Test](https://github.com/x-ege/xege/actions/runs/29657327822) | 4/4 jobs success | v143/v142 × Debug/Release；GDI functional、退出、相机 fixture、wide-path save、raw `graphics.lib` consumer |
+| [MinGW Windows Build](https://github.com/x-ege/xege/actions/runs/29657327820) | 6/6 jobs success | MSYS2、Code::Blocks GCC 14.2、CLion GCC 13.1 × Debug/Release；核心 demos；MSYS2 GDI CTest 与 raw consumer |
+| [MinGW Cross-Compile Build](https://github.com/x-ege/xege/actions/runs/29657327829) | 4/4 jobs success | Ubuntu/macOS × Debug/Release；Windows target 与 PE/COFF archive 断言；核心 demos |
+| [Release Package dry-run](https://github.com/x-ege/xege/actions/runs/29657332498) | 19 jobs success，发布 job 按设计 skipped | v141/v142/v143 × x86/x64 × Debug/Release；3 种 Windows MinGW；2 种 cross；组包、归档和 assembled consumer |
 
-额外治理：
+release dry-run 使用 `workflow_dispatch`，不会创建 GitHub Release。最终组装包实际用包内 public headers 和 library layout 编译了 `camera_base.exe` 与 `graph_5star.exe`，并验证为 PE/COFF。
 
-- 所有 workflow 默认 `permissions: contents: read`；仅 tag-only `publish-release` job 有 `contents: write`。
-- release workflow 在相关 PR 上执行完整 dry-run，但不会发布 Release。
-- v* tag 格式、header version、tag version 和 commit 可达 master 均严格校验。
-- MinGW 手动触发会只跑选择的 Debug 或 Release；push/PR 仍跑两者。
-- PowerShell build 续行已改成 backtick，5 个 workflow YAML 解析、46 个 Bash/MSYS2 script block 语法、权限/矩阵结构和 `git diff --check` 均通过。
-- `windows-2022` 当前不预装 v141，workflow 通过 Visual Studio Installer 显式安装微软仍提供的 `Microsoft.VisualStudio.Component.VC.v141.x86.x64`；该策略静态合理，但必须远端首跑证明。[Windows runner 镜像清单](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)，[v141 组件说明](https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-professional?view=visualstudio)。
-- macOS runner 标签使用 GitHub 当前公开的 hosted runner 体系；实际容量和架构仍以 Actions 首跑为准。[GitHub-hosted runners reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)。
+最终 ccap job 执行 1,016 个设备无关选择用例：1,002 passed、14 capability-dependent skipped、0 failed。它覆盖 conversion/helper、CLI、file playback、memory/backpressure 和 writer，但不等于真实摄像头验证。
 
-### CI 充分性结论
+## GitHub CI 是否足够
 
-workflow 的静态设计和首跑日志已经形成有效反馈闭环，但首个运行本身不是绿色，后续修复仍需最新 Actions 结果证明。在 PR 完整矩阵与 required checks 生效前，不能把当前分支判为可合入。
+结论：**对本次跨平台重构的高风险路径已经足够作为合入门禁，但不是全 API、全硬件覆盖。**
 
-仍需披露的覆盖边界：
+当前 CI 能阻断以下回归：
 
-- Windows hosted runner 通常没有真实摄像头，无法验证 MSMF/DirectShow 的设备枚举、权限、无帧回退和硬件切换。
-- Windows OpenGL 的 MSVC 编译修复和 3.3 context、v141 可选组件安装、WinLibs 下载/构建、MSYS2 camera link、PowerShell/cmd 真实语义只能由远端执行证明。
-- 固定 WinLibs 下载 URL 尚无 SHA-256 校验，是非阻塞供应链残余风险。
-- macOS sanitizer 使用 `detect_leaks=0`，覆盖越界和 UB，但不提供 leak gate；macOS 不支持 LeakSanitizer。
-- GitHub 的无 GPU macOS VM 只暴露 Apple software renderer，而 GLFW 当前强制请求 accelerated NSGL pixel format；因此 hosted runner 只把编译和 headless camera/provider 测试作为阻断项，完整 macOS OpenGL 像素与事件测试保留在物理 Mac。该限制由 [GLFW upstream issue #2570](https://github.com/glfw/glfw/issues/2570) 跟踪。
-- ccap 的测试基础设施仍需 workaround：作为 XEGE subdir 时错误使用 `CMAKE_SOURCE_DIR`，test-data 向上搜索可能走到 `/`，CLI 共享临时目录会在并行 CTest 中竞争。因此 CI 采用 standalone build、源树下 build dir 和顺序直跑 executable。
+- OpenGL/GDI 基础渲染、图片操作、保存格式和公开状态语义；
+- camera bridge 的越界、stride、状态机和 fixture 生命周期；
+- Escape、Command+Q、WM_CLOSE、默认退出、NOFORCE 重用与 teardown；
+- Windows 默认 GDI、OpenGL opt-in 编译、MSVC/MinGW/交叉编译；
+- 旧 VS toolset、x86 frame layout、预编译包目录与 raw static-library consumer；
+- release package 漏库、错误 archive、错误目标平台和不可消费的发布包。
 
-## 当前本地测试证据
+不能声称所有接口都有独立单元测试。去除注释后的静态启发式统计中，`ege.h` 有 288 个不同 EGEAPI 名称，其中 117 个被测试源码直接引用，约 40.6%。场景测试会间接覆盖更多共享入口，但当前没有 line/branch coverage 数据，不能把 40.6% 当作真实代码覆盖率。
 
-### XEGE 顶层
+仍未自动化覆盖的边界：
 
-- Release 全量测试：16/16 passed（15 项功能 + 1 项性能），54.06s；性能项本身为 6.97s。
-- Debug 功能测试：14/14 passed，90.86s。
-- ASan + UBSan 原有功能测试：14/14 passed，222.96s；新增相机 helper + headless provider 路径另行重建复验 2/2 passed。
-- camera disabled 构建：`camera_frame_copy` 1/1 passed。
-- C++98 compatibility compile：`camera_frame_copy.cpp` 使用 `-std=c++98 -pedantic-errors` 通过。
-- demos target：37/37 编译、链接成功。
-- demo startup smoke：37/37 每个运行 1.5 秒无启动崩溃，并按捕获 PID 终止。
-- 两个 camera demo 延长运行均完成设备枚举并记录 `ege: new frame created!!`。
-- 最终自动化输入注入未能让 macOS System Events 把 Escape 送进目标进程，因此没有把该次人工注入当作退出证据；退出结论来自确定性的 key mapping、window close、default process exit 与 NOFORCE reuse 测试。
+- Windows MSMF/DirectShow 的真实设备枚举、权限、无帧回退、分辨率切换与设备切换；
+- hosted Windows runner 上可靠的 WGL runtime；当前显式 OpenGL tests 会编译，运行门禁使用确定性的 GDI compatibility tests；
+- hosted macOS 的完整 accelerated NSGL 渲染；像素与窗口 runtime 由 Linux Xvfb 和物理 Mac 补位；
+- OS 真实菜单触发的 Command+Q 与真实键盘 Escape；
+- ccap 的真实 camera CLI、硬件 performance、x86 AVX2 和三个 orientation harness 误报用例；
+- 每个长尾 EGE API 的独立行为测试。
 
-### ccap 子模块（独立记账）
+## Windows breaking-change 与影响
 
-锚定 submodule `d1876005be7e`，macOS ARM64 Release，file playback/writer 开启：
+### 已确认保持的兼容面
 
-- GoogleTest/CTest discovery：1054 cases。
-- PR blocking 选择：1016 cases = 920 core + 22 filtered CLI + 46 file playback + 6 memory/backpressure + 22 video writer。
-- 本机结果：1009 passed / 7 skipped / 0 failed；跨 runner 只应要求 0 failed，pass/skip 数会随相机和 ARM/AVX2 能力变化。
-- 38 个未进入阻断集合：8 个硬件敏感 performance、27 个真实摄像头 CLI、3 个 orientation harness false negatives。
-- 三个临时排除项为 `FrameOrientationMatchesFFmpeg_BMP/PNG/JPG`：BMP/PNG helper 不接受当前 32-bit 输出，JPG 独立复核 direct SSIM 0.955948、vflip 0.713447，方向实际正确。它们是待修复的测试工具问题，不应永久忽略。
-- `ccap_memory_safety_test` 是功能性内存/背压测试，不是 sanitizer 证据。
-- 当前 ccap job 仅覆盖 Apple ARM64/AVFoundation Release，不代表 Linux V4L2、Windows MSMF/DirectShow、x86 AVX2、Debug、sanitizer 或真实设备。
+- Windows 顶层 CMake 默认仍是 `EGE_BUILD_OPENGL=OFF`；旧项目不会被静默切换到新后端。
+- `INIT_OPENGL=0x80` 仅在 OpenGL build 宏存在时可见，不改变旧 `initmode_flag` 的数值。
+- 当前分支与 `origin/master` 的 288 个 EGEAPI 名称集合完全相同，没有公开函数删除或重命名。
+- `graphics.lib`、`graphicsd.lib`、`libgraphics.a` 名称，以及 VS2017/VS2019/VS2022、x86/x64、Debug/Release 目录保持。
+- `IMAGE` 在 public header 中仍是不透明前置声明；新增 RenderTarget/Window 字段不暴露为 public class layout。
+- 默认 GDI 继续使用旧 HWND、UI message thread 和 BitBlt；OpenGL build 的 `getHWnd()` 在 Windows 返回真实 GLFW HWND。
+- 相机所需 Media Foundation/Shlwapi/Propsys 依赖由构建目标、pragma 与 package consumer smoke 承接。
 
-## Windows breaking-change 与影响分析
+### 合入后的实际影响
 
-### 明确保持的兼容面
+- **默认 Windows GDI 用户**：预期不需要修改源码或构建参数；远端 v142/v143 和 MinGW GDI 行为测试均已通过。
+- **旧预编译包用户**：目录和库名保持，v141/v142/v143 的 x86/x64 Debug/Release 全部重新构建并完成 consumer 验证。
+- **Windows OpenGL 用户**：获得显式 opt-in 新能力；首版仍应标记为 experimental，不能把 hosted runner 的编译证据等同于真实 GPU/WGL 兼容性。
+- **相机用户**：获得状态机和越界修复；真实 Windows 设备兼容仍需硬件 smoke。
 
-- Windows 顶层 CMake 默认仍是 `EGE_BUILD_OPENGL=OFF`，默认和 release package 继续使用成熟 GDI/GDI+；OpenGL 不会静默接管旧程序。
-- `INIT_OPENGL=0x80` 仅在 OpenGL build 宏存在时可见，不移动旧 `initmode_flag` 数值；OFF build 的 configure-time compile gate 会证明该符号不可见。
-- 当前与 `origin/master` 的 `ege.h` EGEAPI 函数名集合无新增/删除差异；没有发现公开函数删除或重命名。
-- `graphics.lib`、`graphicsd.lib`、`libgraphics.a` 名称和 VS2017/VS2019/VS2022、x86/x64、Debug/Release 目录保持。
-- Windows OpenGL 的 `getHWnd()` 返回真实 GLFW HWND；默认 GDI 仍返回原 HWND。
-- `IMAGE` 在 public header 中仍是不透明前置声明，新增 RenderTarget/Window 内部字段不构成公开类布局 ABI 变化。
-- MSVC 相机对象通过显式 `#pragma comment(lib, ...)` 携带 Media Foundation/Shlwapi/Propsys 依赖；MinGW imported target 和 release package CMake 也显式补齐系统库。
-- CameraFrame 的 `shared_ptr` API 变更说明已存在于 `origin/master`，不是本分支新增的 breaking change。
+综合判断：**未发现 Windows source breaking change，默认路径的侵入性已经较低。** 但共享 image/font/input/teardown 代码改动较大，不能把“没有检测到 breaking change”写成绝对 ABI/行为保证。
 
-### 合入后 Windows 用户的预期影响
+## 其他平台影响
 
-- 默认 GDI 用户：预期无需修改源码或构建参数；窗口创建、BitBlt、输入、`delay_ms` 和 closegraph 走旧后端，但共享 image/font/input/teardown 实现变化仍必须由 Windows CTest 证明。
-- 相机用户：获得 file fixture、状态机和帧边界修复；静态库会新增/显式承接 Media Foundation 系统依赖，但 raw consumer 测试用于保证旧的“只链接 graphics library”体验。
-- OpenGL 用户：获得显式 opt-in 的新 Windows 路径；这是新增能力，不应在首版承诺与 GDI 完全相同的渲染质量或硬件兼容性。
-- 预编译包用户：v141/v142/v143 目录仍在；release dry-run 和 assembled consumer 会阻止漏库或目录漂移。
+- macOS/Linux 顶层源码构建现在默认走 native OpenGL，不再默认产出供 Wine 使用的 Windows binary；这是本分支最大的有意构建语义变化，必须写入 release notes。
+- Linux 增加 bundled/system GLFW 两条路径、Xvfb 功能测试和 sanitizer。
+- macOS 增加 ARM64/Intel 编译、物理机 runtime 路径和 camera sanitizer；hosted runner 的 NSGL 限制仍存在。
+- CI 和 release 时间明显增长，这是维持旧 Windows 包、跨编译器和 raw consumer 兼容的成本。
 
-### 剩余 Windows 风险
+## 范围与清理审计
 
-- 共享 `resizewindow`、字体、图像、输入队列和析构路径改动较大，本机 macOS 不能验证 Win32 message ordering。
-- v141 虽能安装为 VS2022 可选组件，但实际 ABI/SDK/packaging 组合必须由远端四个 v141 matrix 结果证明。
-- 27 个真实 camera CLI tests 不在阻断 gate；fixture 和 synthetic frame copy 不能替代真实设备。
-- Windows OpenGL hosted runner 可能受远程桌面/驱动影响；应先标记 experimental，直到 runtime job 稳定。
+- `git diff --check origin/master...a23a3f7` clean。
+- `3rdparty/ccap` 固定在已验证 SHA；没有把临时 vendor 副本作为普通源码提交。
+- 无关的未跟踪 `3rdparty/libpng/` 与 `3rdparty/zlib/` 已移出工作树，未进入 Git 历史。
+- build 产物、测试 PNG/BMP 和下载压缩包均未进入提交。
+- 轻量 secret-pattern 扫描无匹配；本机未安装 gitleaks，因此这不是完整凭据扫描。
+- 约 27K 行新增来自生成的 GLAD/STB；PR review 应把生成文件与手写 backend/compatibility diff 分开。
 
-综合判断：没有发现明确的 Windows public API/source breaking change；默认 GDI 的设计侵入性已降到较低，但在真实 Windows CI 和人工硬件验收前，行为兼容风险仍为中等。
+## 合入前清单
 
-## “所有接口是否都有测试”的回答
+自动化条件已经满足。真正 merge 前建议只保留以下阻断项：
 
-不能声称每个公开接口都已经有独立单元测试。
+1. 创建 PR，复核最终 diff、submodule SHA 和本报告所列五个 workflow。
+2. master required checks 至少包含 Native Linux Release、Linux sanitizer、ccap、MSVC v143 Release、MSYS2 Release、Ubuntu cross Release 和 release package。
+3. 真实 Windows：相机枚举/首帧/切换/关闭，Escape、窗口关闭、进程退出；真实 macOS：Escape、Command+Q、窗口关闭。
+4. 对 ccap orientation harness 的三个临时排除项建立 owner 和后续修复记录，避免永久静默过滤。
+5. 在 release notes 明确 macOS/Linux 默认构建语义变化，以及 Windows OpenGL 仍为 opt-in/experimental。
 
-去除注释后的静态启发式统计中，`ege.h` 的 288 个不同 EGEAPI 名称有 117 个被测试源码直接引用，约 40.6%。场景测试会间接覆盖更多共享路径，因此该比例不能等同于真实代码覆盖率；但它足以说明 API 长尾仍存在。
+非阻断后续项：逐 API family 增加测试和覆盖率统计、为固定 WinLibs 下载增加 SHA-256、升级产生 Node runtime warning 的 GitHub Actions、扩展 Linux V4L2/Windows MSMF 真机测试。
 
-本轮优先锁定的是 breaking-risk 最高的行为族：
-
-- 基础图元、像素、线型、填充、viewport、page；
-- PNG/BMP 保存和独立格式解析；
-- putimage/alpha/transparent/rotate/blur；
-- public header 与 OFF/ON compile gate；
-- input/window/default exit/NOFORCE reuse/GDI process teardown；
-- camera fixture、状态机、padded frame copy 和 sanitizer；
-- raw prebuilt consumer、cross target 格式和 release package。
-
-后续应按 API family 增量补齐，而不是机械追求“每函数一个测试”。合入门禁应以兼容风险、可观察行为和平台证据为主。
-
-## 转为 Go 的必要条件
-
-1. 推送首跑修复并确认最新 Native OpenGL workflow 全绿，尤其是 Linux 编译、Windows OpenGL MSVC、macOS headless camera sanitizer 和 ccap regression。
-2. 创建 PR，并再次确认完整 PR diff 的 `git diff --check`、submodule SHA 和文件范围；确认不包含 `3rdparty/libpng/`、`3rdparty/zlib/`。
-3. Native Linux/macOS、system GLFW、Linux sanitizer、macOS camera sanitizer 和 ccap regression 全绿。
-4. MSVC v143/v142 GDI Debug/Release、raw `graphics.lib` consumer 全绿。
-5. MSYS2/WinLibs GDI、raw `libgraphics.a` consumer 和 demos 全绿。
-6. Ubuntu/macOS MinGW cross 的 `CMAKE_SYSTEM_NAME=Windows` 与 PE/COFF 断言全绿。
-7. Windows OpenGL opt-in runtime 全绿；若 hosted runner 不稳定，明确标记 experimental 并拆成非阻断观察任务，但默认 GDI 必须阻断。
-8. release workflow PR dry-run 全绿，包括 v141/v142/v143、x86 frame-layout、x64 CTest、精确目录和 assembled camera/drawing consumer。
-9. Windows 真实硬件人工验证相机枚举/首设备无帧回退/分辨率切换/关闭，及 Escape、窗口关闭、进程退出。
-10. 给 master 配置 required checks，至少包含 native、sanitizer、MSVC v143、MSYS2、Ubuntu cross 和 release dry-run；ccap regression 也应阻断本次相机变更。
-11. 三个 ccap orientation harness 在合入前修复，或建立有 owner/期限的临时豁免；不能无记录永久过滤。
-
-## 合入后的整体影响
-
-- macOS/Linux：普通源码构建默认切换到 native OpenGL，不再默认产出依赖 wine 的 Windows binary；这是本分支最大的有意构建语义变化，应在 release notes 显著说明。
-- Windows 默认：继续 GDI，预期源码和链接方式不变；新增 CI 会把旧默认路径设为阻断门禁。
-- Windows OpenGL：新增 opt-in 能力，首版成熟度应低于默认 GDI。
-- 相机：获得 ccap 更新、确定性 fixture、状态机与越界修复；真实设备仍需平台验收。
-- 发布维护：release PR 会明显变慢，因为增加 v141/v142/v143、x86/x64、MinGW、cross 和 consumer smoke；代价换来旧包目录和 raw static-library 体验的可验证兼容。
-- 仓库维护：新增 GLAD/STB/vendor 代码显著放大 diff；后续 review 应把 vendored 文件与手写 backend/compatibility 代码分开审查。
-
-最终建议：把当前工作整理成一个范围明确的 PR，先让新增矩阵取得第一轮真实证据；只有 Windows、Linux、cross、ccap 和 release dry-run 全绿，且 required checks 生效后，再把结论从 No-Go 调整为 Go。
+最终建议：以 `a23a3f7` 作为代码候选进入 PR。若上述人工硬件与分支治理项完成，可以合入；若团队选择把真实 Windows 相机验证延后，必须在 PR 中显式记录风险与 owner，而不是把它当作 CI 已覆盖。
