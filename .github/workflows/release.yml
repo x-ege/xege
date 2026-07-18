@@ -527,9 +527,19 @@ jobs:
       
       - name: Install MinGW-w64 (macOS)
         if: matrix.os == 'macos-latest'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
-          brew update
-          brew install mingw-w64 cmake
+          for attempt in 1 2 3; do
+            if brew install mingw-w64; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "ERROR: Failed to install MinGW-w64 after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
       
       - name: Build
         run: |

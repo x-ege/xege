@@ -144,9 +144,19 @@ jobs:
           submodules: recursive
 
       - name: Install MinGW-w64 cross-compiler
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
-          brew update
-          brew install mingw-w64 cmake
+          for attempt in 1 2 3; do
+            if brew install mingw-w64; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "ERROR: Failed to install MinGW-w64 after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
 
           # Verify MinGW-w64 installation
           x86_64-w64-mingw32-gcc --version || (echo "ERROR: MinGW-w64 installation verification failed" && exit 1)
