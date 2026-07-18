@@ -1521,7 +1521,7 @@ void* recreateGdiplusGraphics(HDC hdc, const void* oldGraphics)
 void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_hDC) {
+    if (img && img->m_width > 0 && img->m_height > 0) {
         color_t* bufferBegin = img->getbuffer();
         const color_t* bufferEnd =  bufferBegin + img->m_width * img->m_height;
 

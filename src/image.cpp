@@ -604,8 +604,12 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
         CONVERT_IMAGE_END;
         return grOk;
     }
-    // Fallback: read from default framebuffer via glReadPixels
-    if (this->m_pBuffer && srcWidth > 0 && srcHeight > 0) {
+    // Fallback: read from the active OpenGL window's default framebuffer.
+    // EGE_BUILD_OPENGL also compiles the legacy GDI backend on Windows, so
+    // compile-time availability alone does not prove that a GL context (or
+    // loaded GL entry points) exists.
+    if (graph_setting.use_opengl && graph_setting.window != NULL &&
+        this->m_pBuffer && srcWidth > 0 && srcHeight > 0) {
         glFinish();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         unsigned char* tmpBuf = new unsigned char[srcWidth * srcHeight * 4];
@@ -1278,7 +1282,9 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
             bf.SourceConstantAlpha = alpha;
             bf.AlphaFormat         = AC_SRC_ALPHA;
             // draw
-            dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc,
+            dll::AlphaBlend(img->m_hDC,
+                xDest - img->m_vpt.left, yDest - img->m_vpt.top,
+                widthSrc, heightSrc,
                 imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
 #endif
         }
@@ -1485,7 +1491,10 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
         bf.SourceConstantAlpha = 0xff;
         bf.AlphaFormat         = AC_SRC_ALPHA;
         // draw
-        dll::AlphaBlend(img->m_hDC, xDest, yDest, widthSrc, heightSrc, imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
+        dll::AlphaBlend(img->m_hDC,
+            xDest - img->m_vpt.left, yDest - img->m_vpt.top,
+            widthSrc, heightSrc,
+            imgSrc->m_hDC, xSrc, ySrc, widthSrc, heightSrc, bf);
 #endif
     }
 

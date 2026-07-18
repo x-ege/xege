@@ -1,6 +1,6 @@
 # EGE 测试套件
 
-测试套件同时覆盖 EGE 的行为正确性和 `putimage*` 性能。跨平台重构以确定性的像素、状态和文件往返断言为主，不依赖人工观察窗口截图。
+测试套件同时覆盖 EGE 的行为正确性和 `putimage*` 性能。跨平台重构以确定性的像素、状态和文件往返断言为主，不依赖人工观察窗口截图。所有 `putimage*` 计时程序都带有 `performance` 标签，不作为每个平台/配置都重复执行的功能门禁。
 
 ## 覆盖范围
 
@@ -38,7 +38,7 @@ cmake -S . -B build/native-debug -G Ninja \
   -DEGE_ENABLE_CAMERA_CAPTURE=ON
 cmake --build build/native-debug
 cmake --build build/native-debug --target demos
-ctest --test-dir build/native-debug --output-on-failure
+ctest --test-dir build/native-debug --output-on-failure -LE performance
 ```
 
 Linux/macOS 的原生可执行文件没有 `.exe` 后缀。Windows 多配置生成器可在构建和测试命令中增加 `--config Debug` 或 `-C Debug`。
@@ -52,7 +52,7 @@ cmake -S . -B build/msvc -A x64 -T v143 `
   -DEGE_BUILD_DEMO=ON
 cmake --build build/msvc --config Debug --parallel
 ctest --test-dir build/msvc -C Debug --output-on-failure `
-  -E '^putimage_performance$'
+  -LE performance
 ```
 
 只运行功能回归、跳过耗时性能基准：
@@ -60,7 +60,13 @@ ctest --test-dir build/msvc -C Debug --output-on-failure `
 ```bash
 ctest --test-dir build/native-debug \
   --output-on-failure \
-  -E '^putimage_performance$'
+  -LE performance
+```
+
+运行全部性能程序（包含多个高分辨率压力基准）：
+
+```bash
+ctest --test-dir build/native-debug --output-on-failure -L performance
 ```
 
 只运行渲染正确性测试：
@@ -74,7 +80,7 @@ ctest --test-dir build/native-debug \
 无桌面的 Linux 环境需要虚拟显示：
 
 ```bash
-xvfb-run -a ctest --test-dir build/native-debug --output-on-failure
+xvfb-run -a ctest --test-dir build/native-debug --output-on-failure -LE performance
 ```
 
 ## Sanitizer 回归
@@ -95,7 +101,7 @@ ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 \
 UBSAN_OPTIONS=halt_on_error=1 \
 ctest --test-dir build/native-sanitize \
   --output-on-failure \
-  -E '^putimage_performance$'
+  -LE performance
 ```
 
 `camera_frame_copy` 在关闭相机模块时仍会运行，因此 Linux sanitizer 能覆盖帧布局算法。macOS 的相机集成 sanitizer 需启用 camera，并同时给 `CMAKE_CXX_FLAGS` 与 `CMAKE_OBJCXX_FLAGS` 增加相同参数。

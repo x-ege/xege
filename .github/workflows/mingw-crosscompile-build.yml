@@ -2,7 +2,7 @@ name: MinGW Cross-Compile Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, feature/opengl-backend ]
   pull_request:
     # 所有分支的 PR 都触发
   workflow_dispatch:

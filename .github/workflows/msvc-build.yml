@@ -2,7 +2,7 @@ name: MSVC GDI Build and Test
 
 on:
   push:
-    branches: [master]
+    branches: [master, feature/opengl-backend]
   pull_request:
   workflow_dispatch:
 
@@ -73,7 +73,7 @@ jobs:
           --output-on-failure
           --no-tests=error
           --timeout 300
-          -E "^putimage_performance$"
+          -LE performance
 
       - name: Stage the raw VS2022 release library
         if: matrix.name == 'VS2022' && matrix.build-type == 'Release'

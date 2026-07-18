@@ -331,7 +331,7 @@ jobs:
           --output-on-failure
           --timeout 300
           --no-tests=error
-          -E "^putimage_performance$"
+          -LE performance
 
       - name: Run 32-bit frame-layout compatibility test
         if: matrix.arch == 'x86'
@@ -430,7 +430,7 @@ jobs:
             -DEGE_BUILD_TEMP=OFF
           cmake --build . --parallel $(nproc)
           cmake --build . --target demos --parallel $(nproc)
-          ctest --output-on-failure --timeout 300 --no-tests=error -E '^putimage_performance$'
+          ctest --output-on-failure --timeout 300 --no-tests=error -LE performance
           
           mkdir -p ../artifacts/${{ matrix.lib_dir }}
           cp libgraphics.a ../artifacts/${{ matrix.lib_dir }}/libgraphics.a
@@ -476,7 +476,7 @@ jobs:
           cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_OPENGL=OFF -DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_BUILD_DEMO=ON -DEGE_BUILD_TEST=ON -DEGE_BUILD_TEMP=OFF
           cmake --build . --parallel
           cmake --build . --target demos --parallel
-          ctest --output-on-failure --timeout 300 --no-tests=error -E "^putimage_performance$"
+          ctest --output-on-failure --timeout 300 --no-tests=error -LE performance
       
       - name: Collect WinLibs artifacts
         if: ${{ !matrix.use_msys2 }}

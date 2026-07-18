@@ -74,7 +74,7 @@ jobs:
             xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX" \
               ctest --test-dir build/native --output-on-failure --timeout 180 \
                 --no-tests=error \
-                -E '^putimage_performance$'
+                -LE performance
           else
             # GitHub's GPU-less macOS VMs expose the Apple software renderer,
             # which GLFW currently rejects before XEGE can create a window
@@ -86,7 +86,7 @@ jobs:
               -R '^(public_headers|camera_frame_copy|camera_capture_headless)$'
           fi
 
-      - name: Run the performance suite once
+      - name: Run the canonical performance suite once
         if: runner.os == 'Linux' && matrix.build-type == 'Release'
         run: >
           xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX"
@@ -129,7 +129,7 @@ jobs:
           xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX" \
             ctest --test-dir build/system-glfw --output-on-failure --timeout 180 \
               --no-tests=error \
-              -E '^putimage_performance$'
+              -LE performance
 
   linux-sanitizers:
     name: Linux ASan and UBSan
@@ -170,7 +170,7 @@ jobs:
           xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX" \
             ctest --test-dir build/sanitizers --output-on-failure --timeout 300 \
               --no-tests=error \
-              -E '^putimage_performance$'
+              -LE performance
 
   macos-camera-sanitizers:
     name: macOS camera ASan and UBSan
@@ -236,14 +236,17 @@ jobs:
           cmake --build build/windows-opengl --config Release --parallel
           cmake --build build/windows-opengl --config Release --target demos --parallel
 
-      - name: Run GDI compatibility and opt-in OpenGL tests
+      # windows-2022 currently exposes no usable WGL driver. All explicit
+      # OpenGL tests are still compiled above; deterministic runtime coverage
+      # here proves that an OpenGL-enabled library preserves default GDI use.
+      - name: Run hosted GDI compatibility tests
         run: >
           ctest --test-dir build/windows-opengl
           -C Release
           --output-on-failure
           --timeout 180
           --no-tests=error
-          -E "^putimage_performance$"
+          -R "^(rendering_correctness|public_headers|camera_frame_copy|gdi_lifecycle|gdi_process_exit)$"
 
   ccap-regression:
     name: Bundled ccap core and media regression

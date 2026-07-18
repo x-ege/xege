@@ -2,7 +2,7 @@ name: MinGW Windows Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, feature/opengl-backend ]
   pull_request:
     # 所有分支的 PR 都触发
   workflow_dispatch:
@@ -111,7 +111,7 @@ jobs:
             --output-on-failure \
             --no-tests=error \
             --timeout 300 \
-            -E '^putimage_performance$'
+            -LE performance
 
       - name: Link standalone consumers against raw libgraphics.a
         if: matrix.build_type == 'Release'

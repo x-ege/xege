@@ -181,6 +181,16 @@ if(EGE_BUILD_OPENGL)
     add_test(NAME window_backend COMMAND window_backend_test)
     add_test(NAME opengl_process_exit COMMAND opengl_process_exit_test)
 endif()
+set_tests_properties(
+    putimage_performance
+    putimage_basic
+    putimage_alphablend
+    putimage_transparent
+    putimage_rotate
+    putimage_comparison
+    putimage_alphablend_comprehensive
+    PROPERTIES LABELS "performance"
+)
 set_tests_properties(rendering_correctness PROPERTIES LABELS "correctness")
 set_tests_properties(public_headers PROPERTIES LABELS "correctness;compile")
 set_tests_properties(camera_frame_copy PROPERTIES LABELS "correctness;camera")
