@@ -1,36 +1,37 @@
 # 跨平台重构分支合入与影响分析报告
 
 - 更新日期：2026-07-19
-- 本地证据快照：2026-07-18
+- 本地证据快照：2026-07-19
 - 分支：`feature/opengl-backend`
 - 对比基线：`origin/master@e85aa27`
 - 审计起点 HEAD：`7a63b58`
+- 首个候选提交：`d968a85`
 
 ## 执行结论
 
 当前判定是 **No-Go，暂不建议直接合入 master**。
 
-这里的 No-Go 已不是“本地仍有已知代码失败”：本轮发现的绘图、图片保存、相机帧越界、相机状态机、窗口关闭和事件循环问题均已完成 TDD 修复，本地 Release、Debug 和 sanitizer 门禁均为绿色；5 个 workflow 的静态审计也没有剩余 blocker。
+这里的 No-Go 已不是“本地仍有已知代码失败”：本轮发现的绘图、图片保存、相机帧越界、相机状态机、窗口关闭和事件循环问题均已完成 TDD 修复，本地 Release、Debug 和 sanitizer 门禁均为绿色。首个远端 Actions 运行又发现 Linux 标准头、Windows OpenGL 跨编译器兼容和 macOS hosted runner 环境边界，确定性代码问题已修复并在本机重建复验。
 
-真正缺少的是合入所需的远端证据：截至审计快照，本分支没有 PR 或 GitHub Actions 运行；真实 Windows、Linux、MinGW cross 和 release package 流程尚未执行；master 目前没有 branch protection。本轮候选改动可以提交并推送以触发最终矩阵，但在矩阵取得结果前不适合直接合入。
+真正缺少的是完整且最新的远端证据：首个 Native OpenGL 运行中 ccap regression 已全绿，但其余 job 在后续修复前失败；MSVC 默认 GDI、MinGW、cross 和 release package 流程仍需 PR 触发；master 目前没有 branch protection。因此后续修复必须 rerun 全绿，且 PR 矩阵和 required checks 建立后才适合合入。
 
 | 判定维度 | 当前状态 | 结论 |
 | --- | --- | --- |
 | macOS 本地实现与 TDD | Release/Debug/ASan+UBSan 全绿 | Go |
-| workflow 静态结构 | YAML、Shell、权限、矩阵表达式审计通过 | Go |
-| Linux runner | 仅有 workflow，尚无本分支运行 | 待验证 |
-| Windows GDI/OpenGL | 仅有 workflow 和静态分析，尚无 runner 结果 | 待验证 |
+| workflow 静态结构 | YAML、Shell、权限、矩阵表达式审计通过；首跑日志已回灌修复 | Go |
+| Linux runner | 首跑发现缺失 `<cstring>`，已修复，等待 rerun | 待验证 |
+| Windows GDI/OpenGL | OpenGL 首跑发现 3 类 MSVC 编译错误并已修复；默认 GDI 矩阵待 PR | 待验证 |
 | MinGW cross/release package | 目标断言和 consumer smoke 已补，尚未实跑 | 待验证 |
 | 真实 Windows 相机与交互退出 | hosted runner 无法覆盖 | 待人工验证 |
-| 提交/PR/required checks | 候选改动随本报告提交；PR 与 required checks 仍未完成 | No-Go |
+| 提交/PR/required checks | `d968a85` 已推送，首跑修复纳入后续提交；PR 与 required checks 仍未完成 | No-Go |
 
 ## 分支和提交范围
 
-- 审计起点相对 `origin/master`：0 behind / 23 ahead；本轮候选提交会在此基础上形成新的分支 HEAD。
-- 本轮候选提交纳入 46 个已修改文件，以及 16 个新增源码、测试、workflow 和报告文件；无关的 `3rdparty/libpng/` 与 `3rdparty/zlib/` 临时源码树已移出工作树，不进入提交。
+- 审计起点相对 `origin/master`：0 behind / 23 ahead；首个候选提交 `d968a85` 已推送到 `feature/opengl-backend`。
+- `d968a85` 纳入 62 个文件、7,891 行新增、1,902 行删除；无关的 `3rdparty/libpng/` 与 `3rdparty/zlib/` 临时源码树已移出工作树，未进入提交。
 - 审计时 `git diff --stat origin/master` 的 tracked 快照为 84 个文件、37,084 行新增、1,099 行删除；最大部分是 vendored GLAD/STB 与 OpenGL 后端，整体仍属于高审查成本重构。最终范围应以候选提交的 PR diff 为准。
 - `git diff --check origin/master` 当前为 clean。
-- GitHub 上没有本分支 PR，`gh run list --branch feature/opengl-backend` 没有运行记录；master branch protection API 返回未保护。
+- GitHub 上仍没有本分支 PR；首个 [Native OpenGL Build and Test](https://github.com/x-ege/xege/actions/runs/29654242753) 已完成，ccap regression 成功，其余失败已用于本轮修复；master branch protection API 返回未保护。
 
 ## 本轮完成的关键修复
 
@@ -77,10 +78,10 @@
 
 | workflow 路径 | 构建/运行范围 | 关键门禁 |
 | --- | --- | --- |
-| Native OpenGL | Linux Debug/Release；macOS ARM64 Debug/Release；macOS Intel Release | 全部 demos；14 项功能测试；Linux Release performance |
+| Native OpenGL | Linux Debug/Release；macOS ARM64 Debug/Release；macOS Intel Release | 全部 demos；Linux 15 项功能测试及 Release performance；macOS 编译 + 3 项无 NSGL 的 headless 测试 |
 | Linux system GLFW | Ubuntu Release | 非 bundled GLFW + Xvfb 功能测试 |
 | Linux sanitizer | Debug，camera off | ASan+UBSan 全功能；平台无关 camera frame copy 仍运行 |
-| macOS camera sanitizer | ARM64 Debug，camera on | C++/Objective-C++ ASan+UBSan；synthetic helper + camera fixture |
+| macOS camera sanitizer | ARM64 Debug，camera on | C++/Objective-C++ ASan+UBSan；synthetic helper + headless camera provider fixture |
 | Windows OpenGL opt-in | windows-2022 Release | 同一构建运行默认 GDI lifecycle/exit 与显式 `INIT_OPENGL` 测试；全部 demos |
 | ccap regression | macOS ARM64 Release | 1016 个选择用例顺序运行，避免设备/并行基础设施误报 |
 | MSVC default GDI | v143/v142 × Debug/Release | GDI CTest、全部 demos；v143 Release raw `graphics.lib` camera/drawing consumer |
@@ -100,23 +101,24 @@
 
 ### CI 充分性结论
 
-workflow 的静态设计现在足以作为这次重构的 PR 门禁；但“定义了 CI”不等于“CI 已通过”。在没有远端 Actions 结果和 required checks 之前，不能把当前分支判为可合入。
+workflow 的静态设计和首跑日志已经形成有效反馈闭环，但首个运行本身不是绿色，后续修复仍需最新 Actions 结果证明。在 PR 完整矩阵与 required checks 生效前，不能把当前分支判为可合入。
 
 仍需披露的覆盖边界：
 
 - Windows hosted runner 通常没有真实摄像头，无法验证 MSMF/DirectShow 的设备枚举、权限、无帧回退和硬件切换。
-- Windows OpenGL 3.3 context、v141 可选组件安装、WinLibs 下载/构建、MSYS2 camera link、PowerShell/cmd 真实语义只能由远端执行证明。
+- Windows OpenGL 的 MSVC 编译修复和 3.3 context、v141 可选组件安装、WinLibs 下载/构建、MSYS2 camera link、PowerShell/cmd 真实语义只能由远端执行证明。
 - 固定 WinLibs 下载 URL 尚无 SHA-256 校验，是非阻塞供应链残余风险。
 - macOS sanitizer 使用 `detect_leaks=0`，覆盖越界和 UB，但不提供 leak gate；macOS 不支持 LeakSanitizer。
+- GitHub 的无 GPU macOS VM 只暴露 Apple software renderer，而 GLFW 当前强制请求 accelerated NSGL pixel format；因此 hosted runner 只把编译和 headless camera/provider 测试作为阻断项，完整 macOS OpenGL 像素与事件测试保留在物理 Mac。该限制由 [GLFW upstream issue #2570](https://github.com/glfw/glfw/issues/2570) 跟踪。
 - ccap 的测试基础设施仍需 workaround：作为 XEGE subdir 时错误使用 `CMAKE_SOURCE_DIR`，test-data 向上搜索可能走到 `/`，CLI 共享临时目录会在并行 CTest 中竞争。因此 CI 采用 standalone build、源树下 build dir 和顺序直跑 executable。
 
 ## 当前本地测试证据
 
 ### XEGE 顶层
 
-- Release 全量测试：15/15 passed（14 项功能 + 1 项性能），41.70s；性能项本身为 5.39s。
+- Release 全量测试：16/16 passed（15 项功能 + 1 项性能），54.06s；性能项本身为 6.97s。
 - Debug 功能测试：14/14 passed，90.86s。
-- ASan + UBSan 功能测试：14/14 passed，222.96s；最终相机 helper + integration 另行重建复验 2/2 passed。
+- ASan + UBSan 原有功能测试：14/14 passed，222.96s；新增相机 helper + headless provider 路径另行重建复验 2/2 passed。
 - camera disabled 构建：`camera_frame_copy` 1/1 passed。
 - C++98 compatibility compile：`camera_frame_copy.cpp` 使用 `-std=c++98 -pedantic-errors` 通过。
 - demos target：37/37 编译、链接成功。
@@ -185,8 +187,8 @@ workflow 的静态设计现在足以作为这次重构的 PR 门禁；但“定�
 
 ## 转为 Go 的必要条件
 
-1. 在 PR 中复核完整候选提交范围，确认包含 `native-opengl-build.yml`、相机/窗口/渲染测试与本报告，并确认不包含 `3rdparty/libpng/`、`3rdparty/zlib/`。
-2. 创建 PR，并再次确认完整 PR diff 的 `git diff --check`、submodule SHA 和文件范围。
+1. 推送首跑修复并确认最新 Native OpenGL workflow 全绿，尤其是 Linux 编译、Windows OpenGL MSVC、macOS headless camera sanitizer 和 ccap regression。
+2. 创建 PR，并再次确认完整 PR diff 的 `git diff --check`、submodule SHA 和文件范围；确认不包含 `3rdparty/libpng/`、`3rdparty/zlib/`。
 3. Native Linux/macOS、system GLFW、Linux sanitizer、macOS camera sanitizer 和 ccap regression 全绿。
 4. MSVC v143/v142 GDI Debug/Release、raw `graphics.lib` consumer 全绿。
 5. MSYS2/WinLibs GDI、raw `libgraphics.a` consumer 和 demos 全绿。

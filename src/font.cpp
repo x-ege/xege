@@ -2,6 +2,7 @@
 #include "ege_common.h"
 
 #include <cstdarg>
+#include <cstring>
 #include <cwchar>
 #include <algorithm>
 #include <string>
@@ -803,15 +804,25 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && font) {
         if (img->m_renderTarget) {
+            int height = 0;
+            int width = 0;
+            int escapement = 0;
+            int orientation = 0;
+            int weight = 0;
             bool italic = false;
             bool underline = false;
             bool strikeOut = false;
             std::memset(font, 0, sizeof(*font));
             img->m_renderTarget->getFont(
-                &font->lfHeight, &font->lfWidth,
+                &height, &width,
                 font->lfFaceName, static_cast<int>(sizeof(font->lfFaceName)),
-                &font->lfEscapement, &font->lfOrientation, &font->lfWeight,
+                &escapement, &orientation, &weight,
                 &italic, &underline, &strikeOut);
+            font->lfHeight = static_cast<LONG>(height);
+            font->lfWidth = static_cast<LONG>(width);
+            font->lfEscapement = static_cast<LONG>(escapement);
+            font->lfOrientation = static_cast<LONG>(orientation);
+            font->lfWeight = static_cast<LONG>(weight);
             font->lfItalic = static_cast<BYTE>(italic);
             font->lfUnderline = static_cast<BYTE>(underline);
             font->lfStrikeOut = static_cast<BYTE>(strikeOut);
@@ -831,15 +842,25 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
     if (img && font) {
         if (img->m_renderTarget) {
             char faceName[128] = {};
+            int height = 0;
+            int width = 0;
+            int escapement = 0;
+            int orientation = 0;
+            int weight = 0;
             bool italic = false;
             bool underline = false;
             bool strikeOut = false;
             std::memset(font, 0, sizeof(*font));
             img->m_renderTarget->getFont(
-                &font->lfHeight, &font->lfWidth,
+                &height, &width,
                 faceName, static_cast<int>(sizeof(faceName)),
-                &font->lfEscapement, &font->lfOrientation, &font->lfWeight,
+                &escapement, &orientation, &weight,
                 &italic, &underline, &strikeOut);
+            font->lfHeight = static_cast<LONG>(height);
+            font->lfWidth = static_cast<LONG>(width);
+            font->lfEscapement = static_cast<LONG>(escapement);
+            font->lfOrientation = static_cast<LONG>(orientation);
+            font->lfWeight = static_cast<LONG>(weight);
             font->lfItalic = static_cast<BYTE>(italic);
             font->lfUnderline = static_cast<BYTE>(underline);
             font->lfStrikeOut = static_cast<BYTE>(strikeOut);

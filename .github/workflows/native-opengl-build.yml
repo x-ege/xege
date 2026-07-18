@@ -67,7 +67,7 @@ jobs:
           cmake --build build/native --parallel 4
           cmake --build build/native --target demos --parallel 4
 
-      - name: Run native functional tests
+      - name: Run native functional or hosted-headless tests
         shell: bash
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]]; then
@@ -76,9 +76,14 @@ jobs:
                 --no-tests=error \
                 -E '^putimage_performance$'
           else
+            # GitHub's GPU-less macOS VMs expose the Apple software renderer,
+            # which GLFW currently rejects before XEGE can create a window
+            # (https://github.com/glfw/glfw/issues/2570).  Keep compilation
+            # blocking and run every deterministic test that needs no NSGL
+            # context; full macOS graphics tests run on physical hardware.
             ctest --test-dir build/native --output-on-failure --timeout 180 \
               --no-tests=error \
-              -E '^putimage_performance$'
+              -R '^(public_headers|camera_frame_copy|camera_capture_headless)$'
           fi
 
       - name: Run the performance suite once
@@ -203,7 +208,7 @@ jobs:
             --output-on-failure \
             --timeout 180 \
             --no-tests=error \
-            -R '^(camera_frame_copy|camera_capture)$'
+            -R '^(camera_frame_copy|camera_capture_headless)$'
 
   windows-opengl-build:
     name: Windows OpenGL opt-in build and test

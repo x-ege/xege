@@ -10,6 +10,7 @@
 | `public_headers` | 公共头文件、Win32 兼容类型及常量的可编译性 |
 | `camera_frame_copy` | 不依赖设备的 BGRA stride/长度/溢出预检、逐行复制与目标缓冲 guard（所有平台） |
 | `camera_capture` | 视频 fixture 驱动的相机 open/start/grab/image-copy/stop/close 生命周期（macOS/Windows） |
+| `camera_capture_headless` | 同一 fixture 的无窗口 provider 状态机与原始帧测试，用于无 GPU 的 hosted runner 和 sanitizer |
 | `input_backend` | 键盘、鼠标、Escape、Command+Q 和事件队列语义（OpenGL 后端） |
 | `page_backend` | 离屏页、active/visual page 和页面复制（OpenGL 后端） |
 | `window_backend` | 标题、尺寸、位置、关闭状态、`delay_ms` 事件泵与窗口事件（OpenGL 后端） |

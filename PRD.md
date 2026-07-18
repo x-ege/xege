@@ -128,14 +128,14 @@ EGE（Easy Graphics Engine）目前以 Windows 的 GDI/GDI+ 渲染链路为主�
 	- 默认发布 `EGE_BUILD_OPENGL=ON` 的 native 版本，不依赖 mingw-w64 或 wine。
 	- `EGE_BUILD_OPENGL=OFF` 仅作为迁移期的显式 legacy 兼容选项，不再是 Unix 默认路径。
 
-## 现状与进度（截至 2026-07-18）
+## 现状与进度（截至 2026-07-19）
 
 ### 本轮已完成
 
 - **原生构建链路**
 	- Linux/macOS 默认启用 OpenGL；原生 Unix 默认构建子模块中固定版本的 GLFW。
 	- macOS 摄像头实现改用 Objective-C++ 并链接所需系统 framework。
-	- GitHub Actions 覆盖 Linux Debug/Release、macOS ARM64 Debug/Release、macOS Intel Release、Linux system GLFW、Linux sanitizer、macOS camera sanitizer 和 Windows OpenGL opt-in。
+	- GitHub Actions 覆盖 Linux Debug/Release、macOS ARM64 Debug/Release、macOS Intel Release、Linux system GLFW、Linux sanitizer、macOS camera sanitizer 和 Windows OpenGL opt-in；无 GPU 的 macOS hosted runner 运行公共头文件、帧复制和 headless camera provider 测试，完整 OpenGL 行为由 Linux/Windows CI 与物理 macOS 验证。
 	- Windows 默认 GDI 另由 MSVC v143/v142、MSYS2/WinLibs、MinGW cross 和 release package workflow 覆盖；发布矩阵保留 v141 x86/x64 Debug/Release。
 
 - **核心绘图兼容性**
@@ -160,15 +160,15 @@ EGE（Easy Graphics Engine）目前以 Windows 的 GDI/GDI+ 渲染链路为主�
 - **TDD 与工程验证**
 	- 新增渲染正确性、公共头文件、输入、页面、窗口、进程退出、相机生命周期和帧布局测试；原有图片测试继续保留。
 	- macOS Debug/Release 均完成原生构建，全部 37 个 demo 已编译并链接。
-	- Release 14/14 功能测试通过；性能基准单独 1/1 通过。Debug 14/14 功能测试通过。
-	- AddressSanitizer + UndefinedBehaviorSanitizer 下 14/14 功能测试通过；本轮实际发现并修复 viewport 有符号溢出和相机帧 64-byte heap overflow。macOS 不支持 LeakSanitizer，因此该证据不包含 leak gate。
+	- Release 15/15 功能测试通过，性能基准 1/1 通过，总计 16/16；Debug 在新增 headless 变体前为 14/14 功能测试通过。
+	- AddressSanitizer + UndefinedBehaviorSanitizer 下原有 14/14 功能测试通过；新增 camera frame helper + headless provider 路径另行复验 2/2 通过。本轮实际发现并修复 viewport 有符号溢出和相机帧 64-byte heap overflow。macOS 不支持 LeakSanitizer，因此该证据不包含 leak gate。
 	- 37/37 demo 完成 1.5 秒逐进程启动 smoke，无启动崩溃；相机 demo 延长运行可枚举设备并创建帧。
 	- ccap 子模块发现 1054 个用例；本地阻断集合选择 1016 个，结果 1009 passed / 7 skipped / 0 failed。该集合与 XEGE 顶层 CTest 分开记账。
 
 ### 当前兼容边界
 
 - Windows 的 GDI/GDI+ 默认路径未改为 OpenGL，`EGE_BUILD_OPENGL` 仍默认 OFF，旧 API 枚举值、库名和 HWND 语义保持；当前 macOS 环境仍不能替代真实 Windows 运行验证。
-- Linux/Windows、MinGW cross、v141 安装、Windows OpenGL 3.3 context 和 release dry-run 均已写入 workflow，但当前分支没有 PR 或 Actions 运行记录，必须以远端首跑作为合入门禁。
+- 首次 push Actions 运行已执行：ccap regression 全绿，同时暴露 Linux 缺失标准头、Windows OpenGL 跨编译器错误，以及 GitHub 无 GPU macOS VM 的 GLFW/NSGL 环境限制；代码和门禁边界已据此修正，仍必须以最新 rerun 及后续 PR 矩阵作为合入证据。
 - 原生 `sys_edit` 与 `inputbox_getline` 仍缺少平台控件实现。
 - 原生 `ege_enable_aa` 保留兼容状态，但尚不等价于 Windows GDI+ 的完整抗锯齿质量；完整 GDI+ Path/Region/Graphics 对象仍是 Windows 专属能力。
 - macOS 系统 OpenGL 已被 Apple 标记为 deprecated；当前 OpenGL 3.3 Core 实现可用，但长期可考虑增加 Metal 等后端。
@@ -179,8 +179,7 @@ EGE（Easy Graphics Engine）目前以 Windows 的 GDI/GDI+ 渲染链路为主�
 
 当前判定为 **No-Go（本地实现候选已准备好进入 PR 验证，但尚不应直接合入）**。
 
-1. 将预期源码、测试和 5 个 workflow 纳入提交，明确排除无关未跟踪的 `3rdparty/libpng/`、`3rdparty/zlib/`。
-2. 创建 PR，取得 native、sanitizer、ccap、MSVC GDI、MSYS2/WinLibs、MinGW cross、Windows OpenGL 和 release dry-run 全绿证据。
-3. 人工验证 Windows 真实相机枚举/切换/关闭与窗口 Escape/关闭/进程退出；hosted runner 无法覆盖这部分。
-4. 将稳定任务设为 required checks；当前 master 没有 branch protection，workflow 存在并不等于强制门禁。
-5. 后续修复 ccap 三个 orientation harness、测试路径/并行临时目录问题，并逐步扩充公开 API family 覆盖。
+1. 创建 PR，复核候选提交范围并取得 native、sanitizer、ccap、MSVC GDI、MSYS2/WinLibs、MinGW cross、Windows OpenGL 和 release dry-run 全绿证据。
+2. 人工验证 Windows 真实相机枚举/切换/关闭与窗口 Escape/关闭/进程退出；hosted runner 无法覆盖这部分。
+3. 将稳定任务设为 required checks；当前 master 没有 branch protection，workflow 存在并不等于强制门禁。
+4. 后续修复 ccap 三个 orientation harness、测试路径/并行临时目录问题，并逐步扩充公开 API family 覆盖。

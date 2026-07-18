@@ -2532,7 +2532,9 @@ void ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_renderTarget) {
-            img->m_renderTarget->fillEllipse((int)x, (int)y, (int)w, (int)h);
+            img->m_renderTarget->fillEllipse(
+                static_cast<int>(x), static_cast<int>(y), 0, 360,
+                static_cast<int>(w), static_cast<int>(h));
         } else {
             Gdiplus::Graphics* graphics = img->getGraphics();
             Gdiplus::Brush* brush = img->getBrush();

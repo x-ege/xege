@@ -6,7 +6,11 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#ifdef _WIN32
+#include <io.h>
+#else
 #include <dirent.h>
+#endif
 #include <sys/stat.h>
 #include <unordered_map>
 #include <vector>
@@ -14,7 +18,7 @@
 namespace ege {
 
 // ============================================================
-// Font path resolution (macOS/Linux)
+// Font path resolution (Windows/macOS/Linux)
 // ============================================================
 namespace {
 
@@ -47,6 +51,21 @@ bool isFontFile(const std::string& name) {
 
 void collectFontFiles(const std::string& directory, int depth, std::vector<std::string>& files) {
     if (depth < 0) return;
+#ifdef _WIN32
+    struct _finddata_t entry;
+    const std::string pattern = directory + "/*";
+    const intptr_t handle = _findfirst(pattern.c_str(), &entry);
+    if (handle == -1) return;
+    do {
+        const char* name = entry.name;
+        if (name[0] == '.' &&
+            (name[1] == '\0' || (name[1] == '.' && name[2] == '\0'))) continue;
+        const std::string path = directory + "/" + name;
+        if ((entry.attrib & _A_SUBDIR) != 0) collectFontFiles(path, depth - 1, files);
+        else if (isFontFile(name)) files.push_back(path);
+    } while (_findnext(handle, &entry) == 0);
+    _findclose(handle);
+#else
     DIR* dir = opendir(directory.c_str());
     if (!dir) return;
     while (dirent* entry = readdir(dir)) {
@@ -60,17 +79,28 @@ void collectFontFiles(const std::string& directory, int depth, std::vector<std::
         else if (S_ISREG(info.st_mode) && isFontFile(entry->d_name)) files.push_back(path);
     }
     closedir(dir);
+#endif
 }
 
 std::vector<std::string> systemFontFiles() {
     std::vector<std::string> roots;
-#ifdef __APPLE__
+#ifdef _WIN32
+    const char* windowsDirectory = std::getenv("WINDIR");
+    roots.push_back(windowsDirectory && windowsDirectory[0]
+                        ? std::string(windowsDirectory) + "/Fonts"
+                        : "C:/Windows/Fonts");
+    const char* localAppData = std::getenv("LOCALAPPDATA");
+    if (localAppData && localAppData[0]) {
+        roots.push_back(std::string(localAppData) + "/Microsoft/Windows/Fonts");
+    }
+#elif defined(__APPLE__)
     roots.push_back("/System/Library/Fonts");
     roots.push_back("/Library/Fonts");
 #else
     roots.push_back("/usr/share/fonts");
     roots.push_back("/usr/local/share/fonts");
 #endif
+#ifndef _WIN32
     const char* home = std::getenv("HOME");
     if (home && home[0]) {
 #ifdef __APPLE__
@@ -83,6 +113,7 @@ std::vector<std::string> systemFontFiles() {
         roots.push_back(std::string(home) + "/.fonts");
 #endif
     }
+#endif
 
     std::vector<std::string> files;
     for (const std::string& root : roots) collectFontFiles(root, 8, files);
@@ -100,12 +131,12 @@ void appendAliasCandidates(const std::string& faceKey, std::vector<std::string>&
         {"couriernew", {"Courier New.ttf", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"}},
         {"helvetica", {"Helvetica.ttc", "Arial.ttf", "LiberationSans-Regular.ttf", "DejaVuSans.ttf"}},
         {"helveticaneue", {"HelveticaNeue.ttc", "Helvetica.ttc", "LiberationSans-Regular.ttf"}},
-        {"consolas", {"Consolas.ttf", "Menlo.ttc", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"}},
+        {"consolas", {"consola.ttf", "Consolas.ttf", "Menlo.ttc", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"}},
         {"menlo", {"Menlo.ttc", "DejaVuSansMono.ttf", "LiberationMono-Regular.ttf"}},
         {"monaco", {"Monaco.ttf", "Menlo.ttc", "DejaVuSansMono.ttf"}},
-        {"simsun", {"Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf", "DroidSansFallbackFull.ttf"}},
-        {"simhei", {"Heiti.ttc", "PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
-        {"microsoftyahei", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
+        {"simsun", {"simsun.ttc", "Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf", "DroidSansFallbackFull.ttf"}},
+        {"simhei", {"simhei.ttf", "Heiti.ttc", "PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
+        {"microsoftyahei", {"msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
         {"pingfangsc", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
         {"pingfangtc", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKtc-Regular.otf"}},
         {"songtisc", {"Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf"}},
@@ -157,7 +188,9 @@ std::string findFontPath(const char* face, int weight, bool italic) {
     }
 
     static const char* fallbackNames[] = {
-#ifdef __APPLE__
+#ifdef _WIN32
+        "segoeui.ttf", "arial.ttf", "tahoma.ttf",
+#elif defined(__APPLE__)
         "PingFang.ttc", "Helvetica.ttc", "Arial.ttf",
 #else
         "DejaVuSans.ttf", "LiberationSans-Regular.ttf", "NotoSans-Regular.ttf",

@@ -51,15 +51,23 @@ void expectFramePixelsEqual(const std::shared_ptr<ege::CameraFrame>& frame,
 
 } // namespace
 
-int main()
+int main(int argc, char* argv[])
 {
-    expect(ege::hasCameraCaptureModule(), "camera capture module is enabled");
-    ege::initgraph(64, 48,
-                   ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
-    if (!ege::getHWnd()) {
-        std::cerr << "FAIL: unable to create hidden camera capture test window\n";
-        shutdown_graphics_for_test();
+    if (argc > 2 || (argc == 2 && std::strcmp(argv[1], "--headless") != 0)) {
+        std::cerr << "Usage: camera_capture_test [--headless]\n";
         return EXIT_FAILURE;
+    }
+    const bool headless = argc == 2;
+
+    expect(ege::hasCameraCaptureModule(), "camera capture module is enabled");
+    if (!headless) {
+        ege::initgraph(64, 48,
+                       ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+        if (!ege::getHWnd()) {
+            std::cerr << "FAIL: unable to create hidden camera capture test window\n";
+            shutdown_graphics_for_test();
+            return EXIT_FAILURE;
+        }
     }
 
     ege::CameraCapture camera;
@@ -94,7 +102,7 @@ int main()
     if (!camera.open(EGE_TEST_VIDEO_PATH, false)) {
         std::cerr << "FAIL: unable to open deterministic camera fixture: "
                   << EGE_TEST_VIDEO_PATH << '\n';
-        shutdown_graphics_for_test();
+        if (!headless) shutdown_graphics_for_test();
         return EXIT_FAILURE;
     }
 
@@ -117,26 +125,28 @@ int main()
         expect(frame->getLineSizeInBytes() >= frame->getWidth() * 4,
                "BGRA frame stride covers every pixel in a row");
 
-        ege::PIMAGE image = frame->getImage();
-        expect(image != nullptr, "captured frame exposes an EGE image");
-        expect(frame->getImage() == image, "getImage reuses the frame-owned image");
-        if (image) {
-            expect(ege::getwidth(image) == frame->getWidth() &&
-                       ege::getheight(image) == frame->getHeight(),
-                   "frame and EGE image dimensions match");
-            expectFramePixelsEqual(frame, image,
-                                   "getImage copies exactly the active BGRA pixels");
-        }
+        if (!headless) {
+            ege::PIMAGE image = frame->getImage();
+            expect(image != nullptr, "captured frame exposes an EGE image");
+            expect(frame->getImage() == image, "getImage reuses the frame-owned image");
+            if (image) {
+                expect(ege::getwidth(image) == frame->getWidth() &&
+                           ege::getheight(image) == frame->getHeight(),
+                       "frame and EGE image dimensions match");
+                expectFramePixelsEqual(frame, image,
+                                       "getImage copies exactly the active BGRA pixels");
+            }
 
-        ege::PIMAGE copy = frame->copyImage();
-        expect(copy != nullptr && copy != image, "copyImage returns an owned image copy");
-        if (copy) {
-            expect(ege::getwidth(copy) == frame->getWidth() &&
-                       ege::getheight(copy) == frame->getHeight(),
-                   "copied image preserves frame dimensions");
-            expectFramePixelsEqual(frame, copy,
-                                   "copyImage copies exactly the active BGRA pixels");
-            ege::delimage(copy);
+            ege::PIMAGE copy = frame->copyImage();
+            expect(copy != nullptr && copy != image, "copyImage returns an owned image copy");
+            if (copy) {
+                expect(ege::getwidth(copy) == frame->getWidth() &&
+                           ege::getheight(copy) == frame->getHeight(),
+                       "copied image preserves frame dimensions");
+                expectFramePixelsEqual(frame, copy,
+                                       "copyImage copies exactly the active BGRA pixels");
+                ege::delimage(copy);
+            }
         }
     }
 
@@ -163,8 +173,10 @@ int main()
     expect(reopenedFrame != nullptr, "the reopened source produces a frame");
     camera.close();
     expect(!camera.isOpened(), "the reopened source closes cleanly");
-    expect(shutdown_graphics_for_test(),
-           "the camera test window and UI thread shut down cleanly");
+    if (!headless) {
+        expect(shutdown_graphics_for_test(),
+               "the camera test window and UI thread shut down cleanly");
+    }
 
     if (failures != 0) {
         std::cerr << failures << " camera capture assertion(s) failed\n";
