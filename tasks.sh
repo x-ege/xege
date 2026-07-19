@@ -227,8 +227,44 @@ function cmakeCacheGet() {
     fi
 }
 
+function printUsage() {
+    cat <<'EOF'
+Usage: bash -l tasks.sh [options] [-- <cmake-options...>]
+
+Configure and build Xege using a platform-appropriate CMake generator.
+
+Actions:
+  --load                 Configure the selected build directory
+  --reload               Clean and configure the selected build directory
+  --clean                Remove generated files under the build directory
+  --build                Build after configuring automatically when needed
+  --run <executable>     Run a built demo executable
+  --test-release-libs    Build demos against the packaged Ege libraries
+
+Build selection:
+  --debug                Use the Debug configuration
+  --release              Use the Release configuration (default)
+  --build-dir <path>     Override the default build directory
+  --target <name>        Build one CMake target, for example xege or demos
+  -G, --generator <name> Select a CMake generator
+  --toolset <name>       Select an MSVC toolset
+  --arch <name>          Select a CMake target architecture
+
+Other:
+  -h, --help             Show this help and exit
+  -- <cmake-options...>  Forward remaining options to CMake
+
+Examples:
+  bash -l tasks.sh --debug --target xege --load --build
+  bash -l tasks.sh --debug --target demos --build
+  bash -l tasks.sh --debug --build-dir build/native-debug --load --build -- \
+    -DEGE_BUILD_TEST=ON -DEGE_ENABLE_CAMERA_CAPTURE=ON
+EOF
+}
+
 if [[ $# -eq 0 ]]; then
-    echo "usage: [--load] [--reload] [--clean] [--build]"
+    printUsage
+    exit 0
 fi
 
 # 定义操作标志
@@ -244,6 +280,10 @@ while [[ $# -gt 0 ]]; do
     PARSE_KEY="$1"
 
     case "$PARSE_KEY" in
+    -h | --help)
+        printUsage
+        exit 0
+        ;;
     --load)
         export DO_LOAD=true
         shift # past argument
