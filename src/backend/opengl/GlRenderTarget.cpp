@@ -111,12 +111,13 @@ out vec4 fragColor;
 void main() {
     vec4 src = texture(uTex, vUV);
     vec4 dst = texture(uDstTex, vUV);
+    float colorKeyWeight = 1.0;
 
     if (uMode == 1 || uMode == 8) {
         // The legacy CPU path compares the RGB channels exactly. Half of one
         // 8-bit step accounts for normalized texture conversion roundoff.
         vec3 diff = abs(src.rgb - uKeyColor);
-        if (max(diff.r, max(diff.g, diff.b)) < uKeyTol) discard;
+        colorKeyWeight = step(uKeyTol, max(diff.r, max(diff.g, diff.b)));
     }
     if (uMode == 9 || uMode == 10) {
         // putimage_rotate(..., transparent=true) treats the all-zero pixel as
@@ -148,7 +149,11 @@ void main() {
     } else if (uMode == 6) {
         // ARGB: RGB remains straight; the blend stage applies effective alpha.
         result.a *= uAlphaOverride;
-    } else if (uMode == 7 || uMode == 8 || uMode == 10) {
+    } else if (uMode == 1 || uMode == 8) {
+        // A zero alpha leaves key pixels untouched; one performs an exact RGB
+        // copy without a divergent discard branch.
+        result.a = colorKeyWeight * uAlphaOverride;
+    } else if (uMode == 7 || uMode == 10) {
         // RGB/constant-alpha operations ignore the stored source alpha.
         result.a = uAlphaOverride;
     } else if (uMode >= 2 && uMode <= 4) {
@@ -696,6 +701,10 @@ void GlRenderTarget::submitBatch() {
     glGetIntegerv(GL_LOGIC_OP_MODE, &previousLogicOp);
     if (m_rasterOp == ROP_COPY) {
         glDisable(GL_COLOR_LOGIC_OP);
+        // Legacy primitive drawing is an opaque copy operation regardless of
+        // the alpha byte supplied by older callers, so source-alpha blending
+        // must not discard or partially blend these pixels.
+        glDisable(GL_BLEND);
     } else {
         glDisable(GL_BLEND);
         glEnable(GL_COLOR_LOGIC_OP);
@@ -797,13 +806,22 @@ void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
     glGetIntegerv(GL_BLEND_SRC_ALPHA, &prevBlendSrcAlpha);
     glGetIntegerv(GL_BLEND_DST_ALPHA, &prevBlendDstAlpha);
     const GLboolean scissorWas = glIsEnabled(GL_SCISSOR_TEST);
+    GLboolean prevColorMask[4];
+    glGetBooleanv(GL_COLOR_WRITEMASK, prevColorMask);
     GLint prevScissor[4], prevViewport[4];
     glGetIntegerv(GL_SCISSOR_BOX, prevScissor);
     glGetIntegerv(GL_VIEWPORT, prevViewport);
 
-    // Bind destination framebuffer
-    if (m_isOnScreen) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    else glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    // Bind destination framebuffer.  Source synchronization may have left an
+    // off-screen FBO's color attachment selected; explicitly restore the
+    // default back buffer for a window presentation.
+    if (m_isOnScreen) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDrawBuffer(GL_BACK);
+    } else {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    }
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
     float pixelPositions[4][2];
     if (destinationPoints) {
@@ -929,7 +947,7 @@ void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
     }
 
     // Configure blend mode based on the operation
-    if (mode == IMG_COPY || mode == IMG_COLOR_KEY_COPY || mode == IMG_ZERO_KEY_COPY) {
+    if (mode == IMG_COPY || mode == IMG_ZERO_KEY_COPY) {
         // Copy mode: disable blending (source overwrites destination)
         glDisable(GL_BLEND);
     } else if (mode >= 2 && mode <= 4) {
@@ -938,6 +956,11 @@ void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
     } else if (mode == IMG_ALPHA_PREMULTIPLIED) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    } else if (mode == IMG_COLOR_KEY_COPY || mode == IMG_COLOR_KEY_ALPHA) {
+        // colorblend_inline changes RGB only; retain the destination alpha.
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                            GL_ZERO, GL_ONE);
     } else {
         // Straight/opaque source-over compositing.
         glEnable(GL_BLEND);
@@ -980,6 +1003,8 @@ void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
     else glDisable(GL_BLEND);
     glBlendFuncSeparate(prevBlendSrcRgb, prevBlendDstRgb,
                         prevBlendSrcAlpha, prevBlendDstAlpha);
+    glColorMask(prevColorMask[0], prevColorMask[1],
+                prevColorMask[2], prevColorMask[3]);
     if (scissorWas) glEnable(GL_SCISSOR_TEST);
     else glDisable(GL_SCISSOR_TEST);
     glScissor(prevScissor[0], prevScissor[1], prevScissor[2], prevScissor[3]);
@@ -1754,9 +1779,10 @@ void GlRenderTarget::alphaTransparent(int dstX, int dstY, RenderTarget* src,
     GlRenderTarget* glSrc = dynamic_cast<GlRenderTarget*>(src);
     if (!glSrc) return;
     syncSrcTexture(glSrc);
+    const int mode = alpha == 255 ? IMG_COLOR_KEY_COPY : IMG_COLOR_KEY_ALPHA;
     drawImageQuadInternal(glSrc->m_texture, glSrc->m_width, glSrc->m_height,
                           srcX, srcY, w, h, dstX, dstY, w, h,
-                          0, 0, 0, 1.0f, 1.0f, IMG_COLOR_KEY_ALPHA,
+                          0, 0, 0, 1.0f, 1.0f, mode,
                           transparentColor, alpha / 255.0f);
 }
 
@@ -2299,6 +2325,7 @@ void GlRenderTarget::captureScreenToTexture() {
 
     // Read pixels from default framebuffer (back buffer, before swap)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glReadBuffer(GL_BACK);
 
     unsigned char* tmpBuf = new unsigned char[m_width * m_height * 4];
     glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);

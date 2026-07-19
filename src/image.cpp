@@ -111,6 +111,7 @@ void IMAGE::reset()
     m_texture      = NULL;
 #ifdef EGE_GDIPLUS
     m_graphics = NULL;
+    m_graphicsBitmap = NULL;
     m_pen      = NULL;
     m_brush    = NULL;
 #endif
@@ -194,13 +195,16 @@ IMAGE::IMAGE(const IMAGE& img)
     reset();
     initimage(img.m_hDC, img.m_width, img.m_height);
     setdefaultattribute();
-#ifdef _WIN32
-    BitBlt(m_hDC, 0, 0, img.m_width, img.m_height, img.m_hDC, 0, 0, SRCCOPY);
-#else
     if (m_renderTarget && img.m_renderTarget) {
         m_renderTarget->blit(0, 0, img.m_renderTarget, 0, 0, img.m_width, img.m_height);
         m_pBuffer = reinterpret_cast<PDWORD>(m_renderTarget->getPixelBuffer());
-    } else if (m_pBuffer && img.m_pBuffer && img.m_width > 0 && img.m_height > 0) {
+    }
+#ifdef _WIN32
+    else if (m_hDC && img.m_hDC) {
+        BitBlt(m_hDC, 0, 0, img.m_width, img.m_height, img.m_hDC, 0, 0, SRCCOPY);
+    }
+#else
+    else if (m_pBuffer && img.m_pBuffer && img.m_width > 0 && img.m_height > 0) {
         std::copy(img.m_pBuffer, img.m_pBuffer + img.m_width * img.m_height, m_pBuffer);
     }
 #endif
@@ -250,13 +254,6 @@ void IMAGE::gentexture(bool gen)
 
 int IMAGE::deleteimage()
 {
-    if (m_renderTarget) {
-        delete m_renderTarget;
-        m_renderTarget = NULL;
-        m_pBuffer = NULL;
-        m_glDirty = true;
-    }
-
     if (m_gc) {
         delete m_gc;
         m_gc = NULL;
@@ -271,6 +268,10 @@ int IMAGE::deleteimage()
         delete m_graphics;
     }
     m_graphics = NULL;
+    if (NULL != m_graphicsBitmap) {
+        delete m_graphicsBitmap;
+    }
+    m_graphicsBitmap = NULL;
     if (NULL != m_pen) {
         delete m_pen;
     }
@@ -280,6 +281,13 @@ int IMAGE::deleteimage()
     }
     m_brush = NULL;
 #endif
+
+    if (m_renderTarget) {
+        delete m_renderTarget;
+        m_renderTarget = NULL;
+        m_pBuffer = NULL;
+        m_glDirty = true;
+    }
 
 #ifdef _WIN32
     HBITMAP hbmp  = (HBITMAP)GetCurrentObject(m_hDC, OBJ_BITMAP);
@@ -344,6 +352,26 @@ HBITMAP newbitmap(int width, int height, PDWORD* p_bmp_buf)
 
 void IMAGE::initimage(HDC refDC, int width, int height)
 {
+#if defined(EGE_BUILD_OPENGL)
+    if (graph_setting.use_opengl && graph_setting.window != NULL) {
+        m_hDC = NULL;
+        m_hBmp = NULL;
+        m_renderTarget = new GlRenderTarget();
+        if (width > 0 && height > 0 &&
+            static_cast<GlRenderTarget*>(m_renderTarget)->initOffscreen(width, height)) {
+            m_pBuffer = reinterpret_cast<PDWORD>(m_renderTarget->getPixelBuffer());
+            m_glDirty = false;
+            m_width = width;
+            m_height = height;
+            setviewport(0, 0, m_width, m_height, false, this);
+            return;
+        }
+        delete m_renderTarget;
+        m_renderTarget = NULL;
+        // Preserve the existing allocation/error behavior by falling through
+        // to the Win32 DIB path when an OpenGL off-screen target cannot start.
+    }
+#endif
 #ifdef _WIN32
     HDC     dc = CreateCompatibleDC(refDC);
     PDWORD  bmp_buf;
@@ -390,7 +418,9 @@ void IMAGE::setdefaultattribute()
     settextcolor(initial_text_color, this);
     setbkcolor_f(initial_bk_color, this);
 #ifdef _WIN32
-    SetBkMode(m_hDC, OPAQUE);
+    if (m_hDC) {
+        SetBkMode(m_hDC, OPAQUE);
+    }
 #endif
     setfillstyle(SOLID_FILL, initial_fill_color, this);
     setlinestyle(PS_SOLID, 0, 1, this);
@@ -413,6 +443,15 @@ color_t* IMAGE::getbuffer() const
 
 Gdiplus::Graphics* IMAGE::getGraphics()
 {
+    if (m_renderTarget) {
+        color_t* buffer = getbuffer();
+        if (NULL == m_graphics && buffer != NULL && m_width > 0 && m_height > 0) {
+            m_graphicsBitmap = new Gdiplus::Bitmap(
+                m_width, m_height, m_width * static_cast<int>(sizeof(color_t)),
+                PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(buffer));
+            m_graphics = new Gdiplus::Graphics(m_graphicsBitmap);
+        }
+    }
     if (NULL == m_graphics) {
         POINT origin;
         SetViewportOrgEx(m_hDC, 0, 0, &origin);
@@ -493,17 +532,19 @@ int IMAGE::resize_f(int width, int height)
     Size oldWindowSize(m_width, m_height);
 
 #ifdef _WIN32
-    PDWORD  bmp_buf;
-    HBITMAP bitmap     = newbitmap(width, height, &bmp_buf);
-    if (bitmap == NULL) {
-        return grAllocError;
+    if (!m_renderTarget) {
+        PDWORD  bmp_buf;
+        HBITMAP bitmap = newbitmap(width, height, &bmp_buf);
+        if (bitmap == NULL) {
+            return grAllocError;
+        }
+
+        HBITMAP old_bitmap = (HBITMAP)SelectObject(this->m_hDC, bitmap);
+        DeleteObject(old_bitmap);
+
+        m_hBmp    = bitmap;
+        m_pBuffer = bmp_buf;
     }
-
-    HBITMAP old_bitmap = (HBITMAP)SelectObject(this->m_hDC, bitmap);
-    DeleteObject(old_bitmap);
-
-    m_hBmp    = bitmap;
-    m_pBuffer = bmp_buf;
 #else
     if (!m_renderTarget) {
         PDWORD newBuffer = NULL;
@@ -523,9 +564,16 @@ int IMAGE::resize_f(int width, int height)
     // BITMAP 更换后需重新创建 Graphics 对象(否则会在已销毁的 old_bitmap 上绘制，引发异常)
 #ifdef EGE_GDIPLUS
     if (m_graphics != NULL) {
-        Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
-        delete m_graphics;
-        m_graphics = newGraphics;
+        if (m_renderTarget) {
+            delete m_graphics;
+            m_graphics = NULL;
+            delete m_graphicsBitmap;
+            m_graphicsBitmap = NULL;
+        } else {
+            Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
+            delete m_graphics;
+            m_graphics = newGraphics;
+        }
     }
 #endif
 

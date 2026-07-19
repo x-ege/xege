@@ -1212,8 +1212,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->mouse_pos = Point(pt.x, pt.y);
 #endif
 
-#ifndef _WIN32
-    if (pg->window != NULL) {
+#if defined(EGE_BUILD_OPENGL)
+    if (pg->use_opengl && pg->window != NULL) {
         const std::string utf8Caption = w2mb(pg->window_caption.c_str());
         pg->window->setTitle(utf8Caption.c_str());
         if (g_windowpos_x != CW_USEDEFAULT && g_windowpos_y != CW_USEDEFAULT) {

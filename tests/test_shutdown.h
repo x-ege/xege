@@ -13,6 +13,15 @@
 inline bool shutdown_graphics_for_test()
 {
 #ifdef _WIN32
+#if defined(EGE_BUILD_OPENGL)
+    if ((ege::getinitmode() & ege::INIT_OPENGL) != 0) {
+        // The GLFW backend owns and destroys its HWND during normal process
+        // teardown. closegraph() performs the documented reusable logical
+        // close; the separate process-exit test covers final native cleanup.
+        ege::closegraph();
+        return true;
+    }
+#endif
     HWND window = ege::getHWnd();
     if (window == nullptr || !IsWindow(window)) {
         return true;

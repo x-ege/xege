@@ -8,8 +8,8 @@
 // 性能计时器类
 class PerformanceTimer {
 private:
-    std::chrono::high_resolution_clock::time_point startTime;
-    std::chrono::high_resolution_clock::time_point endTime;
+    std::chrono::steady_clock::time_point startTime;
+    std::chrono::steady_clock::time_point endTime;
     bool isRunning;
     std::string timerName;
     

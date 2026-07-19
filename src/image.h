@@ -103,6 +103,7 @@ public:
 private:
 #ifdef EGE_GDIPLUS
     Gdiplus::Graphics* m_graphics;
+    Gdiplus::Bitmap*   m_graphicsBitmap;
     Gdiplus::Pen*      m_pen;
     Gdiplus::Brush*    m_brush;
 #endif

@@ -1871,9 +1871,24 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 
 void setrendermode(rendermode_e mode)
 {
+    struct _graph_setting* pg = &graph_setting;
 #ifdef _WIN32
+#if defined(EGE_BUILD_OPENGL)
+    // GLFW owns and pumps the OpenGL window on the caller thread.  The GDI
+    // timer handshake below requires messageloopthread and would otherwise
+    // wait forever for timer_stop_mark to be cleared.
+    if (pg->use_opengl) {
+        if (mode == RENDER_MANUAL) {
+            pg->lock_window = true;
+        } else {
+            delay_ms(0);
+            pg->skip_timer_mark = false;
+            pg->lock_window = false;
+        }
+        return;
+    }
+#endif
     if (mode == RENDER_MANUAL) {
-        struct _graph_setting* pg = &graph_setting;
         if (pg->lock_window) {
             ;
         } else {
@@ -1886,14 +1901,12 @@ void setrendermode(rendermode_e mode)
             }
         }
     } else {
-        struct _graph_setting* pg = &graph_setting;
         delay_ms(0);
         SetTimer(pg->hwnd, RENDER_TIMER_ID, 50, NULL);
         pg->skip_timer_mark = false;
         pg->lock_window = false;
     }
 #else
-    struct _graph_setting* pg = &graph_setting;
     if (mode == RENDER_MANUAL) {
         pg->lock_window = true;
     } else {
@@ -2642,7 +2655,7 @@ void EGEAPI ege_drawimage(PCIMAGE srcimg, int xDest, int yDest, PIMAGE pimg)
             srcimg->getheight(),
             4 * srcimg->getwidth(),
             PixelFormat32bppPARGB,
-            (BYTE*)(srcimg->m_pBuffer));
+            (BYTE*)(srcimg->getbuffer()));
         Gdiplus::Point p(xDest, yDest);
         graphics->DrawImage(&bitmap, p);
     }
@@ -2667,7 +2680,7 @@ void EGEAPI ege_drawimage(PCIMAGE srcimg,
             srcimg->getheight(),
             4 * srcimg->getwidth(),
             PixelFormat32bppPARGB,
-            (BYTE*)(srcimg->m_pBuffer));
+            (BYTE*)(srcimg->getbuffer()));
         Gdiplus::Point destPoints[3] = {
             Gdiplus::Point(xDest, yDest), Gdiplus::Point(xDest + widthDest, yDest), Gdiplus::Point(xDest, yDest + heightDest)};
         graphics->DrawImage(

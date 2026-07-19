@@ -6,6 +6,24 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <cstdlib>
+
+namespace {
+
+ege::initmode_flag testInitMode()
+{
+    ege::initmode_flag mode = static_cast<ege::initmode_flag>(
+        ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+#if defined(_WIN32) && defined(EGE_BUILD_OPENGL)
+    const char* openGlMode = std::getenv("EGE_TEST_OPENGL");
+    if (openGlMode != nullptr && openGlMode[0] == '1') {
+        mode = static_cast<ege::initmode_flag>(mode | ege::INIT_OPENGL);
+    }
+#endif
+    return mode;
+}
+
+} // namespace
 
 // 全局测试框架实例
 TestFramework* g_testFramework = nullptr;
@@ -22,7 +40,7 @@ TestFramework::~TestFramework() {
 bool TestFramework::initialize(int windowWidth, int windowHeight) {
     try {        
         // 初始化图形窗口
-        ege::initgraph(windowWidth, windowHeight, ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+        ege::initgraph(windowWidth, windowHeight, testInitMode());
         
         // 获取窗口句柄
         graphicsWindow = ege::getHWnd();
@@ -101,7 +119,7 @@ bool TestFramework::setResolution(int width, int height) {
         }
         
         // 重新初始化窗口
-        ege::initgraph(width, height, ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+        ege::initgraph(width, height, testInitMode());
         
         // 更新窗口句柄
         graphicsWindow = ege::getHWnd();

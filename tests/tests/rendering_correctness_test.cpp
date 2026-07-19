@@ -771,11 +771,16 @@ void testTransparencyAndAlphaBlend()
     resetImage(source, ege::MAGENTA);
     resetImage(destination, ege::GREEN);
     ege::putpixel(1, 0, ege::RED, source);
+    ege::color_t* destinationPixels = ege::getbuffer(destination);
+    destinationPixels[1 * 4 + 2] = EGEARGB(37, 255, 0, 0);
 
     expect(ege::putimage_transparent(destination, source, 1, 1, ege::MAGENTA) == ege::grOk,
            "transparent putimage reports success");
     expectPixel(destination, 1, 1, ege::GREEN, "transparent color key leaves destination unchanged");
     expectPixel(destination, 2, 1, ege::RED, "transparent putimage copies non-key pixels");
+    destinationPixels = ege::getbuffer(destination);
+    expect(EGEGET_A(destinationPixels[1 * 4 + 2]) == 37,
+           "transparent putimage preserves the destination alpha channel");
 
     ege::PIMAGE alphaSource = ege::newimage(1, 1);
     resetImage(alphaSource, ege::RED);
@@ -838,6 +843,8 @@ void testAlphaFormatsAndCombinedColorKey()
     sourcePixels[0] = ege::MAGENTA;
     sourcePixels[1] = ege::RED;
     resetImage(destination, ege::BLUE);
+    ege::color_t* destinationPixels = ege::getbuffer(destination);
+    destinationPixels[1 * 4 + 2] = EGEARGB(73, 0, 0, 255);
     expect(ege::putimage_alphatransparent(destination, source, 1, 1,
                                           ege::MAGENTA, 128, 0, 0, 2, 1) == ege::grOk,
            "combined color-key alpha blend reports success");
@@ -847,6 +854,9 @@ void testAlphaFormatsAndCombinedColorKey()
     expect(EGEGET_R(combined) >= 126 && EGEGET_R(combined) <= 130 &&
            EGEGET_B(combined) >= 126 && EGEGET_B(combined) <= 130,
            "combined color-key alpha blends each non-key pixel exactly once");
+    destinationPixels = ege::getbuffer(destination);
+    expect(EGEGET_A(destinationPixels[1 * 4 + 2]) == 73,
+           "combined color-key alpha preserves the destination alpha channel");
 
     ege::delimage(destination);
     ege::delimage(source);
@@ -1503,7 +1513,15 @@ void testPngAndBmpRoundTrip()
 
 int main()
 {
-    ege::initgraph(64, 64, ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+    ege::initmode_flag mode = static_cast<ege::initmode_flag>(
+        ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+#if defined(_WIN32) && defined(EGE_BUILD_OPENGL)
+    const char* openGlMode = std::getenv("EGE_TEST_OPENGL");
+    if (openGlMode != nullptr && openGlMode[0] == '1') {
+        mode = static_cast<ege::initmode_flag>(mode | ege::INIT_OPENGL);
+    }
+#endif
+    ege::initgraph(64, 64, mode);
     if (!ege::getHWnd()) {
         std::cerr << "FAIL: unable to create the hidden graphics test context\n";
         shutdown_graphics_for_test();

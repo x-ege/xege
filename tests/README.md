@@ -45,17 +45,23 @@ ctest --test-dir build/native-debug --output-on-failure -LE performance
 
 Linux/macOS 的原生可执行文件没有 `.exe` 后缀。Windows 多配置生成器可在构建和测试命令中增加 `--config Debug` 或 `-C Debug`。
 
-Windows GDI 功能回归示例：
+Windows 下从 Git Bash（或用 `bash -l` 调用 Git Bash）分别构建并运行 GDI/OpenGL
+功能回归。脚本会使用互不复用的 `build/gdi` 与 `build/opengl`：
 
-```powershell
-cmake -S . -B build/msvc -A x64 -T v143 `
-  -DEGE_BUILD_OPENGL=OFF `
-  -DEGE_BUILD_TEST=ON `
-  -DEGE_BUILD_DEMO=ON
-cmake --build build/msvc --config Debug --parallel
-ctest --test-dir build/msvc -C Debug --output-on-failure `
-  -LE performance
+```bash
+bash -l tasks.sh --gdi --debug --load --build -- \
+  -DEGE_BUILD_TEST=ON -DEGE_BUILD_DEMO=ON
+bash -l -c 'ctest --test-dir "build/gdi" -C Debug --output-on-failure -LE performance'
+
+bash -l tasks.sh --opengl --debug --load --build -- \
+  -DEGE_BUILD_TEST=ON -DEGE_BUILD_DEMO=ON
+bash -l -c 'ctest --test-dir "build/opengl" -C Debug --output-on-failure -LE performance'
 ```
+
+Windows OpenGL 构建会保留上述默认 GDI 用例，并额外注册带 `_opengl` 后缀的
+`rendering_correctness` 和 `putimage*` 用例。这些变体通过 `INIT_OPENGL` 启动，
+使用与 GDI 基准完全相同的像素与性能断言；`input_backend`、`page_backend`、
+`window_backend` 和 `opengl_process_exit` 则覆盖 OpenGL 专用窗口路径。
 
 只运行功能回归、跳过耗时性能基准：
 

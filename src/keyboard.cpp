@@ -33,12 +33,13 @@ static int peekkey(_graph_setting* pg)
                 // callbacks for controls such as Escape, Enter or Backspace,
                 // so discarding every key below Space loses those keys on the
                 // native backend.
-                if (
+                const bool waitsForTranslatedCharacter =
 #ifdef _WIN32
-                    msg.wParam <= key_space ||
+                    !pg->use_opengl && msg.wParam <= key_space;
 #else
-                    msg.wParam == key_space ||
+                    msg.wParam == key_space;
 #endif
+                if (waitsForTranslatedCharacter ||
                     (msg.wParam >= key_0 && msg.wParam < key_f1) ||
                     (msg.wParam >= key_semicolon && msg.wParam <= key_quote))
                 {

@@ -59,10 +59,18 @@ add_library(test_framework STATIC
 
 target_link_libraries(test_framework ${SYSTEM_LIBS})
 
+if(EGE_BUILD_OPENGL)
+    target_compile_definitions(test_framework PRIVATE EGE_BUILD_OPENGL=1)
+endif()
+
 if(MSVC)
+    target_compile_definitions(test_framework PRIVATE _CRT_SECURE_NO_WARNINGS)
     target_compile_options(test_framework PUBLIC
         /Zc:__cplusplus
     )
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(test_framework PRIVATE /utf-8)
+    endif()
 endif()
 
 # 添加测试可执行文件的宏
@@ -200,6 +208,29 @@ if(EGE_BUILD_OPENGL)
     add_test(NAME window_backend COMMAND window_backend_test)
     add_test(NAME opengl_process_exit COMMAND opengl_process_exit_test)
 endif()
+
+# A Windows OpenGL-enabled build still defaults to GDI at runtime. Run the
+# shared pixel and image-transfer suites a second time with INIT_OPENGL so the
+# two backends are checked by identical assertions.
+if(WIN32 AND EGE_BUILD_OPENGL)
+    set(EGE_OPENGL_SHARED_TESTS
+        putimage_performance
+        putimage_basic
+        putimage_alphablend
+        putimage_transparent
+        putimage_rotate
+        putimage_comparison
+        putimage_alphablend_comprehensive
+        rendering_correctness
+    )
+    foreach(test_name IN LISTS EGE_OPENGL_SHARED_TESTS)
+        add_test(
+            NAME ${test_name}_opengl
+            COMMAND ${CMAKE_COMMAND} -E env EGE_TEST_OPENGL=1
+                $<TARGET_FILE:${test_name}_test>
+        )
+    endforeach()
+endif()
 set_tests_properties(
     putimage_performance
     putimage_basic
@@ -243,5 +274,20 @@ if(EGE_BUILD_OPENGL)
     set_tests_properties(opengl_process_exit PROPERTIES
         LABELS "correctness;window;exit"
         TIMEOUT 15
+    )
+endif()
+if(WIN32 AND EGE_BUILD_OPENGL)
+    set_tests_properties(
+        putimage_performance_opengl
+        putimage_basic_opengl
+        putimage_alphablend_opengl
+        putimage_transparent_opengl
+        putimage_rotate_opengl
+        putimage_comparison_opengl
+        putimage_alphablend_comprehensive_opengl
+        PROPERTIES LABELS "performance;opengl"
+    )
+    set_tests_properties(rendering_correctness_opengl PROPERTIES
+        LABELS "correctness;opengl"
     )
 endif()

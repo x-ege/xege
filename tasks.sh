@@ -38,7 +38,7 @@ if isWsl && isWindows; then
     echo "== GIT_BASH_PATH_WSL=$GIT_BASH_PATH_WSL"
     if [[ -f "$GIT_BASH_PATH_WSL" ]]; then
         THIS_BASE_NAME=$(basename "$0")
-        "$GIT_BASH_PATH_WSL" "$THIS_BASE_NAME" $@
+        "$GIT_BASH_PATH_WSL" "$THIS_BASE_NAME" "$@"
         exit $?
     else
         echo "Git Bash not found, please install Git Bash!" >&2
@@ -86,8 +86,17 @@ function isMinGW() {
 # 根据编译器类型和构建类型确定 build 目录
 # MSVC: build/ (CMake 自动处理 Debug/Release 子目录)
 # MinGW/其他: build/Debug 或 build/Release
+EGE_BACKEND=""
+
 function getBuildDir() {
     local base_dir="$PROJECT_DIR/build"
+
+    # Explicit backend selections must never share a CMake cache.  This is
+    # especially important on Windows where MSVC otherwise uses build/ for
+    # both the GDI-only and OpenGL-capable configurations.
+    if [[ -n "$EGE_BACKEND" ]]; then
+        base_dir="$base_dir/$EGE_BACKEND"
+    fi
 
     # 如果用户已经通过 --build-dir 指定了目录，使用用户指定的
     if [[ -n "$USER_SPECIFIED_BUILD_DIR" ]]; then
@@ -132,7 +141,7 @@ function MY_CMAKE_BUILD_DEFINE() {
 
 if ! command -v grealpath && command -v realpath; then
     function grealpath() {
-        realpath $@
+        realpath "$@"
     }
 fi
 
@@ -165,24 +174,42 @@ function loadCMakeProject() {
     mkdir -p "$CMAKE_BUILD_DIR" &&
         cd "$CMAKE_BUILD_DIR" &&
         cmake "${cmake_args[@]}"
+    local configure_status=$?
+    if [[ $configure_status -ne 0 ]]; then
+        set +x
+        return $configure_status
+    fi
+    if ! verifyBackendSelection; then
+        set +x
+        return 1
+    fi
     echo "CMake Project Loaded: CMAKE_CONFIG_DEFINE=(${CMAKE_CONFIG_DEFINE[*]})"
     set +x
 }
 
 function cmakeCleanAll() {
-    pushd "$PROJECT_DIR"
+    local resolved_project_dir
+    local resolved_build_root
+    local resolved_build_dir
+    local clean_target
 
-    # 先清理 build 目录
-    git clean -ffdx build
+    resolved_project_dir="$(grealpath -m -- "$PROJECT_DIR")"
+    resolved_build_root="$(grealpath -m -- "$PROJECT_DIR/build")"
+    resolved_build_dir="$(grealpath -m -- "$CMAKE_BUILD_DIR")"
 
-    if [[ -n "$CMAKE_BUILD_DIR" ]] && [[ "$CMAKE_BUILD_DIR" != "$PROJECT_DIR/build" ]]; then
-        # 清理特定的 build 子目录
-        if [[ -d "$CMAKE_BUILD_DIR" ]]; then
-            echo "Cleaning $CMAKE_BUILD_DIR..."
-            rm -rf "$CMAKE_BUILD_DIR"
-        fi
-    fi
+    case "$resolved_build_dir" in
+        "$resolved_build_root"|"$resolved_build_root"/*)
+            ;;
+        *)
+            echo "Error: refusing to clean outside $resolved_build_root: $resolved_build_dir" >&2
+            return 1
+            ;;
+    esac
 
+    clean_target="${resolved_build_dir#"$resolved_project_dir"/}"
+    echo "Cleaning selected build path: $resolved_build_dir"
+    pushd "$resolved_project_dir"
+    git clean -ffdx -- "$clean_target"
     popd
 }
 
@@ -227,6 +254,25 @@ function cmakeCacheGet() {
     fi
 }
 
+function verifyBackendSelection() {
+    if [[ -z "$EGE_BACKEND" ]]; then
+        return
+    fi
+
+    local expected_opengl="OFF"
+    if [[ "$EGE_BACKEND" == "opengl" ]]; then
+        expected_opengl="ON"
+    fi
+
+    local configured_opengl
+    configured_opengl="$(cmakeCacheGet EGE_BUILD_OPENGL)"
+    if [[ "$configured_opengl" != "$expected_opengl" ]]; then
+        echo "Error: --$EGE_BACKEND requested EGE_BUILD_OPENGL=$expected_opengl," >&2
+        echo "but CMake configured $configured_opengl. Check dev.cmake or forwarded options." >&2
+        return 1
+    fi
+}
+
 function printUsage() {
     cat <<'EOF'
 Usage: bash -l tasks.sh [options] [-- <cmake-options...>]
@@ -236,7 +282,7 @@ Configure and build Xege using a platform-appropriate CMake generator.
 Actions:
   --load                 Configure the selected build directory
   --reload               Clean and configure the selected build directory
-  --clean                Remove generated files under the build directory
+  --clean                Remove only the selected build directory
   --build                Build after configuring automatically when needed
   --run <executable>     Run a built demo executable
   --test-release-libs    Build demos against the packaged Ege libraries
@@ -244,6 +290,8 @@ Actions:
 Build selection:
   --debug                Use the Debug configuration
   --release              Use the Release configuration (default)
+  --gdi                  Select the Windows-compatible GDI build
+  --opengl               Build OpenGL support (Windows apps opt in with INIT_OPENGL)
   --build-dir <path>     Override the default build directory
   --target <name>        Build one CMake target, for example xege or demos
   -G, --generator <name> Select a CMake generator
@@ -256,6 +304,8 @@ Other:
 
 Examples:
   bash -l tasks.sh --debug --target xege --load --build
+  bash -l tasks.sh --gdi --release --target demos --build
+  bash -l tasks.sh --opengl --release --target demos --build
   bash -l tasks.sh --debug --target demos --build
   bash -l tasks.sh --debug --build-dir build/native-debug --load --build -- \
     -DEGE_BUILD_TEST=ON -DEGE_ENABLE_CAMERA_CAPTURE=ON
@@ -329,6 +379,24 @@ while [[ $# -gt 0 ]]; do
         export CMAKE_BUILD_TYPE="Release"
         shift # past argument
         ;;
+    --gdi)
+        if [[ -n "$EGE_BACKEND" && "$EGE_BACKEND" != "gdi" ]]; then
+            echo "Error: --gdi and --opengl cannot be used together" >&2
+            exit 1
+        fi
+        echo "select GDI backend build"
+        export EGE_BACKEND="gdi"
+        shift
+        ;;
+    --opengl)
+        if [[ -n "$EGE_BACKEND" && "$EGE_BACKEND" != "opengl" ]]; then
+            echo "Error: --gdi and --opengl cannot be used together" >&2
+            exit 1
+        fi
+        echo "select OpenGL backend build"
+        export EGE_BACKEND="opengl"
+        shift
+        ;;
     --target)
         if [[ -z "$2" ]]; then
             echo "Error: --target requires a target name argument" >&2
@@ -396,6 +464,18 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
+
+# Keep the explicit backend authoritative even when conflicting -D options
+# were forwarded earlier.  System GLFW remains an available explicit opt-out.
+if [[ "$EGE_BACKEND" == "gdi" ]]; then
+    CMAKE_CONFIG_DEFINE+=("-DEGE_BUILD_OPENGL=OFF")
+elif [[ "$EGE_BACKEND" == "opengl" ]]; then
+    config_str="${CMAKE_CONFIG_DEFINE[*]}"
+    if isWindows && [[ "$config_str" != *"EGE_USE_BUNDLED_GLFW"* ]]; then
+        CMAKE_CONFIG_DEFINE+=("-DEGE_USE_BUNDLED_GLFW=ON")
+    fi
+    CMAKE_CONFIG_DEFINE+=("-DEGE_BUILD_OPENGL=ON")
+fi
 
 # 参数解析完成后，初始化 CMAKE_BUILD_DIR
 CMAKE_BUILD_DIR="$(getBuildDir)"

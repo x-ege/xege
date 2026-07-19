@@ -52,12 +52,26 @@ int main()
     int defaultWindowWidth = 0;
     int defaultWindowHeight = 0;
     glfwGetWindowSize(firstWindow, &defaultWindowWidth, &defaultWindowHeight);
-    expect(defaultWindowWidth == 640 && defaultWindowHeight == 480,
+    int expectedDefaultWidth = 640;
+    int expectedDefaultHeight = 480;
+#ifdef _WIN32
+    RECT desktopRect = {};
+    GetWindowRect(GetDesktopWindow(), &desktopRect);
+    expectedDefaultWidth = desktopRect.right - desktopRect.left;
+    expectedDefaultHeight = desktopRect.bottom - desktopRect.top;
+#endif
+    expect(defaultWindowWidth == expectedDefaultWidth &&
+               defaultWindowHeight == expectedDefaultHeight,
            "initgraph(-1, -1) uses the native default canvas size (got " +
                std::to_string(defaultWindowWidth) + "x" +
                std::to_string(defaultWindowHeight) + ")");
-    expect(ege::getwidth() == 640 && ege::getheight() == 480,
-           "the default window and EGE screen image use the same dimensions");
+    expect(ege::getwidth() == defaultWindowWidth &&
+               ege::getheight() == defaultWindowHeight,
+           "the default window and EGE screen image use the same dimensions (window " +
+               std::to_string(defaultWindowWidth) + "x" +
+               std::to_string(defaultWindowHeight) + ", image " +
+               std::to_string(ege::getwidth()) + "x" +
+               std::to_string(ege::getheight()) + ")");
     ege::resizewindow(80, 60);
 
     expect(glfwGetWindowAttrib(firstWindow, GLFW_VISIBLE) == GLFW_FALSE,

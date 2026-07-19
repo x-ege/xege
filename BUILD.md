@@ -36,6 +36,10 @@ bash -l tasks.sh --help
 
 ```sh
 # Debug 库
+# Windows GDI 与 OpenGL 使用彼此隔离的构建目录
+bash -l tasks.sh --gdi --release --target demos --build
+bash -l tasks.sh --opengl --release --target demos --build
+
 bash -l tasks.sh --debug --target xege --build
 
 # Debug 库和全部 demo
@@ -44,6 +48,10 @@ bash -l tasks.sh --debug --target demos --build
 # Release 库和全部 demo
 bash -l tasks.sh --release --target demos --build
 ```
+
+`--gdi` 和 `--opengl` 会分别使用 `build/gdi` 和 `build/opengl`（单配置生成器还会
+追加 Debug/Release），并设置对应的 CMake 后端选项；Windows OpenGL 模式同时
+启用仓库内置 GLFW。未指定后端参数的旧命令保持原有目录和平台默认行为。
 
 脚本会在构建目录尚未配置时自动运行 CMake。Windows 下必须从 Git Bash 或其他
 POSIX shell 调用；直接使用 PowerShell/CMD 时请改用下文的标准 CMake 命令。
