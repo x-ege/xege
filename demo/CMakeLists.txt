@@ -33,6 +33,27 @@ if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
   include(./ege_release.cmake)
 endif()
 
+set(EGE_DEMO_VALIDATION_BACKEND "" CACHE STRING
+  "Force demos to use GDI or OpenGL and disable the startup logo (validation only)")
+set_property(CACHE EGE_DEMO_VALIDATION_BACKEND PROPERTY STRINGS "" GDI OPENGL)
+string(TOUPPER "${EGE_DEMO_VALIDATION_BACKEND}" EGE_DEMO_VALIDATION_BACKEND)
+
+if(EGE_DEMO_VALIDATION_BACKEND AND
+   NOT EGE_DEMO_VALIDATION_BACKEND STREQUAL "GDI" AND
+   NOT EGE_DEMO_VALIDATION_BACKEND STREQUAL "OPENGL")
+  message(FATAL_ERROR
+    "EGE_DEMO_VALIDATION_BACKEND must be empty, GDI, or OPENGL")
+endif()
+
+if(EGE_DEMO_VALIDATION_BACKEND STREQUAL "OPENGL" AND
+   DEFINED EGE_BUILD_OPENGL AND NOT EGE_BUILD_OPENGL)
+  message(FATAL_ERROR
+    "OpenGL demo validation requires -DEGE_BUILD_OPENGL=ON")
+endif()
+
+set(EGE_DEMO_VALIDATION_HEADER
+  "${CMAKE_CURRENT_SOURCE_DIR}/../tests/support/demo_validation_initgraph.h")
+
 file(
   GLOB DEMO_SRCS
   LIST_DIRECTORIES false
@@ -46,6 +67,18 @@ macro(ege_add_executable name source)
   message(STATUS "Adding executable: ${name} with source: ${source}")
   add_executable(${name} ${source})
   target_link_libraries(${name} xege)
+
+  if(EGE_DEMO_VALIDATION_BACKEND)
+    target_compile_definitions(${name} PRIVATE
+      "EGE_DEMO_VALIDATION_${EGE_DEMO_VALIDATION_BACKEND}=1")
+    if(MSVC)
+      target_compile_options(${name} PRIVATE
+        "/FI${EGE_DEMO_VALIDATION_HEADER}")
+    else()
+      target_compile_options(${name} PRIVATE
+        -include "${EGE_DEMO_VALIDATION_HEADER}")
+    endif()
+  endif()
 
   if(MSVC)
     target_compile_options(${name} PRIVATE

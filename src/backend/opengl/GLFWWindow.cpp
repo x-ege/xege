@@ -17,7 +17,13 @@ namespace ege {
 namespace {
 
 DWORD eventTimeMilliseconds() {
+#ifdef _WIN32
+    // Keyboard compatibility code compares queued event timestamps with
+    // GetTickCount(), so Windows OpenGL events must use the same clock.
+    return GetTickCount();
+#else
     return static_cast<DWORD>(glfwGetTime() * 1000.0);
+#endif
 }
 
 int glfwKeyToEgeKey(int key) {
@@ -265,7 +271,17 @@ void GLFWWindow::setSize(int width, int height) {
 }
 
 void GLFWWindow::setPosition(int x, int y) {
-    if (m_window) glfwSetWindowPos(m_window, x, y);
+    if (!m_window) return;
+#ifdef _WIN32
+    // EGE's Win32-compatible coordinates refer to the outer window origin,
+    // while GLFW positions the upper-left corner of the content area.
+    int leftFrame = 0;
+    int topFrame = 0;
+    glfwGetWindowFrameSize(m_window, &leftFrame, &topFrame, NULL, NULL);
+    glfwSetWindowPos(m_window, x + leftFrame, y + topFrame);
+#else
+    glfwSetWindowPos(m_window, x, y);
+#endif
 }
 
 void GLFWWindow::setCursorVisible(bool visible) {

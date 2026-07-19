@@ -325,7 +325,7 @@ void linerel(int dx, int dy, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_renderTarget) {
-            img->m_renderTarget->moveRel(dx, dy);
+            img->m_renderTarget->lineRel(dx, dy);
         } else {
 #ifdef _WIN32
             POINT pt;
@@ -650,58 +650,60 @@ static int upattern2array(unsigned short pattern, DWORD style[])
 static void update_pen(PIMAGE img)
 {
 #ifdef _WIN32
-    const int linestyle = img->m_linestyle.linestyle;
-    const unsigned short pattern = img->m_linestyle.upattern;
-    const int thickness = img->m_linestyle.thickness;
+    if (img->m_hDC) {
+        const int linestyle = img->m_linestyle.linestyle;
+        const unsigned short pattern = img->m_linestyle.upattern;
+        const int thickness = img->m_linestyle.thickness;
 
-    HPEN hpen;
+        HPEN hpen;
 
-    if ((thickness == 1) && ((linestyle == SOLID_LINE) || (linestyle == NULL_LINE))) {
-        LOGPEN logPen;
-        logPen.lopnStyle = linestyle; // Other styles may be drawn incorrectly
-        logPen.lopnWidth.x = 1;       // Width
-        logPen.lopnWidth.y = 1;       // Unuse
-        logPen.lopnColor = ARGBTOZBGR(img->m_linecolor);
+        if ((thickness == 1) && ((linestyle == SOLID_LINE) || (linestyle == NULL_LINE))) {
+            LOGPEN logPen;
+            logPen.lopnStyle = linestyle; // Other styles may be drawn incorrectly
+            logPen.lopnWidth.x = 1;       // Width
+            logPen.lopnWidth.y = 1;       // Unuse
+            logPen.lopnColor = ARGBTOZBGR(img->m_linecolor);
 
-        hpen = CreatePenIndirect(&logPen);
-    } else {
-        unsigned int penStyle = linestyle;
-
-        penStyle |= PS_GEOMETRIC;
-
-        switch (img->m_linestartcap) {
-            case LINECAP_FLAT :  penStyle |= PS_ENDCAP_FLAT;   break;
-            case LINECAP_ROUND:  penStyle |= PS_ENDCAP_ROUND;  break;
-            case LINECAP_SQUARE: penStyle |= PS_ENDCAP_SQUARE; break;
-            default:             penStyle |= PS_ENDCAP_FLAT;   break;
-        }
-
-        switch(img->m_linejoin) {
-            case LINEJOIN_MITER: penStyle |= PS_JOIN_MITER;    break;
-            case LINEJOIN_BEVEL: penStyle |= PS_JOIN_BEVEL;    break;
-            case LINEJOIN_ROUND: penStyle |= PS_JOIN_ROUND;    break;
-            default:             penStyle |= PS_JOIN_MITER;    break;
-        }
-
-        LOGBRUSH lbr;
-        lbr.lbColor = ARGBTOZBGR(img->m_linecolor);
-        lbr.lbStyle = BS_SOLID;
-        lbr.lbHatch = 0;
-
-        if (linestyle == USERBIT_LINE) {
-            DWORD style[20] = {0};
-            int bn = upattern2array(pattern, style);
-            hpen = ExtCreatePen(penStyle, thickness, &lbr, bn, style);
+            hpen = CreatePenIndirect(&logPen);
         } else {
-            hpen = ExtCreatePen(penStyle, thickness, &lbr, 0, NULL);
+            unsigned int penStyle = linestyle;
+
+            penStyle |= PS_GEOMETRIC;
+
+            switch (img->m_linestartcap) {
+                case LINECAP_FLAT :  penStyle |= PS_ENDCAP_FLAT;   break;
+                case LINECAP_ROUND:  penStyle |= PS_ENDCAP_ROUND;  break;
+                case LINECAP_SQUARE: penStyle |= PS_ENDCAP_SQUARE; break;
+                default:             penStyle |= PS_ENDCAP_FLAT;   break;
+            }
+
+            switch(img->m_linejoin) {
+                case LINEJOIN_MITER: penStyle |= PS_JOIN_MITER;    break;
+                case LINEJOIN_BEVEL: penStyle |= PS_JOIN_BEVEL;    break;
+                case LINEJOIN_ROUND: penStyle |= PS_JOIN_ROUND;    break;
+                default:             penStyle |= PS_JOIN_MITER;    break;
+            }
+
+            LOGBRUSH lbr;
+            lbr.lbColor = ARGBTOZBGR(img->m_linecolor);
+            lbr.lbStyle = BS_SOLID;
+            lbr.lbHatch = 0;
+
+            if (linestyle == USERBIT_LINE) {
+                DWORD style[20] = {0};
+                int bn = upattern2array(pattern, style);
+                hpen = ExtCreatePen(penStyle, thickness, &lbr, bn, style);
+            } else {
+                hpen = ExtCreatePen(penStyle, thickness, &lbr, 0, NULL);
+            }
         }
-    }
 
-    if (hpen) {
-        DeleteObject(SelectObject(img->m_hDC, hpen));
-    }
+        if (hpen) {
+            DeleteObject(SelectObject(img->m_hDC, hpen));
+        }
 
-    SetMiterLimit(img->m_hDC, img->m_linejoinmiterlimit, NULL);
+        SetMiterLimit(img->m_hDC, img->m_linejoinmiterlimit, NULL);
+    }
 #endif
 
     // why update pen not in IMAGE???
@@ -733,9 +735,11 @@ void setlinecolor(color_t color, PIMAGE pimg)
             img->m_renderTarget->setLineColor(color);
         } else if (img->m_gc) {
             img->m_gc->setLineColor(color);
-        } else {
-            update_pen(img);
         }
+        // Windows OpenGL images use the native RenderTarget for legacy
+        // primitives and a GDI+ pen for enhanced ege_* routes. Keep both
+        // pieces of state synchronized.
+        update_pen(img);
     }
     CONVERT_IMAGE_END
 }
@@ -1482,6 +1486,67 @@ void fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg)
     }
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
+        if (img->m_renderTarget) {
+            color_t* pixels = img->getbuffer();
+            const int originX = img->m_vpt.left;
+            const int originY = img->m_vpt.top;
+            const int clipLeft = img->m_enableclip ? img->m_vpt.left : 0;
+            const int clipTop = img->m_enableclip ? img->m_vpt.top : 0;
+            const int clipRight = img->m_enableclip ? img->m_vpt.right : img->m_width;
+            const int clipBottom = img->m_enableclip ? img->m_vpt.bottom : img->m_height;
+
+            const auto edge = [](float ax, float ay, float bx, float by,
+                                 float px, float py) {
+                return (px - ax) * (by - ay) - (py - ay) * (bx - ax);
+            };
+
+            for (int triangle = 0; triangle < numOfPoints - 2; ++triangle) {
+                const ege_colpoint& p0 = points[triangle];
+                const ege_colpoint& p1 = points[triangle + 1];
+                const ege_colpoint& p2 = points[triangle + 2];
+                const float x0 = p0.x + originX;
+                const float y0 = p0.y + originY;
+                const float x1 = p1.x + originX;
+                const float y1 = p1.y + originY;
+                const float x2 = p2.x + originX;
+                const float y2 = p2.y + originY;
+                const float area = edge(x0, y0, x1, y1, x2, y2);
+                if (std::abs(area) < FLOAT_EPS) continue;
+
+                const int left = std::max(clipLeft, static_cast<int>(std::floor(
+                    std::min(x0, std::min(x1, x2)))));
+                const int top = std::max(clipTop, static_cast<int>(std::floor(
+                    std::min(y0, std::min(y1, y2)))));
+                const int right = std::min(clipRight, static_cast<int>(std::ceil(
+                    std::max(x0, std::max(x1, x2)))) + 1);
+                const int bottom = std::min(clipBottom, static_cast<int>(std::ceil(
+                    std::max(y0, std::max(y1, y2)))) + 1);
+
+                for (int y = top; y < bottom; ++y) {
+                    for (int x = left; x < right; ++x) {
+                        const float sampleX = x + 0.5f;
+                        const float sampleY = y + 0.5f;
+                        const float w0 = edge(x1, y1, x2, y2, sampleX, sampleY) / area;
+                        const float w1 = edge(x2, y2, x0, y0, sampleX, sampleY) / area;
+                        const float w2 = 1.0f - w0 - w1;
+                        if (w0 < -FLOAT_EPS || w1 < -FLOAT_EPS || w2 < -FLOAT_EPS) continue;
+
+                        const int red = static_cast<int>(std::lround(
+                            w0 * EGEGET_R(p0.color) + w1 * EGEGET_R(p1.color) +
+                            w2 * EGEGET_R(p2.color)));
+                        const int green = static_cast<int>(std::lround(
+                            w0 * EGEGET_G(p0.color) + w1 * EGEGET_G(p1.color) +
+                            w2 * EGEGET_G(p2.color)));
+                        const int blue = static_cast<int>(std::lround(
+                            w0 * EGEGET_B(p0.color) + w1 * EGEGET_B(p1.color) +
+                            w2 * EGEGET_B(p2.color)));
+                        pixels[y * img->m_width + x] = EGERGB(red, green, blue);
+                    }
+                }
+            }
+            CONVERT_IMAGE_END;
+            return;
+        }
 #ifdef _WIN32
         TRIVERTEX* vert = (TRIVERTEX*)malloc(sizeof(TRIVERTEX) * numOfPoints);
         if (vert) {
@@ -1661,11 +1726,7 @@ void setlinewidth(float width, PIMAGE pimg)
             img->m_renderTarget->setLineWidth(width);
         }
 
-#ifdef _WIN32
-        if (img->m_hDC) {
-            update_pen(img);
-        }
-#endif
+        update_pen(img);
     }
     CONVERT_IMAGE_END;
 }
@@ -1708,11 +1769,7 @@ void setlinecap(line_cap_type linecap, PIMAGE pimg)
             img->m_renderTarget->setLineCap((RTLineCap)linecap, (RTLineCap)linecap);
         }
 
-#ifdef _WIN32
-        if (img->m_hDC) {
-            update_pen(img);
-        }
-#endif
+        update_pen(img);
     }
     CONVERT_IMAGE_END;
 }
@@ -1729,11 +1786,7 @@ void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
             img->m_renderTarget->setLineCap((RTLineCap)startCap, (RTLineCap)endCap);
         }
 
-#ifdef _WIN32
-        if (img->m_hDC) {
-            update_pen(img);
-        }
-#endif
+        update_pen(img);
     }
     CONVERT_IMAGE_END;
 }
@@ -1784,11 +1837,7 @@ void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
             img->m_renderTarget->setLineJoin((RTLineJoin)linejoin, miterLimit);
         }
 
-#ifdef _WIN32
-        if (img->m_hDC) {
-            update_pen(img);
-        }
-#endif
+        update_pen(img);
     }
     CONVERT_IMAGE_END;
 }
@@ -2990,8 +3039,11 @@ bool ege_path_inpath(const ege_path* path, float x, float y, PCIMAGE pimg)
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             PIMAGE img = CONVERT_IMAGE_CONST((PIMAGE)pimg);
-            if ((img != NULL) && (img->m_hDC != NULL)) {
-                return graphicsPath->IsVisible(x, y, img->getGraphics());
+            if (img != NULL) {
+                Gdiplus::Graphics* graphics = img->getGraphics();
+                if (graphics != NULL) {
+                    return graphicsPath->IsVisible(x, y, graphics);
+                }
             }
         }
     }
@@ -3016,8 +3068,11 @@ bool ege_path_instroke(const ege_path* path, float x, float y, PCIMAGE pimg)
         Gdiplus::GraphicsPath* graphicsPath = (Gdiplus::GraphicsPath*)path->data();
         if (graphicsPath != NULL) {
             PIMAGE img = CONVERT_IMAGE_CONST((PIMAGE)pimg);
-            if ((img != NULL) && (img->m_hDC != NULL)) {
-                return graphicsPath->IsOutlineVisible(x, y, img->getPen(), img->getGraphics());
+            if (img != NULL) {
+                Gdiplus::Graphics* graphics = img->getGraphics();
+                if (graphics != NULL) {
+                    return graphicsPath->IsOutlineVisible(x, y, img->getPen(), graphics);
+                }
             }
         }
     }
@@ -3408,7 +3463,7 @@ ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg)
 ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    ege_point point = {0.0f, 0.0f};
+    ege_point point = {x, y};
     if (img) {
         Gdiplus::Graphics* graphics = img->getGraphics();
         Gdiplus::Matrix matrix;

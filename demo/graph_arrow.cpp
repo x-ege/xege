@@ -36,7 +36,10 @@ int main( void ) {
 	setfillcolor(EGEARGB(0xff, 0xff, 0x0, 0xff));
 	setlinewidth(2.0f);
 	draw_arrow(100.0f, 100.0f, 300.0f, 150.0f, (float)(PI/8), 0.2f);
+	// Commit the first frame before blocking for input.  In particular, the
+	// GDI auto-render path cannot present enhanced GDI+ drawing while getch()
+	// is waiting on the application thread.
+	flushwindow();
 	getch();
 	return 0;
 }
-

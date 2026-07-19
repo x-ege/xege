@@ -7,7 +7,7 @@
 | 测试 | 主要覆盖内容 |
 | --- | --- |
 | `default_build_contract` | 从空目录重新配置，验证 Windows 默认 GDI、Linux/macOS 默认 OpenGL、单配置生成器默认 Release，以及 Linux bundled GLFW 的 X11/Wayland 默认值 |
-| `rendering_correctness` | 基础图元、线型、填充、viewport、变换、文字、图片混合、旧版 blur 像素矩阵、PNG/BMP 保存与重新加载 |
+| `rendering_correctness` | 基础与增强图元、线型/端帽/连接、填充与渐变、viewport、路径、变换、文字与编码、图片混合/旋转、压缩、颜色工具、PNG/BMP 保存与重新加载 |
 | `public_headers` | 公共头文件、Win32 兼容类型及常量的可编译性 |
 | `camera_frame_copy` | 不依赖设备的 BGRA stride/长度/溢出预检、逐行复制与目标缓冲 guard（所有平台） |
 | `camera_device_lifecycle` | 不依赖视频 fixture 或 GUI 的 provider 创建、设备枚举、失败打开、状态与重复关闭；Linux CI 会实际加载 V4L2 provider |
@@ -26,6 +26,25 @@
 | `putimage_comparison` | 多种图片路径的结果对比 |
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
+
+## 公共 API 覆盖审计
+
+从仓库根目录运行名称级审计：
+
+```bash
+python tests/tools/audit_public_api_coverage.py --summary
+```
+
+审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名集合是否一致，并扫描测试和
+demo 中的真实调用（忽略注释与字符串）。当前 288 个公共函数名中，279 个有直接
+自动化测试调用。其余 9 个被显式归类为人工接口：需要宿主 HWND 的 `attachHWND`、
+需要模态输入的 `inputbox_getline`，以及 7 个会分配、显示、隐藏、清理或阻塞当前
+进程控制台的 `*_console` 接口。前两个另有 demo 调用。若以后新增了未被直接测试、
+也未被人工分类的公共函数，审计脚本会返回失败。
+
+这是函数名级的覆盖下限，不等价于每个重载、分支和平台路径都已覆盖。双后端共享
+行为仍必须由相同断言分别运行，窗口/输入生命周期使用后端测试，交互接口使用人工
+demo 验证。
 
 ## 构建与运行
 
@@ -62,6 +81,24 @@ Windows OpenGL 构建会保留上述默认 GDI 用例，并额外注册带 `_ope
 `rendering_correctness` 和 `putimage*` 用例。这些变体通过 `INIT_OPENGL` 启动，
 使用与 GDI 基准完全相同的像素与性能断言；`input_backend`、`page_backend`、
 `window_backend` 和 `opengl_process_exit` 则覆盖 OpenGL 专用窗口路径。
+
+Release demo 截图验证应使用独立目录，并显式关闭开屏动画、强制运行时后端：
+
+```bash
+bash -l tasks.sh --gdi --release --build-dir build/demo-visual-gdi \
+  --target demos --load --build -- \
+  -DEGE_BUILD_TEST=OFF -DEGE_BUILD_TEMP=OFF \
+  -DEGE_DEMO_VALIDATION_BACKEND=GDI
+
+bash -l tasks.sh --opengl --release --build-dir build/demo-visual-opengl \
+  --target demos --load --build -- \
+  -DEGE_BUILD_TEST=OFF -DEGE_BUILD_TEMP=OFF \
+  -DEGE_DEMO_VALIDATION_BACKEND=OPENGL
+```
+
+`EGE_DEMO_VALIDATION_BACKEND` 只影响 demo 验证目标：它移除 `INIT_WITHLOGO`，并强制
+选择 GDI 或 OpenGL，不改变库的默认行为。截图抽样至少覆盖基础图元、文字/CJK、
+alpha、旋转透明、viewport、分页以及一个复杂动画；动画应固定同一帧或同一状态再比较。
 
 只运行功能回归、跳过耗时性能基准：
 

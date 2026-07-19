@@ -62,6 +62,14 @@ int main()
                (down.flags & ege::key_flag_first_down),
                "GLFW key press maps to an EGE first-down message");
 
+        keyCallback(window, GLFW_KEY_A, 0, GLFW_REPEAT, 0);
+        expect(ege::keyrepeat(ege::key_A) == 1,
+               "GLFW key repeat updates the public repeat counter");
+        const ege::key_msg repeat = takeKeyMessage("key-repeat message");
+        expect(repeat.msg == ege::key_msg_down && repeat.key == ege::key_A &&
+                   !(repeat.flags & ege::key_flag_first_down),
+               "GLFW key repeat maps to a non-first key-down message");
+
         keyCallback(window, GLFW_KEY_A, 0, GLFW_RELEASE, 0);
         expect(!ege::keystate(ege::key_A), "key release clears keystate");
         expect(ege::keyrelease(ege::key_A) == 1, "key release updates the release counter");
@@ -89,6 +97,24 @@ int main()
         const ege::key_msg character = takeKeyMessage("character message");
         expect(character.msg == ege::key_msg_char && character.key == 0x4E2D,
                "GLFW Unicode input maps to an EGE character message");
+
+        charCallback(window, 'Z');
+        expect(ege::ege_kbhit() != 0, "ege_kbhit sees a queued character");
+        expect(ege::ege_getch() == 'Z', "ege_getch returns the queued character");
+
+        charCallback(window, 'Y');
+        expect(ege::kbhit() != 0, "kbhit aliases the EGE character queue");
+        expect(ege::getch() == 'Y', "getch aliases the EGE character queue");
+
+        charCallback(window, 'X');
+        const int extendedPeek = ege::kbhitEx(ege::KEYMSG_CHAR_FLAG);
+        expect((extendedPeek & ege::KEYMSG_CHAR) != 0 &&
+                   (extendedPeek & 0xFFFF) == 'X',
+               "kbhitEx preserves the requested message kind");
+        const int extendedCharacter = ege::getchEx(ege::KEYMSG_CHAR_FLAG);
+        expect((extendedCharacter & ege::KEYMSG_CHAR) != 0 &&
+                   (extendedCharacter & 0xFFFF) == 'X',
+               "getchEx returns the character with extended flags");
     }
 
     GLFWcursorposfun cursorCallback = glfwSetCursorPosCallback(window, nullptr);
@@ -99,6 +125,22 @@ int main()
         const ege::mouse_msg move = takeMouseMessage("mouse-move message");
         expect(move.msg == ege::mouse_msg_move && move.x == 11 && move.y == 13,
                "GLFW cursor motion maps to EGE coordinates");
+
+        cursorCallback(window, 17.0, 19.0);
+        int mouseX = 0;
+        int mouseY = 0;
+        ege::mousepos(&mouseX, &mouseY);
+        expect(mouseX == 17 && mouseY == 19,
+               "mousepos exposes the latest backend cursor coordinates");
+        const ege::MOUSEMSG legacyMove = ege::GetMouseMsg();
+        expect(legacyMove.uMsg == WM_MOUSEMOVE &&
+                   legacyMove.x == 17 && legacyMove.y == 19,
+               "GetMouseMsg converts a queued cursor event for legacy callers");
+
+        cursorCallback(window, 23.0, 29.0);
+        expect(ege::mousemsg() != 0, "a second cursor event reaches the mouse queue");
+        ege::flushmouse();
+        expect(ege::mousemsg() == 0, "flushmouse clears queued cursor events");
     }
 
     GLFWmousebuttonfun buttonCallback = glfwSetMouseButtonCallback(window, nullptr);
@@ -109,7 +151,7 @@ int main()
         expect(ege::keystate(ege::key_mouse_l), "mouse press updates keystate");
         const ege::mouse_msg down = takeMouseMessage("mouse-button-down message");
         expect(down.msg == ege::mouse_msg_down && down.is_left() &&
-               down.x == 11 && down.y == 13,
+               down.x == 23 && down.y == 29,
                "GLFW left press maps to an EGE mouse-down message");
 
         buttonCallback(window, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);

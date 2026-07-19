@@ -24,7 +24,7 @@ void setcaption(const wchar_t* caption)
     struct _graph_setting* pg = &graph_setting;
 #ifdef _WIN32
     if (pg->use_opengl && pg->window != NULL) {
-        const std::string utf8Caption = w2mb(caption);
+        const std::string utf8Caption = w2utf8(caption);
         pg->window->setTitle(utf8Caption.c_str());
     } else if (pg->init_sem.acquirable()) {
         ::SetWindowTextW(getHWnd(), caption);
@@ -32,7 +32,7 @@ void setcaption(const wchar_t* caption)
     }
 #else
     if (pg->window != NULL) {
-        const std::string utf8Caption = w2mb(caption);
+        const std::string utf8Caption = w2utf8(caption);
         pg->window->setTitle(utf8Caption.c_str());
     }
 #endif

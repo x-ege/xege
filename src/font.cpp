@@ -574,7 +574,9 @@ void setfont(int height,
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_renderTarget) {
-        img->m_renderTarget->setFont(height, width, typeface, escapement, orientation,
+        const std::wstring wideFace = mb2w(typeface);
+        const std::string utf8Face = w2utf8(wideFace.c_str());
+        img->m_renderTarget->setFont(height, width, utf8Face.c_str(), escapement, orientation,
                                      weight, italic, underline, strikeOut);
         CONVERT_IMAGE_END;
         return;
@@ -618,7 +620,7 @@ void setfont(int height,
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_renderTarget) {
-        const std::string face = w2mb(typeface);
+        const std::string face = w2utf8(typeface);
         img->m_renderTarget->setFont(height, width, face.c_str(), escapement, orientation,
                                      weight, italic, underline, strikeOut);
         CONVERT_IMAGE_END;
@@ -767,7 +769,18 @@ void setfont(const LOGFONTA* font, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_renderTarget && font) {
-            img->m_renderTarget->setFont(font->lfHeight, font->lfWidth, font->lfFaceName,
+            wchar_t wideFace[LF_FACESIZE] = {};
+#ifdef _WIN32
+            MultiByteToWideChar(CP_ACP, 0, font->lfFaceName, -1,
+                                wideFace, LF_FACESIZE);
+#else
+            const std::wstring convertedFace = mb2w(font->lfFaceName);
+            std::copy_n(convertedFace.c_str(),
+                        std::min(convertedFace.size(), static_cast<size_t>(LF_FACESIZE - 1)),
+                        wideFace);
+#endif
+            const std::string utf8Face = w2utf8(wideFace);
+            img->m_renderTarget->setFont(font->lfHeight, font->lfWidth, utf8Face.c_str(),
                                          font->lfEscapement, font->lfOrientation, font->lfWeight,
                                          font->lfItalic != 0, font->lfUnderline != 0, font->lfStrikeOut != 0);
         } else {
@@ -785,7 +798,7 @@ void setfont(const LOGFONTW* font, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_renderTarget && font) {
-            const std::string face = w2mb(font->lfFaceName);
+            const std::string face = w2utf8(font->lfFaceName);
             img->m_renderTarget->setFont(font->lfHeight, font->lfWidth, face.c_str(),
                                          font->lfEscapement, font->lfOrientation, font->lfWeight,
                                          font->lfItalic != 0, font->lfUnderline != 0, font->lfStrikeOut != 0);
@@ -804,6 +817,7 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && font) {
         if (img->m_renderTarget) {
+            char faceName[128] = {};
             int height = 0;
             int width = 0;
             int escapement = 0;
@@ -815,7 +829,7 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
             std::memset(font, 0, sizeof(*font));
             img->m_renderTarget->getFont(
                 &height, &width,
-                font->lfFaceName, static_cast<int>(sizeof(font->lfFaceName)),
+                faceName, static_cast<int>(sizeof(faceName)),
                 &escapement, &orientation, &weight,
                 &italic, &underline, &strikeOut);
             font->lfHeight = static_cast<LONG>(height);
@@ -826,6 +840,13 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
             font->lfItalic = static_cast<BYTE>(italic);
             font->lfUnderline = static_cast<BYTE>(underline);
             font->lfStrikeOut = static_cast<BYTE>(strikeOut);
+#ifdef _WIN32
+            const std::wstring wideFace = utf82w(faceName);
+            WideCharToMultiByte(CP_ACP, 0, wideFace.c_str(), -1,
+                                font->lfFaceName, LF_FACESIZE, NULL, NULL);
+#else
+            std::strncpy(font->lfFaceName, faceName, LF_FACESIZE - 1);
+#endif
         } else {
 #ifdef _WIN32
             HFONT hf = (HFONT)GetCurrentObject(img->m_hDC, OBJ_FONT);
@@ -864,7 +885,7 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
             font->lfItalic = static_cast<BYTE>(italic);
             font->lfUnderline = static_cast<BYTE>(underline);
             font->lfStrikeOut = static_cast<BYTE>(strikeOut);
-            const std::wstring wideFace = mb2w(faceName);
+            const std::wstring wideFace = utf82w(faceName);
             const size_t copyLength = std::min(
                 wideFace.size(), sizeof(font->lfFaceName) / sizeof(font->lfFaceName[0]) - 1);
             std::copy_n(wideFace.c_str(), copyLength, font->lfFaceName);
@@ -883,7 +904,8 @@ void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img && img->m_renderTarget) {
-        img->m_renderTarget->drawText(x, y, text);
+        const std::wstring wideText = mb2w(text);
+        img->m_renderTarget->drawText(x, y, wideText.c_str());
     } else if (img && img->m_hDC) {
 #ifdef _WIN32
         int bufferSize = MultiByteToWideChar(getcodepage(), 0, text, -1, NULL, 0);

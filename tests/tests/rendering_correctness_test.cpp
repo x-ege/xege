@@ -2,6 +2,7 @@
 #include "../test_shutdown.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -165,6 +166,37 @@ std::vector<unsigned char> readFileBytes(const std::string& path)
 }
 
 #ifdef _WIN32
+SIZE measureWindowsGdiText(const wchar_t* text, int height, int width,
+                           const wchar_t* face, int weight = FW_DONTCARE,
+                           bool italic = false)
+{
+    SIZE size = {};
+    HDC dc = CreateCompatibleDC(NULL);
+    if (!dc) return size;
+
+    LOGFONTW fontDescription = {};
+    fontDescription.lfHeight = height;
+    fontDescription.lfWidth = width;
+    fontDescription.lfWeight = weight;
+    fontDescription.lfItalic = static_cast<BYTE>(italic);
+    fontDescription.lfCharSet = DEFAULT_CHARSET;
+    fontDescription.lfOutPrecision = OUT_DEFAULT_PRECIS;
+    fontDescription.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+    fontDescription.lfQuality = DEFAULT_QUALITY;
+    fontDescription.lfPitchAndFamily = DEFAULT_PITCH;
+    lstrcpynW(fontDescription.lfFaceName, face, LF_FACESIZE);
+
+    HFONT font = CreateFontIndirectW(&fontDescription);
+    HGDIOBJ previousFont = font ? SelectObject(dc, font) : NULL;
+    if (font) {
+        GetTextExtentPoint32W(dc, text, lstrlenW(text), &size);
+        SelectObject(dc, previousFont);
+        DeleteObject(font);
+    }
+    DeleteDC(dc);
+    return size;
+}
+
 std::vector<unsigned char> readFileBytes(const std::wstring& path)
 {
     std::vector<unsigned char> bytes;
@@ -362,6 +394,33 @@ void testEnhancedFillAndCornerRadiusCompatibility()
                 "four-radius round rectangle keeps a square bottom-left corner");
     expectPixel(image, 34, 28, ege::GREEN,
                 "four-radius round rectangle keeps a square bottom-right corner");
+
+    ege::delimage(image);
+}
+
+void testEnhancedStrokeStateCompatibility()
+{
+    ege::PIMAGE image = ege::newimage(48, 40);
+    const ege::ege_point triangle[] = {
+        {24.0f, 4.0f}, {6.0f, 32.0f}, {42.0f, 32.0f}, {24.0f, 4.0f}};
+
+    resetImage(image, ege::BLACK);
+    ege::setlinecolor(ege::RED, image);
+    ege::setfillcolor(ege::YELLOW, image);
+    ege::ege_fillpoly(3, triangle, image);
+    ege::ege_drawpoly(4, triangle, image);
+    expect(countPixelsEqualTo(image, ege::YELLOW) > 0,
+           "ege_fillpoly paints the demo polygon fill");
+    expect(countPixelsEqualTo(image, ege::RED) > 0,
+           "ege_drawpoly uses the current line color after an enhanced fill");
+
+    resetImage(image, ege::BLACK);
+    ege::setlinestyle(ege::SOLID_LINE, 0, 1, image);
+    ege::setlinecolor(ege::RED, image);
+    ege::setlinewidth(5.0f, image);
+    ege::ege_line(6.0f, 20.0f, 41.0f, 20.0f, image);
+    expect(countPixelsEqualToInRect(image, ege::RED, 5, 16, 43, 25) > 80,
+           "ege_line uses the current enhanced line width");
 
     ege::delimage(image);
 }
@@ -662,6 +721,66 @@ void testImageTransfersHonorViewportOrigin()
     ege::delimage(source);
 }
 
+void testColorAndMathUtilities()
+{
+    const ege::color_t source = EGEARGB(128, 200, 100, 50);
+    const ege::color_t premultiplied = ege::color_premultiply(source);
+    const ege::color_t restored = ege::color_unpremultiply(premultiplied);
+    expect(EGEGET_A(restored) == 128 &&
+           std::abs(static_cast<int>(EGEGET_R(restored)) - 200) <= 2 &&
+           std::abs(static_cast<int>(EGEGET_G(restored)) - 100) <= 2 &&
+           std::abs(static_cast<int>(EGEGET_B(restored)) - 50) <= 2,
+           "premultiply and unpremultiply preserve ARGB within rounding tolerance");
+
+    expect(rgb(ege::rgb2gray(ege::WHITE)) == rgb(ege::WHITE),
+           "rgb2gray preserves white");
+    float hue = 0.0f;
+    float saturation = 0.0f;
+    float lightness = 0.0f;
+    ege::rgb2hsl(EGERGB(40, 120, 200), &hue, &saturation, &lightness);
+    const ege::color_t hslRoundTrip = ege::hsl2rgb(hue, saturation, lightness);
+    expect(std::abs(static_cast<int>(EGEGET_R(hslRoundTrip)) - 40) <= 1 &&
+           std::abs(static_cast<int>(EGEGET_G(hslRoundTrip)) - 120) <= 1 &&
+           std::abs(static_cast<int>(EGEGET_B(hslRoundTrip)) - 200) <= 1,
+           "RGB and HSL conversions round-trip representative input");
+
+    float value = 0.0f;
+    ege::rgb2hsv(EGERGB(40, 120, 200), &hue, &saturation, &value);
+    const ege::color_t hsvRoundTrip = ege::hsv2rgb(hue, saturation, value);
+    expect(std::abs(static_cast<int>(EGEGET_R(hsvRoundTrip)) - 40) <= 1 &&
+           std::abs(static_cast<int>(EGEGET_G(hsvRoundTrip)) - 120) <= 1 &&
+           std::abs(static_cast<int>(EGEGET_B(hsvRoundTrip)) - 200) <= 1,
+           "RGB and HSV conversions round-trip representative input");
+
+    expect(rgb(ege::colorblend(ege::BLUE, ege::RED, 0)) == rgb(ege::BLUE) &&
+           rgb(ege::colorblend(ege::BLUE, ege::RED, 255)) == rgb(ege::RED),
+           "colorblend honors transparent and opaque endpoints");
+    expect(rgb(ege::colorblend_f(ege::BLUE, ege::RED, 0)) == rgb(ege::BLUE) &&
+           rgb(ege::colorblend_f(ege::BLUE, ege::RED, 255)) == rgb(ege::RED),
+           "colorblend_f honors transparent and opaque endpoints");
+    expect(rgb(ege::alphablend(ege::BLUE, EGEARGB(255, 255, 0, 0))) == rgb(ege::RED) &&
+           rgb(ege::alphablend(ege::BLUE, EGEARGB(255, 255, 0, 0), 255)) == rgb(ege::RED),
+           "alphablend overloads honor an opaque source");
+    const ege::color_t premultipliedRed = ege::color_premultiply(EGEARGB(255, 255, 0, 0));
+    expect(rgb(ege::alphablend_premultiplied(ege::BLUE, premultipliedRed)) == rgb(ege::RED) &&
+           rgb(ege::alphablend_premultiplied(ege::BLUE, premultipliedRed, 255)) == rgb(ege::RED),
+           "premultiplied alphablend overloads honor an opaque source");
+
+    const float halfPi = static_cast<float>(ege::PI / 2.0);
+    ege::VECTOR3D pointX(0.0f, 1.0f, 0.0f);
+    ege::rotate_point3d_x(&pointX, halfPi);
+    expect(std::abs(pointX.y) < 0.001f && std::abs(pointX.z - 1.0f) < 0.001f,
+           "rotate_point3d_x rotates around the x axis");
+    ege::VECTOR3D pointY(0.0f, 0.0f, 1.0f);
+    ege::rotate_point3d_y(&pointY, halfPi);
+    expect(std::abs(pointY.x - 1.0f) < 0.001f && std::abs(pointY.z) < 0.001f,
+           "rotate_point3d_y rotates around the y axis");
+    ege::VECTOR3D pointZ(1.0f, 0.0f, 0.0f);
+    ege::rotate_point3d_z(&pointZ, halfPi);
+    expect(std::abs(pointZ.x) < 0.001f && std::abs(pointZ.y - 1.0f) < 0.001f,
+           "rotate_point3d_z rotates around the z axis");
+}
+
 void testStateAndPixelUtilities()
 {
     ege::PIMAGE image = ege::newimage(10, 8);
@@ -671,6 +790,7 @@ void testStateAndPixelUtilities()
     ege::setfillcolor(ege::GREEN, image);
     ege::settextcolor(ege::YELLOW, image);
     ege::setbkcolor_f(ege::BLUE, image);
+    expect(ege::getcolor(image) == ege::RED, "legacy color state follows the line color");
     expect(ege::getlinecolor(image) == ege::RED, "line color state round-trips");
     expect(ege::getfillcolor(image) == ege::GREEN, "fill color state round-trips");
     expect(ege::gettextcolor(image) == ege::YELLOW, "text color state round-trips");
@@ -689,6 +809,45 @@ void testStateAndPixelUtilities()
     ege::putpixels(2, points, image);
     expectPixel(image, 1, 1, ege::RED, "putpixels uses each point's supplied color");
     expectPixel(image, 2, 2, ege::CYAN, "putpixels writes multiple colored points");
+
+    const int fastPoints[] = {3, 1, static_cast<int>(ege::YELLOW),
+                              3, 2, static_cast<int>(ege::MAGENTA)};
+    ege::putpixels_f(2, fastPoints, image);
+    expect(rgb(ege::getpixel_f(3, 1, image)) == rgb(ege::YELLOW) &&
+           rgb(ege::getpixel_f(3, 2, image)) == rgb(ege::MAGENTA),
+           "fast batch pixel APIs preserve supplied colors");
+
+    ege::color_t* mutablePixels = ege::getbuffer(image);
+    mutablePixels[0] = EGEARGB(64, 10, 20, 30);
+    ege::putpixel_savealpha(0, 0, ege::RED, image);
+    expect(EGEGET_A(ege::getpixel_f(0, 0, image)) == 64 &&
+           rgb(ege::getpixel_f(0, 0, image)) == rgb(ege::RED),
+           "putpixel_savealpha replaces RGB while preserving alpha");
+    ege::putpixel_savealpha_f(0, 0, ege::GREEN, image);
+    expect(EGEGET_A(ege::getpixel_f(0, 0, image)) == 64 &&
+           rgb(ege::getpixel_f(0, 0, image)) == rgb(ege::GREEN),
+           "putpixel_savealpha_f preserves alpha");
+
+    mutablePixels = ege::getbuffer(image);
+    mutablePixels[1] = EGEARGB(91, 0, 0, 255);
+    ege::putpixel_withalpha(1, 0, EGEARGB(128, 255, 0, 0), image);
+    expect(EGEGET_A(ege::getpixel_f(1, 0, image)) == 91,
+           "putpixel_withalpha preserves destination alpha");
+    ege::putpixel_withalpha_f(1, 0, EGEARGB(128, 0, 255, 0), image);
+    expect(EGEGET_A(ege::getpixel_f(1, 0, image)) == 91,
+           "putpixel_withalpha_f preserves destination alpha");
+
+    mutablePixels = ege::getbuffer(image);
+    mutablePixels[2] = ege::BLUE;
+    const ege::color_t alphaSource = EGEARGB(128, 255, 0, 0);
+    ege::putpixel_alphablend(2, 0, alphaSource, image);
+    expect(ege::getpixel_f(2, 0, image) == ege::alphablend(ege::BLUE, alphaSource),
+           "putpixel_alphablend matches the scalar color helper");
+    mutablePixels = ege::getbuffer(image);
+    mutablePixels[2] = ege::BLUE;
+    ege::putpixel_alphablend_f(2, 0, alphaSource, image);
+    expect(ege::getpixel_f(2, 0, image) == ege::alphablend(ege::BLUE, alphaSource),
+           "putpixel_alphablend_f matches the scalar color helper");
 
     ege::ege_setalpha(37, image);
     const ege::color_t* pixels = ege::getbuffer(image);
@@ -719,6 +878,12 @@ void testLineAndFillStyles()
     resetImage(image, ege::BLACK);
     ege::setlinecolor(ege::WHITE, image);
     ege::setlinestyle(ege::DASHED_LINE, 0, 1, image);
+    int lineStyle = 0;
+    int thickness = 0;
+    unsigned short pattern = 0;
+    ege::getlinestyle(&lineStyle, &pattern, &thickness, image);
+    expect(lineStyle == ege::DASHED_LINE && thickness == 1,
+           "getlinestyle returns the selected line style");
     ege::line(2, 4, 24, 4, image);
     bool sawStroke = false;
     bool sawGap = false;
@@ -733,6 +898,22 @@ void testLineAndFillStyles()
     ege::line(3, 10, 24, 10, image);
     expectPixel(image, 10, 9, ege::WHITE, "line-style thickness expands above the centerline");
     expectPixel(image, 10, 11, ege::WHITE, "line-style thickness expands below the centerline");
+
+    ege::setlinecap(ege::LINECAP_SQUARE, ege::LINECAP_ROUND, image);
+    ege::line_cap_type startCap = ege::LINECAP_FLAT;
+    ege::line_cap_type endCap = ege::LINECAP_FLAT;
+    ege::getlinecap(&startCap, &endCap, image);
+    expect(startCap == ege::LINECAP_SQUARE && endCap == ege::LINECAP_ROUND &&
+           ege::getlinecap(image) == ege::LINECAP_SQUARE,
+           "getlinecap overloads return the selected caps");
+
+    ege::setlinejoin(ege::LINEJOIN_BEVEL, 3.5f, image);
+    ege::line_join_type lineJoin = ege::LINEJOIN_MITER;
+    float miterLimit = 0.0f;
+    ege::getlinejoin(&lineJoin, &miterLimit, image);
+    expect(lineJoin == ege::LINEJOIN_BEVEL && miterLimit == 3.5f &&
+           ege::getlinejoin(image) == ege::LINEJOIN_BEVEL,
+           "getlinejoin overloads return the selected join state");
 
     ege::delimage(image);
 }
@@ -862,6 +1043,68 @@ void testAlphaFormatsAndCombinedColorKey()
     ege::delimage(source);
 }
 
+void testEnhancedAlphaSurfaceCompatibility()
+{
+    ege::PIMAGE source = ege::newimage(16, 16);
+    ege::PIMAGE destination = ege::newimage(16, 16);
+    ege::setbkcolor(EGERGBA(0, 0, 0, 0), source);
+    ege::setlinecolor(EGEARGB(255, 255, 0, 0), source);
+    ege::setlinewidth(3.0f, source);
+    ege::ege_line(2.0f, 2.0f, 13.0f, 13.0f, source);
+
+    resetImage(destination, EGEARGB(255, 0, 0, 255));
+    expect(ege::putimage_withalpha(destination, source, 0, 0) == ege::grOk,
+           "enhanced alpha surface compositing reports success");
+    expectPixel(destination, 15, 0, ege::BLUE,
+                "transparent untouched pixels preserve an offscreen destination");
+    expectPixel(destination, 7, 7, ege::RED,
+                "enhanced opaque strokes survive putimage_withalpha");
+
+    ege::delimage(destination);
+    ege::delimage(source);
+}
+
+void testEnhancedAlphaScreenCompatibility()
+{
+    ege::setrendermode(ege::RENDER_AUTO);
+    ege::settarget(nullptr);
+    ege::setviewport(0, 0, 64, 64, true);
+    ege::setbkcolor(ege::WHITE);
+    ege::cleardevice();
+    ege::setfillcolor(ege::BLUE);
+    ege::bar(10, 10, 60, 40);
+
+    ege::PIMAGE source = ege::newimage(64, 48);
+    ege::setbkcolor(EGERGBA(0, 0, 0, 0), source);
+    ege::setfillcolor(EGEARGB(255, 255, 0, 0), source);
+    ege::setlinecolor(EGEARGB(255, 255, 0, 0), source);
+    ege::setlinestyle(ege::CENTER_LINE, 0, 1, source);
+    ege::setlinewidth(5.0f, source);
+    ege::ege_line(10.0f, 10.0f, 40.0f, 40.0f, source);
+    ege::setlinecolor(EGEARGB(255, 0, 255, 0), source);
+    ege::setlinestyle(ege::DOTTED_LINE, 0, 1, source);
+    ege::setlinewidth(3.0f, source);
+    ege::ege_ellipse(20.0f, 10.0f, 20.0f, 20.0f, source);
+    ege::setfillcolor(EGEARGB(255, 255, 0, 255), source);
+    ege::ege_fillellipse(1.0f, 1.0f, 5.0f, 5.0f, source);
+    ege::setfillcolor(EGEARGB(255, 0, 255, 255), source);
+    ege::ege_fillellipse(10.0f, 1.0f, 5.0f, 5.0f, source);
+    ege::putimage_withalpha(nullptr, source, 0, 0);
+    ege::delimage(source);
+    ege::delay_ms(150);
+
+    ege::PIMAGE capture = ege::newimage();
+    expect(ege::getimage(capture, 0, 0, 64, 48) == ege::grOk,
+           "enhanced alpha demo frame can be captured");
+    expectPixel(capture, 55, 20, ege::BLUE,
+                "transparent enhanced pixels preserve the screen destination");
+    expectPixel(capture, 5, 45, ege::WHITE,
+                "screen alpha composition preserves the white area outside the blue bar");
+
+    ege::delimage(capture);
+    ege::setrendermode(ege::RENDER_MANUAL);
+}
+
 void testAlphaMaskDefaultsAndScaledSampling()
 {
     ege::PIMAGE source = ege::newimage(2, 2);
@@ -949,6 +1192,19 @@ void testImageRotationCoordinatesAndAspectRatio()
     expectPixel(destination, 14, 12, ege::BLACK,
                 "quarter-turn rotation keeps the expected two-pixel width");
 
+    ege::resize(source, 5, 5);
+    resetImage(source, ege::WHITE);
+    ege::putpixel(2, 2, ege::RED, source);
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_rotatetransparent(destination, source,
+                                           16, 12, 2, 2, ege::WHITE,
+                                           0.0f, 2.0f) == ege::grOk,
+           "putimage_rotatetransparent reports success");
+    expectPixel(destination, 16, 12, ege::RED,
+                "putimage_rotatetransparent keeps the scaled source-center pixel");
+    expectPixel(destination, 12, 8, ege::BLUE,
+                "putimage_rotatetransparent skips the transparent source background");
+
     ege::delimage(destination);
     ege::delimage(source);
 }
@@ -971,6 +1227,129 @@ void testEnhancedImageTransform()
 
     ege::delimage(destination);
     ege::delimage(source);
+}
+
+void testEnhancedPathApi()
+{
+    ege::PIMAGE image = ege::newimage(96, 96);
+    resetImage(image, ege::BLACK);
+
+    ege::ege_path* rectanglePath = ege::ege_path_create();
+    expect(rectanglePath != NULL, "ege_path_create returns a path");
+    ege::ege_path_addrect(rectanglePath, 10.0f, 10.0f, 30.0f, 20.0f);
+    ege::ege_path_setfillmode(rectanglePath, ege::FILLMODE_WINDING);
+    expect(ege::ege_path_pointcount(rectanglePath) == 4,
+           "a rectangle path contains four points");
+
+    const ege::ege_point lastPoint = ege::ege_path_lastpoint(rectanglePath);
+    expect(lastPoint.x >= 10.0f && lastPoint.x <= 40.0f &&
+           lastPoint.y >= 10.0f && lastPoint.y <= 30.0f,
+           "ege_path_lastpoint returns a point from the rectangle");
+    const ege::ege_rect bounds = ege::ege_path_getbounds(rectanglePath, NULL);
+    expect(bounds.x == 10.0f && bounds.y == 10.0f &&
+           bounds.w == 30.0f && bounds.h == 20.0f,
+           "ege_path_getbounds reports rectangle geometry");
+    expect(ege::ege_path_inpath(rectanglePath, 20.0f, 20.0f),
+           "ege_path_inpath recognizes an interior point");
+    expect(ege::ege_path_instroke(rectanglePath, 10.0f, 20.0f),
+           "ege_path_instroke recognizes an outline point");
+
+    ege::ege_point* copiedPoints = ege::ege_path_getpathpoints(rectanglePath);
+    unsigned char* copiedTypes = ege::ege_path_getpathtypes(rectanglePath);
+    expect(copiedPoints != NULL && copiedTypes != NULL,
+           "path point and type queries allocate result arrays");
+    delete[] copiedPoints;
+    delete[] copiedTypes;
+
+    ege::setfillcolor(ege::RED, image);
+    ege::setlinecolor(ege::GREEN, image);
+    ege::setlinewidth(4.0f, image);
+    expect(ege::ege_path_inpath(rectanglePath, 20.0f, 20.0f, image),
+           "image-aware path hit testing works for an interior point");
+    expect(ege::ege_path_instroke(rectanglePath, 10.0f, 20.0f, image),
+           "image-aware stroke hit testing uses the image pen");
+    ege::ege_fillpath(rectanglePath, image);
+    expectPixel(image, 20, 20, ege::RED, "ege_fillpath fills the path interior");
+    ege::ege_drawpath(rectanglePath, 35.0f, 35.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 500,
+           "translated ege_drawpath adds visible outline pixels");
+
+    const ege::ege_transform_matrix translation = {1.0f, 0.0f, 0.0f, 1.0f, 5.0f, 7.0f};
+    ege::ege_path* transformedPath = ege::ege_path_clone(rectanglePath);
+    ege::ege_path_transform(transformedPath, &translation);
+    const ege::ege_rect transformedBounds =
+        ege::ege_path_getbounds(transformedPath, NULL, image);
+    expect(transformedBounds.x <= 15.0f && transformedBounds.y <= 17.0f &&
+           transformedBounds.x + transformedBounds.w >= 45.0f &&
+           transformedBounds.y + transformedBounds.h >= 37.0f,
+           "path transforms and image-aware bounds preserve translated geometry");
+    ege::ege_path_reverse(transformedPath);
+
+    const ege::ege_point sourcePoints[] = {{0.0f, 0.0f}, {8.0f, 0.0f}, {8.0f, 8.0f}};
+    const unsigned char sourceTypes[] = {0, 1, 1};
+    ege::ege_path* sourcePath = ege::ege_path_createfrom(sourcePoints, sourceTypes, 3);
+    expect(sourcePath != NULL && ege::ege_path_pointcount(sourcePath) == 3,
+           "ege_path_createfrom preserves supplied points");
+
+    ege::ege_path* aggregatePath = ege::ege_path_create();
+    ege::ege_path_start(aggregatePath);
+    ege::ege_path_addline(aggregatePath, 2.0f, 2.0f, 12.0f, 2.0f);
+    ege::ege_path_addarc(aggregatePath, 2.0f, 2.0f, 12.0f, 10.0f, 0.0f, 90.0f);
+    ege::ege_path_addpolyline(aggregatePath, 3, sourcePoints);
+    const ege::ege_point bezierPoints[] = {
+        {2.0f, 20.0f}, {8.0f, 12.0f}, {16.0f, 28.0f}, {22.0f, 20.0f}
+    };
+    ege::ege_path_addbezier(aggregatePath, 4, bezierPoints);
+    ege::ege_path_addbezier(aggregatePath, 24.0f, 20.0f, 28.0f, 12.0f,
+                            34.0f, 28.0f, 38.0f, 20.0f);
+    ege::ege_path_addcurve(aggregatePath, 3, sourcePoints, 0.5f);
+    ege::ege_path_addcircle(aggregatePath, 48.0f, 16.0f, 6.0f);
+    ege::ege_path_addellipse(aggregatePath, 58.0f, 8.0f, 14.0f, 10.0f);
+    ege::ege_path_addpie(aggregatePath, 74.0f, 8.0f, 14.0f, 12.0f, 20.0f, 120.0f);
+    ege::ege_path_addtext(aggregatePath, 2.0f, 40.0f, L"A", 12.0f, -1,
+                          L"Arial", 0);
+    ege::ege_path_addpolygon(aggregatePath, 3, sourcePoints);
+    ege::ege_path_addclosedcurve(aggregatePath, 3, sourcePoints);
+    ege::ege_path_close(aggregatePath);
+    ege::ege_path_addpath(aggregatePath, sourcePath, false);
+    ege::ege_path_closeall(aggregatePath);
+    expect(ege::ege_path_pointcount(aggregatePath) > 20,
+           "path segment builders append geometry");
+
+    ege::ege_path* flattenedPath = ege::ege_path_clone(aggregatePath);
+    ege::ege_path_flatten(flattenedPath, NULL, 0.25f);
+    expect(ege::ege_path_pointcount(flattenedPath) > 0,
+           "ege_path_flatten retains usable geometry");
+    ege::ege_path_widen(flattenedPath, 2.0f, NULL, 0.25f);
+    expect(ege::ege_path_pointcount(flattenedPath) > 0,
+           "ege_path_widen produces outline geometry");
+
+    ege::ege_path* outlinePath = ege::ege_path_clone(rectanglePath);
+    ege::ege_path_outline(outlinePath, NULL, 0.25f);
+    expect(ege::ege_path_pointcount(outlinePath) > 0,
+           "ege_path_outline retains the rectangle outline");
+
+    ege::ege_path* warpedPath = ege::ege_path_clone(rectanglePath);
+    const ege::ege_point warpPoints[] = {
+        {10.0f, 10.0f}, {42.0f, 12.0f}, {12.0f, 34.0f}, {44.0f, 36.0f}
+    };
+    const ege::ege_rect warpSource = {10.0f, 10.0f, 30.0f, 20.0f};
+    ege::ege_path_warp(warpedPath, warpPoints, 4, &warpSource, NULL, 0.25f);
+    expect(ege::ege_path_pointcount(warpedPath) > 0,
+           "ege_path_warp retains mapped geometry");
+
+    ege::ege_path_reset(sourcePath);
+    expect(ege::ege_path_pointcount(sourcePath) == 0,
+           "ege_path_reset removes all points");
+
+    ege::ege_path_destroy(warpedPath);
+    ege::ege_path_destroy(outlinePath);
+    ege::ege_path_destroy(flattenedPath);
+    ege::ege_path_destroy(aggregatePath);
+    ege::ege_path_destroy(sourcePath);
+    ege::ege_path_destroy(transformedPath);
+    ege::ege_path_destroy(rectanglePath);
+    ege::delimage(image);
 }
 
 void testRasterOperations()
@@ -1139,6 +1518,16 @@ void testViewportClearAndWritingMode()
     ege::PIMAGE image = ege::newimage(18, 16);
     resetImage(image, ege::WHITE);
     ege::setviewport(4, 3, 14, 12, false, image);
+    int viewportLeft = 0;
+    int viewportTop = 0;
+    int viewportRight = 0;
+    int viewportBottom = 0;
+    int viewportClip = 1;
+    ege::getviewport(&viewportLeft, &viewportTop, &viewportRight, &viewportBottom,
+                     &viewportClip, image);
+    expect(viewportLeft == 4 && viewportTop == 3 && viewportRight == 14 &&
+           viewportBottom == 12 && viewportClip == 0,
+           "getviewport returns the selected image viewport");
     ege::setbkcolor_f(ege::BLACK, image);
     ege::clearviewport(image);
     ege::setviewport(0, 0, 18, 16, false, image);
@@ -1191,13 +1580,43 @@ void testEnhancedTransformAndGradientFallback()
     ege::setlinecolor(ege::WHITE, image);
     ege::ege_transform_reset(image);
     ege::ege_transform_translate(10.0f, 6.0f, image);
+    ege::ege_transform_matrix currentTransform = {};
+    ege::ege_get_transform(&currentTransform, image);
+    expect(currentTransform.m31 == 10.0f && currentTransform.m32 == 6.0f,
+           "ege_get_transform returns the active translation");
+    const ege::ege_point translatedPoint = ege::ege_transform_calc(2.0f, 3.0f, image);
+    expect(translatedPoint.x == 12.0f && translatedPoint.y == 9.0f,
+           "ege_transform_calc applies the current transform to its coordinate input");
     ege::ege_line(0.0f, 0.0f, 8.0f, 0.0f, image);
+    ege::ege_transform_reset(image);
+
+    const ege::ege_transform_matrix explicitTransform = {
+        1.0f, 0.0f, 0.0f, 1.0f, 3.0f, 4.0f
+    };
+    ege::ege_set_transform(&explicitTransform, image);
+    const ege::ege_point explicitlyTranslated = ege::ege_transform_calc(2.0f, 3.0f, image);
+    expect(explicitlyTranslated.x == 5.0f && explicitlyTranslated.y == 7.0f,
+           "ege_set_transform applies an explicit matrix");
+    ege::ege_transform_reset(image);
+
+    ege::ege_transform_rotate(90.0f, image);
+    ege::ege_get_transform(&currentTransform, image);
+    expect(std::abs(currentTransform.m12) > 0.9f &&
+           std::abs(currentTransform.m21) > 0.9f,
+           "ege_transform_rotate updates the transform matrix");
     ege::ege_transform_reset(image);
     const PixelBounds transformedLine = boundsDifferentFrom(image, ege::BLACK);
     expect(transformedLine.valid && transformedLine.left >= 9 && transformedLine.right <= 19 &&
            transformedLine.top >= 5 && transformedLine.bottom <= 7,
            "enhanced drawing applies the native transform matrix");
     expectPixel(image, 4, 0, ege::BLACK, "enhanced transform does not leave geometry at its untransformed position");
+
+    ege::ege_transform_scale(2.0f, 3.0f, image);
+    const ege::ege_point sourcePoint = {4.0f, 5.0f};
+    const ege::ege_point scaledPoint = ege::ege_transform_calc(sourcePoint, image);
+    expect(scaledPoint.x == 8.0f && scaledPoint.y == 15.0f,
+           "ege_transform_scale and point-form ege_transform_calc agree");
+    ege::ege_transform_reset(image);
 
     resetImage(image, ege::BLACK);
     ege::ege_setpattern_lineargradient(2.0f, 0.0f, ege::RED,
@@ -1267,6 +1686,185 @@ void testRoundedShapesFloodFillAndFloatRoutes()
     ege::delimage(image);
 }
 
+void testAdditionalPrimitiveEntryPoints()
+{
+    ege::PIMAGE image = ege::newimage(64, 64);
+    const int triangle[] = {8, 48, 20, 32, 32, 48};
+
+    resetImage(image, ege::BLACK);
+    ege::setlinecolor(ege::WHITE, image);
+    ege::line_f(2.5f, 2.5f, 30.5f, 2.5f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 0,
+           "line_f draws floating-point line geometry");
+
+    resetImage(image, ege::BLACK);
+    ege::moveto(3, 4, image);
+    ege::lineto_f(24.0f, 4.0f, image);
+    ege::linerel(0, 12, image);
+    ege::linerel_f(-12.0f, 0.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 20,
+           "lineto_f and linerel variants draw from the current position");
+    expectPixel(image, 24, 10, ege::WHITE,
+                "integer linerel draws the segment to its new position");
+
+    resetImage(image, ege::BLACK);
+    ege::moveto(2, 6, image);
+    ege::lineto(26, 6, image);
+    expectPixel(image, 14, 6, ege::WHITE,
+                "integer lineto draws from the current position");
+
+    resetImage(image, ege::BLACK);
+    ege::arcf(16.0f, 16.0f, 0.0f, 180.0f, 10.0f, image);
+    ege::arc(16, 16, 180, 360, 10, image);
+    ege::circlef(44.0f, 16.0f, 9.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 20,
+           "arcf and circlef draw floating-point outlines");
+
+    resetImage(image, ege::BLACK);
+    ege::setfillcolor(ege::GREEN, image);
+    ege::fillcirclef(12.0f, 12.0f, 7.0f, image);
+    ege::solidcirclef(30.0f, 12.0f, 7.0f, image);
+    ege::fillellipsef(48.0f, 12.0f, 7.0f, 5.0f, image);
+    ege::solidellipsef(12.0f, 30.0f, 7.0f, 5.0f, image);
+    expectPixel(image, 12, 12, ege::GREEN,
+                "fillcirclef fills its center");
+    expectPixel(image, 48, 12, ege::GREEN,
+                "fillellipsef fills its center");
+
+    resetImage(image, ege::BLACK);
+    ege::setfillcolor(ege::CYAN, image);
+    ege::setlinecolor(ege::WHITE, image);
+    ege::pie(12, 50, 0, 90, 9, 7, image);
+    ege::pief(32.0f, 50.0f, 0.0f, 90.0f, 9.0f, 7.0f, image);
+    ege::fillpief(50.0f, 50.0f, 0.0f, 90.0f, 8.0f, 7.0f, image);
+    ege::solidpief(50.0f, 30.0f, 0.0f, 90.0f, 8.0f, 7.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 30,
+           "integer and floating-point pie routes produce geometry");
+
+    resetImage(image, ege::BLACK);
+    ege::pieslice(12, 12, 0, 90, 8, image);
+    ege::pieslicef(32.0f, 12.0f, 0.0f, 90.0f, 8.0f, image);
+    ege::sector(12, 36, 0, 90, 8, 6, image);
+    ege::sectorf(32.0f, 36.0f, 0.0f, 90.0f, 8.0f, 6.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 20,
+           "pie-slice and sector aliases produce geometry");
+
+    resetImage(image, ege::BLACK);
+    ege::setfillcolor(ege::BLUE, image);
+    ege::bar3d(4, 4, 24, 20, 5, 1, image);
+    ege::polygon(3, triangle, image);
+    const int closedTriangle[] = {38, 48, 50, 32, 62, 48, 38, 48};
+    ege::drawpoly(4, closedTriangle, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 40,
+           "bar3d and polygon entry points draw visible pixels");
+
+    resetImage(image, ege::BLACK);
+    const ege::ege_colpoint gradientTriangle[] = {
+        {4.0f, 4.0f, ege::RED},
+        {40.0f, 4.0f, ege::GREEN},
+        {4.0f, 40.0f, ege::BLUE}
+    };
+    ege::fillpoly_gradient(3, gradientTriangle, image);
+    expect(rgb(ege::getpixel(10, 10, image)) != rgb(ege::BLACK),
+           "fillpoly_gradient rasterizes a colored triangle");
+
+    expect(ege::resize_f(image, 72, 68) == ege::grOk &&
+           ege::getwidth(image) == 72 && ege::getheight(image) == 68,
+           "resize_f updates native image dimensions");
+    ege::delimage(image);
+}
+
+void testAdditionalEnhancedEntryPoints()
+{
+    ege::PIMAGE image = ege::newimage(80, 64);
+    resetImage(image, ege::BLACK);
+    ege::setlinecolor(ege::WHITE, image);
+    ege::setfillcolor(ege::GREEN, image);
+    ege::ege_enable_aa(true, image);
+    ege::ege_circle(40.0f, 32.0f, 12.0f, image);
+
+    const ege::ege_point openCurve[] = {
+        {4.0f, 8.0f}, {16.0f, 2.0f}, {28.0f, 14.0f}, {40.0f, 8.0f}
+    };
+    const ege::ege_point closedCurve[] = {
+        {46.0f, 4.0f}, {70.0f, 4.0f}, {74.0f, 22.0f}, {54.0f, 24.0f}
+    };
+    ege::ege_polyline(4, openCurve, image);
+    ege::ege_polygon(4, closedCurve, image);
+    ege::ege_bezier(4, openCurve, image);
+    ege::ege_drawbezier(4, openCurve, image);
+    ege::ege_drawcurve(4, openCurve, 0.5f, image);
+    ege::ege_drawclosedcurve(4, closedCurve, 0.5f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 60,
+           "enhanced polyline, polygon, Bezier, and curve routes draw pixels");
+    ege::ege_enable_aa(false, image);
+
+    resetImage(image, ege::BLACK);
+    ege::ege_fillclosedcurve(4, closedCurve, 0.5f, image);
+    expect(countPixelsEqualToInRect(image, ege::GREEN, 52, 8, 70, 20) > 20,
+           "ege_fillclosedcurve fills the closed spline interior");
+
+    resetImage(image, ege::BLACK);
+    ege::ege_rectangle(3.0f, 30.0f, 16.0f, 12.0f, image);
+    ege::ege_roundrect(23.0f, 30.0f, 18.0f, 12.0f, 4.0f, image);
+    ege::ege_arc(45.0f, 28.0f, 20.0f, 16.0f, 0.0f, 180.0f, image);
+    ege::ege_pie(4.0f, 46.0f, 18.0f, 14.0f, 0.0f, 90.0f, image);
+    ege::ege_fillpie(28.0f, 46.0f, 18.0f, 14.0f, 0.0f, 90.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 40,
+           "enhanced rectangle, round-rectangle, arc, and pie routes draw pixels");
+
+    resetImage(image, ege::BLACK);
+    const ege::ege_point gradientBoundary[] = {
+        {4.0f, 4.0f}, {36.0f, 4.0f}, {36.0f, 28.0f}, {4.0f, 28.0f}
+    };
+    const ege::color_t gradientColors[] = {
+        ege::BLUE, ege::BLUE, ege::BLUE, ege::BLUE
+    };
+    const ege::ege_point gradientCenter = {20.0f, 16.0f};
+    ege::ege_setpattern_pathgradient(gradientCenter, ege::RED, 4,
+                                     gradientBoundary, 4, gradientColors, image);
+    ege::ege_fillrect(4.0f, 4.0f, 32.0f, 24.0f, image);
+    const ege::color_t pathCenter = ege::getpixel(20, 16, image);
+    const ege::color_t pathEdge = ege::getpixel(5, 5, image);
+    expect(EGEGET_R(pathCenter) > EGEGET_B(pathCenter) &&
+           EGEGET_B(pathEdge) > EGEGET_R(pathEdge),
+           "path-gradient pattern transitions from center to boundary colors");
+
+    resetImage(image, ege::BLACK);
+    ege::ege_setpattern_ellipsegradient(gradientCenter, ege::RED,
+                                        4.0f, 4.0f, 32.0f, 24.0f,
+                                        ege::BLUE, image);
+    ege::ege_fillrect(4.0f, 4.0f, 32.0f, 24.0f, image);
+    const ege::color_t ellipseCenter = ege::getpixel(20, 16, image);
+    const ege::color_t ellipseEdge = ege::getpixel(20, 5, image);
+    expect(EGEGET_R(ellipseCenter) > EGEGET_B(ellipseCenter) &&
+           EGEGET_B(ellipseEdge) > EGEGET_R(ellipseEdge),
+           "ellipse-gradient pattern transitions from center to boundary colors");
+
+    ege::PIMAGE texture = ege::newimage(2, 2);
+    ege::color_t* texturePixels = ege::getbuffer(texture);
+    texturePixels[0] = ege::RED;
+    texturePixels[1] = ege::GREEN;
+    texturePixels[2] = ege::BLUE;
+    texturePixels[3] = ege::WHITE;
+    ege::ege_gentexture(true, texture);
+    resetImage(image, ege::BLACK);
+    ege::ege_setpattern_texture(texture, 0.0f, 0.0f, 2.0f, 2.0f, image);
+    ege::ege_fillrect(2.0f, 2.0f, 20.0f, 16.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 200,
+           "texture pattern repeats source pixels across a fill");
+    resetImage(image, ege::BLACK);
+    const ege::ege_rect textureDestination = {4.0f, 4.0f, 16.0f, 16.0f};
+    ege::ege_puttexture(texture, textureDestination, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 100,
+           "ege_puttexture draws a generated texture");
+    ege::ege_gentexture(false, texture);
+    ege::ege_setpattern_none(image);
+
+    ege::delimage(texture);
+    ege::delimage(image);
+}
+
 void testArcAndPieAngleOrientation()
 {
     ege::PIMAGE image = ege::newimage(24, 24);
@@ -1292,13 +1890,216 @@ void testTextRendering()
     resetImage(image, ege::BLACK);
     ege::setfont(18, 0, "Arial", image);
     ege::settextcolor(ege::WHITE, image);
+    ege::settextjustify(ege::LEFT_TEXT, ege::TOP_TEXT, image);
 
     expect(ege::textwidth("Test", image) > 0, "textwidth uses the native font backend");
     expect(ege::textheight("Test", image) > 0, "textheight uses the native font backend");
+    float measuredWidth = 0.0f;
+    float measuredHeight = 0.0f;
+    ege::measuretext("Test", &measuredWidth, &measuredHeight, image);
+    expect(measuredWidth > 0.0f && measuredHeight > 0.0f,
+           "measuretext returns positive enhanced-font dimensions");
     ege::outtextxy(2, 2, "Test", image);
     expect(countPixelsDifferentFrom(image, ege::BLACK) > 0, "outtextxy renders glyph pixels");
 
+    resetImage(image, ege::BLACK);
+    ege::moveto(2, 2, image);
+    ege::outtext("Test", image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 0,
+           "outtext renders from the current position");
+
+    resetImage(image, ege::BLACK);
+    ege::ege_drawtext("Test", 2.0f, 2.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 0,
+           "ege_drawtext renders through the enhanced text route");
+
+    resetImage(image, ege::BLACK);
+    ege::setfontbkcolor(ege::BLUE, image);
+    ege::setbkmode(OPAQUE, image);
+    ege::outtextxy(2, 2, "Test", image);
+    expect(countPixelsEqualToInRect(image, ege::BLUE, 2, 2, 50, 24) > 0,
+           "setfontbkcolor supplies the opaque text background");
+    ege::setbkmode(TRANSPARENT, image);
+
     ege::delimage(image);
+}
+
+void testFormattedScreenText()
+{
+    ege::setfont(14, 0, "Arial");
+    ege::settextcolor(ege::WHITE);
+    ege::settextjustify(ege::LEFT_TEXT, ege::TOP_TEXT);
+    ege::setbkmode(TRANSPARENT);
+
+    resetImage(nullptr, ege::BLACK);
+    ege::xyprintf(2, 2, "%s %d", "xy", 7);
+    expect(countPixelsDifferentFrom(nullptr, ege::BLACK) > 0,
+           "xyprintf formats and renders narrow text on the active page");
+
+    resetImage(nullptr, ege::BLACK);
+    ege::xyprintf(2, 2, L"%ls %d", L"wide", 8);
+    expect(countPixelsDifferentFrom(nullptr, ege::BLACK) > 0,
+           "xyprintf formats and renders wide text on the active page");
+
+    resetImage(nullptr, ege::BLACK);
+    ege::ege_xyprintf(2.0f, 2.0f, "%s %d", "enhanced", 9);
+    expect(countPixelsDifferentFrom(nullptr, ege::BLACK) > 0,
+           "ege_xyprintf formats and renders narrow enhanced text");
+
+    resetImage(nullptr, ege::BLACK);
+    ege::ege_xyprintf(2.0f, 2.0f, L"%ls %d", L"wide", 10);
+    expect(countPixelsDifferentFrom(nullptr, ege::BLACK) > 0,
+           "ege_xyprintf formats and renders wide enhanced text");
+
+    resetImage(nullptr, ege::BLACK);
+    ege::rectprintf(2, 2, 60, 60, "%s %d", "rect", 11);
+    expect(countPixelsDifferentFrom(nullptr, ege::BLACK) > 0,
+           "rectprintf formats and wraps narrow text");
+
+    resetImage(nullptr, ege::BLACK);
+    ege::rectprintf(2, 2, 60, 60, L"%ls %d", L"wide", 12);
+    expect(countPixelsDifferentFrom(nullptr, ege::BLACK) > 0,
+           "rectprintf formats and wraps wide text");
+}
+
+void testWindowCaptionEncoding()
+{
+#ifdef _WIN32
+    const wchar_t* expectedCaption = L"EGE 中文标题";
+    ege::setcaption(expectedCaption);
+
+    wchar_t actualCaption[128] = {};
+    const int copied = ::GetWindowTextW(ege::getHWnd(), actualCaption,
+                                        static_cast<int>(sizeof(actualCaption) /
+                                                         sizeof(actualCaption[0])));
+    expect(copied > 0 && std::wstring(actualCaption) == expectedCaption,
+           "wide window captions preserve Unicode text on the native window");
+#endif
+}
+
+void testWindowAndPublicStateQueries()
+{
+    expect(ege::getGraphicsVer() > 0, "getGraphicsVer returns a positive version number");
+
+    const bool previousUnicodeMode = ege::getunicodecharmessage();
+    ege::setunicodecharmessage(!previousUnicodeMode);
+    expect(ege::getunicodecharmessage() == !previousUnicodeMode,
+           "Unicode character-message mode round-trips");
+    ege::setunicodecharmessage(previousUnicodeMode);
+
+    ege::viewporttype viewport = {};
+    ege::window_getviewport(&viewport);
+    int left = 0;
+    int top = 0;
+    int right = 0;
+    int bottom = 0;
+    ege::window_getviewport(&left, &top, &right, &bottom);
+    expect(left == viewport.left && top == viewport.top &&
+           right == viewport.right && bottom == viewport.bottom,
+           "window_getviewport overloads return the same bounds");
+    ege::window_setviewport(left, top, right, bottom);
+
+#ifdef _WIN32
+    expect(ege::getHInstance() != NULL, "getHInstance returns the process instance");
+    expect(ege::getProcfunc() != NULL, "getProcfunc exposes the EGE window procedure");
+    const HDC nativeDc = ege::getHDC();
+#if defined(EGE_BUILD_OPENGL)
+    const bool runningOpenGl = (ege::getinitmode() & ege::INIT_OPENGL) != 0;
+    expect(runningOpenGl ? nativeDc == NULL : nativeDc != NULL,
+           "getHDC distinguishes OpenGL targets from GDI targets");
+#else
+    expect(nativeDc != NULL, "getHDC returns the GDI drawing context");
+#endif
+    ege::seticon(0);
+
+    RECT originalWindowRect = {};
+    if (::GetWindowRect(ege::getHWnd(), &originalWindowRect)) {
+        ege::movewindow(24, 32, false);
+        RECT movedWindowRect = {};
+        expect(::GetWindowRect(ege::getHWnd(), &movedWindowRect) &&
+                   movedWindowRect.left == 24 && movedWindowRect.top == 32,
+               "movewindow updates the native window position for the selected backend");
+        ege::movewindow(originalWindowRect.left, originalWindowRect.top, false);
+    }
+#endif
+}
+
+void testLegacyPageSwap()
+{
+    ege::setactivepage(0);
+    resetImage(nullptr, ege::RED);
+    ege::setactivepage(1);
+    resetImage(nullptr, ege::BLUE);
+
+    ege::setactivepage(0);
+    ege::swappage();
+    expectPixel(nullptr, 1, 1, ege::BLUE,
+                "swappage makes the other page active after presenting page zero");
+    ege::swappage();
+    expectPixel(nullptr, 1, 1, ege::RED,
+                "swappage alternates back to the original active page");
+
+    ege::setactivepage(0);
+    ege::setvisualpage(0);
+}
+
+void testCompressionTimingAndRandomUtilities()
+{
+    const unsigned char sourceBytes[] = {
+        0, 1, 2, 3, 3, 3, 3, 3, 9, 8, 7, 6, 5, 4, 3, 2,
+        1, 0, 0, 0, 0, 0, 42, 42, 42, 42, 42, 42, 42, 42
+    };
+    const uint32_t sourceSize = static_cast<uint32_t>(sizeof(sourceBytes));
+    const uint32_t bound = ege::ege_compress_bound(sourceSize);
+    expect(bound >= sourceSize, "ege_compress_bound provides sufficient output capacity");
+
+    std::vector<unsigned char> compressed(bound);
+    uint32_t compressedSize = bound;
+    expect(ege::ege_compress(compressed.data(), &compressedSize,
+                             sourceBytes, sourceSize) == ege::grOk,
+           "ege_compress accepts a buffer sized by ege_compress_bound");
+    expect(compressedSize > sizeof(uint32_t) && compressedSize <= bound,
+           "ege_compress reports a bounded compressed size");
+    expect(ege::ege_uncompress_size(compressed.data(), compressedSize) == sourceSize,
+           "ege_uncompress_size reports the original payload length");
+
+    std::vector<unsigned char> restored(sourceSize);
+    uint32_t restoredSize = sourceSize;
+    expect(ege::ege_uncompress(restored.data(), &restoredSize,
+                               compressed.data(), compressedSize) == ege::grOk &&
+               restoredSize == sourceSize &&
+               std::equal(restored.begin(), restored.end(), sourceBytes),
+           "ege_uncompress restores the exact original payload");
+
+    compressedSize = bound;
+    expect(ege::ege_compress2(compressed.data(), &compressedSize,
+                              sourceBytes, sourceSize, 9) == ege::grOk,
+           "ege_compress2 accepts an explicit compression level");
+
+    expect(ege::randomize(0x12345678U) == 0x12345678U,
+           "randomize returns the explicit seed");
+    const unsigned int firstRandom = ege::random(1000000U);
+    ege::randomize(0x12345678U);
+    expect(ege::random(1000000U) == firstRandom,
+           "randomize with the same seed reproduces the integer sequence");
+    const double randomUnit = ege::randomf();
+    expect(randomUnit >= 0.0 && randomUnit < 1.0,
+           "randomf stays in its documented half-open unit interval");
+    (void)ege::randomize();
+
+    const double clockBefore = ege::fclock();
+    ege::ege_sleep(0);
+    ege::api_sleep(0);
+    ege::delay(0);
+    ege::delay_fps(1000000);
+    ege::delay_fps(1000000L);
+    ege::delay_fps(1000000.0);
+    ege::delay_jfps(1000000);
+    ege::delay_jfps(1000000L);
+    ege::delay_jfps(1000000.0);
+    const double clockAfter = ege::fclock();
+    expect(clockAfter >= clockBefore, "fclock is monotonic across zero-duration delays");
+    expect(ege::getfps() >= 0.0f, "getfps never reports a negative frame rate");
 }
 
 void testFontCompatibilityDetails()
@@ -1317,6 +2118,74 @@ void testFontCompatibilityDetails()
     const int narrowWidth = ege::textwidth("MMMM", image);
     expect(narrowWidth > 0 && narrowWidth < naturalWidth,
            "setfont width scales glyph geometry and advance widths");
+
+#ifdef _WIN32
+    ege::setfont(20, 0, "Arial", image);
+    const SIZE windowsArialMetrics = measureWindowsGdiText(L"Hello", 20, 0, L"Arial");
+    expect(windowsArialMetrics.cx > 0 &&
+           ege::textwidth(L"Hello", image) == windowsArialMetrics.cx,
+           "Windows textwidth matches the GDI font mapper and advance metrics");
+    expect(windowsArialMetrics.cy > 0 &&
+           ege::textheight(L"Hello", image) == windowsArialMetrics.cy,
+           "Windows textheight matches the GDI font mapper and cell metrics");
+
+    ege::setfont(28, 0, L"PingFang SC", image);
+    const int chineseWidth = ege::textwidth(L"\u4E2D\u6587", image);
+    const int missingGlyphWidth = ege::textwidth(L"??", image);
+    expect(chineseWidth > 0 && chineseWidth != missingGlyphWidth,
+           "a missing requested CJK face uses Windows-compatible CJK glyph fallback");
+
+    const unsigned int previousCodePage = ege::getcodepage();
+    ege::setcodepage(EGE_CODEPAGE_UTF8);
+    ege::setfont(28, 0, "\xE5\xAE\x8B\xE4\xBD\x93", image);
+    expect(ege::textwidth(L"\u4E2D\u6587", image) != ege::textwidth(L"??", image),
+           "UTF-8 Chinese Windows font family names resolve to CJK glyphs");
+    resetImage(image, ege::BLACK);
+    ege::outtextxy(4, 4, L"\u4E2D", image);
+    const ege::color_t* chineseGlyphBuffer = ege::getbuffer(image);
+    const size_t glyphPixelCount = static_cast<size_t>(ege::getwidth(image)) *
+                                   static_cast<size_t>(ege::getheight(image));
+    const std::vector<ege::color_t> chineseGlyphPixels(
+        chineseGlyphBuffer, chineseGlyphBuffer + glyphPixelCount);
+    resetImage(image, ege::BLACK);
+    ege::outtextxy(4, 4, L"?", image);
+    expect(!std::equal(chineseGlyphPixels.begin(), chineseGlyphPixels.end(),
+                       ege::getbuffer(image)),
+           "a localized CJK face rasterizes a real Chinese glyph rather than a question mark");
+
+    const char simSunGb2312[] = "\xCB\xCE\xCC\xE5";
+    const char chineseGb2312[] = "\xD6\xD0";
+    ege::setcodepage(EGE_CODEPAGE_GB2312);
+    ege::setfont(28, 0, simSunGb2312, image);
+
+    LOGFONTW selectedGb2312Font = {};
+    ege::getfont(&selectedGb2312Font, image);
+    expect(std::wstring(selectedGb2312Font.lfFaceName) == L"\u5B8B\u4F53",
+           "GB2312 font family names round-trip through the selected font state");
+
+    resetImage(image, ege::BLACK);
+    ege::outtextxy(4, 4, chineseGb2312, image);
+    const ege::color_t* gb2312GlyphBuffer = ege::getbuffer(image);
+    const std::vector<ege::color_t> gb2312GlyphPixels(
+        gb2312GlyphBuffer, gb2312GlyphBuffer + glyphPixelCount);
+    resetImage(image, ege::BLACK);
+    ege::outtextxy(4, 4, "?", image);
+    expect(!std::equal(gb2312GlyphPixels.begin(), gb2312GlyphPixels.end(),
+                       ege::getbuffer(image)),
+           "GB2312 text uses the selected CJK font instead of a question mark");
+
+    resetImage(image, ege::BLACK);
+    ege::ege_outtextxy(4.0f, 4.0f, chineseGb2312, image);
+    const ege::color_t* enhancedGb2312Buffer = ege::getbuffer(image);
+    const std::vector<ege::color_t> enhancedGb2312Pixels(
+        enhancedGb2312Buffer, enhancedGb2312Buffer + glyphPixelCount);
+    resetImage(image, ege::BLACK);
+    ege::ege_outtextxy(4.0f, 4.0f, L"\u4E2D", image);
+    expect(std::equal(enhancedGb2312Pixels.begin(), enhancedGb2312Pixels.end(),
+                      ege::getbuffer(image)),
+           "enhanced GB2312 text matches the equivalent wide text");
+    ege::setcodepage(previousCodePage);
+#endif
 
     ege::setfont(22, 0, "Arial", 120, 70, 650, true, true, true, image);
     LOGFONTW font = {};
@@ -1340,6 +2209,32 @@ void testFontCompatibilityDetails()
            "underline font style adds visible decoration pixels");
 
     resetImage(image, ege::BLACK);
+    ege::setfont(28, 0, "Arial", 0, 0, 400, false, false, false, image);
+    ege::outtextxy(4, 4, "Bold text", image);
+    const int regularWeightPixels = countPixelsDifferentFrom(image, ege::BLACK);
+    resetImage(image, ege::BLACK);
+    ege::setfont(28, 0, "Arial", 0, 0, 700, false, false, false, image);
+    ege::outtextxy(4, 4, "Bold text", image);
+    const int boldWeightPixels = countPixelsDifferentFrom(image, ege::BLACK);
+    expect(boldWeightPixels > regularWeightPixels,
+           "bold font weight selects visibly heavier glyphs");
+
+    resetImage(image, ege::BLACK);
+    ege::setfont(28, 0, "Arial", 0, 0, 400, false, false, false, image);
+    ege::outtextxy(4, 4, "M", image);
+    const ege::color_t* regularStyleBuffer = ege::getbuffer(image);
+    const size_t pixelCount = static_cast<size_t>(ege::getwidth(image)) *
+                              static_cast<size_t>(ege::getheight(image));
+    const std::vector<ege::color_t> regularStylePixels(
+        regularStyleBuffer, regularStyleBuffer + pixelCount);
+    resetImage(image, ege::BLACK);
+    ege::setfont(28, 0, "Arial", 0, 0, 400, true, false, false, image);
+    ege::outtextxy(4, 4, "M", image);
+    const ege::color_t* italicStylePixels = ege::getbuffer(image);
+    expect(!std::equal(regularStylePixels.begin(), regularStylePixels.end(), italicStylePixels),
+           "italic font style selects distinct glyph geometry");
+
+    resetImage(image, ege::BLACK);
     ege::setfont(22, 0, "Arial", image);
     ege::setbkcolor_f(ege::BLUE, image);
     ege::setbkmode(OPAQUE, image);
@@ -1354,6 +2249,17 @@ void testFontCompatibilityDetails()
     const PixelBounds rotated = boundsDifferentFrom(image, ege::BLACK);
     expect(rotated.valid && (rotated.right - rotated.left) > (rotated.bottom - rotated.top),
            "font escapement rotates each glyph quad, not only the glyph origins");
+
+#ifdef _WIN32
+    resetImage(image, ege::BLACK);
+    ege::setfont(28, 0, "Arial", 900, 0, 400, false, false, false, image);
+    ege::outtextxy(70, 45, "W", image);
+    const PixelBounds escapementOnly = boundsDifferentFrom(image, ege::BLACK);
+    expect(escapementOnly.valid &&
+           (escapementOnly.bottom - escapementOnly.top) >
+               (escapementOnly.right - escapementOnly.left),
+           "Windows escapement rotates glyphs when orientation is zero");
+#endif
 
     ege::delimage(image);
 }
@@ -1377,6 +2283,10 @@ void testPngAndBmpRoundTrip()
     ege::putpixel(5, 4, ege::BLUE, source);
     ege::color_t* sourcePixels = ege::getbuffer(source);
     sourcePixels[2 * 7 + 3] = EGEARGB(128, 100, 50, 25);
+    // GDI primitives write RGB while leaving the DIB alpha byte at zero.
+    // Non-alpha file output must keep that visible RGB instead of treating it
+    // as a fully transparent premultiplied pixel.
+    sourcePixels[1 * 7 + 4] = EGEARGB(0, 0, 0, 255);
 
     expect(ege::savepng(source, pngPath.c_str()) == ege::grOk, "savepng writes a PNG file");
     expect(ege::savebmp(source, bmpPath.c_str()) == ege::grOk, "savebmp writes a BMP file");
@@ -1462,10 +2372,13 @@ void testPngAndBmpRoundTrip()
     }
 
     ege::PIMAGE png = ege::newimage();
+    ege::PIMAGE pngSpecific = ege::newimage();
     ege::PIMAGE bmp = ege::newimage();
     ege::PIMAGE alphaPng = ege::newimage();
     ege::PIMAGE alphaBmp = ege::newimage();
     expect(ege::getimage(png, pngPath.c_str()) == ege::grOk, "PNG output can be loaded again");
+    expect(ege::getimage_pngfile(pngSpecific, pngPath.c_str()) == ege::grOk,
+           "getimage_pngfile loads PNG output through its compatibility entry point");
     expect(ege::getimage(bmp, bmpPath.c_str()) == ege::grOk, "BMP output can be loaded again");
     expect(ege::getimage(alphaPng, alphaPngPath.c_str()) == ege::grOk,
            "alpha-channel PNG output can be loaded again");
@@ -1473,11 +2386,17 @@ void testPngAndBmpRoundTrip()
            "alpha-channel BMP output can be loaded again");
 
     expect(ege::getwidth(png) == 7 && ege::getheight(png) == 5, "PNG preserves dimensions");
+    expect(ege::getwidth(pngSpecific) == 7 && ege::getheight(pngSpecific) == 5,
+           "getimage_pngfile preserves PNG dimensions");
     expect(ege::getwidth(bmp) == 7 && ege::getheight(bmp) == 5, "BMP preserves dimensions");
     expectPixel(png, 1, 0, ege::RED, "PNG preserves a top-row drawn pixel");
     expectPixel(png, 5, 4, ege::BLUE, "PNG preserves a bottom-row drawn pixel");
     expectPixel(bmp, 1, 0, ege::RED, "BMP preserves a top-row drawn pixel");
     expectPixel(bmp, 5, 4, ege::BLUE, "BMP preserves a bottom-row drawn pixel");
+    expectPixel(png, 4, 1, ege::BLUE,
+                "RGB PNG output preserves GDI pixels whose alpha byte is zero");
+    expectPixel(bmp, 4, 1, ege::BLUE,
+                "RGB BMP output preserves GDI pixels whose alpha byte is zero");
 
     const auto expectPremultipliedAlphaPixel = [](ege::PCIMAGE image, const std::string& format) {
         const ege::color_t pixel = ege::getpixel(3, 2, image);
@@ -1493,6 +2412,7 @@ void testPngAndBmpRoundTrip()
     ege::delimage(alphaBmp);
     ege::delimage(alphaPng);
     ege::delimage(bmp);
+    ege::delimage(pngSpecific);
     ege::delimage(png);
     ege::delimage(source);
     std::remove(pngPath.c_str());
@@ -1532,6 +2452,7 @@ int main()
     testBasicPrimitives();
     testFilledShapeOutlineCompatibility();
     testEnhancedFillAndCornerRadiusCompatibility();
+    testEnhancedStrokeStateCompatibility();
     testFillPatterns();
     testUserLinePatternAndCaps();
     testCurvedLineStyles();
@@ -1541,14 +2462,18 @@ int main()
     testViewportOriginAndClip();
     testBufferMutationFeedsImageTransfer();
     testImageTransfersHonorViewportOrigin();
+    testColorAndMathUtilities();
     testStateAndPixelUtilities();
     testLineAndFillStyles();
     testImageLifecycleCropAndStretch();
     testTransparencyAndAlphaBlend();
     testAlphaFormatsAndCombinedColorKey();
+    testEnhancedAlphaSurfaceCompatibility();
+    testEnhancedAlphaScreenCompatibility();
     testAlphaMaskDefaultsAndScaledSampling();
     testImageRotationCoordinatesAndAspectRatio();
     testEnhancedImageTransform();
+    testEnhancedPathApi();
     testRasterOperations();
     testCurrentPositionAndAdditionalPrimitiveRoutes();
     testSurfaceFloodFillAndColorConversion();
@@ -1557,8 +2482,15 @@ int main()
     testConcavePolygonAndRoundedRectangleCoverage();
     testEnhancedTransformAndGradientFallback();
     testRoundedShapesFloodFillAndFloatRoutes();
+    testAdditionalPrimitiveEntryPoints();
+    testAdditionalEnhancedEntryPoints();
     testArcAndPieAngleOrientation();
     testTextRendering();
+    testFormattedScreenText();
+    testWindowCaptionEncoding();
+    testWindowAndPublicStateQueries();
+    testLegacyPageSwap();
+    testCompressionTimingAndRandomUtilities();
     testFontCompatibilityDetails();
     testPngAndBmpRoundTrip();
 

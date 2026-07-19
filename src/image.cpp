@@ -948,6 +948,15 @@ int IMAGE::saveimage(const wchar_t* filename, bool withAlphaChannel) const
     return ege::saveimage(this, filename, withAlphaChannel);
 }
 
+static color_t colorForOpaqueFileOutput(color_t color)
+{
+    // A Win32 GDI operation updates the DIB's RGB channels but commonly
+    // leaves its unused alpha byte at zero.  Such pixels are visible RGB32,
+    // not transparent PRGB32.  Preserve their stored RGB for formats written
+    // without alpha; non-zero-alpha pixels still need normal unpremultiplying.
+    return EGEGET_A(color) == 0 ? color : color_unpremultiply(color);
+}
+
 int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
 {
     int channels = withAlphaChannel ? 4 : 3;
@@ -975,7 +984,7 @@ int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
         uint8_t* dst = buffer;
         const color_t* src = sourceBuffer;
         for (int i = 0; i < pixelCount; i++) {
-            const color_t color = color_unpremultiply(*src);
+            const color_t color = colorForOpaqueFileOutput(*src);
             dst[0] = EGEGET_R(color);
             dst[1] = EGEGET_G(color);
             dst[2] = EGEGET_B(color);
@@ -3123,11 +3132,14 @@ int putimage_rotatetransparent(PIMAGE imgDest, PCIMAGE imgSrc, int xCenterDest, 
     PIMAGE zoomed_img = newimage(zoomed_width, zoomed_height);
     putimage(
         zoomed_img, 0, 0, zoomed_width, zoomed_height, imgSrc, xOriginSrc, yOriginSrc, widthSrc, heightSrc, SRCCOPY);
+    // putimage may have completed on the GPU.  Synchronize before the legacy
+    // per-pixel rotation loop reads the temporary image's CPU buffer.
+    const color_t* zoomed_buffer = zoomed_img->getbuffer();
     /* rotation */
     for (int x = 0; x < zoomed_width; x++) {
         for (int y = 0; y < zoomed_height; y++) {
             /* zoomed_img is newly created and have no transform/viewport, so we can use buffer directly */
-            color_t color = zoomed_img->m_pBuffer[y * zoomed_img->m_width + x];
+            color_t color = zoomed_buffer[y * zoomed_img->m_width + x];
             double  src_x = ((x - zoomed_center_x) * cos(radian) - (y - zoomed_center_y) * sin(radian)) + xCenterDest;
             double  src_y = ((x - zoomed_center_x) * sin(radian) + (y - zoomed_center_y) * cos(radian)) + yCenterDest;
             if (color != transparentColor) {
@@ -3743,8 +3755,11 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
         const unsigned char zeroPadding[4] = {0, 0, 0, 0};
 
         for (int row = rowCnt-1; row >= 0; row--) {
-            // 将像素由 PRGB32 格式转为 ARGB32 格式，存入行缓冲中
-            image_unpremultiply(rowBuffer, &buffer[row * colCnt], colCnt, 1);
+            // Convert PRGB32 to RGB while preserving GDI RGB32 pixels whose
+            // unused alpha byte is zero.
+            for (int col = 0; col < colCnt; ++col) {
+                rowBuffer[col] = colorForOpaqueFileOutput(buffer[row * colCnt + col]);
+            }
             const color_t* pixels = rowBuffer;   // ARGB32 格式的每行像素首地址
 
             for(int col = 0; col < colCnt; col++) {

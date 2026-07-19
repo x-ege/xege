@@ -77,6 +77,8 @@ private:
     void rasterizeGlyph(uint32_t codepoint);
     void findAtlasSlot(int w, int h, int& outX, int& outY);
     void uploadToTexture(int x, int y, int w, int h, const unsigned char* data);
+    int platformAdvance(uint32_t codepoint) const;
+    void releasePlatformFont();
 
     stbtt_fontinfo  m_fontInfo;
     unsigned char*  m_fontData;     // Owned font file data
@@ -87,6 +89,12 @@ private:
     float           m_widthScale;   // Scale for non-default width
     int             m_weight;
     bool            m_italic;
+
+#ifdef _WIN32
+    void*           m_gdiDc;
+    void*           m_gdiFont;
+    void*           m_gdiPreviousFont;
+#endif
 
     GLuint          m_texture;      // Atlas texture
     unsigned char*  m_atlasPixels;  // CPU-side RGBA atlas

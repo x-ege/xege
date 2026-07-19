@@ -1112,6 +1112,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 #ifdef _WIN32
         // The GDI path initializes these fields in messageloopthread. GLFW
         // runs on the caller thread, so initialize the same close policy here.
+        pg->instance = GetModuleHandle(NULL);
         pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT) == 0;
         pg->close_manually = true;
         SetCloseHandler((g_initoption & INIT_NOFORCEEXIT) ? DefCloseHandler : NULL);
@@ -1214,7 +1215,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 
 #if defined(EGE_BUILD_OPENGL)
     if (pg->use_opengl && pg->window != NULL) {
-        const std::string utf8Caption = w2mb(pg->window_caption.c_str());
+        const std::string utf8Caption = w2utf8(pg->window_caption.c_str());
         pg->window->setTitle(utf8Caption.c_str());
         if (g_windowpos_x != CW_USEDEFAULT && g_windowpos_y != CW_USEDEFAULT) {
             pg->window->setPosition(g_windowpos_x, g_windowpos_y);

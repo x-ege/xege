@@ -1,5 +1,8 @@
 // src/backend/opengl/GlFontCache.cpp
 #define STB_TRUETYPE_IMPLEMENTATION
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "GlFontCache.h"
 #include <cstdio>
 #include <cstring>
@@ -28,6 +31,17 @@ std::string lowerAscii(std::string value) {
 }
 
 std::string normalizedFontName(const std::string& value) {
+    static const std::unordered_map<std::string, std::string> localizedNames = {
+        {"\xE5\xAE\x8B\xE4\xBD\x93", "simsun"},
+        {"\xE6\x96\xB0\xE5\xAE\x8B\xE4\xBD\x93", "nsimsun"},
+        {"\xE9\xBB\x91\xE4\xBD\x93", "simhei"},
+        {"\xE5\xBE\xAE\xE8\xBD\xAF\xE9\x9B\x85\xE9\xBB\x91", "microsoftyahei"},
+        {"\xE6\xA5\xB7\xE4\xBD\x93", "kaiti"},
+        {"\xE4\xBB\xBF\xE5\xAE\x8B", "fangsong"},
+    };
+    const auto localized = localizedNames.find(value);
+    if (localized != localizedNames.end()) return localized->second;
+
     std::string result;
     for (unsigned char c : value) {
         if (std::isalnum(c)) result.push_back(static_cast<char>(std::tolower(c)));
@@ -135,15 +149,43 @@ void appendAliasCandidates(const std::string& faceKey, std::vector<std::string>&
         {"menlo", {"Menlo.ttc", "DejaVuSansMono.ttf", "LiberationMono-Regular.ttf"}},
         {"monaco", {"Monaco.ttf", "Menlo.ttc", "DejaVuSansMono.ttf"}},
         {"simsun", {"simsun.ttc", "Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf", "DroidSansFallbackFull.ttf"}},
+        {"nsimsun", {"simsun.ttc", "Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf"}},
         {"simhei", {"simhei.ttf", "Heiti.ttc", "PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
         {"microsoftyahei", {"msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
-        {"pingfangsc", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
-        {"pingfangtc", {"PingFang.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKtc-Regular.otf"}},
+        {"pingfangsc", {"PingFang.ttc", "simsun.ttc", "msyh.ttc", "simhei.ttf", "NotoSansCJK-Regular.ttc", "NotoSansCJKsc-Regular.otf"}},
+        {"pingfangtc", {"PingFang.ttc", "msjh.ttc", "msyh.ttc", "NotoSansCJK-Regular.ttc", "NotoSansCJKtc-Regular.otf"}},
         {"songtisc", {"Songti.ttc", "NotoSerifCJK-Regular.ttc", "NotoSerifCJKsc-Regular.otf"}},
         {"kaiti", {"STKaiti.ttf", "Kaiti.ttc", "NotoSerifCJK-Regular.ttc"}},
+        {"fangsong", {"simfang.ttf", "STFangsong.ttf", "NotoSerifCJK-Regular.ttc"}},
     };
     const auto found = aliases.find(faceKey);
     if (found != aliases.end()) candidates.insert(candidates.end(), found->second.begin(), found->second.end());
+}
+
+void appendStyleCandidates(const std::string& faceKey, bool bold, bool italic,
+                           std::vector<std::string>& candidates) {
+    if (faceKey == "arial") {
+        if (bold && italic) candidates.push_back("arialbi.ttf");
+        else if (bold) candidates.push_back("arialbd.ttf");
+        else if (italic) candidates.push_back("ariali.ttf");
+    } else if (faceKey == "timesnewroman" || faceKey == "times") {
+        if (bold && italic) candidates.push_back("timesbi.ttf");
+        else if (bold) candidates.push_back("timesbd.ttf");
+        else if (italic) candidates.push_back("timesi.ttf");
+    } else if (faceKey == "couriernew" || faceKey == "courier") {
+        if (bold && italic) candidates.push_back("courbi.ttf");
+        else if (bold) candidates.push_back("courbd.ttf");
+        else if (italic) candidates.push_back("couri.ttf");
+    } else if (faceKey == "consolas") {
+        if (bold && italic) candidates.push_back("consolaz.ttf");
+        else if (bold) candidates.push_back("consolab.ttf");
+        else if (italic) candidates.push_back("consolai.ttf");
+    } else if (faceKey == "microsoftyahei") {
+        if (bold) candidates.push_back("msyhbd.ttc");
+    } else if (faceKey == "simsun" || faceKey == "nsimsun" ||
+               faceKey == "pingfangsc") {
+        if (bold) candidates.push_back("simsunb.ttf");
+    }
 }
 
 } // anonymous namespace
@@ -153,6 +195,7 @@ std::string findFontPath(const char* face, int weight, bool italic) {
     const std::string faceKey = normalizedFontName(requested);
     std::vector<std::string> candidates;
     const bool bold = weight >= 600;
+    appendStyleCandidates(faceKey, bold, italic, candidates);
     if (bold && italic) {
         candidates.push_back(requested + " Bold Italic.ttf");
         candidates.push_back(requested + "-BoldItalic.ttf");
@@ -211,7 +254,11 @@ std::string findFontPath(const char* face, int weight, bool italic) {
 
 GlyphAtlas::GlyphAtlas()
     : m_fontData(nullptr), m_ascent(0), m_descent(0), m_lineGap(0),
-      m_scale(0), m_widthScale(1.0f), m_weight(400), m_italic(false), m_texture(0),
+      m_scale(0), m_widthScale(1.0f), m_weight(400), m_italic(false),
+#ifdef _WIN32
+      m_gdiDc(nullptr), m_gdiFont(nullptr), m_gdiPreviousFont(nullptr),
+#endif
+      m_texture(0),
       m_rowHeight(0), m_cursorX(0), m_cursorY(0), m_atlasPixels(nullptr) {
     GLint previousTexture = 0;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
@@ -228,6 +275,7 @@ GlyphAtlas::GlyphAtlas()
 }
 
 GlyphAtlas::~GlyphAtlas() {
+    releasePlatformFont();
     if (m_fontData) {
         delete[] m_fontData;
     }
@@ -235,6 +283,46 @@ GlyphAtlas::~GlyphAtlas() {
         glDeleteTextures(1, &m_texture);
     }
     delete[] m_atlasPixels;
+}
+
+void GlyphAtlas::releasePlatformFont() {
+#ifdef _WIN32
+    HDC dc = static_cast<HDC>(m_gdiDc);
+    HFONT font = static_cast<HFONT>(m_gdiFont);
+    HGDIOBJ previousFont = static_cast<HGDIOBJ>(m_gdiPreviousFont);
+    if (dc && previousFont) SelectObject(dc, previousFont);
+    if (font) DeleteObject(font);
+    if (dc) DeleteDC(dc);
+    m_gdiDc = nullptr;
+    m_gdiFont = nullptr;
+    m_gdiPreviousFont = nullptr;
+#endif
+}
+
+int GlyphAtlas::platformAdvance(uint32_t codepoint) const {
+#ifdef _WIN32
+    HDC dc = static_cast<HDC>(m_gdiDc);
+    if (!dc) return -1;
+
+    wchar_t text[3] = {};
+    int length = 1;
+    if (codepoint <= 0xFFFFU) {
+        text[0] = static_cast<wchar_t>(codepoint);
+    } else if (codepoint <= 0x10FFFFU) {
+        codepoint -= 0x10000U;
+        text[0] = static_cast<wchar_t>(0xD800U + (codepoint >> 10));
+        text[1] = static_cast<wchar_t>(0xDC00U + (codepoint & 0x3FFU));
+        length = 2;
+    } else {
+        text[0] = L'?';
+    }
+
+    SIZE size = {};
+    return GetTextExtentPoint32W(dc, text, length, &size) ? size.cx : -1;
+#else
+    (void)codepoint;
+    return -1;
+#endif
 }
 
 bool GlyphAtlas::loadFont(const char* face, int height, int width, int weight, bool italic) {
@@ -274,24 +362,77 @@ bool GlyphAtlas::loadFont(const char* face, int height, int width, int weight, b
         return false;
     }
 
-    // Compute scale for target pixel height
-    const int pixelHeight = height == 0 ? 16 : std::abs(height);
-    m_scale = stbtt_ScaleForPixelHeight(&m_fontInfo, (float)pixelHeight);
+    int pixelHeight = height == 0 ? 16 : std::abs(height);
+    bool havePlatformMetrics = false;
+#ifdef _WIN32
+    releasePlatformFont();
+    HDC dc = CreateCompatibleDC(NULL);
+    if (dc) {
+        LOGFONTW description = {};
+        description.lfHeight = height == 0 ? 16 : height;
+        description.lfWidth = width;
+        description.lfWeight = weight;
+        description.lfItalic = static_cast<BYTE>(italic);
+        description.lfCharSet = DEFAULT_CHARSET;
+        description.lfOutPrecision = OUT_DEFAULT_PRECIS;
+        description.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+        description.lfQuality = DEFAULT_QUALITY;
+        description.lfPitchAndFamily = DEFAULT_PITCH;
+
+        const char* fontFace = face && face[0] ? face : "Arial";
+        int converted = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, fontFace, -1,
+                                            description.lfFaceName, LF_FACESIZE);
+        if (converted == 0) {
+            MultiByteToWideChar(CP_ACP, 0, fontFace, -1,
+                                description.lfFaceName, LF_FACESIZE);
+        }
+
+        HFONT font = CreateFontIndirectW(&description);
+        HGDIOBJ previousFont = font ? SelectObject(dc, font) : NULL;
+        if (font && previousFont && previousFont != HGDI_ERROR) {
+            m_gdiDc = dc;
+            m_gdiFont = font;
+            m_gdiPreviousFont = previousFont;
+
+            TEXTMETRICW metrics = {};
+            if (GetTextMetricsW(dc, &metrics)) {
+                m_ascent = metrics.tmAscent;
+                m_descent = -metrics.tmDescent;
+                m_lineGap = metrics.tmExternalLeading;
+                pixelHeight = std::max(1, static_cast<int>(metrics.tmHeight - metrics.tmInternalLeading));
+                havePlatformMetrics = true;
+            }
+        } else {
+            if (font) DeleteObject(font);
+            DeleteDC(dc);
+        }
+    }
+#endif
+
+    // Windows positive LOGFONT heights describe the complete cell, while
+    // stb_truetype expects a glyph/em height.  Use the selected GDI font's
+    // character height so OpenGL keeps the same apparent size.
+    m_scale = stbtt_ScaleForPixelHeight(&m_fontInfo, static_cast<float>(pixelHeight));
 
     int referenceAdvance = 0, referenceBearing = 0;
     stbtt_GetCodepointHMetrics(&m_fontInfo, '0', &referenceAdvance, &referenceBearing);
     const float naturalWidth = referenceAdvance * m_scale;
-    m_widthScale = width != 0 && naturalWidth > 0.0f
-        ? std::abs((float)width) / naturalWidth : 1.0f;
+    const int platformReferenceAdvance = platformAdvance('0');
+    m_widthScale = platformReferenceAdvance > 0 && naturalWidth > 0.0f
+        ? static_cast<float>(platformReferenceAdvance) / naturalWidth
+        : (width != 0 && naturalWidth > 0.0f
+               ? std::abs(static_cast<float>(width)) / naturalWidth : 1.0f);
     m_weight = weight;
     m_italic = italic;
 
     // Get font metrics
-    int asc, desc, lgap;
-    stbtt_GetFontVMetrics(&m_fontInfo, &asc, &desc, &lgap);
-    m_ascent  = (int)(asc * m_scale + 0.5f);
-    m_descent = (int)(desc * m_scale + 0.5f);
-    m_lineGap = (int)(lgap * m_scale + 0.5f);
+    if (!havePlatformMetrics) {
+        int asc, desc, lgap;
+        stbtt_GetFontVMetrics(&m_fontInfo, &asc, &desc, &lgap);
+        m_ascent  = static_cast<int>(asc * m_scale + 0.5f);
+        m_descent = static_cast<int>(desc * m_scale + 0.5f);
+        m_lineGap = static_cast<int>(lgap * m_scale + 0.5f);
+    }
 
     // Reset glyph cache
     m_glyphs.clear();
@@ -371,7 +512,10 @@ void GlyphAtlas::rasterizeGlyph(uint32_t codepoint) {
     GlyphInfo info;
     int advance = 0, lsb = 0;
     stbtt_GetGlyphHMetrics(&m_fontInfo, glyphIdx, &advance, &lsb);
-    info.advance = (int)std::lround(advance * m_scale * m_widthScale);
+    const int mappedAdvance = platformAdvance(codepoint);
+    info.advance = mappedAdvance >= 0
+        ? mappedAdvance
+        : static_cast<int>(std::lround(advance * m_scale * m_widthScale));
 
     // Get bitmap box using the actual font scale
     int x0, y0, x1, y1;

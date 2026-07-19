@@ -2123,7 +2123,10 @@ void GlRenderTarget::renderCodepoints(float x, float y, const std::vector<uint32
 
     constexpr float kPi = 3.14159265358979323846f;
     const float baselineAngle = -fc.escapement / 10.0f * kPi / 180.0f;
-    const float glyphAngle = -fc.orientation / 10.0f * kPi / 180.0f;
+    // In Windows' compatible graphics mode an escapement rotates the glyphs
+    // as well as the baseline when no independent orientation is supplied.
+    const int glyphOrientation = fc.orientation != 0 ? fc.orientation : fc.escapement;
+    const float glyphAngle = -glyphOrientation / 10.0f * kPi / 180.0f;
     const float cosA = cosf(baselineAngle);
     const float sinA = sinf(baselineAngle);
 
