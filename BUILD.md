@@ -203,6 +203,12 @@ cmake --build build/windows-opengl --config Release --parallel
 这会把 GDI 和 OpenGL 能力编入 Windows 库；未传 `INIT_OPENGL` 的现有程序仍走
 GDI，不改变默认行为。
 
+GitHub 托管的 Windows runner 没有可用的 WGL 驱动，因此常规
+`native-opengl-build.yml` 会编译全部 OpenGL 用例，但只运行默认 GDI 兼容用例。
+仓库另有可手动触发的 `windows-opengl-runtime.yml`：它要求带
+`self-hosted`、`windows`、`x64`、`opengl` 标签且具有交互式桌面和 OpenGL 3.3
+驱动的 runner，并在那里运行 GDI/OpenGL 全部功能与性能门禁。
+
 ### MinGW-w64
 
 在 MSYS2/MinGW shell 中优先使用其自带的现代 GCC、CMake 和 Ninja。也可以使用

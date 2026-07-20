@@ -1396,6 +1396,9 @@ void EGEAPI seticon(int icon_id);
  * @brief 附加到已有的窗口句柄
  * @param hWnd 要附加的窗口句柄
  * @return 操作结果代码
+ * @note 必须在 initgraph() 前调用。EGE 原生窗口会创建为 hWnd 的子窗口；
+ *       在图形环境关闭前，宿主窗口必须保持有效
+ * @note 传入 NULL 会清除下一次窗口创建所使用的宿主
  */
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -4132,7 +4135,8 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * - 图像获取：getimage() 系列函数从不同源获取图像数据
  * - 图像保存：saveimage(), savepng(), savebmp() 保存图像到文件
  *
- * 支持的图像格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * 文件解码支持 PNG、BMP、JPEG、GIF、PSD、HDR、PGM/PPM/PNM 和 TGA；
+ * Windows 还可通过 GDI+ 解码 TIFF、Exif、WMF 和 EMF。
  * 支持从窗口、文件、资源、其他IMAGE对象获取图像
  * @{
  */
@@ -4209,6 +4213,7 @@ int  EGEAPI getimage(PIMAGE imgDest, int xSrc, int ySrc, int widthSrc, int heigh
  * @param heightSrc 要获取图像的区域高度
  * @return 成功返回 grOk(0)，失败返回相应错误码
  * @note 从源 IMAGE 对象的指定区域复制图像数据到目标 IMAGE 对象
+ * @note 目标图像保持请求的尺寸，超出源图像边界的部分会被裁剪
  * @see getimage(PIMAGE, int, int, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc);
@@ -4220,7 +4225,8 @@ int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int wid
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note 支持 PNG、BMP、JPEG、GIF、PSD、HDR、PGM/PPM/PNM 和 TGA；
+ *       Windows 还可通过 GDI+ 解码 TIFF、Exif、WMF 和 EMF
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const wchar_t*, int, int)
  */
@@ -4233,7 +4239,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  imageFile, int zoomWidth = 0, 
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note 支持 PNG、BMP、JPEG、GIF、PSD、HDR、PGM/PPM/PNM 和 TGA；
+ *       Windows 还可通过 GDI+ 解码 TIFF、Exif、WMF 和 EMF
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const char*, int, int)
  */
@@ -4247,7 +4254,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth = 0
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows 资源通过 GDI+ 解码，支持 BMP、GIF、JPEG、PNG、TIFF、Exif、WMF
+ *       和 EMF；其他平台不提供 Win32 资源加载
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const wchar_t*, const wchar_t*, int, int)
  */
@@ -4261,7 +4269,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  resType, const char*  resName,
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows 资源通过 GDI+ 解码，支持 BMP、GIF、JPEG、PNG、TIFF、Exif、WMF
+ *       和 EMF；其他平台不提供 Win32 资源加载
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const char*, const char*, int, int)
  */
@@ -4857,8 +4866,9 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief 获取绘图设备上下文
  * @param pimg 图像对象指针，如果为 NULL 则获取绘图窗口的设备上下文
- * @return 设备上下文句柄(HDC)
- * @note 返回的是 Windows 系统的设备上下文句柄，可用于 GDI 绘图操作
+ * @return GDI 设备上下文句柄；所选目标使用 OpenGL 时返回 NULL
+ * @note 返回的 HDC 只能用于 GDI 后端的 IMAGE 或 GDI 窗口目标；OpenGL 渲染目标
+ *       不提供兼容的 HDC
  * @warning 不要手动释放返回的 HDC，由 EGE 库自动管理
  * @see getHWnd(), getHInstance()
  */
@@ -4926,9 +4936,8 @@ double          EGEAPI randomf();
  * @param text 提示文本
  * @param buf 用于存储输入文本的缓冲区
  * @param len 缓冲区长度
- * @return 成功返回非零值，失败或取消返回 0
- * @note 显示一个模态对话框让用户输入单行文本
- * @warning 确保缓冲区足够大以避免溢出
+ * @return 输入字符数；空输入或缓冲区参数无效时返回 0
+ * @note 显示模态输入框，输出始终限制在 len 指定的缓冲区范围内
  * @see inputbox_getline(const wchar_t*, const wchar_t*, LPWSTR, int)
  */
 int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, int len);
@@ -4939,9 +4948,8 @@ int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, i
  * @param text 提示文本
  * @param buf 用于存储输入文本的缓冲区
  * @param len 缓冲区长度
- * @return 成功返回非零值，失败或取消返回 0
- * @note 显示一个模态对话框让用户输入单行文本，支持 Unicode 字符
- * @warning 确保缓冲区足够大以避免溢出
+ * @return 输入字符数；空输入或缓冲区参数无效时返回 0
+ * @note 显示支持 Unicode 的模态输入框，输出始终限制在 len 指定的缓冲区范围内
  * @see inputbox_getline(const char*, const char*, LPSTR, int)
  */
 int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len);

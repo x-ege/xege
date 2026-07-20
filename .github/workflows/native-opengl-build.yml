@@ -282,7 +282,7 @@ jobs:
           --output-on-failure
           --timeout 180
           --no-tests=error
-          -R "^(default_build_contract|rendering_correctness|public_headers|camera_frame_copy|gdi_lifecycle|gdi_process_exit)$"
+          -R "^(default_build_contract|rendering_correctness|public_headers|camera_frame_copy|gdi_lifecycle|gdi_process_exit|attach_hwnd|console_contract|inputbox_contract)$"
 
   ccap-regression:
     name: Bundled ccap core and media regression

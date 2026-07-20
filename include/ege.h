@@ -1818,6 +1818,9 @@ void EGEAPI seticon(int icon_id);
  * @brief Attach to existing window handle
  * @param hWnd Window handle to attach to
  * @return Operation result code
+ * @note Call before initgraph(). The EGE native window is created as a child of hWnd;
+ *       the host must remain valid until the graphics environment is closed.
+ * @note Passing NULL clears the host selection for the next window creation.
  */
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -4601,7 +4604,8 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * - Image acquisition: getimage() series functions to get image data from different sources
  * - Image saving: saveimage(), savepng(), savebmp() save images to files
  *
- * Supported image formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * File decoding supports PNG, BMP, JPEG, GIF, PSD, HDR, PGM/PPM/PNM, and TGA.
+ * Windows may additionally decode TIFF, Exif, WMF, and EMF through GDI+.
  * Support getting images from window, file, resource, other IMAGE objects
  * @{
  */
@@ -4678,6 +4682,7 @@ int  EGEAPI getimage(PIMAGE imgDest, int xSrc, int ySrc, int widthSrc, int heigh
  * @param heightSrc Height of region to get image from
  * @return Returns grOk(0) on success, corresponding error code on failure
  * @note Copy image data from specified region of source IMAGE object to destination IMAGE object
+ * @note The destination keeps the requested size; portions outside the source bounds are clipped
  * @see getimage(PIMAGE, int, int, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc);
@@ -4689,7 +4694,8 @@ int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int wid
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Supports PNG, BMP, JPEG, GIF, PSD, HDR, PGM/PPM/PNM, and TGA.
+ *       Windows may additionally decode TIFF, Exif, WMF, and EMF through GDI+.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const wchar_t*, int, int)
  */
@@ -4702,7 +4708,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  imageFile, int zoomWidth = 0, 
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Supports PNG, BMP, JPEG, GIF, PSD, HDR, PGM/PPM/PNM, and TGA.
+ *       Windows may additionally decode TIFF, Exif, WMF, and EMF through GDI+.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const char*, int, int)
  */
@@ -4716,7 +4723,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth = 0
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows resource decoding uses GDI+ and supports BMP, GIF, JPEG, PNG,
+ *       TIFF, Exif, WMF, and EMF. Native resources are not available on other platforms.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const wchar_t*, const wchar_t*, int, int)
  */
@@ -4730,7 +4738,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  resType, const char*  resName,
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows resource decoding uses GDI+ and supports BMP, GIF, JPEG, PNG,
+ *       TIFF, Exif, WMF, and EMF. Native resources are not available on other platforms.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const char*, const char*, int, int)
  */
@@ -5326,8 +5335,9 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief Get drawing device context
  * @param pimg Image object pointer, if NULL then get drawing window's device context
- * @return Device context handle (HDC)
- * @note Returns Windows system device context handle, can be used for GDI drawing operations
+ * @return GDI device context handle, or NULL when the selected target uses OpenGL
+ * @note The returned HDC can be used only with a GDI-backed IMAGE or the GDI window target.
+ *       OpenGL render targets do not expose a compatible HDC.
  * @warning Do not manually release returned HDC, managed automatically by EGE library
  * @see getHWnd(), getHInstance()
  */
@@ -5395,9 +5405,8 @@ double          EGEAPI randomf();
  * @param text Prompt text
  * @param buf Buffer to store input text
  * @param len Buffer length
- * @return Returns non-zero value on success, 0 on failure or cancel
- * @note Shows a modal dialog for user to input single line text
- * @warning Ensure buffer is large enough to avoid overflow
+ * @return Number of input characters; 0 for empty input or invalid buffer arguments
+ * @note Shows a modal dialog for user to input text. The buffer remains bounded by len.
  * @see inputbox_getline(const wchar_t*, const wchar_t*, LPWSTR, int)
  */
 int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, int len);
@@ -5408,9 +5417,8 @@ int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, i
  * @param text Prompt text
  * @param buf Buffer to store input text
  * @param len Buffer length
- * @return Returns non-zero value on success, 0 on failure or cancel
- * @note Shows a modal dialog for user to input single line text, supports Unicode characters
- * @warning Ensure buffer is large enough to avoid overflow
+ * @return Number of input characters; 0 for empty input or invalid buffer arguments
+ * @note Shows a modal dialog for user to input text, including Unicode. The buffer remains bounded by len.
  * @see inputbox_getline(const char*, const char*, LPSTR, int)
  */
 int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len);

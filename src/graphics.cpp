@@ -1130,6 +1130,23 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         }
         pg->hwnd = (HWND)pg->window->getNativeHandle();
 
+#ifdef _WIN32
+        // attachHWND embeds the EGE surface in an existing host window. GLFW
+        // creates a top-level HWND, so convert it to the same child-window
+        // relationship used by the Win32 backend after native creation.
+        if (HWND parentWindow = getParentWindow()) {
+            LONG_PTR childStyle = GetWindowLongPtrW(pg->hwnd, GWL_STYLE);
+            childStyle &= ~(WS_POPUP | WS_CAPTION | WS_THICKFRAME |
+                            WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+            childStyle |= WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+            SetWindowLongPtrW(pg->hwnd, GWL_STYLE, childStyle);
+            SetParent(pg->hwnd, parentWindow);
+            SetWindowPos(pg->hwnd, NULL, 0, 0, width, height,
+                         SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER |
+                         SWP_FRAMECHANGED);
+        }
+#endif
+
         // Initialize engine state (message queues, pages, timers) for native/OpenGL backend.
         // On the legacy Win32 path this is done in the UI thread before init_sem is released.
         if (pg->dc == 0) {
@@ -1333,16 +1350,20 @@ BOOL init_instance(HINSTANCE hInstance)
 
     HWND parentWindow = getParentWindow();
 
-    if (parentWindow) {
-        LONG_PTR style  = GetWindowLongPtrW(parentWindow, GWL_STYLE);
-        style          |= WS_CHILDWINDOW | WS_CLIPCHILDREN;
-        SetWindowLongPtrW(parentWindow, GWL_STYLE, style);
-    }
-
     POINT windowPos     = {g_windowpos_x, g_windowpos_y};
     SIZE  windowSize    = {pg->dc_w + dw, pg->dc_h + dh};
     DWORD windowStyle   = g_windowstyle & ~WS_VISIBLE;
     DWORD windowExStyle = g_windowexstyle;
+
+    if (parentWindow) {
+        windowPos.x = 0;
+        windowPos.y = 0;
+        windowSize.cx = pg->dc_w;
+        windowSize.cy = pg->dc_h;
+        windowStyle &= ~(WS_POPUP | WS_CAPTION | WS_THICKFRAME |
+                         WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+        windowStyle |= WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+    }
 
     pg->hwnd =
         createWindow(getParentWindow(), pg->window_caption.c_str(), windowStyle, windowExStyle, windowPos, windowSize);
@@ -1352,7 +1373,6 @@ BOOL init_instance(HINSTANCE hInstance)
     }
 
     if (parentWindow != NULL) {
-        // SetParent(pg->hwnd, g_attach_hwnd);
         wchar_t name[64];
         swprintf(name, L"ege_%X", (DWORD)(DWORD_PTR)parentWindow);
         if (CreateEventW(NULL, FALSE, TRUE, name)) {

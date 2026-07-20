@@ -91,6 +91,7 @@ endmacro()
 
 # 主性能测试程序
 add_test_executable(putimage_performance_test tests/putimage_performance_test.cpp)
+add_test_executable(image_buffer_performance_test tests/image_buffer_performance_test.cpp)
 
 # 单独的测试用例
 add_test_executable(putimage_basic_test tests/putimage_basic_test.cpp)
@@ -114,6 +115,9 @@ endif()
 if(WIN32)
     add_test_executable(gdi_lifecycle_test tests/gdi_lifecycle_test.cpp)
     add_test_executable(gdi_process_exit_test tests/gdi_process_exit_test.cpp)
+    add_test_executable(attach_hwnd_test tests/attach_hwnd_test.cpp)
+    add_test_executable(console_contract_test tests/console_contract_test.cpp)
+    add_test_executable(inputbox_contract_test tests/inputbox_contract_test.cpp)
 endif()
 if(EGE_ENABLE_CAMERA_CAPTURE AND (APPLE OR WIN32))
     add_test_executable(camera_capture_test tests/camera_capture_test.cpp)
@@ -143,6 +147,7 @@ endif()
 # 设置输出目录
 set_target_properties(
     putimage_performance_test
+    image_buffer_performance_test
     putimage_basic_test
     putimage_alphablend_test
     putimage_transparent_test
@@ -166,7 +171,8 @@ if(EGE_ENABLE_CAMERA_CAPTURE AND (APPLE OR WIN32))
     )
 endif()
 if(WIN32)
-    set_target_properties(gdi_lifecycle_test gdi_process_exit_test PROPERTIES
+    set_target_properties(gdi_lifecycle_test gdi_process_exit_test attach_hwnd_test
+        console_contract_test inputbox_contract_test PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
 endif()
@@ -191,6 +197,7 @@ add_test(
         -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/default_build_contract_test.cmake"
 )
 add_test(NAME putimage_performance COMMAND putimage_performance_test)
+add_test(NAME image_buffer_performance COMMAND image_buffer_performance_test)
 add_test(NAME putimage_basic COMMAND putimage_basic_test)
 add_test(NAME putimage_alphablend COMMAND putimage_alphablend_test)
 add_test(NAME putimage_transparent COMMAND putimage_transparent_test)
@@ -206,6 +213,9 @@ endif()
 if(WIN32)
     add_test(NAME gdi_lifecycle COMMAND gdi_lifecycle_test)
     add_test(NAME gdi_process_exit COMMAND gdi_process_exit_test)
+    add_test(NAME attach_hwnd COMMAND attach_hwnd_test)
+    add_test(NAME console_contract COMMAND console_contract_test)
+    add_test(NAME inputbox_contract COMMAND inputbox_contract_test)
 endif()
 if(EGE_ENABLE_CAMERA_CAPTURE AND (APPLE OR WIN32))
     add_test(NAME camera_capture COMMAND camera_capture_test)
@@ -224,6 +234,7 @@ endif()
 if(WIN32 AND EGE_BUILD_OPENGL)
     set(EGE_OPENGL_SHARED_TESTS
         putimage_performance
+        image_buffer_performance
         putimage_basic
         putimage_alphablend
         putimage_transparent
@@ -242,6 +253,7 @@ if(WIN32 AND EGE_BUILD_OPENGL)
 endif()
 set_tests_properties(
     putimage_performance
+    image_buffer_performance
     putimage_basic
     putimage_alphablend
     putimage_transparent
@@ -269,6 +281,18 @@ if(WIN32)
         LABELS "correctness;window;exit;gdi"
         TIMEOUT 15
     )
+    set_tests_properties(attach_hwnd PROPERTIES
+        LABELS "correctness;window;gdi"
+        TIMEOUT 30
+    )
+    set_tests_properties(console_contract PROPERTIES
+        LABELS "correctness;console"
+        TIMEOUT 20
+    )
+    set_tests_properties(inputbox_contract PROPERTIES
+        LABELS "correctness;window;input;gdi"
+        TIMEOUT 20
+    )
 endif()
 if(EGE_ENABLE_CAMERA_CAPTURE AND (APPLE OR WIN32))
     set_tests_properties(camera_capture PROPERTIES LABELS "correctness;camera")
@@ -286,8 +310,27 @@ if(EGE_BUILD_OPENGL)
     )
 endif()
 if(WIN32 AND EGE_BUILD_OPENGL)
+    add_test(
+        NAME attach_hwnd_opengl
+        COMMAND ${CMAKE_COMMAND} -E env EGE_TEST_OPENGL=1
+            $<TARGET_FILE:attach_hwnd_test>
+    )
+    set_tests_properties(attach_hwnd_opengl PROPERTIES
+        LABELS "correctness;window;opengl"
+        TIMEOUT 30
+    )
+    add_test(
+        NAME inputbox_contract_opengl
+        COMMAND ${CMAKE_COMMAND} -E env EGE_TEST_OPENGL=1
+            $<TARGET_FILE:inputbox_contract_test>
+    )
+    set_tests_properties(inputbox_contract_opengl PROPERTIES
+        LABELS "correctness;window;input;opengl"
+        TIMEOUT 20
+    )
     set_tests_properties(
         putimage_performance_opengl
+        image_buffer_performance_opengl
         putimage_basic_opengl
         putimage_alphablend_opengl
         putimage_transparent_opengl

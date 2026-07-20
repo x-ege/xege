@@ -3534,18 +3534,24 @@ static void draw_frame(PIMAGE img, int l, int t, int r, int b, color_t lc, color
 #ifdef _WIN32
 int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
 {
-    const std::wstring& title_w = mb2w(title);
-    const std::wstring& text_w = mb2w(text);
+    if (!buf || len <= 0) return 0;
+    buf[0] = '\0';
+    const std::wstring& title_w = mb2w(title ? title : "");
+    const std::wstring& text_w = mb2w(text ? text : "");
     std::wstring buf_w(len, L'\0');
     int ret = inputbox_getline(title_w.c_str(), text_w.c_str(), &buf_w[0], len);
     if (ret) {
-        WideCharToMultiByte(getcodepage(), 0, buf_w.c_str(), -1, buf, len, 0, 0);
+        if (!WideCharToMultiByte(getcodepage(), 0, buf_w.c_str(), -1, buf, len, 0, 0)) {
+            buf[0] = '\0';
+            return 0;
+        }
     }
     return ret;
 }
 
 int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len)
 {
+    if (!buf || len <= 0) return 0;
     IMAGE bg;
     IMAGE window;
     int w = 400, h = 300, x = (getwidth() - w) / 2, y = (getheight() - h) / 2;
@@ -3556,7 +3562,7 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     buf[0] = 0;
 
     sys_edit edit(true);
-    edit.create(true);
+    if (edit.create(true) != grOk) return 0;
     edit.move(x + 30 + 1, y + 192 + 1);
     edit.size(w - (30 + 1) * 2, h - 40 - 192 - 2);
     edit.setmaxlen(len);
@@ -3575,17 +3581,10 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     setcolor(0xFFFFFF, &window);
     setbkmode(TRANSPARENT, &window);
     setfont(18, 0, L"Tahoma", &window);
-    outtextxy(3, 3, title, &window);
+    outtextxy(3, 3, title ? title : L"", &window);
     setcolor(0x0, &window);
-
-    {
-        RECT rect = {30, 32, w - 30, 128 - 3};
-        DrawTextW(window.m_hDC,
-            text,
-            -1,
-            &rect,
-            DT_NOPREFIX | DT_LEFT | DT_TOP | TA_NOUPDATECP | DT_WORDBREAK | DT_EDITCONTROL | DT_EXPANDTABS);
-    }
+    settextjustify(LEFT_TEXT, TOP_TEXT, &window);
+    outtextrect(30, 32, w - 60, 128 - 3 - 32, text ? text : L"", &window);
 
     putimage(0, 0, &bg);
     putimage(x, y, &window);

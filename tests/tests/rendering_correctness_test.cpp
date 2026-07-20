@@ -165,6 +165,13 @@ std::vector<unsigned char> readFileBytes(const std::string& path)
                                       std::istreambuf_iterator<char>());
 }
 
+bool writeFileBytes(const std::string& path, const void* data, size_t size)
+{
+    std::ofstream stream(path.c_str(), std::ios::binary);
+    stream.write(static_cast<const char*>(data), static_cast<std::streamsize>(size));
+    return stream.good();
+}
+
 #ifdef _WIN32
 SIZE measureWindowsGdiText(const wchar_t* text, int height, int width,
                            const wchar_t* face, int weight = FW_DONTCARE,
@@ -755,6 +762,33 @@ void testConstAndScreenBufferSynchronization()
     ege::delimage(image);
 }
 
+void testGetImageSourceClipping()
+{
+    ege::PIMAGE source = ege::newimage(2, 2);
+    ege::color_t* sourcePixels = ege::getbuffer(source);
+    sourcePixels[0] = ege::RED;
+    sourcePixels[1] = ege::GREEN;
+    sourcePixels[2] = ege::BLUE;
+    sourcePixels[3] = ege::WHITE;
+
+    ege::PIMAGE clipped = ege::newimage();
+    expect(ege::getimage(clipped, source, -1, -1, 4, 4) == ege::grOk,
+           "getimage accepts a source rectangle extending past every edge");
+    expect(ege::getwidth(clipped) == 4 && ege::getheight(clipped) == 4,
+           "getimage keeps the requested destination dimensions while clipping the source");
+    expectPixel(clipped, 1, 1, ege::RED,
+                "getimage maps the clipped source origin into the destination");
+    expectPixel(clipped, 2, 2, ege::WHITE,
+                "getimage copies the clipped source bottom-right pixel");
+    expectPixel(clipped, 0, 0, ege::BLACK,
+                "getimage clears pixels preceding the clipped source rectangle");
+    expectPixel(clipped, 3, 3, ege::BLACK,
+                "getimage clears pixels following the clipped source rectangle");
+
+    ege::delimage(clipped);
+    ege::delimage(source);
+}
+
 void testMixedBackendBufferSynchronization(ege::PIMAGE legacySource,
                                            ege::PIMAGE legacyDestination)
 {
@@ -768,6 +802,12 @@ void testMixedBackendBufferSynchronization(ege::PIMAGE legacySource,
     legacySourcePixels[4] = ege::WHITE;
 
     ege::PIMAGE gpuDestination = ege::newimage(3, 2);
+#ifdef _WIN32
+    expect(ege::getHDC(legacySource) != NULL,
+           "getHDC remains available for a legacy GDI image in an OpenGL process");
+    expect(ege::getHDC(gpuDestination) == NULL,
+           "getHDC reports that an OpenGL render target has no GDI device context");
+#endif
     resetImage(gpuDestination, ege::BLACK);
     ege::putimage(gpuDestination, 0, 0, legacySource);
     expectPixel(gpuDestination, 1, 0, ege::GREEN,
@@ -797,6 +837,18 @@ void testMixedBackendBufferSynchronization(ege::PIMAGE legacySource,
     expectPixel(cropped, 1, 1, ege::WHITE,
                 "mixed-backend getimage copies source pixels instead of the screen framebuffer");
 
+    ege::PIMAGE clipped = ege::newimage();
+    expect(ege::getimage(clipped, legacySource, -1, -1, 5, 4) == ege::grOk,
+           "mixed-backend getimage accepts a source rectangle outside the source image");
+    expectPixel(clipped, 1, 1, premultipliedRed,
+                "mixed-backend getimage clips the negative source origin");
+    expectPixel(clipped, 3, 2, ege::MAGENTA,
+                "mixed-backend getimage clips the positive source extent");
+    expectPixel(clipped, 0, 0, ege::BLACK,
+                "mixed-backend getimage clears the leading clipped region");
+    expectPixel(clipped, 4, 3, ege::BLACK,
+                "mixed-backend getimage clears the trailing clipped region");
+
     ege::PIMAGE gpuSource = ege::newimage(3, 2);
     resetImage(gpuSource, ege::MAGENTA);
     ege::putpixel(2, 0, ege::CYAN, gpuSource);
@@ -818,6 +870,7 @@ void testMixedBackendBufferSynchronization(ege::PIMAGE legacySource,
                 "mixed with-alpha composites synchronized pixels");
 
     ege::delimage(gpuSource);
+    ege::delimage(clipped);
     ege::delimage(cropped);
     ege::delimage(gpuDestination);
 }
@@ -2946,6 +2999,104 @@ void testPngAndBmpRoundTrip()
 #endif
 }
 
+void testAdditionalImageFileDecoders()
+{
+    const std::string jpegPath = tempPath(".jpg");
+    const std::string gifPath = tempPath(".gif");
+    const std::string tgaPath = tempPath(".tga");
+    const std::string ppmPath = tempPath(".ppm");
+
+    // A deterministic 2x2 JPEG containing the solid RGB color (200, 30, 20).
+    // It was encoded once at quality 90 with 4:4:4 sampling; keeping the bytes
+    // in the test avoids relying on an image encoder being installed at run time.
+    static const char jpegFixture[] =
+        "\xFF\xD8\xFF\xE0\x00\x10\x4A\x46\x49\x46\x00\x01\x01\x00\x00\x01"
+        "\x00\x01\x00\x00\xFF\xDB\x00\x43\x00\x03\x02\x02\x03\x02\x02\x03"
+        "\x03\x03\x03\x04\x03\x03\x04\x05\x08\x05\x05\x04\x04\x05\x0A\x07"
+        "\x07\x06\x08\x0C\x0A\x0C\x0C\x0B\x0A\x0B\x0B\x0D\x0E\x12\x10\x0D"
+        "\x0E\x11\x0E\x0B\x0B\x10\x16\x10\x11\x13\x14\x15\x15\x15\x0C\x0F"
+        "\x17\x18\x16\x14\x18\x12\x14\x15\x14\xFF\xDB\x00\x43\x01\x03\x04"
+        "\x04\x05\x04\x05\x09\x05\x05\x09\x14\x0D\x0B\x0D\x14\x14\x14\x14"
+        "\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14"
+        "\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14"
+        "\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\xFF\xC0"
+        "\x00\x11\x08\x00\x02\x00\x02\x03\x01\x11\x00\x02\x11\x01\x03\x11"
+        "\x01\xFF\xC4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        "\x00\x00\x00\x00\x00\x00\x08\xFF\xC4\x00\x14\x10\x01\x00\x00\x00"
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xC4\x00"
+        "\x15\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        "\x00\x00\x07\x08\xFF\xC4\x00\x14\x11\x01\x00\x00\x00\x00\x00\x00\x00"
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xDA\x00\x0C\x03\x01"
+        "\x00\x02\x11\x03\x11\x00\x3F\x00\x3F\x89\x17\x2B\xFF\xD9";
+    static const unsigned char gifFixture[] = {
+        0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x02, 0x00, 0x02, 0x00, 0x81, 0x00,
+        0x00, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00,
+        0xFF, 0x2C, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00, 0x08,
+        0x07, 0x00, 0x05, 0x04, 0x18, 0x00, 0x20, 0x20, 0x00, 0x3B
+    };
+    static const unsigned char tgaFixture[] = {
+        0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x00, 0x18, 0x20,
+        0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+        0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF
+    };
+    static const unsigned char ppmFixture[] = {
+        'P', '6', '\n', '2', ' ', '2', '\n', '2', '5', '5', '\n',
+        0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,
+        0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF
+    };
+
+    expect(writeFileBytes(jpegPath, jpegFixture, sizeof(jpegFixture) - 1),
+           "JPEG decoder fixture can be written");
+    expect(writeFileBytes(gifPath, gifFixture, sizeof(gifFixture)),
+           "GIF decoder fixture can be written");
+    expect(writeFileBytes(tgaPath, tgaFixture, sizeof(tgaFixture)),
+           "TGA decoder fixture can be written");
+    expect(writeFileBytes(ppmPath, ppmFixture, sizeof(ppmFixture)),
+           "PPM decoder fixture can be written");
+
+    ege::PIMAGE jpeg = ege::newimage();
+    ege::PIMAGE gif = ege::newimage();
+    ege::PIMAGE tga = ege::newimage();
+    ege::PIMAGE ppm = ege::newimage();
+    expect(ege::getimage(jpeg, jpegPath.c_str()) == ege::grOk,
+           "getimage decodes a JPEG file");
+    expect(ege::getimage(gif, gifPath.c_str()) == ege::grOk,
+           "getimage decodes the first frame of a GIF file");
+    expect(ege::getimage(tga, tgaPath.c_str()) == ege::grOk,
+           "getimage decodes a top-down TGA file");
+    expect(ege::getimage(ppm, ppmPath.c_str()) == ege::grOk,
+           "getimage decodes a binary PPM file");
+
+    expect(ege::getwidth(jpeg) == 2 && ege::getheight(jpeg) == 2,
+           "JPEG decoding preserves dimensions");
+    const ege::color_t jpegPixel = ege::getpixel(0, 0, jpeg);
+    expect(EGEGET_R(jpegPixel) >= 190 && EGEGET_R(jpegPixel) <= 210 &&
+           EGEGET_G(jpegPixel) >= 20 && EGEGET_G(jpegPixel) <= 40 &&
+           EGEGET_B(jpegPixel) >= 10 && EGEGET_B(jpegPixel) <= 30,
+           "JPEG decoding preserves the fixture color within lossy tolerance (actual RGB=" +
+               std::to_string(EGEGET_R(jpegPixel)) + "," +
+               std::to_string(EGEGET_G(jpegPixel)) + "," +
+               std::to_string(EGEGET_B(jpegPixel)) + ")");
+
+    expectPixel(gif, 0, 0, ege::RED, "GIF preserves its top-left palette pixel");
+    expectPixel(gif, 1, 1, ege::WHITE, "GIF preserves its bottom-right palette pixel");
+    expectPixel(tga, 1, 0, EGERGB(0, 255, 0),
+                "TGA preserves its declared top-down orientation");
+    expectPixel(tga, 0, 1, ege::BLUE, "TGA preserves its BGR channel order");
+    expectPixel(ppm, 0, 0, ege::RED, "PPM preserves its top-left RGB pixel");
+    expectPixel(ppm, 1, 1, ege::WHITE, "PPM preserves its bottom-right RGB pixel");
+
+    ege::delimage(ppm);
+    ege::delimage(tga);
+    ege::delimage(gif);
+    ege::delimage(jpeg);
+    std::remove(ppmPath.c_str());
+    std::remove(tgaPath.c_str());
+    std::remove(gifPath.c_str());
+    std::remove(jpegPath.c_str());
+}
+
 #ifdef _WIN32
 void testResourceImageLoading()
 {
@@ -3030,6 +3181,7 @@ int main()
     testViewportOriginAndClip();
     testBufferMutationFeedsImageTransfer();
     testConstAndScreenBufferSynchronization();
+    testGetImageSourceClipping();
     testMixedBackendBufferSynchronization(legacyPreInitSource, legacyPreInitDestination);
     testImageTransfersHonorViewportOrigin();
     testImageTransfersHonorSourceViewportOrigin();
@@ -3066,6 +3218,7 @@ int main()
     testCompressionTimingAndRandomUtilities();
     testFontCompatibilityDetails();
     testPngAndBmpRoundTrip();
+    testAdditionalImageFileDecoders();
 #ifdef _WIN32
     testResourceImageLoading();
 #endif

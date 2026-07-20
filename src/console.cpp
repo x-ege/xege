@@ -146,18 +146,28 @@ bool clear_console()
 
 bool show_console()
 {
-    CHECK_CONSOLE_HANDLE(hConsoleWnd);
-    return ShowWindow(hConsoleWnd, SW_SHOW);
+    if (hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
+        return false;
+    }
+    ShowWindow(hConsoleWnd, SW_SHOW);
+    return true;
 }
 
 bool hide_console()
 {
-    CHECK_CONSOLE_HANDLE(hConsoleWnd);
-    return ShowWindow(hConsoleWnd, SW_HIDE);
+    if (hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
+        return false;
+    }
+    ShowWindow(hConsoleWnd, SW_HIDE);
+    return true;
 }
 
 bool close_console()
 {
+    if (hInput == NULL || hOutput == NULL ||
+        hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
+        return false;
+    }
     if (!FreeConsole()) {
         return false;
     }

@@ -18,17 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_HEADERS = (ROOT / "include" / "ege.h", ROOT / "include" / "ege.zh_CN.h")
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}
-MANUAL_ONLY = {
-    "attachHWND": "requires a real host HWND and embedding lifecycle",
-    "inputbox_getline": "opens a modal dialog and requires user input",
-    "clear_console": "mutates the calling process console",
-    "close_console": "mutates the calling process console",
-    "getch_console": "blocks on interactive console input",
-    "hide_console": "mutates the calling process console window",
-    "init_console": "allocates or attaches a process console",
-    "kbhit_console": "depends on interactive console input",
-    "show_console": "mutates the calling process console window",
-}
+MANUAL_ONLY: dict[str, str] = {}
 
 
 def code_only(text: str) -> str:

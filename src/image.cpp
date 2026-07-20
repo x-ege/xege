@@ -670,19 +670,62 @@ void IMAGE::copyimage(PCIMAGE pSrcImg)
     CONVERT_IMAGE_END;
 }
 
+struct ClippedImageCopyRegion {
+    int destinationX;
+    int destinationY;
+    int sourceX;
+    int sourceY;
+    int width;
+    int height;
+};
+
+static ClippedImageCopyRegion clipImageCopyRegion(int sourceX, int sourceY,
+                                                   int width, int height,
+                                                   int sourceWidth, int sourceHeight)
+{
+    ClippedImageCopyRegion region = {0, 0, 0, 0, 0, 0};
+    if (width <= 0 || height <= 0 || sourceWidth <= 0 || sourceHeight <= 0) {
+        return region;
+    }
+
+    const long long requestedLeft = sourceX;
+    const long long requestedTop = sourceY;
+    const long long requestedRight = requestedLeft + width;
+    const long long requestedBottom = requestedTop + height;
+    const long long clippedLeft = std::max<long long>(0, requestedLeft);
+    const long long clippedTop = std::max<long long>(0, requestedTop);
+    const long long clippedRight = std::min<long long>(sourceWidth, requestedRight);
+    const long long clippedBottom = std::min<long long>(sourceHeight, requestedBottom);
+    if (clippedLeft >= clippedRight || clippedTop >= clippedBottom) {
+        return region;
+    }
+
+    region.destinationX = static_cast<int>(clippedLeft - requestedLeft);
+    region.destinationY = static_cast<int>(clippedTop - requestedTop);
+    region.sourceX = static_cast<int>(clippedLeft);
+    region.sourceY = static_cast<int>(clippedTop);
+    region.width = static_cast<int>(clippedRight - clippedLeft);
+    region.height = static_cast<int>(clippedBottom - clippedTop);
+    return region;
+}
+
 int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHeight)
 {
     inittest(L"IMAGE::getimage");
     PCIMAGE img = CONVERT_IMAGE_CONST(pSrcImg);
     this->resize_f(srcWidth, srcHeight);
-    // Both have render targets: preserve the source rectangle on the GPU and
-    // make the shared CPU buffer current for save/getbuffer callers.
+    const ClippedImageCopyRegion region = clipImageCopyRegion(
+        xSrc + img->m_vpt.left, ySrc + img->m_vpt.top,
+        srcWidth, srcHeight, img->m_width, img->m_height);
+    // Both have render targets: preserve the valid source rectangle on the
+    // GPU. The CPU copy remains lazy until a caller explicitly requests it.
     if (this->m_renderTarget && img->m_renderTarget) {
-        this->m_renderTarget->blit(0, 0, img->m_renderTarget,
-                                   xSrc + img->m_vpt.left,
-                                   ySrc + img->m_vpt.top,
-                                   srcWidth, srcHeight);
-        m_pBuffer = reinterpret_cast<PDWORD>(this->m_renderTarget->getPixelBuffer());
+        if (region.width > 0 && region.height > 0) {
+            this->m_renderTarget->blit(region.destinationX, region.destinationY,
+                                       img->m_renderTarget,
+                                       region.sourceX, region.sourceY,
+                                       region.width, region.height);
+        }
         CONVERT_IMAGE_END;
         return grOk;
     }
@@ -692,12 +735,13 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
     if (this->m_renderTarget || img->m_renderTarget) {
         const color_t* sourcePixels = img->getbuffer();
         color_t* destinationPixels = this->getbuffer();
-        if (sourcePixels && destinationPixels && srcWidth > 0 && srcHeight > 0) {
-            for (int y = 0; y < srcHeight; ++y) {
-                for (int x = 0; x < srcWidth; ++x) {
-                    destinationPixels[y * srcWidth + x] =
-                        sourcePixels[(ySrc + img->m_vpt.top + y) * img->m_width +
-                                     (xSrc + img->m_vpt.left + x)];
+        if (sourcePixels && destinationPixels && region.width > 0 && region.height > 0) {
+            for (int y = 0; y < region.height; ++y) {
+                for (int x = 0; x < region.width; ++x) {
+                    destinationPixels[(region.destinationY + y) * srcWidth +
+                                      region.destinationX + x] =
+                        sourcePixels[(region.sourceY + y) * img->m_width +
+                                     region.sourceX + x];
                 }
             }
         }

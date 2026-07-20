@@ -19,6 +19,9 @@
 | `gdi_lifecycle` | Windows 默认 GDI 的 HWND、BitBlt 呈现、Escape、`delay_ms`、WM_CLOSE 与重用 |
 | `gdi_process_exit` | Windows demo 从 `main` 正常返回时，UI 消息线程能在超时前退出 |
 | `opengl_process_exit` | OpenGL 默认关闭强制退出及 `INIT_NOFORCEEXIT` 可重用语义 |
+| `attach_hwnd` | Windows 真实宿主消息线程、子窗口关联和关闭生命周期；OpenGL 构建运行 GDI/OpenGL 两种变体 |
+| `console_contract` | 以隔离的无控制台子进程验证控制台分配、清理、显示/隐藏、键盘查询/读取和关闭，不影响调用测试的终端 |
+| `inputbox_contract` | 以隔离子进程和原生 EDIT 控件注入验证 ASCII/Unicode 模态输入、返回值与退出；OpenGL 构建运行 GDI/OpenGL 两种变体 |
 | `putimage_basic` | 基础图片复制和缩放 |
 | `putimage_alphablend` | alpha blend |
 | `putimage_transparent` | 透明色复制 |
@@ -26,6 +29,7 @@
 | `putimage_comparison` | 多种图片路径的结果对比 |
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
+| `image_buffer_performance` | `getbuffer` 首次/缓存读回、CPU 修改后上传，以及 GPU→GPU `getimage` 复制性能基准 |
 
 `default_build_contract` 在 Windows 优先复用父构建已验证的 MSVC，并以
 `Ninja Multi-Config` 做空目录配置探测，避免非交互 CTest 中嵌套 MSBuild 的进程跟踪
@@ -46,7 +50,7 @@
 | `putimage_withalpha`、`putimage_alphafilter` | 两个 with-alpha 重载、PRGB 合成、平滑拉伸、mask stride/零值/null、GPU 目标同步及 GDI/OpenGL 双向混合 |
 | 旋转接口 | `putimage_rotate`、`putimage_rotatezoom`、两个 `putimage_rotatetransparent` 重载，中心坐标、非方形旋转、缩放、全局 alpha、零值透明和平滑路径 |
 | 增强贴图 | `ege_gentexture` 开/关、3 个 `ege_puttexture` 重载、2 个 `ege_drawimage` 重载、纹理填充、变换、生成后的源更新及 resize 生命周期 |
-| 图片格式 | PNG/BMP 普通及 alpha 往返、尺寸/方向/像素/文件头，`saveimage` 分派、`getimage_pngfile`，以及 Windows EXE 内嵌 PNG 的 char/wchar 资源重载 |
+| 图片格式 | PNG/BMP 普通及 alpha 往返、JPEG/GIF/TGA/PPM fixture 解码、尺寸/方向/像素/文件头，`saveimage` 分派、`getimage_pngfile`，以及 Windows EXE 内嵌 PNG 的 char/wchar 资源重载 |
 | 像素格式 | `image_convertcolor` 的 ARGB/PRGB 双向转换与舍入 |
 
 兼容性说明：文件和资源型 `getimage` 的 `zoomWidth`/`zoomHeight` 参数在既有 Windows
@@ -62,15 +66,12 @@ python tests/tools/audit_public_api_coverage.py --summary
 ```
 
 审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名集合是否一致，并扫描测试和
-demo 中的真实调用（忽略注释与字符串）。当前 288 个公共函数名中，279 个有直接
-自动化测试调用。其余 9 个被显式归类为人工接口：需要宿主 HWND 的 `attachHWND`、
-需要模态输入的 `inputbox_getline`，以及 7 个会分配、显示、隐藏、清理或阻塞当前
-进程控制台的 `*_console` 接口。前两个另有 demo 调用。若以后新增了未被直接测试、
-也未被人工分类的公共函数，审计脚本会返回失败。
+demo 中的真实调用（忽略注释与字符串）。当前 288 个公共函数名均有直接自动化测试
+调用。若以后新增了未被直接测试、也未被人工分类的公共函数，审计脚本会返回失败。
 
 这是函数名级的覆盖下限，不等价于每个重载、分支和平台路径都已覆盖。双后端共享
-行为仍必须由相同断言分别运行，窗口/输入生命周期使用后端测试，交互接口使用人工
-demo 验证。
+行为仍必须由相同断言分别运行，窗口/输入生命周期及模态交互接口使用带超时保护的
+后端测试，demo 视觉验证作为更高层的补充。
 
 ## 构建与运行
 
@@ -107,6 +108,9 @@ Windows OpenGL 构建会保留上述默认 GDI 用例，并额外注册带 `_ope
 `rendering_correctness` 和 `putimage*` 用例。这些变体通过 `INIT_OPENGL` 启动，
 使用与 GDI 基准完全相同的像素与性能断言；`input_backend`、`page_backend`、
 `window_backend` 和 `opengl_process_exit` 则覆盖 OpenGL 专用窗口路径。
+GitHub 托管 Windows runner 负责 OpenGL 编译和默认 GDI 运行门禁；需要 WGL 的完整
+运行时回归由可手动触发的 `windows-opengl-runtime.yml` 在带 `opengl` 标签的
+self-hosted Windows runner 上执行。
 
 Release demo 截图验证应使用独立目录，并显式关闭开屏动画、强制运行时后端：
 
@@ -125,6 +129,18 @@ bash -l tasks.sh --opengl --release --build-dir build/demo-visual-opengl \
 `EGE_DEMO_VALIDATION_BACKEND` 只影响 demo 验证目标：它移除 `INIT_WITHLOGO`，并强制
 选择 GDI 或 OpenGL，不改变库的默认行为。截图抽样至少覆盖基础图元、文字/CJK、
 alpha、旋转透明、viewport、分页以及一个复杂动画；动画应固定同一帧或同一状态再比较。
+
+三个会自行保存固定第 10 帧并退出的 demo 可直接做可重复像素对比（需要 Pillow）：
+
+```bash
+python tests/tools/compare_demo_screenshots.py \
+  --gdi-build build/demo-visual-gdi \
+  --opengl-build build/demo-visual-opengl
+```
+
+脚本检查尺寸、平均绝对误差和大差异像素比例，并在
+`build/visual-results/current` 输出两后端截图、增强差异图与 JSON 报告。其余交互式 demo
+仍通过窗口自动化做启动和画面抽查；固定帧比较不应被视作所有交互状态的替代品。
 
 只运行功能回归、跳过耗时性能基准：
 

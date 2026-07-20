@@ -41,7 +41,6 @@ public:
         }
 
         msg_createwindow msg = {NULL};
-        msg.hEvent           = ::CreateEvent(NULL, TRUE, FALSE, NULL);
         msg.classname        = L"EDIT";
         msg.id               = egeControlBase::allocId();
         msg.style            = WS_CHILD | WS_BORDER | ES_LEFT | ES_WANTRETURN;
@@ -55,14 +54,34 @@ public:
         msg.exstyle = WS_EX_CLIENTEDGE; // | WS_EX_STATICEDGE;
         msg.param   = this;
 
-        ::PostMessageW(getHWnd(), WM_USER + 1, 1, (LPARAM)&msg);
-        ::WaitForSingleObject(msg.hEvent, INFINITE);
+        HWND parentWindow = getHWnd();
+        if (isWindowOwnedByCurrentThread(parentWindow)) {
+            // GLFW owns its HWND on the drawing thread and keeps GLFW's
+            // window procedure. Create the child directly instead of posting
+            // EGE-private messages that GLFW does not handle.
+            msg.hwnd = ::CreateWindowExW(msg.exstyle, msg.classname, NULL,
+                msg.style, 0, 0, 0, 0, parentWindow, (HMENU)msg.id,
+                getHInstance(), NULL);
+        } else {
+            msg.hEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+            if (!msg.hEvent ||
+                !::PostMessageW(parentWindow, WM_USER + 1, 1, (LPARAM)&msg)) {
+                if (msg.hEvent) ::CloseHandle(msg.hEvent);
+                return grError;
+            }
+            ::WaitForSingleObject(msg.hEvent, INFINITE);
+        }
 
         m_hwnd    = msg.hwnd;
         m_hFont   = NULL;
         m_hBrush  = NULL;
         m_color   = 0x0;
         m_bgcolor = 0xFFFFFF;
+
+        if (!m_hwnd) {
+            if (msg.hEvent) ::CloseHandle(msg.hEvent);
+            return grError;
+        }
 
         ::SetWindowLongPtrW(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
         m_callback = ::GetWindowLongPtrW(m_hwnd, GWLP_WNDPROC);
@@ -73,9 +92,9 @@ public:
         }
         visible(false);
 
-        ::CloseHandle(msg.hEvent);
+        if (msg.hEvent) ::CloseHandle(msg.hEvent);
 #endif
-        return 0;
+        return grOk;
     }
 
     int destroy()
@@ -83,16 +102,27 @@ public:
 #ifdef _WIN32
         if (m_hwnd) {
             visible(false);
-            msg_createwindow msg = {NULL};
-            msg.hwnd             = m_hwnd;
-            msg.hEvent           = ::CreateEvent(NULL, TRUE, FALSE, NULL);
             ::SendMessage(m_hwnd, WM_SETFONT, 0, 0);
             ::DeleteObject(m_hFont);
-            ::PostMessageW(getHWnd(), WM_USER + 1, 0, (LPARAM)&msg);
-            ::WaitForSingleObject(msg.hEvent, INFINITE);
-            ::CloseHandle(msg.hEvent);
+            m_hFont = NULL;
+            bool destroyed = false;
+            if (isWindowOwnedByCurrentThread(m_hwnd)) {
+                destroyed = ::DestroyWindow(m_hwnd) != FALSE;
+            } else {
+                msg_createwindow msg = {NULL};
+                msg.hwnd             = m_hwnd;
+                msg.hEvent           = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+                if (msg.hEvent &&
+                    ::PostMessageW(getHWnd(), WM_USER + 1, 0, (LPARAM)&msg)) {
+                    ::WaitForSingleObject(msg.hEvent, INFINITE);
+                    destroyed = !::IsWindow(m_hwnd);
+                }
+                if (msg.hEvent) ::CloseHandle(msg.hEvent);
+            }
+            if (!destroyed) return 0;
             if (m_hBrush) {
                 ::DeleteObject(m_hBrush);
+                m_hBrush = NULL;
             }
             m_hwnd = NULL;
             return 1;
@@ -220,15 +250,30 @@ public:
     void setfocus()
     {
 #ifdef _WIN32
+        if (isWindowOwnedByCurrentThread(m_hwnd)) {
+            ::SetFocus(m_hwnd);
+            return;
+        }
         msg_createwindow msg = {NULL};
         msg.hwnd             = m_hwnd;
         msg.hEvent           = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-        ::PostMessageW(getHWnd(), WM_USER + 2, 0, (LPARAM)&msg);
-        ::WaitForSingleObject(msg.hEvent, INFINITE);
+        if (!msg.hEvent) return;
+        if (::PostMessageW(getHWnd(), WM_USER + 2, 0, (LPARAM)&msg)) {
+            ::WaitForSingleObject(msg.hEvent, INFINITE);
+        }
+        ::CloseHandle(msg.hEvent);
 #endif
     }
 
 protected:
+#ifdef _WIN32
+    static bool isWindowOwnedByCurrentThread(HWND window)
+    {
+        return window != NULL &&
+            ::GetWindowThreadProcessId(window, NULL) == ::GetCurrentThreadId();
+    }
+#endif
+
     HWND     m_hwnd;
     HFONT    m_hFont;
     HBRUSH   m_hBrush;
