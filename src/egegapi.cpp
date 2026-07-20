@@ -2102,11 +2102,16 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
         return;
     }
 
+    Point oldOrigin(img->m_vpt.left, img->m_vpt.top);
+
     if (img->m_renderTarget) {
         img->m_vpt = viewport;
         img->m_enableclip = clip;
         img->m_renderTarget->setViewport(left, top, right, bottom, clip);
         img->m_renderTarget->moveTo(0, 0);
+#ifdef EGE_GDIPLUS
+        img->syncGraphicsViewport(oldOrigin.x, oldOrigin.y);
+#endif
         CONVERT_IMAGE_END;
         return;
     }
@@ -2119,7 +2124,6 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
         return;
     }
 
-    Point oldOrigin(img->m_vpt.left, img->m_vpt.top);
 #ifdef _WIN32
     SetViewportOrgEx(img->m_hDC, 0, 0, NULL);
 #endif
@@ -2139,20 +2143,8 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
 
     /* GDI+ 设置裁剪区域时受当前坐标系影响，确保在设备坐标系下进行 */
 #ifdef EGE_GDIPLUS
-    Gdiplus::Graphics* graphics = img->getGraphics();
-    Gdiplus::Matrix matrix;
-    graphics->GetTransform(&matrix);
-    graphics->ResetTransform();
-
-    if (clip) {
-        graphics->SetClip(Gdiplus::Rect(viewport.x(), viewport.y(), viewport.width(), viewport.height()));
-    } else {
-        graphics->ResetClip();
-    }
-
-    /* 恢复 GDI+ 坐标系，同时将原点调整至视口区域左上角 */
-    graphics->SetTransform(&matrix);
-    graphics->TranslateTransform(left - oldOrigin.x, top - oldOrigin.y, Gdiplus::MatrixOrderAppend);
+    img->getGraphics();
+    img->syncGraphicsViewport(oldOrigin.x, oldOrigin.y);
 #endif
 
 #ifdef _WIN32

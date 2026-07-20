@@ -150,6 +150,7 @@ public:
     Gdiplus::Pen*      getPen();
     Gdiplus::Brush*    getBrush();
     void               set_pattern(Gdiplus::Brush* brush);
+    void               syncGraphicsViewport(int oldLeft, int oldTop);
 #endif
     void enable_anti_alias(bool enable);
 

@@ -463,6 +463,7 @@ const color_t* IMAGE::getbuffer() const
 
 Gdiplus::Graphics* IMAGE::getGraphics()
 {
+    bool createdRenderTargetGraphics = false;
     if (m_renderTarget) {
         color_t* buffer = getbuffer();
         if (NULL == m_graphics && buffer != NULL && m_width > 0 && m_height > 0) {
@@ -477,6 +478,7 @@ Gdiplus::Graphics* IMAGE::getGraphics()
             m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);
             m_graphics->SetTextRenderingHint(
                 m_aa ? Gdiplus::TextRenderingHintAntiAlias : Gdiplus::TextRenderingHintSystemDefault);
+            createdRenderTargetGraphics = true;
         }
     }
     if (NULL == m_graphics) {
@@ -499,7 +501,33 @@ Gdiplus::Graphics* IMAGE::getGraphics()
         m_graphics->SetTextRenderingHint(
             m_aa ? Gdiplus::TextRenderingHintAntiAlias : Gdiplus::TextRenderingHintSystemDefault);
     }
+    if (createdRenderTargetGraphics) {
+        syncGraphicsViewport(0, 0);
+    }
     return m_graphics;
+}
+
+void IMAGE::syncGraphicsViewport(int oldLeft, int oldTop)
+{
+    if (m_graphics == NULL) {
+        return;
+    }
+
+    Gdiplus::Matrix matrix;
+    m_graphics->GetTransform(&matrix);
+    m_graphics->ResetTransform();
+
+    if (m_enableclip) {
+        m_graphics->SetClip(Gdiplus::Rect(m_vpt.x(), m_vpt.y(), m_vpt.width(), m_vpt.height()));
+    } else {
+        m_graphics->ResetClip();
+    }
+
+    m_graphics->SetTransform(&matrix);
+    m_graphics->TranslateTransform(
+        static_cast<Gdiplus::REAL>(m_vpt.left - oldLeft),
+        static_cast<Gdiplus::REAL>(m_vpt.top - oldTop),
+        Gdiplus::MatrixOrderAppend);
 }
 
 Gdiplus::Pen* IMAGE::getPen()

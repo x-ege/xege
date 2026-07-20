@@ -343,6 +343,10 @@ void testFilledShapeOutlineCompatibility()
     expectSolidFillOnly("solidroundrect");
 
     prepare();
+    ege::solidroundrect(5, 5, 38, 30, 6, image);
+    expectSolidFillOnly("single-radius solidroundrect");
+
+    prepare();
     ege::solidpoly(4, polygonPoints, image);
     expectSolidFillOnly("solidpoly");
 
@@ -401,6 +405,32 @@ void testEnhancedFillAndCornerRadiusCompatibility()
                 "four-radius round rectangle keeps a square bottom-left corner");
     expectPixel(image, 34, 28, ege::GREEN,
                 "four-radius round rectangle keeps a square bottom-right corner");
+
+    resetImage(image, ege::BLACK);
+    ege::setfillcolor(ege::GREEN, image);
+    ege::setviewport(7, 5, 20, 18, true, image);
+    ege::ege_fillrect(-4.0f, -4.0f, 10.0f, 10.0f, image);
+    ege::setviewport(0, 0, 48, 40, false, image);
+    expectPixel(image, 7, 5, ege::GREEN,
+                "enhanced drawing applies the viewport origin and clips at its top-left edge");
+    expectPixel(image, 12, 10, ege::GREEN,
+                "enhanced drawing keeps pixels inside the translated viewport");
+    expectPixel(image, 6, 5, ege::BLACK,
+                "enhanced drawing does not escape the viewport clip region");
+    expectPixel(image, 3, 1, ege::BLACK,
+                "enhanced drawing does not use untranslated coordinates");
+
+    resetImage(image, ege::BLACK);
+    ege::setfillcolor(ege::GREEN, image);
+    ege::setviewport(7, 5, 20, 18, true, image);
+    expect(ege::resize_f(image, 56, 44) == ege::grOk,
+           "resizing an image with an enhanced viewport succeeds");
+    ege::ege_fillrect(0.0f, 0.0f, 4.0f, 4.0f, image);
+    ege::setviewport(0, 0, 56, 44, false, image);
+    expectPixel(image, 7, 5, ege::GREEN,
+                "enhanced drawing preserves the viewport after an OpenGL buffer rebuild");
+    expectPixel(image, 0, 0, ege::BLACK,
+                "a rebuilt enhanced drawing surface does not lose its viewport origin");
 
     ege::delimage(image);
 }
@@ -1779,6 +1809,12 @@ void testEnhancedPathApi()
            "image-aware stroke hit testing uses the image pen");
     ege::ege_fillpath(rectanglePath, image);
     expectPixel(image, 20, 20, ege::RED, "ege_fillpath fills the path interior");
+    ege::ege_drawpath(rectanglePath, image);
+    expectPixel(image, 10, 20, ege::GREEN,
+                "plain ege_drawpath draws the path outline");
+    ege::ege_fillpath(rectanglePath, 45.0f, 0.0f, image);
+    expectPixel(image, 65, 20, ege::RED,
+                "translated ege_fillpath fills at the requested offset");
     ege::ege_drawpath(rectanglePath, 35.0f, 35.0f, image);
     expect(countPixelsDifferentFrom(image, ege::BLACK) > 500,
            "translated ege_drawpath adds visible outline pixels");
@@ -1811,6 +1847,7 @@ void testEnhancedPathApi()
     ege::ege_path_addbezier(aggregatePath, 4, bezierPoints);
     ege::ege_path_addbezier(aggregatePath, 24.0f, 20.0f, 28.0f, 12.0f,
                             34.0f, 28.0f, 38.0f, 20.0f);
+    ege::ege_path_addcurve(aggregatePath, 3, sourcePoints);
     ege::ege_path_addcurve(aggregatePath, 3, sourcePoints, 0.5f);
     ege::ege_path_addcircle(aggregatePath, 48.0f, 16.0f, 6.0f);
     ege::ege_path_addellipse(aggregatePath, 58.0f, 8.0f, 14.0f, 10.0f);
@@ -1819,6 +1856,7 @@ void testEnhancedPathApi()
                           L"Arial", 0);
     ege::ege_path_addpolygon(aggregatePath, 3, sourcePoints);
     ege::ege_path_addclosedcurve(aggregatePath, 3, sourcePoints);
+    ege::ege_path_addclosedcurve(aggregatePath, 3, sourcePoints, 0.5f);
     ege::ege_path_close(aggregatePath);
     ege::ege_path_addpath(aggregatePath, sourcePath, false);
     ege::ege_path_closeall(aggregatePath);
@@ -1847,10 +1885,31 @@ void testEnhancedPathApi()
     expect(ege::ege_path_pointcount(warpedPath) > 0,
            "ege_path_warp retains mapped geometry");
 
+    ege::ege_path* defaultFlattenedPath = ege::ege_path_clone(aggregatePath);
+    ege::ege_path_flatten(defaultFlattenedPath);
+    expect(ege::ege_path_pointcount(defaultFlattenedPath) > 0,
+           "default ege_path_flatten overload retains usable geometry");
+    ege::ege_path_widen(defaultFlattenedPath, 2.0f);
+    expect(ege::ege_path_pointcount(defaultFlattenedPath) > 0,
+           "default ege_path_widen overload produces outline geometry");
+
+    ege::ege_path* defaultOutlinePath = ege::ege_path_clone(rectanglePath);
+    ege::ege_path_outline(defaultOutlinePath);
+    expect(ege::ege_path_pointcount(defaultOutlinePath) > 0,
+           "default ege_path_outline overload retains the rectangle outline");
+
+    ege::ege_path* defaultWarpedPath = ege::ege_path_clone(rectanglePath);
+    ege::ege_path_warp(defaultWarpedPath, warpPoints, 4, &warpSource);
+    expect(ege::ege_path_pointcount(defaultWarpedPath) > 0,
+           "default ege_path_warp overload retains mapped geometry");
+
     ege::ege_path_reset(sourcePath);
     expect(ege::ege_path_pointcount(sourcePath) == 0,
            "ege_path_reset removes all points");
 
+    ege::ege_path_destroy(defaultWarpedPath);
+    ege::ege_path_destroy(defaultOutlinePath);
+    ege::ege_path_destroy(defaultFlattenedPath);
     ege::ege_path_destroy(warpedPath);
     ege::ege_path_destroy(outlinePath);
     ege::ege_path_destroy(flattenedPath);
@@ -2363,11 +2422,18 @@ void testAdditionalEnhancedEntryPoints()
     ege::ege_polygon(4, closedCurve, image);
     ege::ege_bezier(4, openCurve, image);
     ege::ege_drawbezier(4, openCurve, image);
+    ege::ege_drawcurve(4, openCurve, image);
+    ege::ege_drawclosedcurve(4, closedCurve, image);
     ege::ege_drawcurve(4, openCurve, 0.5f, image);
     ege::ege_drawclosedcurve(4, closedCurve, 0.5f, image);
     expect(countPixelsDifferentFrom(image, ege::BLACK) > 60,
            "enhanced polyline, polygon, Bezier, and curve routes draw pixels");
     ege::ege_enable_aa(false, image);
+
+    resetImage(image, ege::BLACK);
+    ege::ege_fillclosedcurve(4, closedCurve, image);
+    expect(countPixelsEqualToInRect(image, ege::GREEN, 52, 8, 70, 20) > 20,
+           "default ege_fillclosedcurve overload fills the closed spline interior");
 
     resetImage(image, ege::BLACK);
     ege::ege_fillclosedcurve(4, closedCurve, 0.5f, image);
@@ -2377,6 +2443,8 @@ void testAdditionalEnhancedEntryPoints()
     resetImage(image, ege::BLACK);
     ege::ege_rectangle(3.0f, 30.0f, 16.0f, 12.0f, image);
     ege::ege_roundrect(23.0f, 30.0f, 18.0f, 12.0f, 4.0f, image);
+    ege::ege_roundrect(48.0f, 30.0f, 24.0f, 14.0f,
+                       2.0f, 4.0f, 6.0f, 8.0f, image);
     ege::ege_arc(45.0f, 28.0f, 20.0f, 16.0f, 0.0f, 180.0f, image);
     ege::ege_pie(4.0f, 46.0f, 18.0f, 14.0f, 0.0f, 90.0f, image);
     ege::ege_fillpie(28.0f, 46.0f, 18.0f, 14.0f, 0.0f, 90.0f, image);
@@ -2755,6 +2823,53 @@ void testFontCompatibilityDetails()
                       ege::getbuffer(image)),
            "enhanced GB2312 text matches the equivalent wide text");
     ege::setcodepage(previousCodePage);
+#endif
+
+    ege::setfont(23, 1, "Arial", 30, 20, 600, true, false, true,
+                 static_cast<BYTE>(0), static_cast<BYTE>(0), static_cast<BYTE>(0),
+                 static_cast<BYTE>(0), static_cast<BYTE>(0), image);
+    LOGFONTW advancedNarrowFont = {};
+    ege::getfont(&advancedNarrowFont, image);
+    expect(advancedNarrowFont.lfHeight == 23 && advancedNarrowFont.lfWidth == 1 &&
+           advancedNarrowFont.lfEscapement == 30 && advancedNarrowFont.lfOrientation == 20 &&
+           advancedNarrowFont.lfWeight == 600 && advancedNarrowFont.lfItalic &&
+           advancedNarrowFont.lfStrikeOut,
+           "advanced narrow setfont overload preserves its native font state");
+
+    ege::setfont(24, 2, L"Arial", 40, 10, 500, false, true, false,
+                 static_cast<BYTE>(0), static_cast<BYTE>(0), static_cast<BYTE>(0),
+                 static_cast<BYTE>(0), static_cast<BYTE>(0), image);
+    LOGFONTW advancedWideFont = {};
+    ege::getfont(&advancedWideFont, image);
+    expect(advancedWideFont.lfHeight == 24 && advancedWideFont.lfWidth == 2 &&
+           advancedWideFont.lfEscapement == 40 && advancedWideFont.lfOrientation == 10 &&
+           advancedWideFont.lfWeight == 500 && advancedWideFont.lfUnderline,
+           "advanced wide setfont overload preserves its native font state");
+
+#ifdef _WIN32
+    LOGFONTW wideFont = {};
+    wideFont.lfHeight = 25;
+    wideFont.lfWeight = 550;
+    wideFont.lfItalic = TRUE;
+    lstrcpyW(wideFont.lfFaceName, L"Arial");
+    ege::setfont(&wideFont, image);
+    LOGFONTW selectedWideFont = {};
+    ege::getfont(&selectedWideFont, image);
+    expect(selectedWideFont.lfHeight == 25 && selectedWideFont.lfWeight == 550 &&
+           selectedWideFont.lfItalic,
+           "LOGFONTW setfont overload selects the supplied native font state");
+
+    LOGFONTA ansiFont = {};
+    ansiFont.lfHeight = 26;
+    ansiFont.lfWeight = 450;
+    ansiFont.lfUnderline = TRUE;
+    lstrcpyA(ansiFont.lfFaceName, "Arial");
+    ege::setfont(&ansiFont, image);
+    LOGFONTW selectedAnsiFont = {};
+    ege::getfont(&selectedAnsiFont, image);
+    expect(selectedAnsiFont.lfHeight == 26 && selectedAnsiFont.lfWeight == 450 &&
+           selectedAnsiFont.lfUnderline,
+           "LOGFONTA setfont overload selects the supplied native font state");
 #endif
 
     ege::setfont(22, 0, "Arial", 120, 70, 650, true, true, true, image);

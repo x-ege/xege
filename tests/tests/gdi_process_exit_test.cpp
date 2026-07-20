@@ -8,7 +8,8 @@ int main()
 {
     const ege::initmode_flag mode = static_cast<ege::initmode_flag>(
         ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
-    ege::initgraph(32, 24, mode);
+    ege::setinitmode(mode);
+    ege::initgraph(32, 24);
     if (ege::getHWnd() == nullptr || !ege::is_run()) {
         return EXIT_FAILURE;
     }
