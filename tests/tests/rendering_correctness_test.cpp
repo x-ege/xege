@@ -1585,6 +1585,19 @@ void testStateAndPixelUtilities()
     expect(ege::getpixel_f(2, 0, image) == ege::alphablend(ege::BLUE, alphaSource),
            "putpixel_alphablend_f matches the scalar color helper");
 
+    mutablePixels = ege::getbuffer(image);
+    mutablePixels[3] = ege::BLUE;
+    ege::putpixel_alphablend(3, 0, alphaSource, 64, image);
+    expect(ege::getpixel_f(3, 0, image) ==
+               ege::alphablend(ege::BLUE, alphaSource, 64),
+           "putpixel_alphablend applies the explicit alpha factor");
+    mutablePixels = ege::getbuffer(image);
+    mutablePixels[4] = ege::BLUE;
+    ege::putpixel_alphablend_f(4, 0, alphaSource, 64, image);
+    expect(ege::getpixel_f(4, 0, image) ==
+               ege::alphablend(ege::BLUE, alphaSource, 64),
+           "putpixel_alphablend_f applies the explicit alpha factor");
+
     ege::ege_setalpha(37, image);
     const ege::color_t* pixels = ege::getbuffer(image);
     expect(EGEGET_A(pixels[1 * 10 + 1]) == 37, "ege_setalpha updates offscreen image alpha");
