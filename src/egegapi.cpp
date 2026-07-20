@@ -169,7 +169,15 @@ color_t getpixel_f(int x, int y, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_F_CONST(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        return img->getbuffer()[y * img->m_width + x];
+        if (img->m_renderTarget) {
+            // This API only reads a physical pixel. Keep the render target's
+            // synchronization state read-only instead of exposing its mutable
+            // staging buffer and scheduling an unnecessary upload.
+            return img->getbuffer()[y * img->m_width + x];
+        }
+        // A DIB is already the authoritative CPU storage. The physical-coordinate
+        // fast path matches getpixel() and does not need a per-pixel GdiFlush.
+        return img->m_pBuffer[y * img->m_width + x];
     }
     return 0;
 }
