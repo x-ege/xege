@@ -7,6 +7,11 @@ static_assert(sizeof(LONG) == sizeof(std::int32_t), "LONG must be 32-bit");
 static_assert(sizeof(LONG_PTR) == sizeof(void*), "LONG_PTR must match pointer width");
 static_assert(sizeof(BITMAPFILEHEADER) == 14, "BITMAPFILEHEADER must be packed");
 static_assert(sizeof(BITMAPINFOHEADER) == 40, "BITMAPINFOHEADER must match Win32 ABI");
+static_assert(LF_FACESIZE == 32, "LF_FACESIZE must match the Win32 API contract");
+static_assert(sizeof(((LOGFONTA*)nullptr)->lfFaceName) == LF_FACESIZE,
+              "LOGFONTA face storage must match LF_FACESIZE");
+static_assert(sizeof(((LOGFONTW*)nullptr)->lfFaceName) / sizeof(wchar_t) == LF_FACESIZE,
+              "LOGFONTW face storage must match LF_FACESIZE");
 
 #ifdef EGE_BUILD_OPENGL
 static_assert(ege::INIT_OPENGL == 0x80, "OpenGL builds must expose INIT_OPENGL");

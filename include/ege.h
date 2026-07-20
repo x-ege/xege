@@ -401,6 +401,10 @@ typedef struct {
   DWORD        bV4GammaBlue;
 } BITMAPV4HEADER, *PBITMAPV4HEADER;
 
+#ifndef LF_FACESIZE
+#define LF_FACESIZE 32
+#endif
+
 typedef struct tagLOGFONTA {
   LONG lfHeight;
   LONG lfWidth;
@@ -415,7 +419,7 @@ typedef struct tagLOGFONTA {
   BYTE lfClipPrecision;
   BYTE lfQuality;
   BYTE lfPitchAndFamily;
-  char lfFaceName[32];
+  char lfFaceName[LF_FACESIZE];
 } LOGFONTA, *PLOGFONTA, *LPLOGFONTA;
 
 typedef struct tagLOGFONTW {
@@ -432,7 +436,7 @@ typedef struct tagLOGFONTW {
   BYTE  lfClipPrecision;
   BYTE  lfQuality;
   BYTE  lfPitchAndFamily;
-  wchar_t lfFaceName[32];
+  wchar_t lfFaceName[LF_FACESIZE];
 } LOGFONTW, *PLOGFONTW, *LPLOGFONTW;
 
 #define CALLBACK
@@ -3874,6 +3878,8 @@ void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, flo
 
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
 void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg = NULL);
 
 void EGEAPI ege_transform_rotate(float angle, PIMAGE pimg = NULL);
 void EGEAPI ege_transform_translate(float x, float y, PIMAGE pimg = NULL);

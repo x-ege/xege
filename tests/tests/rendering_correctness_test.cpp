@@ -1697,6 +1697,7 @@ void testEnhancedImageTransform()
     ege::delimage(source);
 }
 
+#ifdef EGE_GDIPLUS
 void testTextureAndEnhancedImageTransferOverloads()
 {
     ege::PIMAGE source = ege::newimage(3, 2);
@@ -1943,6 +1944,7 @@ void testEnhancedPathApi()
     ege::ege_path_destroy(rectanglePath);
     ege::delimage(image);
 }
+#endif
 
 void testRasterOperations()
 {
@@ -2436,6 +2438,7 @@ void testAdditionalEnhancedEntryPoints()
     ege::ege_enable_aa(true, image);
     ege::ege_circle(40.0f, 32.0f, 12.0f, image);
 
+#ifdef EGE_GDIPLUS
     const ege::ege_point openCurve[] = {
         {4.0f, 8.0f}, {16.0f, 2.0f}, {28.0f, 14.0f}, {40.0f, 8.0f}
     };
@@ -2474,6 +2477,7 @@ void testAdditionalEnhancedEntryPoints()
     ege::ege_fillpie(28.0f, 46.0f, 18.0f, 14.0f, 0.0f, 90.0f, image);
     expect(countPixelsDifferentFrom(image, ege::BLACK) > 40,
            "enhanced rectangle, round-rectangle, arc, and pie routes draw pixels");
+#endif
 
     resetImage(image, ege::BLACK);
     const ege::ege_point gradientBoundary[] = {
@@ -2509,18 +2513,22 @@ void testAdditionalEnhancedEntryPoints()
     texturePixels[1] = ege::GREEN;
     texturePixels[2] = ege::BLUE;
     texturePixels[3] = ege::WHITE;
+#ifdef EGE_GDIPLUS
     ege::ege_gentexture(true, texture);
+#endif
     resetImage(image, ege::BLACK);
     ege::ege_setpattern_texture(texture, 0.0f, 0.0f, 2.0f, 2.0f, image);
     ege::ege_fillrect(2.0f, 2.0f, 20.0f, 16.0f, image);
     expect(countPixelsDifferentFrom(image, ege::BLACK) > 200,
            "texture pattern repeats source pixels across a fill");
+#ifdef EGE_GDIPLUS
     resetImage(image, ege::BLACK);
     const ege::ege_rect textureDestination = {4.0f, 4.0f, 16.0f, 16.0f};
     ege::ege_puttexture(texture, textureDestination, image);
     expect(countPixelsDifferentFrom(image, ege::BLACK) > 100,
            "ege_puttexture draws a generated texture");
     ege::ege_gentexture(false, texture);
+#endif
     ege::ege_setpattern_none(image);
 
     ege::delimage(texture);
@@ -2870,12 +2878,11 @@ void testFontCompatibilityDetails()
            advancedWideFont.lfWeight == 500 && advancedWideFont.lfUnderline,
            "advanced wide setfont overload preserves its native font state");
 
-#ifdef _WIN32
     LOGFONTW wideFont = {};
     wideFont.lfHeight = 25;
     wideFont.lfWeight = 550;
     wideFont.lfItalic = TRUE;
-    lstrcpyW(wideFont.lfFaceName, L"Arial");
+    std::copy_n(L"Arial", 6, wideFont.lfFaceName);
     ege::setfont(&wideFont, image);
     LOGFONTW selectedWideFont = {};
     ege::getfont(&selectedWideFont, image);
@@ -2887,14 +2894,13 @@ void testFontCompatibilityDetails()
     ansiFont.lfHeight = 26;
     ansiFont.lfWeight = 450;
     ansiFont.lfUnderline = TRUE;
-    lstrcpyA(ansiFont.lfFaceName, "Arial");
+    std::copy_n("Arial", 6, ansiFont.lfFaceName);
     ege::setfont(&ansiFont, image);
     LOGFONTW selectedAnsiFont = {};
     ege::getfont(&selectedAnsiFont, image);
     expect(selectedAnsiFont.lfHeight == 26 && selectedAnsiFont.lfWeight == 450 &&
            selectedAnsiFont.lfUnderline,
            "LOGFONTA setfont overload selects the supplied native font state");
-#endif
 
     ege::setfont(22, 0, "Arial", 120, 70, 650, true, true, true, image);
     LOGFONTW font = {};
@@ -2917,6 +2923,7 @@ void testFontCompatibilityDetails()
     expect(underlinedPixels > ordinaryPixels,
            "underline font style adds visible decoration pixels");
 
+#ifdef _WIN32
     resetImage(image, ege::BLACK);
     ege::setfont(28, 0, "Arial", 0, 0, 400, false, false, false, image);
     ege::outtextxy(4, 4, "Bold text", image);
@@ -2942,6 +2949,7 @@ void testFontCompatibilityDetails()
     const ege::color_t* italicStylePixels = ege::getbuffer(image);
     expect(!std::equal(regularStylePixels.begin(), regularStylePixels.end(), italicStylePixels),
            "italic font style selects distinct glyph geometry");
+#endif
 
     resetImage(image, ege::BLACK);
     ege::setfont(22, 0, "Arial", image);
@@ -3336,8 +3344,10 @@ int main()
     testAlphaTransferOverloadsAndClipping();
     testImageRotationCoordinatesAndAspectRatio();
     testEnhancedImageTransform();
+#ifdef EGE_GDIPLUS
     testTextureAndEnhancedImageTransferOverloads();
     testEnhancedPathApi();
+#endif
     testRasterOperations();
     testCurrentPositionAndAdditionalPrimitiveRoutes();
     testSurfaceFloodFillAndColorConversion();

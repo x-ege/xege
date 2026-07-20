@@ -118,6 +118,12 @@ if(WIN32)
     add_test_executable(attach_hwnd_test tests/attach_hwnd_test.cpp)
     add_test_executable(console_contract_test tests/console_contract_test.cpp)
     add_test_executable(inputbox_contract_test tests/inputbox_contract_test.cpp)
+    if(MINGW)
+        # These process-isolation tests intentionally use wmain so their
+        # quoted executable path and child arguments stay Unicode end to end.
+        target_link_options(console_contract_test PRIVATE -municode)
+        target_link_options(inputbox_contract_test PRIVATE -municode)
+    endif()
 endif()
 if(EGE_ENABLE_CAMERA_CAPTURE AND (APPLE OR WIN32))
     add_test_executable(camera_capture_test tests/camera_capture_test.cpp)
