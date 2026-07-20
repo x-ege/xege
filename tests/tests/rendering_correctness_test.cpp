@@ -2838,6 +2838,50 @@ void testPngAndBmpRoundTrip()
 #endif
 }
 
+#ifdef _WIN32
+void testResourceImageLoading()
+{
+    ege::PIMAGE narrowResource = ege::newimage();
+    ege::PIMAGE wideResource = ege::newimage();
+    ege::PIMAGE missingResource = ege::newimage();
+
+    const bool narrowLoaded =
+        ege::getimage(narrowResource, "PNG", "EGE_TEST_IMAGE") == ege::grOk;
+    const bool wideLoaded =
+        ege::getimage(wideResource, L"PNG", L"EGE_TEST_IMAGE") == ege::grOk;
+    expect(narrowLoaded, "narrow resource getimage overload loads an embedded PNG");
+    expect(wideLoaded, "wide resource getimage overload loads an embedded PNG");
+
+    const bool narrowDimensions = narrowLoaded &&
+        ege::getwidth(narrowResource) == 80 && ege::getheight(narrowResource) == 120;
+    const bool wideDimensions = wideLoaded &&
+        ege::getwidth(wideResource) == 80 && ege::getheight(wideResource) == 120;
+    expect(narrowDimensions, "narrow resource getimage preserves embedded image dimensions");
+    expect(wideDimensions, "wide resource getimage preserves embedded image dimensions");
+
+    if (narrowDimensions) {
+        expectPixel(narrowResource, 0, 0, ege::BLACK,
+                    "resource getimage decodes a transparent corner as zero");
+        expectPixel(narrowResource, 40, 60, EGERGB(114, 99, 96),
+                    "resource getimage decodes an opaque fixture pixel");
+    }
+    if (narrowDimensions && wideDimensions) {
+        const int pixelCount = ege::getwidth(narrowResource) * ege::getheight(narrowResource);
+        const ege::color_t* narrowPixels = ege::getbuffer(narrowResource);
+        const ege::color_t* widePixels = ege::getbuffer(wideResource);
+        expect(std::equal(narrowPixels, narrowPixels + pixelCount, widePixels),
+               "narrow and wide resource getimage overloads decode identical pixels");
+    }
+
+    expect(ege::getimage(missingResource, "PNG", "EGE_TEST_MISSING_IMAGE") != ege::grOk,
+           "resource getimage reports a missing embedded resource");
+
+    ege::delimage(missingResource);
+    ege::delimage(wideResource);
+    ege::delimage(narrowResource);
+}
+#endif
+
 } // namespace
 
 int main()
@@ -2906,6 +2950,9 @@ int main()
     testCompressionTimingAndRandomUtilities();
     testFontCompatibilityDetails();
     testPngAndBmpRoundTrip();
+#ifdef _WIN32
+    testResourceImageLoading();
+#endif
 
     expect(shutdown_graphics_for_test(),
            "the graphics test window and UI thread shut down cleanly");

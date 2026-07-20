@@ -41,12 +41,12 @@
 | `putimage_withalpha`、`putimage_alphafilter` | 两个 with-alpha 重载、PRGB 合成、平滑拉伸、mask stride/零值/null、GPU 目标同步 |
 | 旋转接口 | `putimage_rotate`、`putimage_rotatezoom`、两个 `putimage_rotatetransparent` 重载，中心坐标、非方形旋转、缩放、全局 alpha、零值透明和平滑路径 |
 | 增强贴图 | `ege_gentexture` 开/关、3 个 `ege_puttexture` 重载、2 个 `ege_drawimage` 重载、纹理填充、变换、生成后的源更新及 resize 生命周期 |
-| 图片格式 | PNG/BMP 普通及 alpha 往返、尺寸/方向/像素/文件头，`saveimage` 分派和 `getimage_pngfile` |
+| 图片格式 | PNG/BMP 普通及 alpha 往返、尺寸/方向/像素/文件头，`saveimage` 分派、`getimage_pngfile`，以及 Windows EXE 内嵌 PNG 的 char/wchar 资源重载 |
 | 像素格式 | `image_convertcolor` 的 ARGB/PRGB 双向转换与舍入 |
 
-资源型 `getimage(resType, resName, ...)` 需要可执行文件资源 fixture，名称级和头文件编译
-审计已覆盖，但当前不属于跨平台像素门禁。新增贴图重载或后端分支时，应先更新上表并补充
-同一组 GDI/OpenGL 像素断言。
+兼容性说明：文件和资源型 `getimage` 的 `zoomWidth`/`zoomHeight` 参数在既有 Windows
+实现中未参与解码或缩放，本轮保持该行为，不把它描述成已生效的缩放功能。新增贴图重载或
+后端分支时，应先更新上表并补充同一组 GDI/OpenGL 像素断言。
 
 ## 公共 API 覆盖审计
 

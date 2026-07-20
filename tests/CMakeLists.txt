@@ -100,6 +100,11 @@ add_test_executable(putimage_rotate_test tests/putimage_rotate_test.cpp)
 add_test_executable(putimage_comparison_test tests/putimage_comparison_test.cpp)
 add_test_executable(putimage_alphablend_comprehensive_test tests/putimage_alphablend_comprehensive_test.cpp)
 add_test_executable(rendering_correctness_test tests/rendering_correctness_test.cpp)
+if(WIN32)
+    target_sources(rendering_correctness_test PRIVATE
+        tests/rendering_correctness.rc
+    )
+endif()
 add_test_executable(public_headers_test tests/public_headers_test.cpp)
 add_test_executable(camera_frame_copy_test tests/camera_frame_copy_test.cpp)
 if(EGE_ENABLE_CAMERA_CAPTURE)
