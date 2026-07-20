@@ -184,6 +184,10 @@ add_test(
     COMMAND ${CMAKE_COMMAND}
         "-DEGE_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
         "-DEGE_BINARY_DIR=${CMAKE_BINARY_DIR}/default-build-contract"
+        "-DEGE_C_COMPILER=${CMAKE_C_COMPILER}"
+        "-DEGE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+        "-DEGE_AR=${CMAKE_AR}"
+        "-DEGE_LINKER=${CMAKE_LINKER}"
         -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/default_build_contract_test.cmake"
 )
 add_test(NAME putimage_performance COMMAND putimage_performance_test)

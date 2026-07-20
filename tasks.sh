@@ -254,6 +254,75 @@ function cmakeCacheGet() {
     fi
 }
 
+# A Ninja cache configured with MSVC records the absolute path to cl.exe, so
+# CMake can still launch the compiler from an ordinary Git Bash session.  The
+# compiler nevertheless needs INCLUDE/LIB/LIBPATH from VsDevCmd.bat.  Visual
+# Studio generators initialize these through MSBuild and do not need this.
+function ensureMsvcEnvironment() {
+    if ! isWindows || [[ -n "$INCLUDE" && -n "$LIB" ]]; then
+        return
+    fi
+
+    local compiler
+    compiler="$(cmakeCacheGet CMAKE_CXX_COMPILER)"
+    local normalized_compiler="${compiler//\\//}"
+    normalized_compiler="${normalized_compiler,,}"
+    if [[ "${normalized_compiler##*/}" != "cl.exe" ]]; then
+        return
+    fi
+
+    local vswhere="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+    if [[ ! -x "$vswhere" ]]; then
+        echo "Error: MSVC is configured but vswhere.exe was not found." >&2
+        return 1
+    fi
+
+    local installation_path
+    installation_path="$("$vswhere" -latest -products '*' \
+        -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
+        -property installationPath | tr -d '\r')"
+    local vsdev_bash
+    vsdev_bash="$(cygpath -u "$installation_path")/Common7/Tools/VsDevCmd.bat"
+    if [[ -z "$installation_path" || ! -f "$vsdev_bash" ]]; then
+        echo "Error: a Visual Studio C++ installation could not be located." >&2
+        return 1
+    fi
+
+    local target_arch="x64"
+    case "$normalized_compiler" in
+        */host*/x86/cl.exe) target_arch="x86" ;;
+        */host*/arm64/cl.exe) target_arch="arm64" ;;
+    esac
+
+    local vsdev_windows
+    vsdev_windows="$(cygpath -w "$vsdev_bash")"
+    local environment_file
+    environment_file="$(mktemp)"
+    if ! cmd.exe //d //c call "$vsdev_windows" -no_logo "-arch=$target_arch" "&&" set \
+        >"$environment_file"; then
+        rm -f "$environment_file"
+        echo "Error: failed to initialize the MSVC environment." >&2
+        return 1
+    fi
+
+    local line name value
+    while IFS= read -r line; do
+        line="${line%$'\r'}"
+        name="${line%%=*}"
+        value="${line#*=}"
+        case "$name" in
+            INCLUDE|LIB|LIBPATH) export "$name=$value" ;;
+        esac
+    done <"$environment_file"
+    rm -f "$environment_file"
+
+    if [[ -z "$INCLUDE" || -z "$LIB" ]]; then
+        echo "Error: VsDevCmd.bat did not provide the MSVC include/library paths." >&2
+        return 1
+    fi
+    echo "Initialized MSVC environment for the cached Ninja toolchain ($target_arch)."
+}
+
 function verifyBackendSelection() {
     if [[ -z "$EGE_BACKEND" ]]; then
         return
@@ -481,6 +550,7 @@ fi
 CMAKE_BUILD_DIR="$(getBuildDir)"
 export CMAKE_BUILD_DIR
 echo "Build directory: $CMAKE_BUILD_DIR (BUILD_TYPE: $CMAKE_BUILD_TYPE)"
+ensureMsvcEnvironment
 
 # 第二遍：按正确顺序执行操作
 

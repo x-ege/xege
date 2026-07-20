@@ -4608,19 +4608,26 @@ void           EGEAPI delimage(PCIMAGE pimg);
 
 /**
  * @brief Get image pixel buffer pointer
- * @param pimg Image object pointer to get buffer from, default is NULL (represents window)
- * @return First address of image buffer, buffer is one-dimensional array with size = image width × image height
- * @note Pixel at coordinate (x, y) corresponds to buffer index: buffer[y * width + x]
- * @note Returned pointer can directly manipulate pixel data, changes take effect immediately
+ * @param pimg Image object pointer to get buffer from; NULL selects the current drawing target
+ * @return Writable top-down ARGB pixel array with image width × image height elements
+ * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. Finish a write batch
+ *       before the next EGE drawing/image operation so the OpenGL backend can upload it.
+ * @note After any EGE operation may have rendered to the image, call getbuffer again before
+ *       another write batch. Writes through an old retained pointer cannot be detected.
+ * @note The pointer is invalidated when the image is resized, reloaded with different
+ *       dimensions, deleted, or (for NULL) when the window buffer is recreated.
+ * @note OpenGL may perform a synchronous GPU readback. Call this only on the graphics/context
+ *       thread; concurrent access to the image or returned storage is not supported.
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
 
 /**
  * @brief Get image pixel buffer pointer (read-only version)
- * @param pimg Image object pointer to get buffer from, default is NULL (represents window)
- * @return First address of image buffer (read-only), buffer is one-dimensional array with size = image width × image height
- * @note Pixel at coordinate (x, y) corresponds to buffer index: buffer[y * width + x]
- * @note Returned pointer can only read pixel data, cannot modify
+ * @param pimg Image object pointer to get buffer from; NULL selects the current drawing target
+ * @return Read-only top-down ARGB pixel array with image width × image height elements
+ * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. OpenGL synchronizes pending
+ *       rendering before returning and may perform a synchronous GPU readback.
+ * @note The pointer has the same lifetime and thread restrictions as the writable overload.
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 

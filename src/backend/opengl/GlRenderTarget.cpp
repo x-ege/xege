@@ -406,7 +406,7 @@ static void mat3Scale(float* out, float sx, float sy) {
 GlRenderTarget::GlRenderTarget()
     : m_texture(0), m_fbo(0), m_vao(0), m_vbo(0),
       m_imageShaderReady(false), m_textShaderReady(false),
-      m_cpuBuffer(nullptr), m_gpuDirty(false), m_cpuDirty(false),
+      m_cpuBuffer(nullptr), m_pixelSyncState(PixelSyncState::Synchronized),
       m_width(0), m_height(0), m_isOnScreen(false), m_initialized(false),
       m_lineColor(0xFFFFFFFF), m_fillColor(0xFFFFFFFF),
       m_textColor(0xFFFFFFFF), m_bkColor(0x00000000),
@@ -446,8 +446,7 @@ bool GlRenderTarget::initOnScreen(int width, int height) {
     // CPU buffer
     m_cpuBuffer = new color_t[width * height];
     memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
-    m_gpuDirty = false;
-    m_cpuDirty = true;
+    m_pixelSyncState = PixelSyncState::CpuNewer;
 
     initShaders();
     initVBO();
@@ -477,8 +476,7 @@ bool GlRenderTarget::initOffscreen(int width, int height) {
 
     m_cpuBuffer = new color_t[width * height];
     memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
-    m_gpuDirty = false;
-    m_cpuDirty = true;
+    m_pixelSyncState = PixelSyncState::CpuNewer;
 
     initShaders();
     initVBO();
@@ -579,8 +577,7 @@ void GlRenderTarget::clearViewport() {
         color_t_to_rgba(m_bkColor, r, g, b, a);
         glClearColor(r, g, b, a);
         glClear(GL_COLOR_BUFFER_BIT);
-        m_gpuDirty = true;
-        m_cpuDirty = false;
+        m_pixelSyncState = PixelSyncState::GpuNewer;
     }
     if (scissorWasEnabled) glEnable(GL_SCISSOR_TEST);
     else glDisable(GL_SCISSOR_TEST);
@@ -719,8 +716,7 @@ void GlRenderTarget::submitBatch() {
     glBindVertexArray(0);
 
     m_vertices.clear();
-    m_gpuDirty = true;
-    m_cpuDirty = false;
+    m_pixelSyncState = PixelSyncState::GpuNewer;
 }
 
 // ============================================================
@@ -735,7 +731,10 @@ static void syncSrcTexture(RenderTarget* src) {
     // A source image can still have primitives queued in its CPU-side batch.
     // Submit those before sampling the texture, otherwise putimage observes
     // only the last completed GPU state.
-    glSrc->syncToGpu();
+    // flush() uploads a CPU-edited off-screen texture and, for the window
+    // target, also draws that uploaded texture into the back buffer. Calling
+    // syncToGpu() first would clear the state that tells flush() to do the
+    // latter, losing direct edits made through getbuffer().
     glSrc->flush();
     if (glSrc->isOnScreen()) {
         glSrc->captureScreenToTexture();
@@ -980,8 +979,7 @@ void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     // Restore state
-    m_gpuDirty = true;
-    m_cpuDirty = false;
+    m_pixelSyncState = PixelSyncState::GpuNewer;
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, srcTex);
@@ -1724,8 +1722,7 @@ void GlRenderTarget::clear(color_t color) {
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    m_gpuDirty = true;
-    m_cpuDirty = false;
+    m_pixelSyncState = PixelSyncState::GpuNewer;
 }
 
 // ============================================================
@@ -1918,7 +1915,7 @@ void GlRenderTarget::filterBlur(int dstX, int dstY, int w, int h, float intensit
             }
         }
     }
-    m_gpuDirty = true;
+    m_pixelSyncState = PixelSyncState::GpuNewer;
 }
 
 // ============================================================
@@ -2104,8 +2101,7 @@ void GlRenderTarget::drawGlyphTexture(GLuint tex, int texW, int texH,
     glDeleteVertexArrays(1, &vao);
 
     // Mark GPU dirty so CPU buffer stays in sync
-    m_gpuDirty = true;
-    m_cpuDirty = false;
+    m_pixelSyncState = PixelSyncState::GpuNewer;
 }
 
 void GlRenderTarget::ensureTextShader() {
@@ -2271,26 +2267,50 @@ void GlRenderTarget::measureCodepoints(const std::vector<uint32_t>& codepoints,
 // ============================================================
 color_t* GlRenderTarget::getPixelBuffer() {
     submitBatch();
+    if (m_isOnScreen && m_pixelSyncState == PixelSyncState::GpuNewer) {
+        captureScreenToTexture();
+    }
     downloadFromGpu();
     // The API returns a writable pointer, so conservatively assume it may be
     // changed before the next GPU operation.
-    m_cpuDirty = true;
+    m_pixelSyncState = PixelSyncState::CpuNewer;
     return m_cpuBuffer;
 }
 
 const color_t* GlRenderTarget::getPixelBuffer() const {
     GlRenderTarget* self = const_cast<GlRenderTarget*>(this);
     self->submitBatch();
+    if (self->m_isOnScreen &&
+        self->m_pixelSyncState == PixelSyncState::GpuNewer) {
+        self->captureScreenToTexture();
+    }
     self->downloadFromGpu();
     return m_cpuBuffer;
 }
 
 void GlRenderTarget::downloadFromGpu() {
-    if (!m_initialized || !m_cpuBuffer || !m_gpuDirty) return;
+    const bool gpuPixelsNeedDownload =
+        m_pixelSyncState == PixelSyncState::GpuNewer ||
+        (m_isOnScreen && m_pixelSyncState == PixelSyncState::ScreenTextureNewer);
+    if (!m_initialized || !m_cpuBuffer || !gpuPixelsNeedDownload) return;
 
-    GLint previousFramebuffer = 0;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFramebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_isOnScreen ? 0 : m_fbo);
+    GLint previousReadFramebuffer = 0;
+    GLint previousReadBuffer = GL_BACK;
+    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &previousReadFramebuffer);
+    glGetIntegerv(GL_READ_BUFFER, &previousReadBuffer);
+
+    GLuint screenReadFramebuffer = 0;
+    if (m_isOnScreen) {
+        // The window back buffer may already have been swapped. The screen
+        // texture captured immediately before the swap is the stable source.
+        glGenFramebuffers(1, &screenReadFramebuffer);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, screenReadFramebuffer);
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, m_texture, 0);
+    } else {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+    }
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
 
     std::vector<unsigned char> rgba(static_cast<size_t>(m_width) * m_height * 4);
     glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
@@ -2312,9 +2332,12 @@ void GlRenderTarget::downloadFromGpu() {
         }
     }
 
-    m_gpuDirty = false;
-    m_cpuDirty = false;
-    glBindFramebuffer(GL_FRAMEBUFFER, previousFramebuffer);
+    m_pixelSyncState = PixelSyncState::Synchronized;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, previousReadFramebuffer);
+    glReadBuffer(previousReadBuffer);
+    if (screenReadFramebuffer) {
+        glDeleteFramebuffers(1, &screenReadFramebuffer);
+    }
 }
 
 void GlRenderTarget::captureScreenToTexture() {
@@ -2322,48 +2345,35 @@ void GlRenderTarget::captureScreenToTexture() {
 
     // Flush pending draw commands first
     submitBatch();
-
-    // Ensure GPU has completed all rendering
-    glFinish();
-
-    // Read pixels from default framebuffer (back buffer, before swap)
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glReadBuffer(GL_BACK);
-
-    unsigned char* tmpBuf = new unsigned char[m_width * m_height * 4];
-    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
-
-    // Upload to texture
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
-
-    // Also update CPU buffer
-    if (m_cpuBuffer) {
-        for (int glY = 0; glY < m_height; ++glY) {
-            const int egeY = m_height - 1 - glY;
-            for (int x = 0; x < m_width; ++x) {
-                const size_t src = (static_cast<size_t>(glY) * m_width + x) * 4;
-                const unsigned char r = tmpBuf[src + 0];
-                const unsigned char g = tmpBuf[src + 1];
-                const unsigned char b = tmpBuf[src + 2];
-                const unsigned char a = tmpBuf[src + 3];
-                m_cpuBuffer[egeY * m_width + x] =
-                    (static_cast<uint32_t>(a) << 24) |
-                    (static_cast<uint32_t>(r) << 16) |
-                    (static_cast<uint32_t>(g) << 8) |
-                    static_cast<uint32_t>(b);
-            }
-        }
+    if (m_pixelSyncState != PixelSyncState::GpuNewer) {
+        return;
     }
-    m_gpuDirty = false;
-    m_cpuDirty = false;
 
-    delete[] tmpBuf;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Keep the screen usable as an IMAGE source without forcing a blocking
+    // GPU-to-CPU readback on every swap. The CPU copy remains lazy and is
+    // refreshed by getPixelBuffer() only when a caller actually requests it.
+    GLint previousReadFramebuffer = 0;
+    GLint previousReadBuffer = GL_BACK;
+    GLint previousTexture = 0;
+    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &previousReadFramebuffer);
+    glGetIntegerv(GL_READ_BUFFER, &previousReadBuffer);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glReadBuffer(GL_BACK);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, m_width, m_height);
+    glBindTexture(GL_TEXTURE_2D, previousTexture);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, previousReadFramebuffer);
+    glReadBuffer(previousReadBuffer);
+    // The texture now contains the last back-buffer image. Keep this distinct
+    // from GpuNewer: after glfwSwapBuffers(), GL_BACK is a different buffer and
+    // recapturing it would make screen reads lag one frame behind presentation.
+    m_pixelSyncState = PixelSyncState::ScreenTextureNewer;
 }
 
 void GlRenderTarget::syncToGpu() {
-    if (!m_cpuBuffer || !m_initialized || !m_cpuDirty) return;
+    if (!m_cpuBuffer || !m_initialized ||
+        m_pixelSyncState != PixelSyncState::CpuNewer) return;
     int w = m_width, h = m_height;
     // Convert top-down ARGB CPU storage to OpenGL's bottom-up RGBA rows.
     std::vector<unsigned char> rgba(w * h * 4);
@@ -2383,8 +2393,7 @@ void GlRenderTarget::syncToGpu() {
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
     glBindTexture(GL_TEXTURE_2D, previousTexture);
-    m_gpuDirty = false;
-    m_cpuDirty = false;
+    m_pixelSyncState = PixelSyncState::Synchronized;
 }
 
 void GlRenderTarget::rebuild(int width, int height) {
@@ -2411,8 +2420,7 @@ void GlRenderTarget::rebuild(int width, int height) {
     delete[] m_cpuBuffer;
     m_cpuBuffer = new color_t[width * height];
     memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
-    m_gpuDirty = false;
-    m_cpuDirty = true;
+    m_pixelSyncState = PixelSyncState::CpuNewer;
 
     m_width = width;
     m_height = height;
@@ -2423,7 +2431,8 @@ void GlRenderTarget::rebuild(int width, int height) {
 // Submit
 // ============================================================
 void GlRenderTarget::flush() {
-    const bool uploadScreenBuffer = m_isOnScreen && m_cpuDirty;
+    const bool uploadScreenBuffer =
+        m_isOnScreen && m_pixelSyncState == PixelSyncState::CpuNewer;
     syncToGpu();
     if (uploadScreenBuffer) {
         drawImageQuad(m_texture, m_width, m_height, 0, 0, m_width, m_height,

@@ -4139,19 +4139,26 @@ void           EGEAPI delimage(PCIMAGE pimg);
 
 /**
  * @brief 获取图像像素缓冲区指针
- * @param pimg 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口）
- * @return 图像缓冲区首地址，缓冲区为一维数组，大小为 图像宽度×图像高度
- * @note 坐标为(x, y)的像素对应缓冲区索引：buffer[y * width + x]
- * @note 返回的指针可以直接操作像素数据，修改后会立即生效
+ * @param pimg 要获取缓冲区的图像对象指针；NULL 表示当前绘图目标
+ * @return 可写的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
+ * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。一次修改应在下一个 EGE
+ *       绘图或图像操作之前完成，以便 OpenGL 后端同步到 GPU。
+ * @note 图像经过任何可能产生绘制的 EGE 操作后，如需再次写入，必须重新调用
+ *       getbuffer。后端无法检测通过旧指针进行的新一轮修改。
+ * @note 调整图像尺寸、以不同尺寸重新载入图像、删除图像，或者窗口缓冲区因窗口
+ *       尺寸变化而重建后，原指针失效。
+ * @note OpenGL 后端可能同步等待 GPU 回读。只能在图形/上下文线程调用；不支持并发
+ *       访问图像或返回的缓冲区。
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
 
 /**
  * @brief 获取图像像素缓冲区指针（只读版本）
- * @param pimg 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口）
- * @return 图像缓冲区首地址（只读），缓冲区为一维数组，大小为 图像宽度×图像高度
- * @note 坐标为(x, y)的像素对应缓冲区索引：buffer[y * width + x]
- * @note 返回的指针只能读取像素数据，不能修改
+ * @param pimg 要获取缓冲区的图像对象指针；NULL 表示当前绘图目标
+ * @return 只读的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
+ * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。OpenGL 后端会先同步待处理的
+ *       绘制，必要时会同步等待 GPU 回读。
+ * @note 指针的有效期和线程限制与可写重载相同。
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 

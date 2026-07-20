@@ -8,14 +8,45 @@ endforeach()
 
 file(REMOVE_RECURSE "${EGE_BINARY_DIR}")
 
+set(configure_command
+    "${CMAKE_COMMAND}"
+    -S "${EGE_SOURCE_DIR}"
+    -B "${EGE_BINARY_DIR}"
+    -DEGE_BUILD_DEMO=OFF
+    -DEGE_BUILD_TEST=OFF
+    -DEGE_BUILD_TEMP=OFF
+    -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+)
+
+if(CMAKE_HOST_WIN32)
+    # This test validates platform option defaults, not CMake's generator
+    # selection. A nested Visual Studio configure can strand MSBuild tracking
+    # processes when CTest itself runs from a non-interactive shell. Prefer a
+    # multi-config Ninja probe with the already validated parent toolchain so
+    # CMAKE_BUILD_TYPE remains intentionally unset and no backend option is
+    # smuggled into the contract check.
+    find_program(EGE_NINJA_EXECUTABLE ninja)
+    if(EGE_NINJA_EXECUTABLE AND
+       DEFINED EGE_C_COMPILER AND NOT EGE_C_COMPILER STREQUAL "" AND
+       DEFINED EGE_CXX_COMPILER AND NOT EGE_CXX_COMPILER STREQUAL "")
+        list(APPEND configure_command
+            -G "Ninja Multi-Config"
+            "-DCMAKE_MAKE_PROGRAM=${EGE_NINJA_EXECUTABLE}"
+            "-DCMAKE_C_COMPILER=${EGE_C_COMPILER}"
+            "-DCMAKE_CXX_COMPILER=${EGE_CXX_COMPILER}"
+            -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+        )
+        if(DEFINED EGE_AR AND NOT EGE_AR STREQUAL "")
+            list(APPEND configure_command "-DCMAKE_AR=${EGE_AR}")
+        endif()
+        if(DEFINED EGE_LINKER AND NOT EGE_LINKER STREQUAL "")
+            list(APPEND configure_command "-DCMAKE_LINKER=${EGE_LINKER}")
+        endif()
+    endif()
+endif()
+
 execute_process(
-    COMMAND "${CMAKE_COMMAND}"
-        -S "${EGE_SOURCE_DIR}"
-        -B "${EGE_BINARY_DIR}"
-        -DEGE_BUILD_DEMO=OFF
-        -DEGE_BUILD_TEST=OFF
-        -DEGE_BUILD_TEMP=OFF
-        -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+    COMMAND ${configure_command}
     RESULT_VARIABLE configure_result
     OUTPUT_VARIABLE configure_stdout
     ERROR_VARIABLE configure_stderr

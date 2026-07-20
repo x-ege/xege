@@ -90,7 +90,6 @@ public:
     HDC     m_hDC;
     GraphicsContext* m_gc;
     RenderTarget* m_renderTarget;  // OpenGL RenderTarget (null for GDI backend)
-    bool    m_glDirty;             // CPU buffer vs GPU texture out of sync
     HBITMAP m_hBmp;
     int     m_width;
     int     m_height;
@@ -143,7 +142,8 @@ public:
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
-    color_t* getbuffer() const;
+    color_t*       getbuffer();
+    const color_t* getbuffer() const;
 #ifdef EGE_GDIPLUS
     // TODO: thread safe?
     Gdiplus::Graphics* getGraphics();

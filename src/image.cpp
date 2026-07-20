@@ -90,7 +90,6 @@ void IMAGE::reset()
     m_hDC       = NULL;
     m_gc        = NULL;
     m_renderTarget = NULL;
-    m_glDirty   = true;
     m_hBmp      = NULL;
     m_width     = 0;
     m_height    = 0;
@@ -203,11 +202,16 @@ IMAGE::IMAGE(const IMAGE& img)
     else if (m_hDC && img.m_hDC) {
         BitBlt(m_hDC, 0, 0, img.m_width, img.m_height, img.m_hDC, 0, 0, SRCCOPY);
     }
-#else
-    else if (m_pBuffer && img.m_pBuffer && img.m_width > 0 && img.m_height > 0) {
-        std::copy(img.m_pBuffer, img.m_pBuffer + img.m_width * img.m_height, m_pBuffer);
-    }
 #endif
+    else if (img.m_width > 0 && img.m_height > 0) {
+        const color_t* sourceBuffer = img.getbuffer();
+        color_t* destinationBuffer = getbuffer();
+        if (sourceBuffer && destinationBuffer) {
+            std::copy(sourceBuffer,
+                      sourceBuffer + static_cast<size_t>(img.m_width) * img.m_height,
+                      destinationBuffer);
+        }
+    }
 }
 
 IMAGE::~IMAGE()
@@ -286,7 +290,6 @@ int IMAGE::deleteimage()
         delete m_renderTarget;
         m_renderTarget = NULL;
         m_pBuffer = NULL;
-        m_glDirty = true;
     }
 
 #ifdef _WIN32
@@ -360,7 +363,6 @@ void IMAGE::initimage(HDC refDC, int width, int height)
         if (width > 0 && height > 0 &&
             static_cast<GlRenderTarget*>(m_renderTarget)->initOffscreen(width, height)) {
             m_pBuffer = reinterpret_cast<PDWORD>(m_renderTarget->getPixelBuffer());
-            m_glDirty = false;
             m_width = width;
             m_height = height;
             setviewport(0, 0, m_width, m_height, false, this);
@@ -401,7 +403,6 @@ void IMAGE::initimage(HDC refDC, int width, int height)
         m_renderTarget = NULL;
         m_pBuffer = width > 0 && height > 0 ? new DWORD[width * height]() : NULL;
     }
-    m_glDirty = false;
 #else
     m_pBuffer = width > 0 && height > 0 ? new DWORD[width * height]() : NULL;
 #endif
@@ -429,14 +430,33 @@ void IMAGE::setdefaultattribute()
     enable_anti_alias(false);
 }
 
-color_t* IMAGE::getbuffer() const
+color_t* IMAGE::getbuffer()
 {
     if (m_renderTarget) {
         color_t* buffer = m_renderTarget->getPixelBuffer();
-        const_cast<IMAGE*>(this)->m_pBuffer = reinterpret_cast<PDWORD>(buffer);
+        m_pBuffer = reinterpret_cast<PDWORD>(buffer);
         return buffer;
     }
+#ifdef _WIN32
+    if (m_hDC) {
+        GdiFlush();
+    }
+#endif
     return reinterpret_cast<color_t*>(m_pBuffer);
+}
+
+const color_t* IMAGE::getbuffer() const
+{
+    if (m_renderTarget) {
+        const RenderTarget* renderTarget = m_renderTarget;
+        return renderTarget->getPixelBuffer();
+    }
+#ifdef _WIN32
+    if (m_hDC) {
+        GdiFlush();
+    }
+#endif
+    return reinterpret_cast<const color_t*>(m_pBuffer);
 }
 
 #ifdef EGE_GDIPLUS
@@ -666,24 +686,26 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
         CONVERT_IMAGE_END;
         return grOk;
     }
-    // OpenGL backend: read pixels from source render target into dest image's CPU buffer
-#ifdef EGE_BUILD_OPENGL
-    if (img->m_renderTarget && this->m_pBuffer && srcWidth > 0 && srcHeight > 0) {
-        const color_t* srcPixels = img->m_renderTarget->getPixelBuffer();
-        if (srcPixels) {
-            int srcW = img->m_renderTarget->getWidth();
-            for (int y = 0; y < srcHeight; y++) {
-                for (int x = 0; x < srcWidth; x++) {
-                    this->m_pBuffer[y * srcWidth + x] =
-                        srcPixels[(ySrc + img->m_vpt.top + y) * srcW +
-                                  (xSrc + img->m_vpt.left + x)];
+    // A Windows OpenGL process can contain legacy DIB images created before
+    // the GL window and render-target-backed images created afterwards. Use
+    // the synchronized CPU views whenever only one side has a render target.
+    if (this->m_renderTarget || img->m_renderTarget) {
+        const color_t* sourcePixels = img->getbuffer();
+        color_t* destinationPixels = this->getbuffer();
+        if (sourcePixels && destinationPixels && srcWidth > 0 && srcHeight > 0) {
+            for (int y = 0; y < srcHeight; ++y) {
+                for (int x = 0; x < srcWidth; ++x) {
+                    destinationPixels[y * srcWidth + x] =
+                        sourcePixels[(ySrc + img->m_vpt.top + y) * img->m_width +
+                                     (xSrc + img->m_vpt.left + x)];
                 }
             }
-            this->m_glDirty = true;
         }
         CONVERT_IMAGE_END;
         return grOk;
     }
+
+#ifdef EGE_BUILD_OPENGL
     // Fallback: read from the active OpenGL window's default framebuffer.
     // EGE_BUILD_OPENGL also compiles the legacy GDI backend on Windows, so
     // compile-time availability alone does not prove that a GL context (or
@@ -707,7 +729,6 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
             }
         }
         delete[] tmpBuf;
-        this->m_glDirty = true;
         CONVERT_IMAGE_END;
         return grOk;
     }
@@ -848,6 +869,13 @@ void IMAGE::putimage(
                               physicalSourceX, physicalSourceY,
                               widthDest, heightDest, dwRop);
         }
+        CONVERT_IMAGE_END;
+        return;
+    }
+    if (img && (img->m_renderTarget || this->m_renderTarget)) {
+        putimageRasterCpu(img, this, xDest, yDest, widthDest, heightDest,
+                          xSrc + m_vpt.left, ySrc + m_vpt.top,
+                          widthDest, heightDest, dwRop);
         CONVERT_IMAGE_END;
         return;
     }
@@ -1218,6 +1246,13 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
             CONVERT_IMAGE_END;
             return;
         }
+        if (img->m_renderTarget || this->m_renderTarget) {
+            putimageRasterCpu(img, this, xDest, yDest, widthDest, heightDest,
+                              xSrc + m_vpt.left, ySrc + m_vpt.top,
+                              srcWidth, srcHeight, dwRop);
+            CONVERT_IMAGE_END;
+            return;
+        }
 #ifndef _WIN32
         putimageRasterCpu(img, this, xDest, yDest, widthDest, heightDest,
                           xSrc + m_vpt.left, ySrc + m_vpt.top,
@@ -1321,10 +1356,15 @@ int IMAGE::putimage_transparent(PIMAGE imgDest,           // handle to dest
         }
         int     y, x;
         DWORD   ddx, dsx;
-        DWORD * pdp, *psp, cr;
+        color_t* pdp;
+        const color_t* psp;
+        color_t cr;
         // draw
-        pdp = img->m_pBuffer + yDest * img->m_width + xDest;
-        psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
+        color_t* destinationBuffer = img->getbuffer();
+        const color_t* sourceBuffer = imgSrc->getbuffer();
+        if (!destinationBuffer || !sourceBuffer) return grInvalidMemory;
+        pdp = destinationBuffer + yDest * img->m_width + xDest;
+        psp = sourceBuffer + ySrc * imgSrc->m_width + xSrc;
         ddx = img->m_width - widthSrc;
         dsx = imgSrc->m_width - widthSrc;
         cr  = transparentColor & 0x00FFFFFF;
@@ -1380,8 +1420,11 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
         }
 
         if (colorType == COLORTYPE_RGB32 || colorType == COLORTYPE_ARGB32) {
-            DWORD* pdp = img->m_pBuffer + yDest * img->m_width + xDest;
-            DWORD* psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
+            color_t* destinationBuffer = img->getbuffer();
+            const color_t* sourceBuffer = imgSrc->getbuffer();
+            if (!destinationBuffer || !sourceBuffer) return grInvalidMemory;
+            color_t* pdp = destinationBuffer + yDest * img->m_width + xDest;
+            const color_t* psp = sourceBuffer + ySrc * imgSrc->m_width + xSrc;
             DWORD  ddx = img->m_width - widthSrc;
             DWORD  dsx = imgSrc->m_width - widthSrc;
 
@@ -1416,6 +1459,26 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
                 }
             }
         } else { // COLORTYPE_PRGB32 or other
+            if (img->m_renderTarget || this->m_renderTarget) {
+                color_t* destinationBuffer = img->getbuffer();
+                const color_t* sourceBuffer = imgSrc->getbuffer();
+                if (!destinationBuffer || !sourceBuffer) return grInvalidMemory;
+
+                color_t* pdp = destinationBuffer + yDest * img->m_width + xDest;
+                const color_t* psp = sourceBuffer +
+                    (ySrc + m_vpt.top) * imgSrc->m_width + xSrc + m_vpt.left;
+                const int destinationSkip = img->m_width - widthSrc;
+                const int sourceSkip = imgSrc->m_width - widthSrc;
+                for (int y = 0; y < heightSrc; ++y) {
+                    for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
+                        *pdp = alphablend_premul_inline(*pdp, *psp, alpha);
+                    }
+                    pdp += destinationSkip;
+                    psp += sourceSkip;
+                }
+                CONVERT_IMAGE_END;
+                return grOk;
+            }
 #ifdef _WIN32
             BLENDFUNCTION bf;
             bf.BlendOp             = AC_SRC_OVER;
@@ -1589,10 +1652,15 @@ int IMAGE::putimage_alphatransparent(PIMAGE imgDest,           // handle to dest
         }
         int     y, x;
         DWORD   ddx, dsx;
-        DWORD * pdp, *psp, cr;
+        color_t* pdp;
+        const color_t* psp;
+        color_t cr;
         // draw
-        pdp = img->m_pBuffer + yDest * img->m_width + xDest;
-        psp = imgSrc->m_pBuffer + ySrc * imgSrc->m_width + xSrc;
+        color_t* destinationBuffer = img->getbuffer();
+        const color_t* sourceBuffer = imgSrc->getbuffer();
+        if (!destinationBuffer || !sourceBuffer) return grInvalidMemory;
+        pdp = destinationBuffer + yDest * img->m_width + xDest;
+        psp = sourceBuffer + ySrc * imgSrc->m_width + xSrc;
         ddx = img->m_width - widthSrc;
         dsx = imgSrc->m_width - widthSrc;
         cr  = transparentColor & 0x00FFFFFF;
@@ -1640,9 +1708,26 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
             CONVERT_IMAGE_END;
             return grOk;
         }
-        int     y, x;
-        DWORD   ddx, dsx;
-        DWORD * pdp, *psp;
+        if (img->m_renderTarget || this->m_renderTarget) {
+            color_t* destinationBuffer = img->getbuffer();
+            const color_t* sourceBuffer = imgSrc->getbuffer();
+            if (!destinationBuffer || !sourceBuffer) return grInvalidMemory;
+
+            color_t* pdp = destinationBuffer + yDest * img->m_width + xDest;
+            const color_t* psp = sourceBuffer +
+                (ySrc + m_vpt.top) * imgSrc->m_width + xSrc + m_vpt.left;
+            const int destinationSkip = img->m_width - widthSrc;
+            const int sourceSkip = imgSrc->m_width - widthSrc;
+            for (int y = 0; y < heightSrc; ++y) {
+                for (int x = 0; x < widthSrc; ++x, ++psp, ++pdp) {
+                    *pdp = alphablend_premul_inline(*pdp, *psp);
+                }
+                pdp += destinationSkip;
+                psp += sourceSkip;
+            }
+            CONVERT_IMAGE_END;
+            return grOk;
+        }
 
 #ifdef _WIN32
         BLENDFUNCTION bf;

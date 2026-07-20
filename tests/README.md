@@ -27,6 +27,10 @@
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
 
+`default_build_contract` 在 Windows 优先复用父构建已验证的 MSVC，并以
+`Ninja Multi-Config` 做空目录配置探测，避免非交互 CTest 中嵌套 MSBuild 的进程跟踪
+干扰；探测命令不会传入任何后端选项，因此仍会验证 Windows 默认 GDI 的真实契约。
+
 ### 图片传输正确性矩阵
 
 `putimage_*` 专项程序是计时/压力程序，不包含像素断言；贴图功能门禁集中在
@@ -34,11 +38,12 @@
 
 | 接口族 | 确定性断言 |
 | --- | --- |
+| `getbuffer` | const/可写重载、IMAGE/当前绘图目标、GPU→CPU 回读、CPU→GPU 上传、直接修改后继续绘制，以及 GDI DIB 与 OpenGL IMAGE 的双向同步 |
 | `getimage`、`putimage` | 屏幕/IMAGE、整图/源矩形/拉伸重载，源和目标 viewport，裁剪、GPU/CPU 缓冲同步、自身重叠复制 |
 | BitBlt ROP | 15 个标准三元光栅操作（包括 pattern、blackness、whiteness）逐像素验证 |
 | `putimage_transparent`、`putimage_alphatransparent` | 默认范围、显式源矩形、负目标裁剪、颜色键、全局 alpha、目标 alpha 保留 |
-| `putimage_alphablend` | 4 个重载，RGB32/ARGB32/PRGB32，0/128/255 alpha，源矩形、viewport、拉伸及平滑采样 |
-| `putimage_withalpha`、`putimage_alphafilter` | 两个 with-alpha 重载、PRGB 合成、平滑拉伸、mask stride/零值/null、GPU 目标同步 |
+| `putimage_alphablend` | 4 个重载，RGB32/ARGB32/PRGB32，0/128/255 alpha，源矩形、viewport、拉伸、平滑采样及 GDI/OpenGL 混合目标 |
+| `putimage_withalpha`、`putimage_alphafilter` | 两个 with-alpha 重载、PRGB 合成、平滑拉伸、mask stride/零值/null、GPU 目标同步及 GDI/OpenGL 双向混合 |
 | 旋转接口 | `putimage_rotate`、`putimage_rotatezoom`、两个 `putimage_rotatetransparent` 重载，中心坐标、非方形旋转、缩放、全局 alpha、零值透明和平滑路径 |
 | 增强贴图 | `ege_gentexture` 开/关、3 个 `ege_puttexture` 重载、2 个 `ege_drawimage` 重载、纹理填充、变换、生成后的源更新及 resize 生命周期 |
 | 图片格式 | PNG/BMP 普通及 alpha 往返、尺寸/方向/像素/文件头，`saveimage` 分派、`getimage_pngfile`，以及 Windows EXE 内嵌 PNG 的 char/wchar 资源重载 |

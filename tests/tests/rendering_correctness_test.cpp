@@ -714,6 +714,114 @@ void testBufferMutationFeedsImageTransfer()
     ege::delimage(source);
 }
 
+void testConstAndScreenBufferSynchronization()
+{
+    ege::PIMAGE image = ege::newimage(4, 4);
+    resetImage(image, ege::BLACK);
+    ege::putpixel(2, 1, ege::YELLOW, image);
+
+    ege::PCIMAGE readOnlyImage = image;
+    const ege::color_t* readOnlyPixels = ege::getbuffer(readOnlyImage);
+    expect(readOnlyPixels != nullptr && rgb(readOnlyPixels[1 * 4 + 2]) == rgb(ege::YELLOW),
+           "const getbuffer overload reads the latest rendered pixels");
+    ege::putpixel(3, 2, ege::CYAN, image);
+    expectPixel(image, 3, 2, ege::CYAN,
+                "GPU drawing remains valid after a read-only buffer access");
+
+    ege::settarget(nullptr);
+    ege::setviewport(0, 0, 64, 64, true);
+    ege::setbkcolor(ege::BLACK);
+    ege::cleardevice();
+    ege::color_t* screenPixels = ege::getbuffer(static_cast<ege::PIMAGE>(nullptr));
+    expect(screenPixels != nullptr, "screen getbuffer returns writable storage");
+    if (screenPixels) {
+        screenPixels[6 * 64 + 5] = ege::MAGENTA;
+    }
+
+    ege::PIMAGE stamp = ege::newimage(2, 2);
+    resetImage(stamp, ege::RED);
+    ege::putimage(nullptr, 8, 8, stamp);
+
+    ege::PIMAGE capture = ege::newimage();
+    expect(ege::getimage(capture, 0, 0, 12, 12) == ege::grOk,
+           "screen buffer edits can be captured without presenting first");
+    expectPixel(capture, 5, 6, ege::MAGENTA,
+                "an immediate image draw preserves earlier screen getbuffer mutations");
+    expectPixel(capture, 8, 8, ege::RED,
+                "screen image drawing remains valid after direct buffer mutations");
+
+    ege::delimage(stamp);
+    ege::delimage(capture);
+    ege::delimage(image);
+}
+
+void testMixedBackendBufferSynchronization(ege::PIMAGE legacySource,
+                                           ege::PIMAGE legacyDestination)
+{
+    if (!legacySource || !legacyDestination) return;
+
+    ege::color_t* legacySourcePixels = ege::getbuffer(legacySource);
+    std::fill(legacySourcePixels, legacySourcePixels + 6, ege::MAGENTA);
+    legacySourcePixels[0] = ege::RED;
+    legacySourcePixels[1] = ege::GREEN;
+    legacySourcePixels[3] = ege::BLUE;
+    legacySourcePixels[4] = ege::WHITE;
+
+    ege::PIMAGE gpuDestination = ege::newimage(3, 2);
+    resetImage(gpuDestination, ege::BLACK);
+    ege::putimage(gpuDestination, 0, 0, legacySource);
+    expectPixel(gpuDestination, 1, 0, ege::GREEN,
+                "putimage copies a legacy GDI image into an OpenGL image");
+
+    resetImage(gpuDestination, ege::BLACK);
+    ege::putimage_transparent(gpuDestination, legacySource, 0, 0, ege::MAGENTA);
+    expectPixel(gpuDestination, 0, 1, ege::BLUE,
+                "transparent transfer synchronizes a GDI source and OpenGL destination");
+    expectPixel(gpuDestination, 2, 1, ege::BLACK,
+                "mixed transparent transfer preserves keyed destination pixels");
+
+    const ege::color_t premultipliedRed = EGEARGB(128, 128, 0, 0);
+    legacySourcePixels = ege::getbuffer(legacySource);
+    legacySourcePixels[0] = premultipliedRed;
+    resetImage(gpuDestination, ege::BLUE);
+    expect(ege::putimage_alphablend(gpuDestination, legacySource, 0, 0, 255,
+                                    ege::COLORTYPE_PRGB32) == ege::grOk,
+           "premultiplied alpha blend accepts a GDI source and OpenGL destination");
+    expectPixel(gpuDestination, 0, 0,
+                ege::alphablend_premultiplied(ege::BLUE, premultipliedRed),
+                "mixed premultiplied alpha blend composites synchronized pixels");
+
+    ege::PIMAGE cropped = ege::newimage();
+    expect(ege::getimage(cropped, legacySource, 0, 0, 3, 2) == ege::grOk,
+           "getimage accepts a GDI source and OpenGL destination");
+    expectPixel(cropped, 1, 1, ege::WHITE,
+                "mixed-backend getimage copies source pixels instead of the screen framebuffer");
+
+    ege::PIMAGE gpuSource = ege::newimage(3, 2);
+    resetImage(gpuSource, ege::MAGENTA);
+    ege::putpixel(2, 0, ege::CYAN, gpuSource);
+    ege::color_t* legacyDestinationPixels = ege::getbuffer(legacyDestination);
+    std::fill(legacyDestinationPixels, legacyDestinationPixels + 6, ege::BLACK);
+    ege::putimage_transparent(legacyDestination, gpuSource, 0, 0, ege::MAGENTA);
+    expectPixel(legacyDestination, 2, 0, ege::CYAN,
+                "transparent transfer synchronizes an OpenGL source and GDI destination");
+
+    ege::color_t* gpuSourcePixels = ege::getbuffer(gpuSource);
+    gpuSourcePixels[0] = premultipliedRed;
+    legacyDestinationPixels = ege::getbuffer(legacyDestination);
+    std::fill(legacyDestinationPixels, legacyDestinationPixels + 6, ege::BLUE);
+    expect(ege::putimage_withalpha(legacyDestination, gpuSource,
+                                   0, 0, 0, 0, 1, 1) == ege::grOk,
+           "with-alpha accepts an OpenGL source and GDI destination");
+    expectPixel(legacyDestination, 0, 0,
+                ege::alphablend_premultiplied(ege::BLUE, premultipliedRed),
+                "mixed with-alpha composites synchronized pixels");
+
+    ege::delimage(gpuSource);
+    ege::delimage(cropped);
+    ege::delimage(gpuDestination);
+}
+
 void testImageTransfersHonorViewportOrigin()
 {
     ege::PIMAGE source = ege::newimage(2, 1);
@@ -2888,10 +2996,16 @@ int main()
 {
     ege::initmode_flag mode = static_cast<ege::initmode_flag>(
         ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+    ege::PIMAGE legacyPreInitSource = nullptr;
+    ege::PIMAGE legacyPreInitDestination = nullptr;
 #if defined(_WIN32) && defined(EGE_BUILD_OPENGL)
     const char* openGlMode = std::getenv("EGE_TEST_OPENGL");
     if (openGlMode != nullptr && openGlMode[0] == '1') {
         mode = static_cast<ege::initmode_flag>(mode | ege::INIT_OPENGL);
+        // Images created before the OpenGL window exists retain the legacy
+        // DIB backend. They exercise the supported mixed-backend fallback.
+        legacyPreInitSource = ege::newimage(3, 2);
+        legacyPreInitDestination = ege::newimage(3, 2);
     }
 #endif
     ege::initgraph(64, 64, mode);
@@ -2915,6 +3029,8 @@ int main()
     testPolygonCoordinates();
     testViewportOriginAndClip();
     testBufferMutationFeedsImageTransfer();
+    testConstAndScreenBufferSynchronization();
+    testMixedBackendBufferSynchronization(legacyPreInitSource, legacyPreInitDestination);
     testImageTransfersHonorViewportOrigin();
     testImageTransfersHonorSourceViewportOrigin();
     testColorAndMathUtilities();
@@ -2953,6 +3069,9 @@ int main()
 #ifdef _WIN32
     testResourceImageLoading();
 #endif
+
+    ege::delimage(legacyPreInitDestination);
+    ege::delimage(legacyPreInitSource);
 
     expect(shutdown_graphics_for_test(),
            "the graphics test window and UI thread shut down cleanly");

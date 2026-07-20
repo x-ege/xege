@@ -187,6 +187,13 @@ public:
     void rebuild(int width, int height);
 
 private:
+    enum class PixelSyncState {
+        Synchronized,
+        CpuNewer,
+        GpuNewer,
+        ScreenTextureNewer
+    };
+
     void appendFillTriangle(float x0, float y0, float x1, float y1,
                             float x2, float y2, float r, float g, float b, float a);
     void appendFillQuad(float x0, float y0, float x1, float y1,
@@ -242,8 +249,7 @@ private:
 
     // CPU pixel buffer
     color_t* m_cpuBuffer;
-    mutable bool m_gpuDirty;   // GPU content is newer than the CPU buffer
-    bool m_cpuDirty;           // CPU buffer may have been changed through getbuffer()
+    mutable PixelSyncState m_pixelSyncState;
 
     // Dimensions
     int      m_width;
