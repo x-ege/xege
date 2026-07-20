@@ -432,6 +432,30 @@ void testEnhancedFillAndCornerRadiusCompatibility()
     expectPixel(image, 0, 0, ege::BLACK,
                 "a rebuilt enhanced drawing surface does not lose its viewport origin");
 
+    ege::ege_transform_reset(image);
+    resetImage(image, ege::BLACK);
+    ege::setfillcolor(ege::GREEN, image);
+    ege::ege_transform_translate(9.0f, 6.0f, image);
+    ege::ege_fillrect(0.0f, 0.0f, 4.0f, 4.0f, image);
+    expect(ege::resize_f(image, 64, 48) == ege::grOk,
+           "resizing an image with an enhanced transform succeeds");
+    ege::setbkcolor_f(ege::BLACK, image);
+    ege::cleardevice(image);
+    ege::ege_fillrect(0.0f, 0.0f, 4.0f, 4.0f, image);
+    ege::ege_transform_reset(image);
+    expectPixel(image, 9, 6, ege::GREEN,
+                "enhanced drawing preserves its transform after a buffer rebuild");
+    expectPixel(image, 0, 0, ege::BLACK,
+                "a rebuilt enhanced drawing surface does not reset its transform");
+
+    resetImage(image, ege::BLACK);
+    ege::setlinecolor(ege::RED, image);
+    ege::line(2, 2, 20, 2, image);
+    expect(ege::resize_f(image, 72, 52) == ege::grOk,
+           "resizing an image with queued native primitives succeeds");
+    expectPixel(image, 10, 2, ege::BLACK,
+                "a buffer rebuild discards primitives queued for the old image storage");
+
     ege::delimage(image);
 }
 

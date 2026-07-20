@@ -2399,6 +2399,11 @@ void GlRenderTarget::syncToGpu() {
 void GlRenderTarget::rebuild(int width, int height) {
     if (!m_initialized) return;
 
+    // resize_f replaces the image storage instead of preserving its pixels.
+    // Primitives queued against the old dimensions must not be replayed into
+    // the newly allocated framebuffer on the next readback or flush.
+    m_vertices.clear();
+
     // Delete old GPU resources
     glDeleteTextures(1, &m_texture);
     if (!m_isOnScreen) glDeleteFramebuffers(1, &m_fbo);

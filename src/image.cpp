@@ -634,8 +634,12 @@ int IMAGE::resize_f(int width, int height)
 
     // BITMAP 更换后需重新创建 Graphics 对象(否则会在已销毁的 old_bitmap 上绘制，引发异常)
 #ifdef EGE_GDIPLUS
+    Gdiplus::Matrix savedRenderTargetTransform;
+    bool restoreRenderTargetTransform = false;
     if (m_graphics != NULL) {
         if (m_renderTarget) {
+            m_graphics->GetTransform(&savedRenderTargetTransform);
+            restoreRenderTargetTransform = true;
             delete m_graphics;
             m_graphics = NULL;
             delete m_graphicsBitmap;
@@ -655,8 +659,6 @@ int IMAGE::resize_f(int width, int height)
         viewport.set(0, 0, width, height);
     }
 
-    setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
-
     // Rebuild GPU texture when dimensions change (OpenGL backend only)
 #ifdef EGE_BUILD_OPENGL
     if (m_renderTarget && (width != oldWindowSize.width || height != oldWindowSize.height)) {
@@ -664,6 +666,17 @@ int IMAGE::resize_f(int width, int height)
         if (glRT) {
             glRT->rebuild(width, height);
             m_pBuffer = reinterpret_cast<PDWORD>(glRT->getPixelBuffer());
+        }
+    }
+#endif
+
+    setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
+
+#ifdef EGE_GDIPLUS
+    if (restoreRenderTargetTransform && width > 0 && height > 0) {
+        Gdiplus::Graphics* graphics = getGraphics();
+        if (graphics != NULL) {
+            graphics->SetTransform(&savedRenderTargetTransform);
         }
     }
 #endif
