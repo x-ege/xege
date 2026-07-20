@@ -64,6 +64,23 @@ OpenGL 像素状态改变 EGE 的内存布局。但上传带宽仍是整张图�
 非 `SRCCOPY` 的三元光栅操作和三图像 alpha filter 仍可能使用 CPU 正确性路径，因而读取 GPU
 目标时会产生同步等待。这些是冷门兼容接口，不影响普通纹理复制的快速路径。
 
+## 性能使用原则
+
+- 连续只读 GPU 图像时，第一次 `getpixel`、const `getbuffer` 或 `IMAGE_BUFFER_READ` 完成
+  回读，后续读取复用缓存。不要在 GPU 绘制和 CPU 读取之间逐像素交替，否则每次都会形成
+  必须完成的同步点。
+- 反复由 CPU 修改的图像应转为 `IMAGE_STORAGE_CPU_BITMAP`，保留一次取得的指针并集中写入；
+  每帧只在实际采样或上屏时提交。CPU 侧读取性能与 GDI DIB 相当，但 OpenGL 上屏仍需传输
+  整张图。
+- 完全覆盖旧内容时使用 `IMAGE_BUFFER_WRITE_DISCARD`，可跳过首次 GPU 回读；需要保留旧内容
+  才使用 `IMAGE_BUFFER_READ_WRITE`。兼容无参数重载继续等价于读写访问。
+- DIB 上的 `getpixel_f` 直接读取权威 `m_pBuffer`，不再为每个像素调用 `GdiFlush`；GPU
+  render target 仍通过只读同步缓冲读取，不会把一次物理像素查询误标记为待上传写入。
+
+专项数据由 `pixel_access_performance` 采集，并可用
+`tests/tools/run_pixel_performance_comparison.ps1` 在 Windows 上交替运行 GDI/OpenGL。基准只把
+正确性作为通过条件，不使用与 CPU、GPU、驱动相关的时间阈值。
+
 ## 指针与线程边界
 
 - 指针在图像 `resize`、重新加载为不同尺寸、删除，或窗口页缓冲重建后失效；之后必须重新获取。
@@ -86,5 +103,6 @@ Windows 回归同时运行 GDI 和 OpenGL 模式，覆盖访问意图、显式�
 并发写裸指针，以及用户在 `IMAGE_BUFFER_READ` 承诺只读后仍写入。前者需要对应平台 CI，
 后两者属于接口明确排除的未定义用法。
 
-对应回归位于 `rendering_correctness`，性能采样位于独立的
-`image_buffer_performance`（`performance` 标签），不会把机器相关耗时阈值混入功能门禁。
+对应回归位于 `rendering_correctness`，缓冲区和完整像素接口性能采样分别位于独立的
+`image_buffer_performance`、`pixel_access_performance`（`performance` 标签），不会把机器
+相关耗时阈值混入功能门禁。

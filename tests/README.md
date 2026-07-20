@@ -1,6 +1,6 @@
 # EGE 测试套件
 
-测试套件同时覆盖 EGE 的行为正确性和 `putimage*` 性能。跨平台重构以确定性的像素、状态和文件往返断言为主，不依赖人工观察窗口截图。所有 `putimage*` 计时程序都带有 `performance` 标签，不作为每个平台/配置都重复执行的功能门禁。
+测试套件同时覆盖 EGE 的行为正确性以及贴图、像素缓冲性能。跨平台重构以确定性的像素、状态和文件往返断言为主，不依赖人工观察窗口截图。所有计时程序都带有 `performance` 标签，不作为每个平台/配置都重复执行的功能门禁。
 
 ## 覆盖范围
 
@@ -30,6 +30,7 @@
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
 | `image_buffer_performance` | `getbuffer` 首次/缓存读回、可写访问转换、保留 CPU Bitmap 指针后的逐次上传，以及独立 GPU→GPU `getimage` 复制性能基准 |
+| `pixel_access_performance` | 完整像素 get/put 家族、GPU 写后读同步、三种 `getbuffer` 访问意图、持久 CPU Bitmap 读写与逐次上屏的双后端性能基准；每项同时验证结果像素和存储模式 |
 
 `default_build_contract` 在 Windows 优先复用父构建已验证的 MSVC，并以
 `Ninja Multi-Config` 做空目录配置探测，避免非交互 CTest 中嵌套 MSBuild 的进程跟踪
@@ -158,6 +159,22 @@ ctest --test-dir build/native-debug \
 ```bash
 ctest --test-dir build/native-debug --output-on-failure -L performance
 ```
+
+Windows Release 下可用同一工具交替启动 GDI/OpenGL 独立进程，避免固定启动顺序造成
+热状态偏差，并生成逐轮原始数据和汇总对比：
+
+```powershell
+powershell -NoProfile -File tests/tools/run_pixel_performance_comparison.ps1 `
+  -Runs 5 `
+  -Configuration Release `
+  -GdiBuildDirectory build/gdi `
+  -OpenGlBuildDirectory build/opengl
+```
+
+`pixel_access_performance` 对每项执行 3 次预热和 21 次计时，报告中位数、P95、均值、
+标准差和每操作耗时；对比工具再取 5 个独立进程中位数的中位数。输出目录包含每轮日志、
+`raw.csv`、`comparison.csv` 和 `environment.json`。性能结果不设置跨机器硬阈值，像素错误或
+存储模式错误仍会使测试失败。
 
 只运行渲染正确性测试：
 
