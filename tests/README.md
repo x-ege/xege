@@ -29,7 +29,7 @@
 | `putimage_comparison` | 多种图片路径的结果对比 |
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
-| `image_buffer_performance` | `getbuffer` 首次/缓存读回、CPU 修改后上传，以及 GPU→GPU `getimage` 复制性能基准 |
+| `image_buffer_performance` | `getbuffer` 首次/缓存读回、可写访问转换、保留 CPU Bitmap 指针后的逐次上传，以及独立 GPU→GPU `getimage` 复制性能基准 |
 
 `default_build_contract` 在 Windows 优先复用父构建已验证的 MSVC，并以
 `Ninja Multi-Config` 做空目录配置探测，避免非交互 CTest 中嵌套 MSBuild 的进程跟踪
@@ -42,7 +42,7 @@
 
 | 接口族 | 确定性断言 |
 | --- | --- |
-| `getbuffer` | const/可写重载、IMAGE/当前绘图目标、GPU→CPU 回读、CPU→GPU 上传、直接修改后继续绘制，以及 GDI DIB 与 OpenGL IMAGE 的双向同步 |
+| `getbuffer` | const/访问意图/兼容可写重载、非法参数、存储类型查询与显式转换、IMAGE/当前绘图目标、GPU→CPU 首次回读、持久 CPU Bitmap 每次上屏上传、保留指针跨 EGE 绘制继续写入、普通绘图状态/GDI+ 仿射变换与画刷/resize 迁移，以及基础、拉伸、透明、Alpha、旋转、增强绘图和 `getimage` 的 CPU→GPU 采样桥与反向 GPU→CPU Bitmap 混合路径 |
 | `getimage`、`putimage` | 屏幕/IMAGE、整图/源矩形/拉伸重载，源和目标 viewport，裁剪、GPU/CPU 缓冲同步、自身重叠复制 |
 | BitBlt ROP | 15 个标准三元光栅操作（包括 pattern、blackness、whiteness）逐像素验证 |
 | `putimage_transparent`、`putimage_alphatransparent` | 默认范围、显式源矩形、负目标裁剪、颜色键、全局 alpha、目标 alpha 保留 |
@@ -66,8 +66,8 @@ python tests/tools/audit_public_api_coverage.py --summary
 ```
 
 审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名及标准化声明是否一致，并扫描
-测试和 demo 中的真实调用（忽略注释与字符串）。当前 288 个公共函数名均有直接自动化
-测试调用；去重后的 382 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
+测试和 demo 中的真实调用（忽略注释与字符串）。当前 290 个公共函数名均有直接自动化
+测试调用；去重后的 385 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
 若以后新增了未被直接测试、未被人工分类的公共函数，或新增声明没有任何参数个数证据，
 审计脚本会返回失败。
 
