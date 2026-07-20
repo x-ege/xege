@@ -1680,6 +1680,21 @@ typedef IMAGE *PIMAGE;
 /// @brief Constant image object pointer type
 typedef const IMAGE *PCIMAGE;
 
+/** @brief Storage used by an IMAGE. */
+enum image_storage_mode
+{
+    IMAGE_STORAGE_GPU = 0,        ///< Rendering and authoritative pixels live in a GPU target
+    IMAGE_STORAGE_CPU_BITMAP = 1  ///< A persistent CPU bitmap is authoritative
+};
+
+/** @brief Intended access for the getbuffer(PIMAGE, image_buffer_access) overload. */
+enum image_buffer_access
+{
+    IMAGE_BUFFER_READ = 0,          ///< Read existing pixels; writing through the pointer is unsupported
+    IMAGE_BUFFER_READ_WRITE = 1,    ///< Preserve existing pixels and allow persistent writes
+    IMAGE_BUFFER_WRITE_DISCARD = 2  ///< Discard old pixels and allow persistent writes
+};
+
 /**
  * @brief Set code page
  *
@@ -4620,16 +4635,33 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * @brief Get image pixel buffer pointer
  * @param pimg Image object pointer to get buffer from; NULL selects the current drawing target
  * @return Writable top-down ARGB pixel array with image width × image height elements
- * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. Finish a write batch
- *       before the next EGE drawing/image operation so the OpenGL backend can upload it.
- * @note After any EGE operation may have rendered to the image, call getbuffer again before
- *       another write batch. Writes through an old retained pointer cannot be detected.
+ * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. On Windows OpenGL,
+ *       this overload is equivalent to IMAGE_BUFFER_READ_WRITE: the first call preserves
+ *       existing pixels and promotes the image to a persistent CPU bitmap.
+ * @note The returned pointer remains authoritative across later EGE drawing and image
+ *       operations. Whenever the image is sampled by OpenGL or presented, its CPU bitmap
+ *       is uploaded again so writes through a retained pointer remain visible.
  * @note The pointer is invalidated when the image is resized, reloaded with different
  *       dimensions, deleted, or (for NULL) when the window buffer is recreated.
  * @note OpenGL may perform a synchronous GPU readback. Call this only on the graphics/context
  *       thread; concurrent access to the image or returned storage is not supported.
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
+
+/**
+ * @brief Get an image pixel buffer with an explicit access intent
+ * @param pimg Image object pointer; NULL selects the current drawing target
+ * @param access Required buffer access
+ * @return Top-down ARGB pixel array, or NULL if storage cannot be allocated
+ * @note IMAGE_BUFFER_READ avoids changing a GPU image into a CPU bitmap. The returned
+ *       pointer must not be written through in that mode.
+ * @note On Windows, either writable mode promotes an OpenGL image to persistent CPU
+ *       bitmap storage. IMAGE_BUFFER_WRITE_DISCARD avoids downloading old GPU pixels.
+ *       The caller must initialize every pixel that will subsequently be read.
+ * @note Native macOS/Linux OpenGL currently keeps the historical synchronized staging
+ *       buffer because no complete CPU drawing backend is available there.
+ */
+color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
 
 /**
  * @brief Get image pixel buffer pointer (read-only version)
@@ -4640,6 +4672,17 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
  * @note The pointer has the same lifetime and thread restrictions as the writable overload.
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
+
+/** @brief Return the authoritative storage currently used by an image. */
+image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
+
+/**
+ * @brief Change an image's authoritative storage mode
+ * @return grOk on success, grInvalidMode when the requested transition is unsupported
+ * @note GPU-to-CPU promotion preserves pixels. CPU-to-GPU demotion is intentionally not
+ *       implicit because it would invalidate retained writable buffer pointers.
+ */
+int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief Resize image (fast version)

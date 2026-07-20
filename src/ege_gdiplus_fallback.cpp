@@ -478,7 +478,9 @@ void ege_drawimage(PCIMAGE imgSrc, int xDest, int yDest, PIMAGE pimg)
 {
     PIMAGE target = resolve_target(pimg);
     if (!target || !imgSrc) return;
-    if (target->m_renderTarget && imgSrc->m_renderTarget) {
+    RenderTarget* sourceTarget = target->m_renderTarget
+        ? imgSrc->getRenderTargetForSampling() : NULL;
+    if (target->m_renderTarget && sourceTarget) {
         const ege_point corners[4] = {
             ege_transform_calc((float)xDest, (float)yDest, target),
             ege_transform_calc((float)(xDest + imgSrc->getwidth()), (float)yDest, target),
@@ -488,7 +490,7 @@ void ege_drawimage(PCIMAGE imgSrc, int xDest, int yDest, PIMAGE pimg)
         const float destinationPoints[8] = {
             corners[0].x, corners[0].y, corners[1].x, corners[1].y,
             corners[2].x, corners[2].y, corners[3].x, corners[3].y};
-        target->m_renderTarget->blitAffine(imgSrc->m_renderTarget,
+        target->m_renderTarget->blitAffine(sourceTarget,
                                            0, 0, imgSrc->getwidth(), imgSrc->getheight(),
                                            destinationPoints, true, false);
         return;
@@ -503,7 +505,9 @@ void ege_drawimage(PCIMAGE imgSrc,
 {
     PIMAGE target = resolve_target(pimg);
     if (!target || !imgSrc || widthSrc <= 0 || heightSrc <= 0) return;
-    if (target->m_renderTarget && imgSrc->m_renderTarget) {
+    RenderTarget* sourceTarget = target->m_renderTarget
+        ? imgSrc->getRenderTargetForSampling() : NULL;
+    if (target->m_renderTarget && sourceTarget) {
         const ege_point corners[4] = {
             ege_transform_calc((float)xDest, (float)yDest, target),
             ege_transform_calc((float)(xDest + widthDest), (float)yDest, target),
@@ -512,7 +516,7 @@ void ege_drawimage(PCIMAGE imgSrc,
         const float destinationPoints[8] = {
             corners[0].x, corners[0].y, corners[1].x, corners[1].y,
             corners[2].x, corners[2].y, corners[3].x, corners[3].y};
-        target->m_renderTarget->blitAffine(imgSrc->m_renderTarget,
+        target->m_renderTarget->blitAffine(sourceTarget,
                                            xSrc, ySrc, widthSrc, heightSrc,
                                            destinationPoints, true, false);
         return;

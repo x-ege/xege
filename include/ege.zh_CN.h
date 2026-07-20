@@ -1254,6 +1254,21 @@ typedef IMAGE *PIMAGE;
 /// @brief 常量图像对象指针类型
 typedef const IMAGE *PCIMAGE;
 
+/** @brief IMAGE 使用的权威存储类型。 */
+enum image_storage_mode
+{
+    IMAGE_STORAGE_GPU = 0,        ///< GPU 渲染目标保存权威像素
+    IMAGE_STORAGE_CPU_BITMAP = 1  ///< 持久 CPU 位图保存权威像素
+};
+
+/** @brief getbuffer(PIMAGE, image_buffer_access) 重载声明的访问方式。 */
+enum image_buffer_access
+{
+    IMAGE_BUFFER_READ = 0,          ///< 读取已有像素，不允许通过返回指针写入
+    IMAGE_BUFFER_READ_WRITE = 1,    ///< 保留已有像素并允许持久写入
+    IMAGE_BUFFER_WRITE_DISCARD = 2  ///< 丢弃旧像素并允许持久写入
+};
+
 /**
  * @brief 设置代码页
  *
@@ -4145,16 +4160,30 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * @brief 获取图像像素缓冲区指针
  * @param pimg 要获取缓冲区的图像对象指针；NULL 表示当前绘图目标
  * @return 可写的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
- * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。一次修改应在下一个 EGE
- *       绘图或图像操作之前完成，以便 OpenGL 后端同步到 GPU。
- * @note 图像经过任何可能产生绘制的 EGE 操作后，如需再次写入，必须重新调用
- *       getbuffer。后端无法检测通过旧指针进行的新一轮修改。
+ * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。Windows OpenGL 下，本重载
+ *       等价于 IMAGE_BUFFER_READ_WRITE：首次调用会保留旧像素，并把图像提升为持久
+ *       CPU 位图。
+ * @note 返回指针在后续 EGE 绘图和图像操作之间仍是权威存储。图像每次被 OpenGL
+ *       采样或上屏时都会重新上传 CPU 位图，因此继续通过原指针写入仍可见。
  * @note 调整图像尺寸、以不同尺寸重新载入图像、删除图像，或者窗口缓冲区因窗口
  *       尺寸变化而重建后，原指针失效。
  * @note OpenGL 后端可能同步等待 GPU 回读。只能在图形/上下文线程调用；不支持并发
  *       访问图像或返回的缓冲区。
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
+
+/**
+ * @brief 按指定访问方式获取图像像素缓冲区
+ * @param pimg 图像对象指针；NULL 表示当前绘图目标
+ * @param access 所需的缓冲区访问方式
+ * @return 按行从上到下排列的 ARGB 像素数组；分配失败时返回 NULL
+ * @note IMAGE_BUFFER_READ 不会把 GPU 图像转换为 CPU 位图，此模式下不得写入返回指针。
+ * @note Windows 下的可写模式会把 OpenGL 图像提升为持久 CPU 位图；
+ *       IMAGE_BUFFER_WRITE_DISCARD 不回读旧的 GPU 像素，调用方必须初始化后续会读取的
+ *       每一个像素。
+ * @note macOS/Linux 原生 OpenGL 目前仍使用历史同步暂存缓冲区，因为尚无完整 CPU 绘图后端。
+ */
+color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
 
 /**
  * @brief 获取图像像素缓冲区指针（只读版本）
@@ -4165,6 +4194,17 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
  * @note 指针的有效期和线程限制与可写重载相同。
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
+
+/** @brief 获取图像当前使用的权威存储类型。 */
+image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
+
+/**
+ * @brief 修改图像的权威存储类型
+ * @return 成功返回 grOk；不支持的转换返回 grInvalidMode
+ * @note GPU 到 CPU 的提升会保留像素。CPU 到 GPU 不会隐式执行，因为这会使用户保留的
+ *       可写缓冲区指针失效。
+ */
+int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief 调整图像尺寸（快速版本）

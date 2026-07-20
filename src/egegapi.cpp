@@ -68,6 +68,7 @@ int mousepos(int* x, int* y)
 void setwritemode(int mode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    img->m_writeMode = mode;
     if (img->m_renderTarget) {
         img->m_renderTarget->setRasterOp((RasterOp)mode);
     } else {
@@ -748,6 +749,7 @@ void setfillcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
+    img->m_fillstyle = SOLID_FILL;
     if (img->m_renderTarget) {
         // The Win32 backend replaces the current brush with a solid brush.
         // Preserve that observable behavior for the portable renderer too.
@@ -822,6 +824,7 @@ void EGEAPI setbkcolor_f(color_t color, PIMAGE pimg)
 
     if (img) {
         img->m_bk_color = color;
+        img->m_fontBkColor = color;
         if (img->m_hDC) {
 #ifdef _WIN32
             SetBkColor(img->m_hDC, ARGBTOZBGR(color));
@@ -862,6 +865,9 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
+    if (img) {
+        img->m_fontBkColor = color;
+    }
     if (img && img->m_hDC) {
 #ifdef _WIN32
         SetBkColor(img->m_hDC, ARGBTOZBGR(color));
@@ -876,6 +882,9 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 void setbkmode(int bkMode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        img->m_bkMode = bkMode;
+    }
     if (img && img->m_hDC) {
 #ifdef _WIN32
         SetBkMode(img->m_hDC, bkMode);
@@ -1872,6 +1881,7 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
+    img->m_fillstyle = pattern;
     if (img->m_renderTarget) {
         const FillStyle style = (pattern >= EMPTY_FILL && pattern <= USER_FILL)
             ? static_cast<FillStyle>(pattern) : FILL_SOLID;

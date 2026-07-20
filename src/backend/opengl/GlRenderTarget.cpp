@@ -2296,8 +2296,18 @@ void GlRenderTarget::downloadFromGpu() {
 
     GLint previousReadFramebuffer = 0;
     GLint previousReadBuffer = GL_BACK;
+    GLint previousPackBuffer = 0;
+    GLint previousPackAlignment = 4;
+    GLint previousPackRowLength = 0;
+    GLint previousPackSkipPixels = 0;
+    GLint previousPackSkipRows = 0;
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &previousReadFramebuffer);
     glGetIntegerv(GL_READ_BUFFER, &previousReadBuffer);
+    glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &previousPackBuffer);
+    glGetIntegerv(GL_PACK_ALIGNMENT, &previousPackAlignment);
+    glGetIntegerv(GL_PACK_ROW_LENGTH, &previousPackRowLength);
+    glGetIntegerv(GL_PACK_SKIP_PIXELS, &previousPackSkipPixels);
+    glGetIntegerv(GL_PACK_SKIP_ROWS, &previousPackSkipRows);
 
     GLuint screenReadFramebuffer = 0;
     if (m_isOnScreen) {
@@ -2312,27 +2322,32 @@ void GlRenderTarget::downloadFromGpu() {
     }
     glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-    std::vector<unsigned char> rgba(static_cast<size_t>(m_width) * m_height * 4);
-    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+    m_pixelTransferBuffer.resize(static_cast<size_t>(m_width) * m_height);
+    glReadPixels(0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE,
+                 m_pixelTransferBuffer.data());
 
-    // OpenGL returns the bottom row first; EGE buffers are top-down ARGB.
+    // OpenGL returns the bottom row first; EGE buffers are top-down. BGRA
+    // matches color_t's little-endian byte layout, so rows can be copied
+    // without a per-pixel channel conversion.
     for (int glY = 0; glY < m_height; ++glY) {
         const int egeY = m_height - 1 - glY;
-        for (int x = 0; x < m_width; ++x) {
-            const size_t src = (static_cast<size_t>(glY) * m_width + x) * 4;
-            const unsigned char r = rgba[src + 0];
-            const unsigned char g = rgba[src + 1];
-            const unsigned char b = rgba[src + 2];
-            const unsigned char a = rgba[src + 3];
-            m_cpuBuffer[egeY * m_width + x] =
-                (static_cast<uint32_t>(a) << 24) |
-                (static_cast<uint32_t>(r) << 16) |
-                (static_cast<uint32_t>(g) << 8) |
-                static_cast<uint32_t>(b);
-        }
+        std::memcpy(m_cpuBuffer + static_cast<size_t>(egeY) * m_width,
+                    m_pixelTransferBuffer.data() +
+                        static_cast<size_t>(glY) * m_width,
+                    static_cast<size_t>(m_width) * sizeof(color_t));
     }
 
     m_pixelSyncState = PixelSyncState::Synchronized;
+    glPixelStorei(GL_PACK_SKIP_ROWS, previousPackSkipRows);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, previousPackSkipPixels);
+    glPixelStorei(GL_PACK_ROW_LENGTH, previousPackRowLength);
+    glPixelStorei(GL_PACK_ALIGNMENT, previousPackAlignment);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, previousPackBuffer);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, previousReadFramebuffer);
     glReadBuffer(previousReadBuffer);
     if (screenReadFramebuffer) {
@@ -2371,28 +2386,64 @@ void GlRenderTarget::captureScreenToTexture() {
     m_pixelSyncState = PixelSyncState::ScreenTextureNewer;
 }
 
+void GlRenderTarget::uploadFullPixelBuffer(const color_t* pixels) {
+    if (!pixels || !m_initialized || !m_texture) return;
+
+    const size_t rowPixels = static_cast<size_t>(m_width);
+    m_pixelTransferBuffer.resize(rowPixels * m_height);
+    for (int glY = 0; glY < m_height; ++glY) {
+        const int egeY = m_height - 1 - glY;
+        std::memcpy(m_pixelTransferBuffer.data() +
+                        static_cast<size_t>(glY) * rowPixels,
+                    pixels + static_cast<size_t>(egeY) * rowPixels,
+                    rowPixels * sizeof(color_t));
+    }
+
+    GLint previousTexture = 0;
+    GLint previousUnpackBuffer = 0;
+    GLint previousUnpackAlignment = 4;
+    GLint previousUnpackRowLength = 0;
+    GLint previousUnpackSkipPixels = 0;
+    GLint previousUnpackSkipRows = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+    glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &previousUnpackBuffer);
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousUnpackAlignment);
+    glGetIntegerv(GL_UNPACK_ROW_LENGTH, &previousUnpackRowLength);
+    glGetIntegerv(GL_UNPACK_SKIP_PIXELS, &previousUnpackSkipPixels);
+    glGetIntegerv(GL_UNPACK_SKIP_ROWS, &previousUnpackSkipRows);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height,
+                    GL_BGRA, GL_UNSIGNED_BYTE,
+                    m_pixelTransferBuffer.data());
+    glBindTexture(GL_TEXTURE_2D, previousTexture);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, previousUnpackSkipRows);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, previousUnpackSkipPixels);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, previousUnpackRowLength);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, previousUnpackAlignment);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, previousUnpackBuffer);
+}
+
+void GlRenderTarget::uploadPixelBuffer(const color_t* pixels) {
+    if (!pixels || !m_initialized) return;
+
+    // Preserve ordering if this render target was previously used for drawing,
+    // then replace its complete contents with the CPU Bitmap snapshot.
+    submitBatch();
+    uploadFullPixelBuffer(pixels);
+    // The external bitmap, not m_cpuBuffer, supplied the upload. Mark the
+    // texture newer so an unexpected internal read cannot expose stale data.
+    m_pixelSyncState = PixelSyncState::GpuNewer;
+}
+
 void GlRenderTarget::syncToGpu() {
     if (!m_cpuBuffer || !m_initialized ||
         m_pixelSyncState != PixelSyncState::CpuNewer) return;
-    int w = m_width, h = m_height;
-    // Convert top-down ARGB CPU storage to OpenGL's bottom-up RGBA rows.
-    std::vector<unsigned char> rgba(w * h * 4);
-    for (int egeY = 0; egeY < h; ++egeY) {
-        const int glY = h - 1 - egeY;
-        for (int x = 0; x < w; ++x) {
-            const color_t c = m_cpuBuffer[egeY * w + x];
-            const size_t dst = (static_cast<size_t>(glY) * w + x) * 4;
-            rgba[dst + 0] = (c >> 16) & 0xFF;
-            rgba[dst + 1] = (c >> 8) & 0xFF;
-            rgba[dst + 2] = c & 0xFF;
-            rgba[dst + 3] = (c >> 24) & 0xFF;
-        }
-    }
-    GLint previousTexture = 0;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
-    glBindTexture(GL_TEXTURE_2D, previousTexture);
+    uploadFullPixelBuffer(m_cpuBuffer);
     m_pixelSyncState = PixelSyncState::Synchronized;
 }
 
@@ -2426,6 +2477,7 @@ void GlRenderTarget::rebuild(int width, int height) {
     m_cpuBuffer = new color_t[width * height];
     memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
     m_pixelSyncState = PixelSyncState::CpuNewer;
+    m_pixelTransferBuffer.clear();
 
     m_width = width;
     m_height = height;

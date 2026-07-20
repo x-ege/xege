@@ -180,6 +180,11 @@ public:
     // Internal: sync CPU buffer to GPU texture (used by image blit)
     void syncToGpu();
 
+    // Internal: replace the texture with a top-down EGE color_t buffer.
+    // Used by persistent CPU Bitmap images without copying through this
+    // render target's compatibility buffer first.
+    void uploadPixelBuffer(const color_t* pixels);
+
     // Internal: capture screen framebuffer to texture before swap
     void captureScreenToTexture();
 
@@ -206,6 +211,7 @@ private:
     void bindForDrawing();
     void submitBatch();
     void downloadFromGpu();
+    void uploadFullPixelBuffer(const color_t* pixels);
 
     // Image blit helpers
     void ensureImageShader();
@@ -250,6 +256,7 @@ private:
     // CPU pixel buffer
     color_t* m_cpuBuffer;
     mutable PixelSyncState m_pixelSyncState;
+    std::vector<color_t> m_pixelTransferBuffer;
 
     // Dimensions
     int      m_width;
