@@ -135,10 +135,28 @@ void putpixels(int numOfPoints, const int* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     int x, y, c;
-    color_t* imageBuffer = img->getbuffer();
-    PDWORD pb = reinterpret_cast<PDWORD>(imageBuffer) + img->m_vpt.top * img->m_width + img->m_vpt.left;
     int w = img->m_vpt.right - img->m_vpt.left, h = img->m_vpt.bottom - img->m_vpt.top;
     int tw = img->m_width;
+    int dirtyLeft = w, dirtyTop = h, dirtyRight = 0, dirtyBottom = 0;
+    const int* scan = points;
+    for (int n = 0; n < numOfPoints; ++n, scan += 3) {
+        x = scan[0], y = scan[1];
+        if (in_rect(x, y, w, h)) {
+            dirtyLeft = std::min(dirtyLeft, x);
+            dirtyTop = std::min(dirtyTop, y);
+            dirtyRight = std::max(dirtyRight, x + 1);
+            dirtyBottom = std::max(dirtyBottom, y + 1);
+        }
+    }
+    if (dirtyLeft >= dirtyRight || dirtyTop >= dirtyBottom) {
+        CONVERT_IMAGE_END;
+        return;
+    }
+    color_t* imageBuffer = img->getbuffer_for_write(
+        img->m_vpt.left + dirtyLeft, img->m_vpt.top + dirtyTop,
+        dirtyRight - dirtyLeft, dirtyBottom - dirtyTop);
+    PDWORD pb = reinterpret_cast<PDWORD>(imageBuffer) +
+        img->m_vpt.top * img->m_width + img->m_vpt.left;
     for (int n = 0; n < numOfPoints; ++n, points += 3) {
         x = points[0], y = points[1], c = points[2];
         if (in_rect(x, y, w, h)) {
@@ -154,7 +172,23 @@ void putpixels_f(int numOfPoints, const int* points, PIMAGE pimg)
     int x, y, c;
     int tw = img->m_width;
     int th = img->m_height;
-    color_t* imageBuffer = img->getbuffer();
+    int dirtyLeft = tw, dirtyTop = th, dirtyRight = 0, dirtyBottom = 0;
+    const int* scan = points;
+    for (int n = 0; n < numOfPoints; ++n, scan += 3) {
+        x = scan[0], y = scan[1];
+        if (in_rect(x, y, tw, th)) {
+            dirtyLeft = std::min(dirtyLeft, x);
+            dirtyTop = std::min(dirtyTop, y);
+            dirtyRight = std::max(dirtyRight, x + 1);
+            dirtyBottom = std::max(dirtyBottom, y + 1);
+        }
+    }
+    if (dirtyLeft >= dirtyRight || dirtyTop >= dirtyBottom) {
+        CONVERT_IMAGE_END;
+        return;
+    }
+    color_t* imageBuffer = img->getbuffer_for_write(
+        dirtyLeft, dirtyTop, dirtyRight - dirtyLeft, dirtyBottom - dirtyTop);
     for (int n = 0; n < numOfPoints; ++n, points += 3) {
         x = points[0], y = points[1], c = points[2];
         if (in_rect(x, y, tw, th)) {
@@ -177,7 +211,7 @@ void putpixel_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        img->getbuffer()[y * img->m_width + x] = color;
+        img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x] = color;
     }
 }
 
@@ -187,7 +221,7 @@ void putpixel_withalpha(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = colorblend_inline(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
@@ -197,7 +231,7 @@ void putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = colorblend_inline_fast(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
@@ -209,7 +243,7 @@ void putpixel_savealpha(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = EGECOLORA(color, EGEGET_A(dst_color));
     }
     CONVERT_IMAGE_END;
@@ -219,7 +253,7 @@ void putpixel_savealpha_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = EGECOLORA(color, EGEGET_A(dst_color));
     }
     CONVERT_IMAGE_END;
@@ -231,7 +265,7 @@ void putpixel_alphablend(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color);
     }
     CONVERT_IMAGE_END;
@@ -241,7 +275,7 @@ void putpixel_alphablend_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color);
     }
     CONVERT_IMAGE_END;
@@ -253,7 +287,7 @@ void putpixel_alphablend(int x, int y, color_t color, unsigned char alphaFactor,
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color, alphaFactor);
     }
     CONVERT_IMAGE_END;
@@ -263,7 +297,7 @@ void putpixel_alphablend_f(int x, int y, color_t color, unsigned char alphaFacto
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer()[y * img->m_width + x];
+        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color, alphaFactor);
     }
     CONVERT_IMAGE_END;

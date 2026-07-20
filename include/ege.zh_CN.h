@@ -4167,6 +4167,34 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 
 /**
+ * @brief 声明通过可写 getbuffer 指针修改的像素区域
+ * @param pimg 图像指针；NULL 表示当前绘图目标
+ * @param x 修改区域在物理图像缓冲区中的左坐标
+ * @param y 修改区域在物理图像缓冲区中的上坐标
+ * @param width 修改区域宽度
+ * @param height 修改区域高度
+ * @note 应在一批指针写入完成后、下一次针对该图像的 EGE 操作前调用。旧程序不调用
+ *       本函数仍保持正确；OpenGL 后端会保守地把整个缓冲区视为已修改。
+ * @note 声明区域必须覆盖本次 getbuffer 之后的全部写入，不应用 viewport 偏移。
+ */
+void EGEAPI markbufferdirty(PIMAGE pimg, int x, int y, int width, int height);
+
+/**
+ * @brief 将一块自顶向下的 ARGB 像素矩形复制到图像
+ * @param pimg 目标图像；NULL 表示当前绘图目标
+ * @param x 目标物理图像左坐标
+ * @param y 目标物理图像上坐标
+ * @param width 矩形宽度
+ * @param height 矩形高度
+ * @param pixels 源自顶向下 ARGB 像素
+ * @param pitchBytes 源行跨度（字节）；0 表示 width * sizeof(color_t)
+ * @return 成功返回 grOk；失败返回 grNullPointer、grInvalidRegion 或 grParamError
+ * @note OpenGL 后端能够获知精确修改区域，不需要先回读目标贴图；不应用 viewport。
+ */
+int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes = 0);
+
+/**
  * @brief 调整图像尺寸（快速版本）
  * @param pimg 要调整大小的图像对象指针，不能为 NULL
  * @param width 图像新宽度

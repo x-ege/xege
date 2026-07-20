@@ -459,6 +459,69 @@ const color_t* IMAGE::getbuffer() const
     return reinterpret_cast<const color_t*>(m_pBuffer);
 }
 
+color_t* IMAGE::getbuffer_for_write(int x, int y, int width, int height)
+{
+    if (m_renderTarget) {
+        color_t* buffer = m_renderTarget->getPixelBufferForWrite(x, y, width, height);
+        m_pBuffer = reinterpret_cast<PDWORD>(buffer);
+        return buffer;
+    }
+#ifdef _WIN32
+    if (m_hDC) {
+        GdiFlush();
+    }
+#endif
+    return reinterpret_cast<color_t*>(m_pBuffer);
+}
+
+void IMAGE::markbufferdirty(int x, int y, int width, int height)
+{
+    if (width <= 0 || height <= 0 || x < 0 || y < 0 ||
+        x > m_width - width || y > m_height - height) {
+        return;
+    }
+    if (m_renderTarget) {
+        m_renderTarget->markPixelBufferDirty(x, y, width, height);
+    }
+}
+
+int IMAGE::updatebuffer(int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes)
+{
+    if (!pixels) return grNullPointer;
+    if (width <= 0 || height <= 0 || x < 0 || y < 0 ||
+        x > m_width - width || y > m_height - height) {
+        return grInvalidRegion;
+    }
+    const size_t rowBytes = static_cast<size_t>(width) * sizeof(color_t);
+    if (pitchBytes == 0) {
+        pitchBytes = static_cast<int>(rowBytes);
+    }
+    if (pitchBytes < 0 || static_cast<size_t>(pitchBytes) < rowBytes) {
+        return grParamError;
+    }
+
+    if (m_renderTarget) {
+        return m_renderTarget->updatePixelBuffer(
+            x, y, width, height, pixels, pitchBytes) ? grOk : grError;
+    }
+
+#ifdef _WIN32
+    if (m_hDC) {
+        GdiFlush();
+    }
+#endif
+    color_t* destination = reinterpret_cast<color_t*>(m_pBuffer);
+    if (!destination) return static_cast<int>(grInvalidMemory);
+    const unsigned char* sourceRow = reinterpret_cast<const unsigned char*>(pixels);
+    for (int row = 0; row < height; ++row) {
+        std::memcpy(destination + static_cast<size_t>(y + row) * m_width + x,
+                    sourceRow, rowBytes);
+        sourceRow += pitchBytes;
+    }
+    return grOk;
+}
+
 #ifdef EGE_GDIPLUS
 
 Gdiplus::Graphics* IMAGE::getGraphics()
@@ -3551,6 +3614,21 @@ const color_t* getbuffer(PCIMAGE pImg)
     PCIMAGE img = CONVERT_IMAGE_CONST(pImg);
     CONVERT_IMAGE_END;
     return img->getbuffer();
+}
+
+void markbufferdirty(PIMAGE pImg, int x, int y, int width, int height)
+{
+    PIMAGE img = CONVERT_IMAGE(pImg);
+    CONVERT_IMAGE_END;
+    img->markbufferdirty(x, y, width, height);
+}
+
+int updatebuffer(PIMAGE pImg, int x, int y, int width, int height,
+                 const color_t* pixels, int pitchBytes)
+{
+    PIMAGE img = CONVERT_IMAGE(pImg);
+    CONVERT_IMAGE_END;
+    return img->updatebuffer(x, y, width, height, pixels, pitchBytes);
 }
 
 HDC getHDC(PCIMAGE pImg)

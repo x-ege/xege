@@ -245,6 +245,10 @@ public:
     // --- Pixel buffer access ---
     virtual color_t* getPixelBuffer() = 0;
     virtual const color_t* getPixelBuffer() const = 0;
+    virtual color_t* getPixelBufferForWrite(int x, int y, int width, int height) = 0;
+    virtual void markPixelBufferDirty(int x, int y, int width, int height) = 0;
+    virtual bool updatePixelBuffer(int x, int y, int width, int height,
+                                   const color_t* pixels, int pitchBytes) = 0;
 
     // --- Submit ---
     virtual void flush() = 0;

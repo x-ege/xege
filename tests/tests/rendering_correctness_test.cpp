@@ -775,6 +775,100 @@ void testBufferMutationFeedsImageTransfer()
     ege::delimage(source);
 }
 
+void testExplicitBufferDirtyRegionsAndUpdates()
+{
+    ege::PIMAGE image = ege::newimage(6, 4);
+    resetImage(image, ege::BLUE);
+
+    ege::color_t* pixels = ege::getbuffer(image);
+    expect(pixels != nullptr, "getbuffer exposes storage for an explicitly marked write");
+    if (pixels) {
+        pixels[1 * 6 + 2] = ege::RED;
+        ege::markbufferdirty(image, 2, 1, 1, 1);
+    }
+
+    // A following backend draw forces an OpenGL upload. The explicitly
+    // marked CPU pixel and the later GPU pixel must both survive.
+    ege::putpixel(5, 3, ege::YELLOW, image);
+    expectPixel(image, 2, 1, ege::RED,
+                "markbufferdirty preserves the declared direct-buffer write");
+    expectPixel(image, 5, 3, ege::YELLOW,
+                "drawing remains ordered after an explicitly marked buffer write");
+    expectPixel(image, 0, 0, ege::BLUE,
+                "markbufferdirty leaves pixels outside the declared region unchanged");
+
+    const ege::color_t updatePixels[] = {
+        ege::GREEN, ege::CYAN, ege::WHITE,
+        ege::MAGENTA, ege::LIGHTGRAY, ege::WHITE,
+    };
+    expect(ege::updatebuffer(image, 1, 2, 2, 2, updatePixels,
+                             3 * static_cast<int>(sizeof(ege::color_t))) == ege::grOk,
+           "updatebuffer accepts a top-down source with padded rows");
+    expectPixel(image, 1, 2, ege::GREEN, "updatebuffer copies the first source row");
+    expectPixel(image, 2, 2, ege::CYAN, "updatebuffer copies the first row right edge");
+    expectPixel(image, 1, 3, ege::MAGENTA, "updatebuffer copies the second source row");
+    expectPixel(image, 2, 3, ege::LIGHTGRAY, "updatebuffer honors source pitch");
+    expectPixel(image, 3, 2, ege::BLUE,
+                "updatebuffer does not overwrite pixels outside its destination rectangle");
+
+    resetImage(image, ege::BLUE);
+    ege::setviewport(2, 1, 6, 4, 1, image);
+    const ege::color_t physicalPixel = ege::WHITE;
+    expect(ege::updatebuffer(image, 0, 0, 1, 1, &physicalPixel) == ege::grOk,
+           "updatebuffer accepts physical coordinates outside the current viewport");
+    expect(ege::getpixel_f(0, 0, image) == ege::WHITE,
+           "updatebuffer coordinates do not include the viewport origin");
+    expect(ege::getpixel_f(2, 1, image) == ege::BLUE,
+           "updatebuffer does not offset its destination by the viewport origin");
+
+    pixels = ege::getbuffer(image);
+    pixels[1] = ege::RED;
+    ege::markbufferdirty(image, 1, 0, 1, 1);
+    ege::putpixel(0, 0, ege::YELLOW, image);
+    expect(ege::getpixel_f(1, 0, image) == ege::RED,
+           "markbufferdirty uses physical coordinates instead of viewport coordinates");
+    expect(ege::getpixel_f(2, 1, image) == ege::YELLOW,
+           "a viewport-relative draw remains ordered after a physical buffer update");
+    ege::setviewport(0, 0, 6, 4, 1, image);
+
+    resetImage(image, ege::BLUE);
+    pixels = ege::getbuffer(image);
+    pixels[0] = ege::RED;
+    ege::markbufferdirty(image, 0, 0, 1, 1);
+    pixels = ege::getbuffer(image);
+    pixels[1] = ege::GREEN;
+    ege::markbufferdirty(image, 1, 0, 1, 1);
+    ege::putpixel(5, 3, ege::YELLOW, image);
+    expectPixel(image, 0, 0, ege::RED,
+                "separate marked write batches retain the first dirty region");
+    expectPixel(image, 1, 0, ege::GREEN,
+                "separate marked write batches retain the second dirty region");
+
+    resetImage(image, ege::BLUE);
+    pixels = ege::getbuffer(image);
+    pixels[1 * 6 + 3] = ege::RED;
+    ege::markbufferdirty(image, -1, 1, 1, 1);
+    ege::putpixel(5, 3, ege::YELLOW, image);
+    expectPixel(image, 3, 1, ege::RED,
+                "an invalid dirty hint keeps the conservative full-buffer fallback");
+
+    expect(ege::updatebuffer(image, 0, 0, 1, 1, nullptr,
+                             static_cast<int>(sizeof(ege::color_t))) == ege::grNullPointer,
+           "updatebuffer rejects a null source pointer");
+    expect(ege::updatebuffer(image, 5, 3, 2, 1, updatePixels,
+                             3 * static_cast<int>(sizeof(ege::color_t))) == ege::grInvalidRegion,
+           "updatebuffer rejects a destination rectangle outside the image");
+    expect(ege::updatebuffer(image, 0, 0, 2, 1, updatePixels,
+                             static_cast<int>(sizeof(ege::color_t))) == ege::grParamError,
+           "updatebuffer rejects a source pitch shorter than one row");
+    expect(ege::updatebuffer(image, 0, 0, 0, 1, updatePixels) == ege::grInvalidRegion,
+           "updatebuffer rejects an empty destination rectangle");
+    expect(ege::updatebuffer(image, 0, 0, 1, 1, updatePixels, -1) == ege::grParamError,
+           "updatebuffer rejects a negative source pitch");
+
+    ege::delimage(image);
+}
+
 void testConstAndScreenBufferSynchronization()
 {
     ege::PIMAGE image = ege::newimage(4, 4);
@@ -797,7 +891,12 @@ void testConstAndScreenBufferSynchronization()
     expect(screenPixels != nullptr, "screen getbuffer returns writable storage");
     if (screenPixels) {
         screenPixels[6 * 64 + 5] = ege::MAGENTA;
+        ege::markbufferdirty(nullptr, 5, 6, 1, 1);
     }
+
+    const ege::color_t directScreenPixel = ege::GREEN;
+    expect(ege::updatebuffer(nullptr, 6, 7, 1, 1, &directScreenPixel) == ege::grOk,
+           "updatebuffer supports the current screen target");
 
     ege::PIMAGE stamp = ege::newimage(2, 2);
     resetImage(stamp, ege::RED);
@@ -808,6 +907,8 @@ void testConstAndScreenBufferSynchronization()
            "screen buffer edits can be captured without presenting first");
     expectPixel(capture, 5, 6, ege::MAGENTA,
                 "an immediate image draw preserves earlier screen getbuffer mutations");
+    expectPixel(capture, 6, 7, ege::GREEN,
+                "updatebuffer updates the screen without discarding an earlier buffer edit");
     expectPixel(capture, 8, 8, ege::RED,
                 "screen image drawing remains valid after direct buffer mutations");
 
@@ -3327,6 +3428,7 @@ int main()
     testPolygonCoordinates();
     testViewportOriginAndClip();
     testBufferMutationFeedsImageTransfer();
+    testExplicitBufferDirtyRegionsAndUpdates();
     testConstAndScreenBufferSynchronization();
     testGetImageSourceClipping();
     testMixedBackendBufferSynchronization(legacyPreInitSource, legacyPreInitDestination);

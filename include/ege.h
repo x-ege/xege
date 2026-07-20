@@ -4642,6 +4642,38 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 
 /**
+ * @brief Declare the region modified through the writable getbuffer pointer
+ * @param pimg Image object pointer; NULL selects the current drawing target
+ * @param x Left coordinate in the physical top-down image buffer
+ * @param y Top coordinate in the physical top-down image buffer
+ * @param width Modified region width
+ * @param height Modified region height
+ * @note Call after the write batch and before the next EGE operation on the image.
+ *       Existing programs which do not call this function remain correct; the
+ *       OpenGL backend conservatively treats the complete buffer as modified.
+ * @note The declared rectangle must contain every write performed through the
+ *       pointer since the last getbuffer call. Viewport origin is not applied.
+ */
+void EGEAPI markbufferdirty(PIMAGE pimg, int x, int y, int width, int height);
+
+/**
+ * @brief Copy a top-down ARGB pixel rectangle into an image
+ * @param pimg Destination image; NULL selects the current drawing target
+ * @param x Destination left coordinate in physical image pixels
+ * @param y Destination top coordinate in physical image pixels
+ * @param width Rectangle width
+ * @param height Rectangle height
+ * @param pixels Source top-down ARGB pixels
+ * @param pitchBytes Source row stride in bytes; zero means width * sizeof(color_t)
+ * @return grOk on success, grNullPointer, grInvalidRegion, or grParamError on failure
+ * @note Unlike writable getbuffer, the OpenGL backend knows the exact changed
+ *       rectangle and does not need to read the destination texture back first.
+ *       Viewport origin and clipping are not applied.
+ */
+int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes = 0);
+
+/**
  * @brief Resize image (fast version)
  * @param pimg Image object pointer to resize, cannot be NULL
  * @param width New width of image

@@ -29,7 +29,8 @@
 | `putimage_comparison` | 多种图片路径的结果对比 |
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
-| `image_buffer_performance` | `getbuffer` 首次/缓存读回、CPU 修改后上传，以及 GPU→GPU `getimage` 复制性能基准 |
+| `image_buffer_performance` | `getbuffer` 首次/缓存读回、保守全图上传、显式脏区上传、`updatebuffer` 区域上传，以及 GPU→GPU `getimage` 复制性能基准 |
+| `pixel_access_performance` | `getpixel(_f)`、`putpixel(_f)`、`putpixels`、旧式/显式脏区 `getbuffer` 及不同区域大小 `updatebuffer` 的预热、多样本中位数/P95 对比 |
 
 `default_build_contract` 在 Windows 优先复用父构建已验证的 MSVC，并以
 `Ninja Multi-Config` 做空目录配置探测，避免非交互 CTest 中嵌套 MSBuild 的进程跟踪
@@ -42,7 +43,7 @@
 
 | 接口族 | 确定性断言 |
 | --- | --- |
-| `getbuffer` | const/可写重载、IMAGE/当前绘图目标、GPU→CPU 回读、CPU→GPU 上传、直接修改后继续绘制，以及 GDI DIB 与 OpenGL IMAGE 的双向同步 |
+| `getbuffer`、`markbufferdirty`、`updatebuffer` | const/可写重载、IMAGE/当前绘图目标、GPU→CPU 回读、保守及显式区域 CPU→GPU 上传、带 stride 的区域更新、参数错误、直接修改后的绘制顺序，以及 GDI DIB 与 OpenGL IMAGE 的双向同步 |
 | `getimage`、`putimage` | 屏幕/IMAGE、整图/源矩形/拉伸重载，源和目标 viewport，裁剪、GPU/CPU 缓冲同步、自身重叠复制 |
 | BitBlt ROP | 15 个标准三元光栅操作（包括 pattern、blackness、whiteness）逐像素验证 |
 | `putimage_transparent`、`putimage_alphatransparent` | 默认范围、显式源矩形、负目标裁剪、颜色键、全局 alpha、目标 alpha 保留 |
@@ -57,6 +58,9 @@
 实现中未参与解码或缩放，本轮保持该行为，不把它描述成已生效的缩放功能。新增贴图重载或
 后端分支时，应先更新上表并补充同一组 GDI/OpenGL 像素断言。
 
+像素缓冲的 CPU/GPU 所有权、推荐调用方式及不能由旧同步接口隐藏的行为边界，见
+[`doc/pixel-buffer-sync.md`](../doc/pixel-buffer-sync.md)。
+
 ## 公共 API 覆盖审计
 
 从仓库根目录运行公共声明静态审计：
@@ -66,8 +70,8 @@ python tests/tools/audit_public_api_coverage.py --summary
 ```
 
 审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名及标准化声明是否一致，并扫描
-测试和 demo 中的真实调用（忽略注释与字符串）。当前 288 个公共函数名均有直接自动化
-测试调用；去重后的 382 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
+测试和 demo 中的真实调用（忽略注释与字符串）。当前 290 个公共函数名均有直接自动化
+测试调用；去重后的 384 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
 若以后新增了未被直接测试、未被人工分类的公共函数，或新增声明没有任何参数个数证据，
 审计脚本会返回失败。
 
@@ -157,6 +161,14 @@ ctest --test-dir build/native-debug \
 
 ```bash
 ctest --test-dir build/native-debug --output-on-failure -L performance
+```
+
+Windows Release 双后端像素基准可用专用脚本交替运行，避免固定执行顺序持续偏向
+某个后端。脚本会保存每轮原始日志、CSV 汇总和机器环境清单：
+
+```powershell
+& "tests/tools/run_pixel_performance_comparison.ps1" `
+  -Runs 5 -Configuration Release
 ```
 
 只运行渲染正确性测试：

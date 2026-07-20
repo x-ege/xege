@@ -113,7 +113,7 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 | 特点 | 说明 |
 |------|------|
 | 零依赖轻量级 | 使用 `stb_image` 和 `sdefl/sinfl` 替代 `libpng`/`zlib`，无外部依赖，单库即可使用 |
-| 直接像素访问 | 提供 `getbuffer` 接口直接访问图像像素数据，实现高效的软件渲染和图像处理 |
+| 直接像素访问 | 提供兼容的 `getbuffer`，以及 `markbufferdirty`/`updatebuffer` 区域同步接口；详见[像素缓冲同步契约](doc/pixel-buffer-sync.md) |
 | 抗锯齿支持 | Windows 内置 GDI+ 支持；原生 OpenGL 后端提供兼容的 `ege_` 绘图接口 |
 | 预乘 Alpha 优化 | 默认使用 PRGB32 (预乘 Alpha) 格式，配合 `AlphaBlend` 实现 GPU 加速混合 |
 | 多图像格式支持 | 支持 PNG, JPEG, BMP, GIF, TGA, PSD, HDR 等常见图像格式 |

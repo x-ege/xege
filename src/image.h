@@ -144,6 +144,10 @@ public:
     int      getheight() const { return m_height; }
     color_t*       getbuffer();
     const color_t* getbuffer() const;
+    color_t*       getbuffer_for_write(int x, int y, int width, int height);
+    void           markbufferdirty(int x, int y, int width, int height);
+    int            updatebuffer(int x, int y, int width, int height,
+                                const color_t* pixels, int pitchBytes);
 #ifdef EGE_GDIPLUS
     // TODO: thread safe?
     Gdiplus::Graphics* getGraphics();

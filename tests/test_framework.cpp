@@ -76,7 +76,11 @@ void TestFramework::cleanup() {
 bool TestFramework::hideWindow() {
     if (graphicsWindow && !windowHidden) {
 #ifdef _WIN32
-        if (ShowWindow((HWND)graphicsWindow, SW_HIDE)) {
+        // ShowWindow returns the previous visibility state, not whether the
+        // request succeeded.  Check the resulting state so an already hidden
+        // test window is not reported as an error.
+        ShowWindow((HWND)graphicsWindow, SW_HIDE);
+        if (!IsWindowVisible((HWND)graphicsWindow)) {
             windowHidden = true;
             logInfo("Graphics window hidden");
             return true;
@@ -95,7 +99,8 @@ bool TestFramework::hideWindow() {
 bool TestFramework::showWindow() {
     if (graphicsWindow && windowHidden) {
 #ifdef _WIN32
-        if (ShowWindow((HWND)graphicsWindow, SW_SHOW)) {
+        ShowWindow((HWND)graphicsWindow, SW_SHOW);
+        if (IsWindowVisible((HWND)graphicsWindow)) {
             windowHidden = false;
             logInfo("Graphics window shown");
             return true;

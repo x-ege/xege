@@ -407,6 +407,7 @@ GlRenderTarget::GlRenderTarget()
     : m_texture(0), m_fbo(0), m_vao(0), m_vbo(0),
       m_imageShaderReady(false), m_textShaderReady(false),
       m_cpuBuffer(nullptr), m_pixelSyncState(PixelSyncState::Synchronized),
+      m_cpuDirtyUnknown(false),
       m_width(0), m_height(0), m_isOnScreen(false), m_initialized(false),
       m_lineColor(0xFFFFFFFF), m_fillColor(0xFFFFFFFF),
       m_textColor(0xFFFFFFFF), m_bkColor(0x00000000),
@@ -420,6 +421,80 @@ GlRenderTarget::GlRenderTarget()
       m_curX(0), m_curY(0),
       m_projectionDirty(true), m_hAlign(TEXT_LEFT), m_vAlign(TEXT_TOP) {
     m_transformStack.push_back(std::vector<float>(identity3, identity3 + 9));
+}
+
+GlRenderTarget::PixelRect GlRenderTarget::clippedRect(
+    int x, int y, int width, int height) const {
+    if (width <= 0 || height <= 0 || m_width <= 0 || m_height <= 0) {
+        return PixelRect();
+    }
+    const long long requestedRight = static_cast<long long>(x) + width;
+    const long long requestedBottom = static_cast<long long>(y) + height;
+    PixelRect result;
+    result.left = std::max(0, x);
+    result.top = std::max(0, y);
+    result.right = static_cast<int>(std::min<long long>(m_width, requestedRight));
+    result.bottom = static_cast<int>(std::min<long long>(m_height, requestedBottom));
+    if (result.empty()) return PixelRect();
+    return result;
+}
+
+GlRenderTarget::PixelRect GlRenderTarget::fullRect() const {
+    return PixelRect(0, 0, m_width, m_height);
+}
+
+void GlRenderTarget::unionRect(PixelRect& destination, const PixelRect& source) {
+    if (source.empty()) return;
+    if (destination.empty()) {
+        destination = source;
+        return;
+    }
+    destination.left = std::min(destination.left, source.left);
+    destination.top = std::min(destination.top, source.top);
+    destination.right = std::max(destination.right, source.right);
+    destination.bottom = std::max(destination.bottom, source.bottom);
+}
+
+void GlRenderTarget::markGpuDirty(const PixelRect& rect) {
+    if (rect.empty()) return;
+    if (m_pixelSyncState == PixelSyncState::GpuNewer ||
+        m_pixelSyncState == PixelSyncState::ScreenTextureNewer) {
+        unionRect(m_gpuDirtyRect, rect);
+    } else {
+        m_gpuDirtyRect = rect;
+    }
+    m_cpuDirtyRect = PixelRect();
+    m_cpuDirtyUnknown = false;
+    m_pixelSyncState = PixelSyncState::GpuNewer;
+}
+
+void GlRenderTarget::markGpuDirtyFull() {
+    markGpuDirty(fullRect());
+}
+
+void GlRenderTarget::markCpuDirty(const PixelRect& rect, bool unknownRange) {
+    if (rect.empty()) return;
+    if (unknownRange) {
+        // Preserve already declared writes while remembering that the newest
+        // writable-pointer exposure has not been described yet. If it is not
+        // followed by markPixelBufferDirty(), syncToGpu() falls back to the
+        // complete image.
+        if (m_pixelSyncState != PixelSyncState::CpuNewer) {
+            m_cpuDirtyRect = PixelRect();
+        }
+        m_cpuDirtyUnknown = true;
+    } else {
+        if (m_pixelSyncState != PixelSyncState::CpuNewer) {
+            m_cpuDirtyRect = rect;
+            m_cpuDirtyUnknown = false;
+        } else {
+            unionRect(m_cpuDirtyRect, rect);
+            // An internal precise write cannot narrow an earlier unresolved
+            // public writable-pointer exposure.
+        }
+    }
+    m_gpuDirtyRect = PixelRect();
+    m_pixelSyncState = PixelSyncState::CpuNewer;
 }
 
 GlRenderTarget::~GlRenderTarget() {
@@ -447,6 +522,9 @@ bool GlRenderTarget::initOnScreen(int width, int height) {
     m_cpuBuffer = new color_t[width * height];
     memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
     m_pixelSyncState = PixelSyncState::CpuNewer;
+    m_cpuDirtyRect = fullRect();
+    m_gpuDirtyRect = PixelRect();
+    m_cpuDirtyUnknown = false;
 
     initShaders();
     initVBO();
@@ -477,6 +555,9 @@ bool GlRenderTarget::initOffscreen(int width, int height) {
     m_cpuBuffer = new color_t[width * height];
     memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
     m_pixelSyncState = PixelSyncState::CpuNewer;
+    m_cpuDirtyRect = fullRect();
+    m_gpuDirtyRect = PixelRect();
+    m_cpuDirtyUnknown = false;
 
     initShaders();
     initVBO();
@@ -577,7 +658,7 @@ void GlRenderTarget::clearViewport() {
         color_t_to_rgba(m_bkColor, r, g, b, a);
         glClearColor(r, g, b, a);
         glClear(GL_COLOR_BUFFER_BIT);
-        m_pixelSyncState = PixelSyncState::GpuNewer;
+        markGpuDirty(clippedRect(left, top, right - left, bottom - top));
     }
     if (scissorWasEnabled) glEnable(GL_SCISSOR_TEST);
     else glDisable(GL_SCISSOR_TEST);
@@ -683,6 +764,38 @@ void GlRenderTarget::bindForDrawing() {
 void GlRenderTarget::submitBatch() {
     if (m_vertices.empty()) return;
 
+    float minimumX = m_vertices.front().x;
+    float minimumY = m_vertices.front().y;
+    float maximumX = minimumX;
+    float maximumY = minimumY;
+    for (std::vector<GlVertex>::const_iterator vertex = m_vertices.begin();
+         vertex != m_vertices.end(); ++vertex) {
+        minimumX = std::min(minimumX, vertex->x);
+        minimumY = std::min(minimumY, vertex->y);
+        maximumX = std::max(maximumX, vertex->x);
+        maximumY = std::max(maximumY, vertex->y);
+    }
+    int dirtyLeft = static_cast<int>(std::floor(minimumX)) + m_vpLeft;
+    int dirtyTop = static_cast<int>(std::floor(minimumY)) + m_vpTop;
+    int dirtyRight = static_cast<int>(std::ceil(maximumX)) + m_vpLeft;
+    int dirtyBottom = static_cast<int>(std::ceil(maximumY)) + m_vpTop;
+    if (dirtyRight <= dirtyLeft) ++dirtyRight;
+    if (dirtyBottom <= dirtyTop) ++dirtyBottom;
+    PixelRect batchDirty = clippedRect(
+        dirtyLeft, dirtyTop, dirtyRight - dirtyLeft, dirtyBottom - dirtyTop);
+    if (m_vpClip) {
+        PixelRect viewportDirty = clippedRect(
+            m_vpLeft, m_vpTop, m_vpRight - m_vpLeft, m_vpBottom - m_vpTop);
+        if (!batchDirty.empty() && !viewportDirty.empty()) {
+            batchDirty.left = std::max(batchDirty.left, viewportDirty.left);
+            batchDirty.top = std::max(batchDirty.top, viewportDirty.top);
+            batchDirty.right = std::min(batchDirty.right, viewportDirty.right);
+            batchDirty.bottom = std::min(batchDirty.bottom, viewportDirty.bottom);
+        } else {
+            batchDirty = PixelRect();
+        }
+    }
+
     bindForDrawing();
     m_primShader.use();
     ensureProjection();
@@ -716,7 +829,9 @@ void GlRenderTarget::submitBatch() {
     glBindVertexArray(0);
 
     m_vertices.clear();
-    m_pixelSyncState = PixelSyncState::GpuNewer;
+    if (!batchDirty.empty()) {
+        markGpuDirty(batchDirty);
+    }
 }
 
 // ============================================================
@@ -853,11 +968,34 @@ void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
     // EGE image coordinates are logical viewport coordinates. Convert each
     // transformed point separately so non-axis-aligned quads remain accurate.
     float positions[4][2];
+    float dirtyMinimumX = pixelPositions[0][0] + m_vpLeft;
+    float dirtyMinimumY = pixelPositions[0][1] + m_vpTop;
+    float dirtyMaximumX = dirtyMinimumX;
+    float dirtyMaximumY = dirtyMinimumY;
     for (int i = 0; i < 4; ++i) {
         const float physicalX = pixelPositions[i][0] + m_vpLeft;
         const float physicalY = pixelPositions[i][1] + m_vpTop;
+        dirtyMinimumX = std::min(dirtyMinimumX, physicalX);
+        dirtyMinimumY = std::min(dirtyMinimumY, physicalY);
+        dirtyMaximumX = std::max(dirtyMaximumX, physicalX);
+        dirtyMaximumY = std::max(dirtyMaximumY, physicalY);
         positions[i][0] = 2.0f * physicalX / m_width - 1.0f;
         positions[i][1] = -2.0f * physicalY / m_height + 1.0f;
+    }
+    PixelRect imageDirty = clippedRect(
+        static_cast<int>(std::floor(dirtyMinimumX)),
+        static_cast<int>(std::floor(dirtyMinimumY)),
+        static_cast<int>(std::ceil(dirtyMaximumX)) -
+            static_cast<int>(std::floor(dirtyMinimumX)),
+        static_cast<int>(std::ceil(dirtyMaximumY)) -
+            static_cast<int>(std::floor(dirtyMinimumY)));
+    if (m_vpClip && !imageDirty.empty()) {
+        const PixelRect viewportDirty = clippedRect(
+            m_vpLeft, m_vpTop, m_vpRight - m_vpLeft, m_vpBottom - m_vpTop);
+        imageDirty.left = std::max(imageDirty.left, viewportDirty.left);
+        imageDirty.top = std::max(imageDirty.top, viewportDirty.top);
+        imageDirty.right = std::min(imageDirty.right, viewportDirty.right);
+        imageDirty.bottom = std::min(imageDirty.bottom, viewportDirty.bottom);
     }
 
     const float uLeft = static_cast<float>(srcX) / srcW;
@@ -979,7 +1117,9 @@ void GlRenderTarget::drawImageQuadInternal(GLuint srcTex, int srcW, int srcH,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     // Restore state
-    m_pixelSyncState = PixelSyncState::GpuNewer;
+    if (!imageDirty.empty()) {
+        markGpuDirty(imageDirty);
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, srcTex);
@@ -1645,7 +1785,7 @@ void GlRenderTarget::floodFill(int x, int y, color_t borderColor) {
     const int bottom = m_vpClip ? std::min(m_height, m_vpBottom) : m_height;
     if (seedX < left || seedX >= right || seedY < top || seedY >= bottom) return;
 
-    color_t* pixels = getPixelBuffer();
+    color_t* pixels = getPixelBufferForWrite(left, top, right - left, bottom - top);
     if (!pixels) return;
     const color_t borderRgb = borderColor & 0x00FFFFFFU;
     const color_t fillRgb = m_fillColor & 0x00FFFFFFU;
@@ -1682,7 +1822,7 @@ void GlRenderTarget::floodFillSurface(int x, int y, color_t surfaceColor) {
     const int bottom = m_vpClip ? std::min(m_height, m_vpBottom) : m_height;
     if (seedX < left || seedX >= right || seedY < top || seedY >= bottom) return;
 
-    color_t* pixels = getPixelBuffer();
+    color_t* pixels = getPixelBufferForWrite(left, top, right - left, bottom - top);
     if (!pixels) return;
     const color_t surfaceRgb = surfaceColor & 0x00FFFFFFU;
     const color_t fillRgb = m_fillColor & 0x00FFFFFFU;
@@ -1722,7 +1862,7 @@ void GlRenderTarget::clear(color_t color) {
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    m_pixelSyncState = PixelSyncState::GpuNewer;
+    markGpuDirtyFull();
 }
 
 // ============================================================
@@ -1915,7 +2055,7 @@ void GlRenderTarget::filterBlur(int dstX, int dstY, int w, int h, float intensit
             }
         }
     }
-    m_pixelSyncState = PixelSyncState::GpuNewer;
+    markGpuDirty(clippedRect(dstX, dstY, w, h));
 }
 
 // ============================================================
@@ -2100,8 +2240,9 @@ void GlRenderTarget::drawGlyphTexture(GLuint tex, int texW, int texH,
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 
-    // Mark GPU dirty so CPU buffer stays in sync
-    m_pixelSyncState = PixelSyncState::GpuNewer;
+    // Glyph transforms can rotate the destination. Until glyph bounds are
+    // accumulated here, retain the conservative full-target fallback.
+    markGpuDirtyFull();
 }
 
 void GlRenderTarget::ensureTextShader() {
@@ -2273,7 +2414,7 @@ color_t* GlRenderTarget::getPixelBuffer() {
     downloadFromGpu();
     // The API returns a writable pointer, so conservatively assume it may be
     // changed before the next GPU operation.
-    m_pixelSyncState = PixelSyncState::CpuNewer;
+    markCpuDirty(fullRect(), true);
     return m_cpuBuffer;
 }
 
@@ -2288,16 +2429,98 @@ const color_t* GlRenderTarget::getPixelBuffer() const {
     return m_cpuBuffer;
 }
 
+color_t* GlRenderTarget::getPixelBufferForWrite(
+    int x, int y, int width, int height) {
+    submitBatch();
+    if (m_isOnScreen && m_pixelSyncState == PixelSyncState::GpuNewer) {
+        captureScreenToTexture();
+    }
+    downloadFromGpu();
+    markCpuDirty(clippedRect(x, y, width, height), false);
+    return m_cpuBuffer;
+}
+
+void GlRenderTarget::markPixelBufferDirty(
+    int x, int y, int width, int height) {
+    const PixelRect dirty = clippedRect(x, y, width, height);
+    if (dirty.empty()) return;
+
+    // This function narrows the conservative full-image exposure created by
+    // writable getPixelBuffer(). Its public contract requires no intervening
+    // EGE operation, so CpuNewer is the expected state here.
+    if (m_pixelSyncState == PixelSyncState::CpuNewer) {
+        // Accumulate regions declared for earlier writable-buffer batches.
+        // Clearing unknown only resolves the most recent pointer exposure;
+        // already known dirty pixels must remain pending.
+        unionRect(m_cpuDirtyRect, dirty);
+        m_cpuDirtyUnknown = false;
+    }
+}
+
+bool GlRenderTarget::updatePixelBuffer(
+    int x, int y, int width, int height,
+    const color_t* pixels, int pitchBytes) {
+    const PixelRect dirty = clippedRect(x, y, width, height);
+    if (!pixels || dirty.empty() || dirty.left != x || dirty.top != y ||
+        dirty.right != x + width || dirty.bottom != y + height) {
+        return false;
+    }
+
+    // Complete earlier API calls first. Unlike getPixelBuffer(), this explicit
+    // overwrite does not need current destination pixels and therefore never
+    // performs a GPU-to-CPU readback.
+    submitBatch();
+    syncToGpu();
+    const PixelSyncState stateBeforeUpdate = m_pixelSyncState;
+    const PixelRect gpuDirtyBeforeUpdate = m_gpuDirtyRect;
+
+    const size_t rowBytes = static_cast<size_t>(width) * sizeof(color_t);
+    const unsigned char* sourceRow = reinterpret_cast<const unsigned char*>(pixels);
+    for (int row = 0; row < height; ++row) {
+        std::memcpy(m_cpuBuffer + static_cast<size_t>(y + row) * m_width + x,
+                    sourceRow, rowBytes);
+        sourceRow += pitchBytes;
+    }
+    uploadRect(dirty);
+
+    if (stateBeforeUpdate == PixelSyncState::GpuNewer ||
+        stateBeforeUpdate == PixelSyncState::ScreenTextureNewer) {
+        m_gpuDirtyRect = gpuDirtyBeforeUpdate;
+        unionRect(m_gpuDirtyRect, dirty);
+        m_pixelSyncState = stateBeforeUpdate;
+    } else {
+        m_gpuDirtyRect = PixelRect();
+        m_pixelSyncState = PixelSyncState::Synchronized;
+    }
+    m_cpuDirtyRect = PixelRect();
+    m_cpuDirtyUnknown = false;
+
+    if (m_isOnScreen) {
+        drawImageQuad(m_texture, m_width, m_height,
+                      x, y, width, height, x - m_vpLeft, y - m_vpTop,
+                      width, height, 0, 0, 0, 1.0f, 1.0f, 0, 0);
+    }
+    return true;
+}
+
 void GlRenderTarget::downloadFromGpu() {
     const bool gpuPixelsNeedDownload =
         m_pixelSyncState == PixelSyncState::GpuNewer ||
         (m_isOnScreen && m_pixelSyncState == PixelSyncState::ScreenTextureNewer);
     if (!m_initialized || !m_cpuBuffer || !gpuPixelsNeedDownload) return;
 
+    const PixelRect dirty = m_gpuDirtyRect.empty() ? fullRect() : m_gpuDirtyRect;
+    const int dirtyWidth = dirty.right - dirty.left;
+    const int dirtyHeight = dirty.bottom - dirty.top;
+
     GLint previousReadFramebuffer = 0;
     GLint previousReadBuffer = GL_BACK;
+    GLint previousPackBuffer = 0;
+    GLint previousPackAlignment = 4;
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &previousReadFramebuffer);
     glGetIntegerv(GL_READ_BUFFER, &previousReadBuffer);
+    glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &previousPackBuffer);
+    glGetIntegerv(GL_PACK_ALIGNMENT, &previousPackAlignment);
 
     GLuint screenReadFramebuffer = 0;
     if (m_isOnScreen) {
@@ -2312,32 +2535,65 @@ void GlRenderTarget::downloadFromGpu() {
     }
     glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-    std::vector<unsigned char> rgba(static_cast<size_t>(m_width) * m_height * 4);
-    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    m_pixelTransferBuffer.resize(static_cast<size_t>(dirtyWidth) * dirtyHeight);
+    glReadPixels(dirty.left, m_height - dirty.bottom,
+                 dirtyWidth, dirtyHeight, GL_BGRA, GL_UNSIGNED_BYTE,
+                 m_pixelTransferBuffer.data());
 
-    // OpenGL returns the bottom row first; EGE buffers are top-down ARGB.
-    for (int glY = 0; glY < m_height; ++glY) {
-        const int egeY = m_height - 1 - glY;
-        for (int x = 0; x < m_width; ++x) {
-            const size_t src = (static_cast<size_t>(glY) * m_width + x) * 4;
-            const unsigned char r = rgba[src + 0];
-            const unsigned char g = rgba[src + 1];
-            const unsigned char b = rgba[src + 2];
-            const unsigned char a = rgba[src + 3];
-            m_cpuBuffer[egeY * m_width + x] =
-                (static_cast<uint32_t>(a) << 24) |
-                (static_cast<uint32_t>(r) << 16) |
-                (static_cast<uint32_t>(g) << 8) |
-                static_cast<uint32_t>(b);
-        }
+    // OpenGL returns the lowest row first; EGE buffers are top-down. BGRA
+    // matches color_t byte layout, so each row can be copied without a
+    // per-pixel channel conversion.
+    for (int glRow = 0; glRow < dirtyHeight; ++glRow) {
+        const int egeY = dirty.bottom - 1 - glRow;
+        std::memcpy(m_cpuBuffer + static_cast<size_t>(egeY) * m_width + dirty.left,
+                    m_pixelTransferBuffer.data() +
+                        static_cast<size_t>(glRow) * dirtyWidth,
+                    static_cast<size_t>(dirtyWidth) * sizeof(color_t));
     }
 
     m_pixelSyncState = PixelSyncState::Synchronized;
+    m_gpuDirtyRect = PixelRect();
+    m_cpuDirtyRect = PixelRect();
+    m_cpuDirtyUnknown = false;
+    glPixelStorei(GL_PACK_ALIGNMENT, previousPackAlignment);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, previousPackBuffer);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, previousReadFramebuffer);
     glReadBuffer(previousReadBuffer);
     if (screenReadFramebuffer) {
         glDeleteFramebuffers(1, &screenReadFramebuffer);
     }
+}
+
+void GlRenderTarget::uploadRect(const PixelRect& dirty) {
+    if (!m_initialized || !m_cpuBuffer || dirty.empty()) return;
+    const int dirtyWidth = dirty.right - dirty.left;
+    const int dirtyHeight = dirty.bottom - dirty.top;
+    m_pixelTransferBuffer.resize(static_cast<size_t>(dirtyWidth) * dirtyHeight);
+    for (int glRow = 0; glRow < dirtyHeight; ++glRow) {
+        const int egeY = dirty.bottom - 1 - glRow;
+        std::memcpy(m_pixelTransferBuffer.data() +
+                        static_cast<size_t>(glRow) * dirtyWidth,
+                    m_cpuBuffer + static_cast<size_t>(egeY) * m_width + dirty.left,
+                    static_cast<size_t>(dirtyWidth) * sizeof(color_t));
+    }
+
+    GLint previousTexture = 0;
+    GLint previousUnpackBuffer = 0;
+    GLint previousUnpackAlignment = 4;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+    glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &previousUnpackBuffer);
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousUnpackAlignment);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, dirty.left, m_height - dirty.bottom,
+                    dirtyWidth, dirtyHeight, GL_BGRA, GL_UNSIGNED_BYTE,
+                    m_pixelTransferBuffer.data());
+    glBindTexture(GL_TEXTURE_2D, previousTexture);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, previousUnpackAlignment);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, previousUnpackBuffer);
 }
 
 void GlRenderTarget::captureScreenToTexture() {
@@ -2374,26 +2630,13 @@ void GlRenderTarget::captureScreenToTexture() {
 void GlRenderTarget::syncToGpu() {
     if (!m_cpuBuffer || !m_initialized ||
         m_pixelSyncState != PixelSyncState::CpuNewer) return;
-    int w = m_width, h = m_height;
-    // Convert top-down ARGB CPU storage to OpenGL's bottom-up RGBA rows.
-    std::vector<unsigned char> rgba(w * h * 4);
-    for (int egeY = 0; egeY < h; ++egeY) {
-        const int glY = h - 1 - egeY;
-        for (int x = 0; x < w; ++x) {
-            const color_t c = m_cpuBuffer[egeY * w + x];
-            const size_t dst = (static_cast<size_t>(glY) * w + x) * 4;
-            rgba[dst + 0] = (c >> 16) & 0xFF;
-            rgba[dst + 1] = (c >> 8) & 0xFF;
-            rgba[dst + 2] = c & 0xFF;
-            rgba[dst + 3] = (c >> 24) & 0xFF;
-        }
-    }
-    GLint previousTexture = 0;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
-    glBindTexture(GL_TEXTURE_2D, previousTexture);
+    const PixelRect dirty = (m_cpuDirtyUnknown || m_cpuDirtyRect.empty())
+        ? fullRect() : m_cpuDirtyRect;
+    uploadRect(dirty);
     m_pixelSyncState = PixelSyncState::Synchronized;
+    m_cpuDirtyRect = PixelRect();
+    m_gpuDirtyRect = PixelRect();
+    m_cpuDirtyUnknown = false;
 }
 
 void GlRenderTarget::rebuild(int width, int height) {
@@ -2425,10 +2668,14 @@ void GlRenderTarget::rebuild(int width, int height) {
     delete[] m_cpuBuffer;
     m_cpuBuffer = new color_t[width * height];
     memset(m_cpuBuffer, 0, sizeof(color_t) * width * height);
-    m_pixelSyncState = PixelSyncState::CpuNewer;
 
     m_width = width;
     m_height = height;
+    m_pixelSyncState = PixelSyncState::CpuNewer;
+    m_cpuDirtyRect = fullRect();
+    m_gpuDirtyRect = PixelRect();
+    m_cpuDirtyUnknown = false;
+    m_pixelTransferBuffer.clear();
     m_projectionDirty = true;
 }
 

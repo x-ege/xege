@@ -92,6 +92,7 @@ endmacro()
 # 主性能测试程序
 add_test_executable(putimage_performance_test tests/putimage_performance_test.cpp)
 add_test_executable(image_buffer_performance_test tests/image_buffer_performance_test.cpp)
+add_test_executable(pixel_access_performance_test tests/pixel_access_performance_test.cpp)
 
 # 单独的测试用例
 add_test_executable(putimage_basic_test tests/putimage_basic_test.cpp)
@@ -154,6 +155,7 @@ endif()
 set_target_properties(
     putimage_performance_test
     image_buffer_performance_test
+    pixel_access_performance_test
     putimage_basic_test
     putimage_alphablend_test
     putimage_transparent_test
@@ -204,6 +206,7 @@ add_test(
 )
 add_test(NAME putimage_performance COMMAND putimage_performance_test)
 add_test(NAME image_buffer_performance COMMAND image_buffer_performance_test)
+add_test(NAME pixel_access_performance COMMAND pixel_access_performance_test)
 add_test(NAME putimage_basic COMMAND putimage_basic_test)
 add_test(NAME putimage_alphablend COMMAND putimage_alphablend_test)
 add_test(NAME putimage_transparent COMMAND putimage_transparent_test)
@@ -241,6 +244,7 @@ if(WIN32 AND EGE_BUILD_OPENGL)
     set(EGE_OPENGL_SHARED_TESTS
         putimage_performance
         image_buffer_performance
+        pixel_access_performance
         putimage_basic
         putimage_alphablend
         putimage_transparent
@@ -260,6 +264,7 @@ endif()
 set_tests_properties(
     putimage_performance
     image_buffer_performance
+    pixel_access_performance
     putimage_basic
     putimage_alphablend
     putimage_transparent
@@ -337,6 +342,7 @@ if(WIN32 AND EGE_BUILD_OPENGL)
     set_tests_properties(
         putimage_performance_opengl
         image_buffer_performance_opengl
+        pixel_access_performance_opengl
         putimage_basic_opengl
         putimage_alphablend_opengl
         putimage_transparent_opengl
