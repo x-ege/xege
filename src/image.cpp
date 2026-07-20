@@ -450,6 +450,13 @@ Gdiplus::Graphics* IMAGE::getGraphics()
                 m_width, m_height, m_width * static_cast<int>(sizeof(color_t)),
                 PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(buffer));
             m_graphics = new Gdiplus::Graphics(m_graphicsBitmap);
+            // Match the state configured for the legacy HDC-backed Graphics
+            // object below. PixelOffsetModeHalf in particular affects source
+            // rectangles and scaled image sampling by a full edge pixel.
+            m_graphics->SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
+            m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);
+            m_graphics->SetTextRenderingHint(
+                m_aa ? Gdiplus::TextRenderingHintAntiAlias : Gdiplus::TextRenderingHintSystemDefault);
         }
     }
     if (NULL == m_graphics) {
@@ -530,6 +537,7 @@ int IMAGE::resize_f(int width, int height)
     }
 
     Size oldWindowSize(m_width, m_height);
+    const bool regenerateTexture = (m_texture != NULL);
 
 #ifdef _WIN32
     if (!m_renderTarget) {
@@ -539,11 +547,21 @@ int IMAGE::resize_f(int width, int height)
             return grAllocError;
         }
 
+        // m_texture is a GDI+ Bitmap that directly wraps the current DIB
+        // storage. Destroy that wrapper while the old pixels are still valid;
+        // otherwise replacing the selected bitmap leaves a dangling pointer.
+        if (regenerateTexture) {
+            gentexture(false);
+        }
+
         HBITMAP old_bitmap = (HBITMAP)SelectObject(this->m_hDC, bitmap);
         DeleteObject(old_bitmap);
 
         m_hBmp    = bitmap;
         m_pBuffer = bmp_buf;
+    } else if (regenerateTexture) {
+        // The OpenGL rebuild below can reallocate its shared CPU buffer.
+        gentexture(false);
     }
 #else
     if (!m_renderTarget) {
@@ -554,8 +572,13 @@ int IMAGE::resize_f(int width, int height)
                 return grAllocError;
             }
         }
+        if (regenerateTexture) {
+            gentexture(false);
+        }
         delete[] m_pBuffer;
         m_pBuffer = newBuffer;
+    } else if (regenerateTexture) {
+        gentexture(false);
     }
 #endif
     m_width   = width;
@@ -597,6 +620,10 @@ int IMAGE::resize_f(int width, int height)
     }
 #endif
 
+    if (regenerateTexture && width > 0 && height > 0) {
+        gentexture(true);
+    }
+
     return grOk;
 }
 
@@ -631,7 +658,10 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
     // Both have render targets: preserve the source rectangle on the GPU and
     // make the shared CPU buffer current for save/getbuffer callers.
     if (this->m_renderTarget && img->m_renderTarget) {
-        this->m_renderTarget->blit(0, 0, img->m_renderTarget, xSrc, ySrc, srcWidth, srcHeight);
+        this->m_renderTarget->blit(0, 0, img->m_renderTarget,
+                                   xSrc + img->m_vpt.left,
+                                   ySrc + img->m_vpt.top,
+                                   srcWidth, srcHeight);
         m_pBuffer = reinterpret_cast<PDWORD>(this->m_renderTarget->getPixelBuffer());
         CONVERT_IMAGE_END;
         return grOk;
@@ -644,7 +674,9 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
             int srcW = img->m_renderTarget->getWidth();
             for (int y = 0; y < srcHeight; y++) {
                 for (int x = 0; x < srcWidth; x++) {
-                    this->m_pBuffer[y * srcWidth + x] = srcPixels[(ySrc + y) * srcW + (xSrc + x)];
+                    this->m_pBuffer[y * srcWidth + x] =
+                        srcPixels[(ySrc + img->m_vpt.top + y) * srcW +
+                                  (xSrc + img->m_vpt.left + x)];
                 }
             }
             this->m_glDirty = true;
@@ -661,7 +693,9 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
         glFinish();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         unsigned char* tmpBuf = new unsigned char[srcWidth * srcHeight * 4];
-        glReadPixels(xSrc, ySrc, srcWidth, srcHeight, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
+        glReadPixels(xSrc + img->m_vpt.left,
+                     ySrc + img->m_vpt.top,
+                     srcWidth, srcHeight, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf);
         for (int y = 0; y < srcHeight; y++) {
             for (int x = 0; x < srcWidth; x++) {
                 int ri = ((srcHeight - 1 - y) * srcWidth + x) * 4;
@@ -715,6 +749,38 @@ static color_t applyBitBltRasterOp(DWORD rop, color_t source, color_t destinatio
     }
 }
 
+static bool rasterPatternUsesForeground(FillStyle pattern, int x, int y)
+{
+    x &= 7;
+    y &= 7;
+    const int slash = (x + y) & 7;
+    const int backslash = (x - y) & 7;
+    switch (pattern) {
+        case FILL_HORIZONTAL:      return y == 0;
+        case FILL_LIGHT_SLASH:     return slash == 0;
+        case FILL_SLASH:           return slash <= 1;
+        case FILL_BACKSLASH:       return backslash <= 1;
+        case FILL_LIGHT_BACKSLASH: return backslash == 0;
+        case FILL_HATCH:           return x == 0 || y == 0;
+        case FILL_CROSS_HATCH:     return slash <= 1 || backslash <= 1;
+        case FILL_INTERLEAVE:      return (y == 0 && x < 4) || (y == 4 && x >= 4);
+        case FILL_WIDE_DOT:        return x == 0 && y == 0;
+        case FILL_CLOSE_DOT:       return (x & 3) == 0 && (y & 3) == 0;
+        default:                   return true;
+    }
+}
+
+static color_t bitBltPatternColor(PCIMAGE destination, int x, int y)
+{
+    if (!destination->m_renderTarget) {
+        return destination->m_fillcolor;
+    }
+    const FillStyle style = destination->m_renderTarget->getFillStyle();
+    return rasterPatternUsesForeground(style, x, y)
+        ? destination->m_renderTarget->getFillColor()
+        : destination->m_renderTarget->getBkColor();
+}
+
 static void putimageRasterCpu(PIMAGE destination, PCIMAGE source,
     int xDest, int yDest, int widthDest, int heightDest,
     int xSrc, int ySrc, int widthSrc, int heightSrc, DWORD rop)
@@ -759,7 +825,8 @@ static void putimageRasterCpu(PIMAGE destination, PCIMAGE source,
             const color_t sourceColor = sourceSnapshot[sourceY * source->m_width + sourceX];
             color_t& destinationColor = destinationBuffer[destinationY * destination->m_width + destinationX];
             destinationColor = applyBitBltRasterOp(
-                rop, sourceColor, destinationColor, destination->m_fillcolor);
+                rop, sourceColor, destinationColor,
+                bitBltPatternColor(destination, destinationX, destinationY));
         }
     }
 }
@@ -770,11 +837,16 @@ void IMAGE::putimage(
     inittest(L"IMAGE::putimage");
     PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img && img->m_renderTarget && this->m_renderTarget) {
+        const int physicalSourceX = xSrc + m_vpt.left;
+        const int physicalSourceY = ySrc + m_vpt.top;
         if (dwRop == SRCCOPY && img != this) {
-            img->m_renderTarget->blit(xDest, yDest, this->m_renderTarget, xSrc, ySrc, widthDest, heightDest);
+            img->m_renderTarget->blit(xDest, yDest, this->m_renderTarget,
+                                      physicalSourceX, physicalSourceY,
+                                      widthDest, heightDest);
         } else {
             putimageRasterCpu(img, this, xDest, yDest, widthDest, heightDest,
-                              xSrc, ySrc, widthDest, heightDest, dwRop);
+                              physicalSourceX, physicalSourceY,
+                              widthDest, heightDest, dwRop);
         }
         CONVERT_IMAGE_END;
         return;
@@ -782,7 +854,8 @@ void IMAGE::putimage(
 #ifndef _WIN32
     if (img) {
         putimageRasterCpu(img, this, xDest, yDest, widthDest, heightDest,
-                          xSrc, ySrc, widthDest, heightDest, dwRop);
+                          xSrc + m_vpt.left, ySrc + m_vpt.top,
+                          widthDest, heightDest, dwRop);
     }
 #endif
 #ifdef _WIN32
@@ -1130,19 +1203,25 @@ void IMAGE::putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int he
     PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
         if (img->m_renderTarget && this->m_renderTarget) {
+            const int physicalSourceX = xSrc + m_vpt.left;
+            const int physicalSourceY = ySrc + m_vpt.top;
             if (dwRop == SRCCOPY && img != this) {
                 img->m_renderTarget->blitStretch(xDest, yDest, widthDest, heightDest,
-                                                 this->m_renderTarget, xSrc, ySrc, srcWidth, srcHeight);
+                                                 this->m_renderTarget,
+                                                 physicalSourceX, physicalSourceY,
+                                                 srcWidth, srcHeight);
             } else {
                 putimageRasterCpu(img, this, xDest, yDest, widthDest, heightDest,
-                                  xSrc, ySrc, srcWidth, srcHeight, dwRop);
+                                  physicalSourceX, physicalSourceY,
+                                  srcWidth, srcHeight, dwRop);
             }
             CONVERT_IMAGE_END;
             return;
         }
 #ifndef _WIN32
         putimageRasterCpu(img, this, xDest, yDest, widthDest, heightDest,
-                          xSrc, ySrc, srcWidth, srcHeight, dwRop);
+                          xSrc + m_vpt.left, ySrc + m_vpt.top,
+                          srcWidth, srcHeight, dwRop);
 #endif
 #ifdef _WIN32
         SetStretchBltMode(img->m_hDC, COLORONCOLOR);
@@ -1286,10 +1365,15 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,  // handle to dest
             return grOk;
 
         if (img->m_renderTarget && this->m_renderTarget) {
+            const bool legacySoftwareFormat =
+                colorType == COLORTYPE_RGB32 || colorType == COLORTYPE_ARGB32;
             img->m_renderTarget->alphaBlend(xDest - img->m_vpt.left,
                                             yDest - img->m_vpt.top,
                                             widthSrc, heightSrc,
-                                            this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc,
+                                            this->m_renderTarget,
+                                            xSrc + (legacySoftwareFormat ? 0 : m_vpt.left),
+                                            ySrc + (legacySoftwareFormat ? 0 : m_vpt.top),
+                                            widthSrc, heightSrc,
                                             alpha, to_render_alpha_format(colorType), false);
             CONVERT_IMAGE_END;
             return grOk;
@@ -1371,16 +1455,30 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             return grOk;
 
         if (img->m_renderTarget && this->m_renderTarget) {
+#if defined(_WIN32) && defined(EGE_GDIPLUS)
+            // On Windows the legacy backend uses Win32 AlphaBlend only for
+            // unsmoothed PRGB. RGB/ARGB and every smoothed transfer use GDI+
+            // interpolation, whose bicubic edge/rounding behavior differs
+            // visibly from OpenGL linear sampling. Reuse that compatibility
+            // path below for exact dual-backend behavior.
+            if (colorType == COLORTYPE_PRGB32 && !smooth) {
+#endif
             PCIMAGE imgSrc = this;
             if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
             if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
             if (widthDest  <= 0) widthDest  = widthSrc;
             if (heightDest <= 0) heightDest = heightSrc;
             img->m_renderTarget->alphaBlend(xDest, yDest, widthDest, heightDest,
-                                            this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc,
+                                            this->m_renderTarget,
+                                            xSrc + m_vpt.left,
+                                            ySrc + m_vpt.top,
+                                            widthSrc, heightSrc,
                                             alpha, to_render_alpha_format(colorType), smooth);
             CONVERT_IMAGE_END;
             return grOk;
+#if defined(_WIN32) && defined(EGE_GDIPLUS)
+            }
+#endif
         }
 
         PCIMAGE imgSrc = this;
@@ -1408,6 +1506,7 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             Rect drawDest(xDest + vptDest.left, yDest + vptDest.top, widthDest, heightDest);
             Rect drawSrc(xSrc + vptSrc.left, ySrc + vptSrc.top, widthSrc, heightSrc);
 
+            const color_t* sourceBuffer = imgSrc->getbuffer();
             Gdiplus::Graphics* graphics = img->getGraphics();
             Gdiplus::Matrix matrix;
             graphics->GetTransform(&matrix);
@@ -1447,7 +1546,8 @@ int IMAGE::putimage_alphablend(PIMAGE imgDest,    // handle to dest
             Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
 
             int stride = sizeof(color_t) * imgSrc->m_width;
-            Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, stride, pixelFormat, (BYTE*)imgSrc->m_pBuffer);
+            Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, stride, pixelFormat,
+                                   (BYTE*)sourceBuffer);
             graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, imageAtt);
             graphics->SetTransform(&matrix);
 
@@ -1532,7 +1632,10 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
             img->m_renderTarget->withAlpha(xDest - img->m_vpt.left,
                                            yDest - img->m_vpt.top,
                                            widthSrc, heightSrc,
-                                           this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc,
+                                           this->m_renderTarget,
+                                           xSrc + m_vpt.left,
+                                           ySrc + m_vpt.top,
+                                           widthSrc, heightSrc,
                                            false);
             CONVERT_IMAGE_END;
             return grOk;
@@ -1575,16 +1678,21 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
     imgDest = CONVERT_IMAGE(imgDest);
     if (imgDest) {
         if (imgDest->m_renderTarget && this->m_renderTarget) {
+#if !defined(_WIN32) || !defined(EGE_GDIPLUS)
             PCIMAGE imgSrc = this;
             if (widthSrc   <= 0) widthSrc   = imgSrc->m_width;
             if (heightSrc  <= 0) heightSrc  = imgSrc->m_height;
             if (widthDest  <= 0) widthDest  = widthSrc;
             if (heightDest <= 0) heightDest = heightSrc;
             imgDest->m_renderTarget->withAlpha(xDest, yDest, widthDest, heightDest,
-                                               this->m_renderTarget, xSrc, ySrc, widthSrc, heightSrc,
+                                               this->m_renderTarget,
+                                               xSrc + m_vpt.left,
+                                               ySrc + m_vpt.top,
+                                               widthSrc, heightSrc,
                                                smooth);
             CONVERT_IMAGE_END;
             return grOk;
+#endif
         }
         PCIMAGE imgSrc = this;
         #if 0
@@ -1627,6 +1735,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         path.AddRectangle(Gdiplus::Rect(clipDest.x, clipDest.y, clipDest.width, clipDest.height));
         Gdiplus::Region region(&path);
 
+        const color_t* sourceBuffer = imgSrc->getbuffer();
         Gdiplus::Graphics* graphics = imgDest->getGraphics();
         Gdiplus::Matrix matrix;
         graphics->GetTransform(&matrix);
@@ -1643,7 +1752,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,    // handle to dest
         Gdiplus::RectF rectSrc((float)drawSrc.x, (float)drawSrc.y, (float)drawSrc.width, (float)drawSrc.height);
 
         Gdiplus::Bitmap bitmap(imgSrc->m_width, imgSrc->m_height, sizeof(color_t) * imgSrc->m_width,
-        PixelFormat32bppPARGB, (BYTE*)imgSrc->m_pBuffer);
+        PixelFormat32bppPARGB, (BYTE*)sourceBuffer);
         graphics->DrawImage(&bitmap, rectDest, rectSrc.X, rectSrc.Y, rectSrc.Width, rectSrc.Height, Gdiplus::UnitPixel, NULL);
         graphics->SetTransform(&matrix);
 #endif

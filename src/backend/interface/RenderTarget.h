@@ -127,6 +127,7 @@ public:
     virtual color_t getFillColor()  const = 0;
     virtual color_t getTextColor()  const = 0;
     virtual color_t getBkColor()    const = 0;
+    virtual FillStyle getFillStyle() const = 0;
 
     // --- Viewport & clipping ---
     virtual void setViewport(int left, int top, int right, int bottom, bool clip) = 0;

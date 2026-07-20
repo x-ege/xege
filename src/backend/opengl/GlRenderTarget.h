@@ -59,6 +59,7 @@ public:
     color_t getFillColor()  const override { return m_fillColor; }
     color_t getTextColor()  const override { return m_textColor; }
     color_t getBkColor()    const override { return m_bkColor; }
+    FillStyle getFillStyle() const override { return m_fillStyle; }
 
     // --- Viewport ---
     void setViewport(int left, int top, int right, int bottom, bool clip) override;

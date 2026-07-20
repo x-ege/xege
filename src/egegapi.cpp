@@ -2481,8 +2481,12 @@ void ege_setpattern_ellipsegradient(ege_point center,
 void ege_setpattern_texture(PIMAGE srcimg, float x, float y, float w, float h, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
+    if (img && srcimg) {
         if (srcimg->m_texture) {
+            // A generated GDI+ texture wraps the IMAGE CPU buffer. OpenGL
+            // drawing may have made the GPU copy newer since generation, so
+            // refresh that shared buffer before the brush captures it.
+            (void)srcimg->getbuffer();
             Gdiplus::TextureBrush* pbrush =
                 new Gdiplus::TextureBrush((Gdiplus::Image*)srcimg->m_texture, Gdiplus::WrapModeTile, x, y, w, h);
             img->set_pattern(pbrush);
@@ -2655,7 +2659,7 @@ void ege_puttexture(PCIMAGE srcimg, ege_rect dest, PIMAGE pimg)
 {
     ege_rect src;
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
+    if (img && srcimg) {
         src.x = 0;
         src.y = 0;
         src.w = (float)srcimg->getwidth();
@@ -2668,8 +2672,11 @@ void ege_puttexture(PCIMAGE srcimg, ege_rect dest, PIMAGE pimg)
 void ege_puttexture(PCIMAGE srcimg, ege_rect dest, ege_rect src, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
+    if (img && srcimg) {
         if (srcimg->m_texture) {
+            // Keep the legacy live-DIB texture behavior when OpenGL has
+            // pending source draws that have not reached the CPU buffer yet.
+            (void)srcimg->getbuffer();
             Gdiplus::Graphics* graphics = img->getGraphics();
             /*
             Gdiplus::ImageAttributes ia;

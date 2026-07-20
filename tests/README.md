@@ -27,6 +27,27 @@
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
 
+### 图片传输正确性矩阵
+
+`putimage_*` 专项程序是计时/压力程序，不包含像素断言；贴图功能门禁集中在
+`rendering_correctness`，并在 Windows GDI 与 Windows OpenGL 模式下运行同一组断言。
+
+| 接口族 | 确定性断言 |
+| --- | --- |
+| `getimage`、`putimage` | 屏幕/IMAGE、整图/源矩形/拉伸重载，源和目标 viewport，裁剪、GPU/CPU 缓冲同步、自身重叠复制 |
+| BitBlt ROP | 15 个标准三元光栅操作（包括 pattern、blackness、whiteness）逐像素验证 |
+| `putimage_transparent`、`putimage_alphatransparent` | 默认范围、显式源矩形、负目标裁剪、颜色键、全局 alpha、目标 alpha 保留 |
+| `putimage_alphablend` | 4 个重载，RGB32/ARGB32/PRGB32，0/128/255 alpha，源矩形、viewport、拉伸及平滑采样 |
+| `putimage_withalpha`、`putimage_alphafilter` | 两个 with-alpha 重载、PRGB 合成、平滑拉伸、mask stride/零值/null、GPU 目标同步 |
+| 旋转接口 | `putimage_rotate`、`putimage_rotatezoom`、两个 `putimage_rotatetransparent` 重载，中心坐标、非方形旋转、缩放、全局 alpha、零值透明和平滑路径 |
+| 增强贴图 | `ege_gentexture` 开/关、3 个 `ege_puttexture` 重载、2 个 `ege_drawimage` 重载、纹理填充、变换、生成后的源更新及 resize 生命周期 |
+| 图片格式 | PNG/BMP 普通及 alpha 往返、尺寸/方向/像素/文件头，`saveimage` 分派和 `getimage_pngfile` |
+| 像素格式 | `image_convertcolor` 的 ARGB/PRGB 双向转换与舍入 |
+
+资源型 `getimage(resType, resName, ...)` 需要可执行文件资源 fixture，名称级和头文件编译
+审计已覆盖，但当前不属于跨平台像素门禁。新增贴图重载或后端分支时，应先更新上表并补充
+同一组 GDI/OpenGL 像素断言。
+
 ## 公共 API 覆盖审计
 
 从仓库根目录运行名称级审计：

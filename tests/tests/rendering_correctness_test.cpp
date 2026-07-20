@@ -615,6 +615,40 @@ void testScreenFramebufferCapture()
     ege::delimage(capture);
 }
 
+void testScreenPutimageOverloads()
+{
+    ege::PIMAGE source = ege::newimage(2, 2);
+    ege::color_t* sourcePixels = ege::getbuffer(source);
+    sourcePixels[0] = ege::RED;
+    sourcePixels[1] = ege::GREEN;
+    sourcePixels[2] = ege::BLUE;
+    sourcePixels[3] = ege::WHITE;
+
+    ege::settarget(nullptr);
+    ege::setviewport(0, 0, 64, 64, true);
+    ege::setbkcolor(ege::BLACK);
+    ege::cleardevice();
+
+    ege::putimage(1, 1, source);
+    ege::putimage(5, 1, 1, 1, source, 1, 0);
+    ege::putimage(8, 1, 2, 2, source, 0, 1, 1, 1);
+
+    ege::PIMAGE capture = ege::newimage();
+    expect(ege::getimage(capture, 0, 0, 12, 4) == ege::grOk,
+           "screen putimage overload results can be captured");
+    expectPixel(capture, 1, 1, ege::RED,
+                "screen whole-image putimage overload draws its top-left pixel");
+    expectPixel(capture, 2, 2, ege::WHITE,
+                "screen whole-image putimage overload draws its full extent");
+    expectPixel(capture, 5, 1, ege::GREEN,
+                "screen source-region putimage overload selects the requested pixel");
+    expectPixel(capture, 9, 2, ege::BLUE,
+                "screen stretched putimage overload scales the requested source region");
+
+    ege::delimage(capture);
+    ege::delimage(source);
+}
+
 void testPrimitiveBatchRetention()
 {
     ege::PIMAGE image = ege::newimage(32, 24);
@@ -717,6 +751,86 @@ void testImageTransfersHonorViewportOrigin()
     ege::putimage_withalpha(destination, source, 0, 0);
     expectAtViewportOrigin("putimage_withalpha");
 
+    ege::delimage(destination);
+    ege::delimage(source);
+}
+
+void testImageTransfersHonorSourceViewportOrigin()
+{
+    ege::PIMAGE source = ege::newimage(6, 4);
+    ege::PIMAGE destination = ege::newimage(4, 4);
+    ege::color_t* sourcePixels = ege::getbuffer(source);
+    std::fill(sourcePixels, sourcePixels + 24, EGEARGB(255, 0, 0, 0));
+    sourcePixels[0] = EGEARGB(255, 0, 255, 0);
+    sourcePixels[1 * 6 + 2] = EGEARGB(255, 255, 0, 0);
+    ege::setviewport(2, 1, 6, 4, true, source);
+
+    resetImage(destination, ege::BLUE);
+    ege::putimage(destination, 0, 0, 1, 1, source, 0, 0);
+    expectPixel(destination, 0, 0, ege::RED,
+                "putimage source coordinates are relative to the source viewport");
+
+    resetImage(destination, ege::BLUE);
+    ege::putimage(destination, 0, 0, 2, 2, source, 0, 0, 1, 1);
+    expectPixel(destination, 1, 1, ege::RED,
+                "stretched putimage applies the source viewport origin");
+
+    ege::PIMAGE cropped = ege::newimage();
+    expect(ege::getimage(cropped, source, 0, 0, 1, 1) == ege::grOk,
+           "getimage accepts source coordinates relative to a viewport");
+    expectPixel(cropped, 0, 0, ege::RED,
+                "getimage applies the source viewport origin");
+
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_alphablend(destination, source, 0, 0, 255,
+                                    0, 0, 1, 1,
+                                    ege::COLORTYPE_PRGB32) == ege::grOk,
+           "premultiplied alpha transfer with a source viewport reports success");
+    expectPixel(destination, 0, 0, ege::RED,
+                "premultiplied alpha transfer applies the source viewport origin");
+
+    // The legacy RGB32/ARGB32 overload is a software-buffer operation and
+    // historically treats xSrc/ySrc as physical buffer coordinates. Keep
+    // that obscure distinction while PRGB32 follows the source HDC viewport.
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_alphablend(destination, source, 0, 0, 255,
+                                    0, 0, 1, 1,
+                                    ege::COLORTYPE_RGB32) == ege::grOk,
+           "RGB32 alpha transfer with a source viewport reports success");
+    expectPixel(destination, 0, 0, EGEARGB(255, 0, 255, 0),
+                "RGB32 software alpha transfer retains legacy physical source coordinates");
+
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_transparent(destination, source, 0, 0,
+                                     ege::MAGENTA, 0, 0, 1, 1) == ege::grOk,
+           "color-key transfer with a source viewport reports success");
+    expectPixel(destination, 0, 0, EGEARGB(255, 0, 255, 0),
+                "color-key software transfer retains legacy physical source coordinates");
+
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_alphablend(destination, source,
+                                    0, 0, 2, 2, 255,
+                                    0, 0, 1, 1, false,
+                                    ege::COLORTYPE_RGB32) == ege::grOk,
+           "stretched alpha transfer with a source viewport reports success");
+    expectPixel(destination, 1, 1, ege::RED,
+                "stretched alpha transfer applies the source viewport origin");
+
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_withalpha(destination, source, 0, 0, 0, 0, 1, 1) == ege::grOk,
+           "with-alpha transfer with a source viewport reports success");
+    expectPixel(destination, 0, 0, ege::RED,
+                "with-alpha transfer applies the source viewport origin");
+
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_withalpha(destination, source,
+                                   0, 0, 2, 2,
+                                   0, 0, 1, 1, false) == ege::grOk,
+           "stretched with-alpha transfer with a source viewport reports success");
+    expectPixel(destination, 1, 1, ege::RED,
+                "stretched with-alpha transfer applies the source viewport origin");
+
+    ege::delimage(cropped);
     ege::delimage(destination);
     ege::delimage(source);
 }
@@ -1167,6 +1281,93 @@ void testAlphaMaskDefaultsAndScaledSampling()
     ege::delimage(source);
 }
 
+void testAlphaTransferOverloadsAndClipping()
+{
+    ege::PIMAGE source = ege::newimage(3, 2);
+    ege::PIMAGE destination = ege::newimage(6, 4);
+    ege::color_t* sourcePixels = ege::getbuffer(source);
+    sourcePixels[0] = ege::RED;
+    sourcePixels[1] = ege::GREEN;
+    sourcePixels[2] = ege::BLUE;
+    sourcePixels[3] = ege::CYAN;
+    sourcePixels[4] = ege::MAGENTA;
+    sourcePixels[5] = ege::YELLOW;
+
+    resetImage(destination, ege::BLACK);
+    expect(ege::putimage_alphablend(destination, source, 0, 0, 255,
+                                    1, 0, ege::COLORTYPE_RGB32) == ege::grOk,
+           "source-origin alpha overload reports success");
+    expectPixel(destination, 0, 0, ege::GREEN,
+                "source-origin alpha overload starts at the requested column");
+    expectPixel(destination, 1, 1, ege::YELLOW,
+                "source-origin alpha overload uses the remaining source extent");
+
+    resetImage(destination, ege::BLACK);
+    expect(ege::putimage_alphablend(destination, source, 2, 1, 255,
+                                    2, 0, 1, 1,
+                                    ege::COLORTYPE_RGB32) == ege::grOk,
+           "source-rectangle alpha overload reports success");
+    expectPixel(destination, 2, 1, ege::BLUE,
+                "source-rectangle alpha overload restricts the copied extent");
+    expectPixel(destination, 3, 1, ege::BLACK,
+                "source-rectangle alpha overload leaves adjacent pixels untouched");
+
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_alphablend(destination, source, 0, 0, 0,
+                                    ege::COLORTYPE_RGB32) == ege::grOk,
+           "zero-alpha transfer reports success");
+    expectPixel(destination, 0, 0, ege::BLUE,
+                "zero global alpha leaves the destination unchanged");
+
+    resetImage(destination, ege::BLACK);
+    expect(ege::putimage_transparent(destination, source, -1, 0,
+                                     ege::MAGENTA, 0, 0, 3, 1) == ege::grOk,
+           "negative-destination transparent transfer reports success");
+    expectPixel(destination, 0, 0, ege::GREEN,
+                "transparent transfer clips the destination and advances the source");
+    expectPixel(destination, 1, 0, ege::BLUE,
+                "transparent transfer preserves source sampling after clipping");
+
+    resetImage(destination, ege::BLACK);
+    expect(ege::putimage_alphablend(destination, source, -1, 0, 255,
+                                    0, 0, 3, 1,
+                                    ege::COLORTYPE_RGB32) == ege::grOk,
+           "negative-destination alpha transfer reports success");
+    expectPixel(destination, 0, 0, ege::GREEN,
+                "alpha transfer clips the destination and advances the source");
+
+    ege::PIMAGE premultiplied = ege::newimage(3, 3);
+    ege::color_t* premultipliedPixels = ege::getbuffer(premultiplied);
+    std::fill(premultipliedPixels, premultipliedPixels + 9, EGEARGB(128, 128, 0, 0));
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_withalpha(destination, premultiplied,
+                                   0, 0, 6, 4,
+                                   0, 0, 3, 3, true) == ege::grOk,
+           "smooth stretched with-alpha overload reports success");
+    const ege::color_t stretchedAlpha = ege::getpixel(3, 2, destination);
+#ifdef _WIN32
+    const bool stretchedAlphaMatches =
+        EGEGET_R(stretchedAlpha) >= 144 && EGEGET_R(stretchedAlpha) <= 148 &&
+        EGEGET_B(stretchedAlpha) >= 107 && EGEGET_B(stretchedAlpha) <= 111;
+#else
+    const bool stretchedAlphaMatches =
+        EGEGET_R(stretchedAlpha) >= 126 && EGEGET_R(stretchedAlpha) <= 130 &&
+        EGEGET_B(stretchedAlpha) >= 126 && EGEGET_B(stretchedAlpha) <= 130;
+#endif
+    expect(stretchedAlphaMatches,
+           "smooth stretched with-alpha overload composites premultiplied pixels (R=" +
+               std::to_string(EGEGET_R(stretchedAlpha)) + ", B=" +
+               std::to_string(EGEGET_B(stretchedAlpha)) + ")");
+
+    expect(ege::putimage_alphafilter(destination, source, 0, 0,
+                                     nullptr, 0, 0, 1, 1) == ege::grNullPointer,
+           "alpha-filter rejects a null mask image");
+
+    ege::delimage(premultiplied);
+    ege::delimage(destination);
+    ege::delimage(source);
+}
+
 void testImageRotationCoordinatesAndAspectRatio()
 {
     ege::PIMAGE source = ege::newimage(4, 4);
@@ -1205,6 +1406,58 @@ void testImageRotationCoordinatesAndAspectRatio()
     expectPixel(destination, 12, 8, ege::BLUE,
                 "putimage_rotatetransparent skips the transparent source background");
 
+    ege::resize(source, 3, 3);
+    resetImage(source, ege::RED);
+    resetImage(destination, ege::BLACK);
+    expect(ege::putimage_rotatezoom(destination, source,
+                                    16, 12, 0.5f, 0.5f,
+                                    0.0f, 2.0f) == ege::grOk,
+           "putimage_rotatezoom reports success");
+    expectPixel(destination, 16, 12, ege::RED,
+                "putimage_rotatezoom keeps the selected pivot at its destination");
+    expectPixel(destination, 12, 8, ege::BLACK,
+                "putimage_rotatezoom keeps pixels outside the scaled image untouched");
+
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_rotate(destination, source,
+                                16, 12, 0.5f, 0.5f, 0.0f,
+                                false, 128, false) == ege::grOk,
+           "global-alpha putimage_rotate reports success");
+    const ege::color_t rotatedAlpha = ege::getpixel(16, 12, destination);
+    expect(EGEGET_R(rotatedAlpha) >= 126 && EGEGET_R(rotatedAlpha) <= 130 &&
+           EGEGET_B(rotatedAlpha) >= 126 && EGEGET_B(rotatedAlpha) <= 130,
+           "global-alpha putimage_rotate blends source and destination once");
+
+    ege::resize(source, 4, 4);
+    ege::color_t* transparentRotationPixels = ege::getbuffer(source);
+    std::fill(transparentRotationPixels, transparentRotationPixels + 16, 0U);
+    transparentRotationPixels[2 * 4 + 2] = ege::GREEN;
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_rotatezoom(destination, source,
+                                    16, 12, 0.5f, 0.5f,
+                                    0.0f, 1.0f,
+                                    true, -1, true) == ege::grOk,
+           "smooth zero-key putimage_rotatezoom reports success");
+    expect(countPixelsDifferentFrom(destination, ege::BLUE) > 0,
+           "smooth zero-key putimage_rotatezoom draws nonzero source pixels");
+    expectPixel(destination, 14, 10, ege::BLUE,
+                "smooth zero-key putimage_rotatezoom skips zero-valued source pixels");
+
+    ege::resize(source, 5, 5);
+    resetImage(source, ege::WHITE);
+    ege::putpixel(2, 2, ege::GREEN, source);
+    resetImage(destination, ege::BLUE);
+    expect(ege::putimage_rotatetransparent(destination, source,
+                                           16, 12,
+                                           1, 1, 3, 3,
+                                           2, 2, ege::WHITE,
+                                           0.0f, 1.0f) == ege::grOk,
+           "source-rectangle putimage_rotatetransparent reports success");
+    expectPixel(destination, 16, 12, ege::GREEN,
+                "source-rectangle putimage_rotatetransparent maps its selected center");
+    expectPixel(destination, 14, 10, ege::BLUE,
+                "source-rectangle putimage_rotatetransparent skips key-colored pixels");
+
     ege::delimage(destination);
     ege::delimage(source);
 }
@@ -1224,6 +1477,101 @@ void testEnhancedImageTransform()
                 "ege_drawimage applies the active enhanced transform");
     expectPixel(destination, 2, 3, ege::BLACK,
                 "transformed ege_drawimage does not draw at its untransformed position");
+
+    ege::delimage(destination);
+    ege::delimage(source);
+}
+
+void testTextureAndEnhancedImageTransferOverloads()
+{
+    ege::PIMAGE source = ege::newimage(3, 2);
+    ege::PIMAGE destination = ege::newimage(12, 8);
+    ege::color_t* sourcePixels = ege::getbuffer(source);
+    sourcePixels[0] = ege::RED;
+    sourcePixels[1] = ege::GREEN;
+    sourcePixels[2] = ege::BLUE;
+    sourcePixels[3] = ege::CYAN;
+    sourcePixels[4] = ege::MAGENTA;
+    sourcePixels[5] = ege::YELLOW;
+
+    ege::ege_gentexture(true, source);
+
+    resetImage(destination, ege::BLACK);
+    ege::ege_puttexture(source, 1.0f, 1.0f, 3.0f, 2.0f, destination);
+    expectPixel(destination, 1, 1, ege::RED,
+                "float ege_puttexture overload maps the source top-left pixel");
+    expectPixel(destination, 3, 2, ege::YELLOW,
+                "float ege_puttexture overload maps the source bottom-right pixel");
+
+    resetImage(destination, ege::BLACK);
+    const ege::ege_rect wholeDestination = {2.0f, 2.0f, 3.0f, 2.0f};
+    ege::ege_puttexture(source, wholeDestination, destination);
+    expectPixel(destination, 3, 2, ege::GREEN,
+                "rectangle ege_puttexture overload draws the generated texture");
+
+    resetImage(destination, ege::BLACK);
+    const ege::ege_rect croppedDestination = {5.0f, 1.0f, 1.0f, 2.0f};
+    const ege::ege_rect croppedSource = {1.0f, 0.0f, 1.0f, 2.0f};
+    ege::ege_puttexture(source, croppedDestination, croppedSource, destination);
+    expectPixel(destination, 5, 1, ege::GREEN,
+                "source-rectangle ege_puttexture overload crops its top row");
+    expectPixel(destination, 5, 2, ege::MAGENTA,
+                "source-rectangle ege_puttexture overload crops its bottom row");
+
+    // A generated GDI+ texture wraps the IMAGE buffer. Mutations after
+    // generation are therefore observable on the legacy backend and must be
+    // synchronized from the OpenGL render target before enhanced drawing.
+    ege::putpixel(0, 0, ege::WHITE, source);
+    resetImage(destination, ege::BLACK);
+    const ege::ege_rect firstPixelDestination = {0.0f, 0.0f, 1.0f, 1.0f};
+    const ege::ege_rect firstPixelSource = {0.0f, 0.0f, 1.0f, 1.0f};
+    ege::ege_puttexture(source, firstPixelDestination, firstPixelSource, destination);
+    expectPixel(destination, 0, 0, ege::WHITE,
+                "ege_puttexture observes source draws made after texture generation");
+
+    ege::putpixel(0, 0, ege::CYAN, source);
+    resetImage(destination, ege::BLACK);
+    ege::ege_setpattern_texture(source, 0.0f, 0.0f, 3.0f, 2.0f, destination);
+    ege::ege_fillrect(0.0f, 0.0f, 3.0f, 2.0f, destination);
+    expectPixel(destination, 0, 0, ege::CYAN,
+                "texture patterns observe source draws made after texture generation");
+    ege::ege_setpattern_none(destination);
+
+    resetImage(destination, ege::BLACK);
+    ege::ege_drawimage(source, 2, 3, destination);
+    expectPixel(destination, 2, 3, ege::CYAN,
+                "ege_drawimage whole-image overload observes the current source buffer");
+    expectPixel(destination, 4, 4, ege::YELLOW,
+                "ege_drawimage whole-image overload draws the full extent");
+
+    resetImage(destination, ege::BLACK);
+    ege::ege_drawimage(source, 7, 2, 1, 2, 1, 0, 1, 2, destination);
+    expectPixel(destination, 7, 2, ege::GREEN,
+                "ege_drawimage source-rectangle overload crops its top row");
+    expectPixel(destination, 7, 3, ege::MAGENTA,
+                "ege_drawimage source-rectangle overload crops its bottom row");
+
+    ege::ege_gentexture(false, source);
+    resetImage(destination, ege::BLACK);
+    ege::ege_puttexture(source, firstPixelDestination, firstPixelSource, destination);
+    expectPixel(destination, 0, 0, ege::BLACK,
+                "ege_gentexture(false) disables subsequent texture draws");
+
+    // Resizing replaces the DIB/GPU storage that a generated texture wraps.
+    // Keep texture generation enabled while rebuilding that wrapper so the
+    // public object cannot retain a dangling GDI+ bitmap.
+    ege::ege_gentexture(true, source);
+    expect(ege::resize(source, 2, 1) == ege::grOk,
+           "resizing an image with a generated texture reports success");
+    ege::putpixel(0, 0, ege::YELLOW, source);
+    ege::putpixel(1, 0, ege::BLUE, source);
+    resetImage(destination, ege::BLACK);
+    const ege::ege_rect resizedDestination = {1.0f, 1.0f, 2.0f, 1.0f};
+    ege::ege_puttexture(source, resizedDestination, destination);
+    expectPixel(destination, 1, 1, ege::YELLOW,
+                "generated texture remains valid after IMAGE storage is resized");
+    expectPixel(destination, 2, 1, ege::BLUE,
+                "resized generated texture uses the new dimensions and buffer");
 
     ege::delimage(destination);
     ege::delimage(source);
@@ -1354,31 +1702,92 @@ void testEnhancedPathApi()
 
 void testRasterOperations()
 {
-    ege::PIMAGE source = ege::newimage(2, 2);
-    ege::PIMAGE destination = ege::newimage(2, 2);
+    ege::PIMAGE source = ege::newimage(4, 1);
+    ege::PIMAGE destination = ege::newimage(4, 1);
     const ege::color_t sourceColor = EGEARGB(0xFF, 0x33, 0x66, 0xCC);
     const ege::color_t destinationColor = EGEARGB(0xFF, 0x55, 0xAA, 0x0F);
+    const ege::color_t patternColor = EGEARGB(0xFF, 0xC3, 0x3C, 0x5A);
     resetImage(source, sourceColor);
 
-    resetImage(destination, destinationColor);
-    ege::putimage(destination, 0, 0, source, SRCINVERT);
-    expectPixel(destination, 0, 0, sourceColor ^ destinationColor,
-                "SRCINVERT applies the per-call putimage raster operation");
+    struct RasterOperationCase {
+        DWORD operation;
+        ege::color_t expected;
+        const char* name;
+    };
+    const RasterOperationCase operations[] = {
+        {SRCCOPY, sourceColor, "SRCCOPY"},
+        {SRCPAINT, sourceColor | destinationColor, "SRCPAINT"},
+        {SRCAND, sourceColor & destinationColor, "SRCAND"},
+        {SRCINVERT, sourceColor ^ destinationColor, "SRCINVERT"},
+        {SRCERASE, sourceColor & ~destinationColor, "SRCERASE"},
+        {NOTSRCCOPY, ~sourceColor, "NOTSRCCOPY"},
+        {NOTSRCERASE, ~(sourceColor | destinationColor), "NOTSRCERASE"},
+        {MERGECOPY, sourceColor & patternColor, "MERGECOPY"},
+        {MERGEPAINT, ~sourceColor | destinationColor, "MERGEPAINT"},
+        {PATCOPY, patternColor, "PATCOPY"},
+        {PATPAINT, destinationColor | patternColor | ~sourceColor, "PATPAINT"},
+        {PATINVERT, patternColor ^ destinationColor, "PATINVERT"},
+        {DSTINVERT, ~destinationColor, "DSTINVERT"},
+        {BLACKNESS, 0x00000000U, "BLACKNESS"},
+        {WHITENESS, 0xFFFFFFFFU, "WHITENESS"},
+    };
 
-    resetImage(destination, destinationColor);
-    ege::putimage(destination, 0, 0, source, SRCAND);
-    expectPixel(destination, 0, 0, sourceColor & destinationColor,
-                "SRCAND combines source and destination pixels");
+    ege::setfillcolor(patternColor, destination);
+    for (const RasterOperationCase& operation : operations) {
+        resetImage(destination, destinationColor);
+        ege::setfillcolor(patternColor, destination);
+        ege::putimage(destination, 0, 0, source, operation.operation);
+        expectPixel(destination, 0, 0, operation.expected,
+                    std::string(operation.name) + " matches the Win32 ternary raster operation");
+    }
 
-    resetImage(destination, destinationColor);
-    ege::putimage(destination, 0, 0, source, SRCPAINT);
-    expectPixel(destination, 0, 0, sourceColor | destinationColor,
-                "SRCPAINT combines source and destination pixels");
+    ege::PIMAGE patternedReference = ege::newimage(8, 8);
+    ege::PIMAGE patternedDestination = ege::newimage(8, 8);
+    ege::PIMAGE patternedSource = ege::newimage(8, 8);
+    resetImage(patternedReference, ege::GREEN);
+    resetImage(patternedDestination, ege::GREEN);
+    resetImage(patternedSource, ege::WHITE);
+    ege::setbkcolor_f(ege::BLUE, patternedReference);
+    ege::setbkmode(OPAQUE, patternedReference);
+    ege::setfillstyle(ege::HATCH_FILL, ege::RED, patternedReference);
+    ege::bar(0, 0, 8, 8, patternedReference);
+    ege::setbkcolor_f(ege::BLUE, patternedDestination);
+    ege::setbkmode(OPAQUE, patternedDestination);
+    ege::setfillstyle(ege::HATCH_FILL, ege::RED, patternedDestination);
+    ege::putimage(patternedDestination, 0, 0, patternedSource, PATCOPY);
+    const ege::color_t* expectedPattern = ege::getbuffer(patternedReference);
+    const ege::color_t* actualPattern = ege::getbuffer(patternedDestination);
+    bool patternedPatCopyMatches = true;
+    int firstPatternMismatch = -1;
+    for (int index = 0; index < 64; ++index) {
+        if (rgb(expectedPattern[index]) != rgb(actualPattern[index])) {
+            patternedPatCopyMatches = false;
+            if (firstPatternMismatch < 0) firstPatternMismatch = index;
+        }
+    }
+    expect(patternedPatCopyMatches,
+           "PATCOPY uses the selected hatch brush rather than a flat fill color (first mismatch=" +
+               std::to_string(firstPatternMismatch) +
+               (firstPatternMismatch >= 0
+                    ? ", expected=" + std::to_string(rgb(expectedPattern[firstPatternMismatch])) +
+                      ", actual=" + std::to_string(rgb(actualPattern[firstPatternMismatch]))
+                    : std::string()) + ")");
+    ege::delimage(patternedSource);
+    ege::delimage(patternedDestination);
+    ege::delimage(patternedReference);
 
-    resetImage(destination, destinationColor);
-    ege::putimage(destination, 0, 0, source, NOTSRCCOPY);
-    expectPixel(destination, 0, 0, ~sourceColor,
-                "NOTSRCCOPY inverts the source pixel");
+    ege::color_t* sourcePixels = ege::getbuffer(source);
+    sourcePixels[0] = ege::RED;
+    sourcePixels[1] = ege::GREEN;
+    sourcePixels[2] = ege::BLUE;
+    sourcePixels[3] = ege::WHITE;
+    ege::putimage(source, 1, 0, 3, 1, source, 0, 0, SRCCOPY);
+    expectPixel(source, 1, 0, ege::RED,
+                "overlapping self-putimage snapshots the first source pixel");
+    expectPixel(source, 2, 0, ege::GREEN,
+                "overlapping self-putimage does not cascade writes through its source");
+    expectPixel(source, 3, 0, ege::BLUE,
+                "overlapping self-putimage preserves the last copied source pixel");
 
     ege::delimage(destination);
     ege::delimage(source);
@@ -2457,11 +2866,13 @@ int main()
     testUserLinePatternAndCaps();
     testCurvedLineStyles();
     testScreenFramebufferCapture();
+    testScreenPutimageOverloads();
     testPrimitiveBatchRetention();
     testPolygonCoordinates();
     testViewportOriginAndClip();
     testBufferMutationFeedsImageTransfer();
     testImageTransfersHonorViewportOrigin();
+    testImageTransfersHonorSourceViewportOrigin();
     testColorAndMathUtilities();
     testStateAndPixelUtilities();
     testLineAndFillStyles();
@@ -2471,8 +2882,10 @@ int main()
     testEnhancedAlphaSurfaceCompatibility();
     testEnhancedAlphaScreenCompatibility();
     testAlphaMaskDefaultsAndScaledSampling();
+    testAlphaTransferOverloadsAndClipping();
     testImageRotationCoordinatesAndAspectRatio();
     testEnhancedImageTransform();
+    testTextureAndEnhancedImageTransferOverloads();
     testEnhancedPathApi();
     testRasterOperations();
     testCurrentPositionAndAdditionalPrimitiveRoutes();
