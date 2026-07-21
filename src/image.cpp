@@ -3606,7 +3606,13 @@ color_t* getbuffer(PIMAGE pImg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pImg);
     CONVERT_IMAGE_END;
-    return img->getbuffer();
+    color_t* buffer = img->getbuffer();
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    if (img->m_renderTarget) {
+        img->m_renderTarget->noteLegacyWritableBufferExposure();
+    }
+#endif
+    return buffer;
 }
 
 const color_t* getbuffer(PCIMAGE pImg)

@@ -173,6 +173,7 @@ public:
     color_t* getPixelBuffer() override;
     const color_t* getPixelBuffer() const override;
     color_t* getPixelBufferForWrite(int x, int y, int width, int height) override;
+    void noteLegacyWritableBufferExposure() override;
     void markPixelBufferDirty(int x, int y, int width, int height) override;
     bool updatePixelBuffer(int x, int y, int width, int height,
                            const color_t* pixels, int pitchBytes) override;
@@ -222,6 +223,9 @@ private:
     void bindForDrawing();
     void submitBatch();
     void downloadFromGpu();
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    void recordGpuReadbackDiagnostic();
+#endif
     PixelRect clippedRect(int x, int y, int width, int height) const;
     PixelRect fullRect() const;
     static void unionRect(PixelRect& destination, const PixelRect& source);
@@ -276,7 +280,14 @@ private:
     PixelRect m_cpuDirtyRect;
     mutable PixelRect m_gpuDirtyRect;
     bool m_cpuDirtyUnknown;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    bool m_legacyWritableExposure;
+#endif
     mutable std::vector<color_t> m_pixelTransferBuffer;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    unsigned long long m_readbackWindowStartMs;
+    unsigned int m_readbacksInWindow;
+#endif
 
     // Dimensions
     int      m_width;

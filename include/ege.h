@@ -4628,6 +4628,8 @@ void           EGEAPI delimage(PCIMAGE pimg);
  *       dimensions, deleted, or (for NULL) when the window buffer is recreated.
  * @note OpenGL may perform a synchronous GPU readback. Call this only on the graphics/context
  *       thread; concurrent access to the image or returned storage is not supported.
+ * @note OpenGL builds with performance diagnostics enabled (Debug by default) report if this
+ *       unknown range later forces a complete upload without markbufferdirty(). Behavior is unchanged.
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
 
@@ -4637,6 +4639,7 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
  * @return Read-only top-down ARGB pixel array with image width × image height elements
  * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. OpenGL synchronizes pending
  *       rendering before returning and may perform a synchronous GPU readback.
+ *       Cached calls do not read back again; repeated real GPU-to-CPU transitions may be diagnosed.
  * @note The pointer has the same lifetime and thread restrictions as the writable overload.
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);

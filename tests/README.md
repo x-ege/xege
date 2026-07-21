@@ -22,6 +22,7 @@
 | `attach_hwnd` | Windows 真实宿主消息线程、子窗口关联和关闭生命周期；OpenGL 构建运行 GDI/OpenGL 两种变体 |
 | `console_contract` | 以隔离的无控制台子进程验证控制台分配、清理、显示/隐藏、键盘查询/读取和关闭，不影响调用测试的终端 |
 | `inputbox_contract` | 以隔离子进程和原生 EDIT 控件注入验证 ASCII/Unicode 模态输入、返回值与退出；OpenGL 构建运行 GDI/OpenGL 两种变体 |
+| `performance_diagnostics` | Debug 慢路径编号、每进程一次去重、显式脏区/内部访问/缓存只读不误报、GDI 静默、运行时关闭及重定向 stderr 无颜色控制符；Windows OpenGL Debug 可用 `--popup-smoke` 验证非模态提示窗 |
 | `putimage_basic` | 基础图片复制和缩放 |
 | `putimage_alphablend` | alpha blend |
 | `putimage_transparent` | 透明色复制 |
@@ -59,7 +60,8 @@
 后端分支时，应先更新上表并补充同一组 GDI/OpenGL 像素断言。
 
 像素缓冲的 CPU/GPU 所有权、推荐调用方式及不能由旧同步接口隐藏的行为边界，见
-[`doc/pixel-buffer-sync.md`](../doc/pixel-buffer-sync.md)。
+[`doc/pixel-buffer-sync.md`](../doc/pixel-buffer-sync.md)；性能诊断编号、阈值和启停规则见
+[`doc/performance-diagnostics.md`](../doc/performance-diagnostics.md)。
 
 ## 公共 API 覆盖审计
 

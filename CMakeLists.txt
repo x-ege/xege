@@ -32,6 +32,19 @@ option(EGE_BUILD_DEMO "Build ege demos" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEST "Build ege tests" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEMP "Build ege temp" ${EGE_IS_ROOT_PROJECT})
 
+# Performance diagnostics are enabled for Debug configurations by default and
+# compiled out of production configurations. ON/OFF allow integrators to
+# override that policy without changing the public API or runtime behavior.
+set(EGE_PERFORMANCE_DIAGNOSTICS "AUTO" CACHE STRING
+    "Performance diagnostics: AUTO (Debug only), ON, or OFF")
+set_property(CACHE EGE_PERFORMANCE_DIAGNOSTICS PROPERTY STRINGS AUTO ON OFF)
+string(TOUPPER "${EGE_PERFORMANCE_DIAGNOSTICS}"
+    _EGE_PERFORMANCE_DIAGNOSTICS_MODE)
+if(NOT _EGE_PERFORMANCE_DIAGNOSTICS_MODE MATCHES "^(AUTO|ON|OFF)$")
+    message(FATAL_ERROR
+        "EGE_PERFORMANCE_DIAGNOSTICS must be AUTO, ON, or OFF")
+endif()
+
 # EGE_DISABLE_DEBUG_INFO 选项：禁用调试信息，避免 LNK4099 警告
 # 优先使用 CMake 参数，其次检查环境变量，默认 OFF
 if(NOT DEFINED EGE_DISABLE_DEBUG_INFO)
@@ -55,6 +68,7 @@ message(STATUS "EGE_CLEAR_OPTIONS_CACHE: ${EGE_CLEAR_OPTIONS_CACHE}")
 message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
 message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
 message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
+message(STATUS "EGE_PERFORMANCE_DIAGNOSTICS: ${_EGE_PERFORMANCE_DIAGNOSTICS_MODE}")
 message(STATUS "EGE_DISABLE_DEBUG_INFO: ${EGE_DISABLE_DEBUG_INFO}")
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
@@ -358,6 +372,19 @@ target_compile_definitions(xege PUBLIC
 )
 
 target_compile_definitions(xege PRIVATE EGE_GRAPH_LIB_BUILD=1)
+
+if(_EGE_PERFORMANCE_DIAGNOSTICS_MODE STREQUAL "ON")
+    target_compile_definitions(xege PRIVATE
+        EGE_ENABLE_PERFORMANCE_DIAGNOSTICS=1)
+elseif(_EGE_PERFORMANCE_DIAGNOSTICS_MODE STREQUAL "OFF")
+    target_compile_definitions(xege PRIVATE
+        EGE_ENABLE_PERFORMANCE_DIAGNOSTICS=0)
+else()
+    target_compile_definitions(xege PRIVATE
+        $<$<CONFIG:Debug>:EGE_ENABLE_PERFORMANCE_DIAGNOSTICS=1>
+        $<$<NOT:$<CONFIG:Debug>>:EGE_ENABLE_PERFORMANCE_DIAGNOSTICS=0>
+    )
+endif()
 
 # Compiler-specific flags
 if(MSVC)

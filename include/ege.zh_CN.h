@@ -4153,6 +4153,8 @@ void           EGEAPI delimage(PCIMAGE pimg);
  *       尺寸变化而重建后，原指针失效。
  * @note OpenGL 后端可能同步等待 GPU 回读。只能在图形/上下文线程调用；不支持并发
  *       访问图像或返回的缓冲区。
+ * @note 启用性能诊断的 OpenGL 构建（默认为 Debug）中，如果未知写入范围因
+ *       未调用 markbufferdirty 而触发整图上传，会报告性能诊断；诊断不改变原有行为。
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
 
@@ -4162,6 +4164,7 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
  * @return 只读的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
  * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。OpenGL 后端会先同步待处理的
  *       绘制，必要时会同步等待 GPU 回读。
+ *       已缓存的重复读取不会再次回读；短时间反复发生真实 GPU→CPU 转换时可能提示诊断。
  * @note 指针的有效期和线程限制与可写重载相同。
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);

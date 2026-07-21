@@ -257,10 +257,18 @@ macOS/Linux demo 没有 `.exe` 后缀；`tasks.sh` 会兼容 VS Code Tasks 中�
 | `EGE_BUILD_TEST` | 顶层构建为 `ON` | 顶层构建为 `ON` | 添加 CTest 测试 |
 | `EGE_BUILD_TEMP` | 顶层构建为 `ON` | 顶层构建为 `ON` | 添加本地 `temp/` 实验目标 |
 | `EGE_ENABLE_CAMERA_CAPTURE` | C++17 可用时 `ON` | C++17 可用时 `ON` | 构建相机模块 |
+| `EGE_PERFORMANCE_DIAGNOSTICS` | `AUTO` | `AUTO` | `AUTO` 仅在 Debug 编译性能诊断；也可显式设为 `ON` 或 `OFF` |
 | `EGE_DISABLE_DEBUG_INFO` | `OFF` | `OFF` | 禁用调试信息，主要用于规避特定 MSVC 链接警告 |
 
 `EGE_BUILD_FOR_LINUX` 是由平台和 `EGE_BUILD_OPENGL` 推导的内部兼容选项，不应
 由新构建手动设置。
+
+### 性能诊断
+
+Debug 默认会对可确认的 OpenGL 像素同步慢路径输出一次性诊断；Release 默认不编译诊断
+热路径。运行程序前设置 `EGE_DIAGNOSTICS=log` 可保留日志但关闭 Windows 非模态提示窗，
+设置 `EGE_DIAGNOSTICS=off` 可完全静默；`NO_COLOR` 禁止终端颜色。完整编号、触发条件和
+行为分级见 [`doc/performance-diagnostics.md`](doc/performance-diagnostics.md)。
 
 ## 运行问题排查
 

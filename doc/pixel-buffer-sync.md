@@ -88,6 +88,25 @@ updatebuffer(image, x, y, width, height, sourcePixels, sourcePitchBytes);
 缓冲，再以 `updatebuffer` 提交；只有必须原地写时才使用可写 `getbuffer` 加
 `markbufferdirty`。
 
+## 行为分级与诊断
+
+像素接口的兼容性和性能是两个维度。一次合法的同步读取不能因为可能较慢就被描述成错误；
+诊断只针对能够可靠识别、且通常可以由调用者改写的重复或保守路径。
+
+| 场景 | 正确性契约 | 性能预期 | Debug 诊断 | 推荐方式 |
+| --- | --- | --- | --- | --- |
+| GPU 绘制后首次 const `getbuffer`/`getpixel` | 必须返回最新像素 | 可能同步等待一次 | 单次不提示 | 完成一批绘制后集中读取 |
+| CPU 镜像已同步后的重复只读访问 | 必须返回相同缓存内容 | 不产生新读回 | 不提示 | 可继续读取同一批次 |
+| 1 秒内同一目标发生 3 次真实 GPU→CPU 读回 | 结果仍完全兼容 | 通常是 CPU/GPU 往返瓶颈 | `EGE-PERF-002` | 避免“绘制一次、读取一次”的交替模式 |
+| 可写 `getbuffer` 后直接由 GPU 使用 | 必须保留裸指针写入 | 未知范围按整图上传 | `EGE-PERF-001` | 调用 `markbufferdirty`，或改用 `updatebuffer` |
+| 可写 `getbuffer` 后声明完整脏区 | 必须保留声明区域内写入 | 只上传声明区域 | 不提示 | 高频原地修改的兼容方式 |
+| `updatebuffer` 提交已知矩形 | 必须按调用顺序覆盖目标 | 不预读目标，直接区域上传 | 不提示 | 高频外部像素生产者的首选方式 |
+| 后续 EGE 绘制后继续写旧指针 | 无法可靠合并，明确不受支持 | 无可安全优化的实现 | 当前无法可靠检测 | 重新调用 `getbuffer` 或使用 `updatebuffer` |
+| 跨线程或并发访问同一 OpenGL 图像 | 不受支持 | 可能同时破坏 context 与数据一致性 | 不作为性能提示处理 | 只在图形/context 线程串行访问 |
+
+诊断的编号、输出渠道、启停方式和非模态提示窗规则见
+[`performance-diagnostics.md`](performance-diagnostics.md)。
+
 ## 无法完全隐藏的边界及原因
 
 ### 1. GPU 绘制后的首次 CPU 读取可能阻塞
@@ -147,6 +166,10 @@ OpenGL context 绑定线程，`getbuffer` 可能提交绘制并调用读回；`u
 `image_buffer_performance` 分别记录首次读回、缓存只读、绘制/读回循环、旧式保守全图上传、
 `markbufferdirty` 区域上传、`updatebuffer` 区域上传及 GPU→GPU 复制。性能数据用于发现退化，
 不以特定机器上的固定毫秒数作为功能正确性门禁。
+
+`performance_diagnostics` 以相同操作分别运行 GDI/OpenGL 路径，验证诊断只来自公开可写
+缓冲暴露和真实 GPU 读回；内部缓冲访问、显式脏区、缓存只读、GDI 后端和关闭诊断的运行
+模式均不得误报。重定向的 stderr 也不得包含终端颜色控制字符。
 
 代码评审时，任何新增 GPU 写入路径都必须标出准确脏区或保守标记全图；任何内部已知写入
 范围的 CPU 路径都应使用范围化写接口。若无法证明范围正确，宁可退回全图同步，不能留下

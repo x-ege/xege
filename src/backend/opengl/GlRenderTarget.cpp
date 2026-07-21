@@ -1,6 +1,10 @@
 // src/backend/opengl/GlRenderTarget.cpp
 #include "GlRenderTarget.h"
+#include "../../diagnostics.h"
 #include <GLFW/glfw3.h>
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+#include <chrono>
+#endif
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -408,6 +412,10 @@ GlRenderTarget::GlRenderTarget()
       m_imageShaderReady(false), m_textShaderReady(false),
       m_cpuBuffer(nullptr), m_pixelSyncState(PixelSyncState::Synchronized),
       m_cpuDirtyUnknown(false),
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+      m_legacyWritableExposure(false),
+      m_readbackWindowStartMs(0), m_readbacksInWindow(0),
+#endif
       m_width(0), m_height(0), m_isOnScreen(false), m_initialized(false),
       m_lineColor(0xFFFFFFFF), m_fillColor(0xFFFFFFFF),
       m_textColor(0xFFFFFFFF), m_bkColor(0x00000000),
@@ -465,6 +473,9 @@ void GlRenderTarget::markGpuDirty(const PixelRect& rect) {
     }
     m_cpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = false;
+#endif
     m_pixelSyncState = PixelSyncState::GpuNewer;
 }
 
@@ -525,6 +536,9 @@ bool GlRenderTarget::initOnScreen(int width, int height) {
     m_cpuDirtyRect = fullRect();
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = false;
+#endif
 
     initShaders();
     initVBO();
@@ -558,6 +572,9 @@ bool GlRenderTarget::initOffscreen(int width, int height) {
     m_cpuDirtyRect = fullRect();
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = false;
+#endif
 
     initShaders();
     initVBO();
@@ -2440,6 +2457,12 @@ color_t* GlRenderTarget::getPixelBufferForWrite(
     return m_cpuBuffer;
 }
 
+void GlRenderTarget::noteLegacyWritableBufferExposure() {
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = true;
+#endif
+}
+
 void GlRenderTarget::markPixelBufferDirty(
     int x, int y, int width, int height) {
     const PixelRect dirty = clippedRect(x, y, width, height);
@@ -2454,6 +2477,9 @@ void GlRenderTarget::markPixelBufferDirty(
         // already known dirty pixels must remain pending.
         unionRect(m_cpuDirtyRect, dirty);
         m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+        m_legacyWritableExposure = false;
+#endif
     }
 }
 
@@ -2494,6 +2520,9 @@ bool GlRenderTarget::updatePixelBuffer(
     }
     m_cpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = false;
+#endif
 
     if (m_isOnScreen) {
         drawImageQuad(m_texture, m_width, m_height,
@@ -2508,6 +2537,10 @@ void GlRenderTarget::downloadFromGpu() {
         m_pixelSyncState == PixelSyncState::GpuNewer ||
         (m_isOnScreen && m_pixelSyncState == PixelSyncState::ScreenTextureNewer);
     if (!m_initialized || !m_cpuBuffer || !gpuPixelsNeedDownload) return;
+
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    recordGpuReadbackDiagnostic();
+#endif
 
     const PixelRect dirty = m_gpuDirtyRect.empty() ? fullRect() : m_gpuDirtyRect;
     const int dirtyWidth = dirty.right - dirty.left;
@@ -2557,6 +2590,9 @@ void GlRenderTarget::downloadFromGpu() {
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = false;
+#endif
     glPixelStorei(GL_PACK_ALIGNMENT, previousPackAlignment);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, previousPackBuffer);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, previousReadFramebuffer);
@@ -2565,6 +2601,32 @@ void GlRenderTarget::downloadFromGpu() {
         glDeleteFramebuffers(1, &screenReadFramebuffer);
     }
 }
+
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+void GlRenderTarget::recordGpuReadbackDiagnostic() {
+    const unsigned int diagnosticWindowMs = 1000;
+    const unsigned int diagnosticThreshold = 3;
+    const unsigned long long now = static_cast<unsigned long long>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+
+    if (m_readbacksInWindow == 0 ||
+        now - m_readbackWindowStartMs > diagnosticWindowMs) {
+        m_readbackWindowStartMs = now;
+        m_readbacksInWindow = 1;
+    } else {
+        ++m_readbacksInWindow;
+    }
+
+    if (m_readbacksInWindow == diagnosticThreshold) {
+        detail::reportPerformanceDiagnostic(
+            detail::PerformanceDiagnosticCode::RepeatedGpuReadback,
+            detail::PerformanceDiagnosticContext(
+                m_width, m_height, m_readbacksInWindow,
+                diagnosticWindowMs));
+    }
+}
+#endif
 
 void GlRenderTarget::uploadRect(const PixelRect& dirty) {
     if (!m_initialized || !m_cpuBuffer || dirty.empty()) return;
@@ -2630,6 +2692,13 @@ void GlRenderTarget::captureScreenToTexture() {
 void GlRenderTarget::syncToGpu() {
     if (!m_cpuBuffer || !m_initialized ||
         m_pixelSyncState != PixelSyncState::CpuNewer) return;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    if (m_cpuDirtyUnknown && m_legacyWritableExposure) {
+        detail::reportPerformanceDiagnostic(
+            detail::PerformanceDiagnosticCode::LegacyWritableBufferFullUpload,
+            detail::PerformanceDiagnosticContext(m_width, m_height));
+    }
+#endif
     const PixelRect dirty = (m_cpuDirtyUnknown || m_cpuDirtyRect.empty())
         ? fullRect() : m_cpuDirtyRect;
     uploadRect(dirty);
@@ -2637,6 +2706,9 @@ void GlRenderTarget::syncToGpu() {
     m_cpuDirtyRect = PixelRect();
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = false;
+#endif
 }
 
 void GlRenderTarget::rebuild(int width, int height) {
@@ -2675,6 +2747,9 @@ void GlRenderTarget::rebuild(int width, int height) {
     m_cpuDirtyRect = fullRect();
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    m_legacyWritableExposure = false;
+#endif
     m_pixelTransferBuffer.clear();
     m_projectionDirty = true;
 }

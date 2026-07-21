@@ -102,6 +102,10 @@ add_test_executable(putimage_rotate_test tests/putimage_rotate_test.cpp)
 add_test_executable(putimage_comparison_test tests/putimage_comparison_test.cpp)
 add_test_executable(putimage_alphablend_comprehensive_test tests/putimage_alphablend_comprehensive_test.cpp)
 add_test_executable(rendering_correctness_test tests/rendering_correctness_test.cpp)
+add_test_executable(performance_diagnostics_test tests/performance_diagnostics_test.cpp)
+target_include_directories(performance_diagnostics_test PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
 if(WIN32)
     target_sources(rendering_correctness_test PRIVATE
         tests/rendering_correctness.rc
@@ -163,6 +167,7 @@ set_target_properties(
     putimage_comparison_test
     putimage_alphablend_comprehensive_test
     rendering_correctness_test
+    performance_diagnostics_test
     public_headers_test
     camera_frame_copy_test
     PROPERTIES
@@ -214,6 +219,7 @@ add_test(NAME putimage_rotate COMMAND putimage_rotate_test)
 add_test(NAME putimage_comparison COMMAND putimage_comparison_test)
 add_test(NAME putimage_alphablend_comprehensive COMMAND putimage_alphablend_comprehensive_test)
 add_test(NAME rendering_correctness COMMAND rendering_correctness_test)
+add_test(NAME performance_diagnostics COMMAND performance_diagnostics_test)
 add_test(NAME public_headers COMMAND public_headers_test)
 add_test(NAME camera_frame_copy COMMAND camera_frame_copy_test)
 if(EGE_ENABLE_CAMERA_CAPTURE)
@@ -235,6 +241,20 @@ if(EGE_BUILD_OPENGL)
     add_test(NAME page_backend COMMAND page_backend_test)
     add_test(NAME window_backend COMMAND window_backend_test)
     add_test(NAME opengl_process_exit COMMAND opengl_process_exit_test)
+    if(WIN32)
+        add_test(
+            NAME performance_diagnostics_opengl_disabled
+            COMMAND ${CMAKE_COMMAND} -E env
+                EGE_TEST_OPENGL=1 EGE_DIAGNOSTICS=off
+                $<TARGET_FILE:performance_diagnostics_test>
+        )
+    else()
+        add_test(
+            NAME performance_diagnostics_opengl_disabled
+            COMMAND ${CMAKE_COMMAND} -E env EGE_DIAGNOSTICS=off
+                $<TARGET_FILE:performance_diagnostics_test>
+        )
+    endif()
 endif()
 
 # A Windows OpenGL-enabled build still defaults to GDI at runtime. Run the
@@ -252,6 +272,7 @@ if(WIN32 AND EGE_BUILD_OPENGL)
         putimage_comparison
         putimage_alphablend_comprehensive
         rendering_correctness
+        performance_diagnostics
     )
     foreach(test_name IN LISTS EGE_OPENGL_SHARED_TESTS)
         add_test(
@@ -278,6 +299,9 @@ set_tests_properties(default_build_contract PROPERTIES
     TIMEOUT 180
 )
 set_tests_properties(rendering_correctness PROPERTIES LABELS "correctness")
+set_tests_properties(performance_diagnostics PROPERTIES
+    LABELS "correctness;diagnostics"
+)
 set_tests_properties(public_headers PROPERTIES LABELS "correctness;compile")
 set_tests_properties(camera_frame_copy PROPERTIES LABELS "correctness;camera")
 if(EGE_ENABLE_CAMERA_CAPTURE)
@@ -319,6 +343,9 @@ if(EGE_BUILD_OPENGL)
         LABELS "correctness;window;exit"
         TIMEOUT 15
     )
+    set_tests_properties(performance_diagnostics_opengl_disabled PROPERTIES
+        LABELS "correctness;diagnostics;opengl"
+    )
 endif()
 if(WIN32 AND EGE_BUILD_OPENGL)
     add_test(
@@ -353,5 +380,8 @@ if(WIN32 AND EGE_BUILD_OPENGL)
     )
     set_tests_properties(rendering_correctness_opengl PROPERTIES
         LABELS "correctness;opengl"
+    )
+    set_tests_properties(performance_diagnostics_opengl PROPERTIES
+        LABELS "correctness;diagnostics;opengl"
     )
 endif()
