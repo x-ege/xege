@@ -4673,6 +4673,23 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 
+/**
+ * @brief Copy a top-down ARGB pixel rectangle into an image
+ * @param pimg Destination image; NULL selects the current drawing target
+ * @param x Destination left coordinate in physical image pixels
+ * @param y Destination top coordinate in physical image pixels
+ * @param width Rectangle width
+ * @param height Rectangle height
+ * @param pixels Source top-down ARGB pixels
+ * @param pitchBytes Source row stride in bytes; zero means width * sizeof(color_t)
+ * @return grOk on success, grNullPointer, grInvalidRegion, or grParamError on failure
+ * @note Unlike writable getbuffer, the OpenGL backend knows the exact changed
+ *       rectangle and avoids a destination readback. Viewport origin and clipping
+ *       are not applied, and a GPU image remains in GPU storage.
+ */
+int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes = 0);
+
 /** @brief Return the authoritative storage currently used by an image. */
 image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
 
@@ -5384,9 +5401,11 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief Get drawing device context
  * @param pimg Image object pointer, if NULL then get drawing window's device context
- * @return GDI device context handle, or NULL when the selected target uses OpenGL
- * @note The returned HDC can be used only with a GDI-backed IMAGE or the GDI window target.
- *       OpenGL render targets do not expose a compatible HDC.
+ * @return GDI device context handle, or NULL if compatible storage cannot be created
+ * @note On Windows, requesting an HDC for an OpenGL IMAGE promotes it to persistent
+ *       CPU-bitmap storage while preserving pixels and drawing state. The transition
+ *       is observable with getimagestoragemode(), and later HDC writes remain authoritative.
+ * @note Native OpenGL platforms without a Win32-compatible CPU drawing backend return NULL.
  * @warning Do not manually release returned HDC, managed automatically by EGE library
  * @see getHWnd(), getHInstance()
  */

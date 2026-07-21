@@ -4195,6 +4195,22 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 
+/**
+ * @brief 将一块自上而下的 ARGB 像素矩形复制到图像
+ * @param pimg 目标图像；NULL 表示当前绘图目标
+ * @param x 目标矩形左边界（图像物理坐标）
+ * @param y 目标矩形上边界（图像物理坐标）
+ * @param width 矩形宽度
+ * @param height 矩形高度
+ * @param pixels 自上而下排列的源 ARGB 像素
+ * @param pitchBytes 源数据每行字节数；0 表示 width * sizeof(color_t)
+ * @return 成功返回 grOk；失败返回 grNullPointer、grInvalidRegion 或 grParamError
+ * @note 与可写 getbuffer 不同，OpenGL 后端可准确得知修改区域，因此无需回读
+ *       目标纹理。坐标不受视口原点和裁剪影响，GPU 图像也不会转为 CPU 位图。
+ */
+int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes = 0);
+
 /** @brief 获取图像当前使用的权威存储类型。 */
 image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
 
@@ -4906,9 +4922,11 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief 获取绘图设备上下文
  * @param pimg 图像对象指针，如果为 NULL 则获取绘图窗口的设备上下文
- * @return GDI 设备上下文句柄；所选目标使用 OpenGL 时返回 NULL
- * @note 返回的 HDC 只能用于 GDI 后端的 IMAGE 或 GDI 窗口目标；OpenGL 渲染目标
- *       不提供兼容的 HDC
+ * @return GDI 设备上下文句柄；无法创建兼容存储时返回 NULL
+ * @note 在 Windows 上，为 OpenGL IMAGE 请求 HDC 会在保留像素和绘图状态的同时，
+ *       将图像提升为持久 CPU 位图。可通过 getimagestoragemode() 观察这一转换，
+ *       后续通过该 HDC 的写入仍是权威数据。
+ * @note 没有 Win32 兼容 CPU 绘图后端的原生 OpenGL 平台返回 NULL。
  * @warning 不要手动释放返回的 HDC，由 EGE 库自动管理
  * @see getHWnd(), getHInstance()
  */

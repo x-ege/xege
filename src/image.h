@@ -150,6 +150,9 @@ public:
     color_t*       getbuffer();
     color_t*       getbuffer(image_buffer_access access);
     const color_t* getbuffer() const;
+    color_t*       getbuffer_for_write(int x, int y, int width, int height);
+    int            updatebuffer(int x, int y, int width, int height,
+                                const color_t* pixels, int pitchBytes);
     image_storage_mode getStorageMode() const;
     int setStorageMode(image_storage_mode mode, bool preservePixels = true);
     RenderTarget* getRenderTargetForSampling() const;

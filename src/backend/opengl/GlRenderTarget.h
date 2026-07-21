@@ -172,6 +172,9 @@ public:
     // --- Pixel buffer ---
     color_t* getPixelBuffer() override;
     const color_t* getPixelBuffer() const override;
+    color_t* getPixelBufferForWrite(int x, int y, int width, int height) override;
+    bool updatePixelBuffer(int x, int y, int width, int height,
+                           const color_t* pixels, int pitchBytes) override;
 
     // --- Submit ---
     void flush() override;
@@ -199,6 +202,18 @@ private:
         ScreenTextureNewer
     };
 
+    struct PixelRect {
+        int left;
+        int top;
+        int right;
+        int bottom;
+
+        PixelRect() : left(0), top(0), right(0), bottom(0) {}
+        PixelRect(int x, int y, int width, int height)
+            : left(x), top(y), right(x + width), bottom(y + height) {}
+        bool empty() const { return left >= right || top >= bottom; }
+    };
+
     void appendFillTriangle(float x0, float y0, float x1, float y1,
                             float x2, float y2, float r, float g, float b, float a);
     void appendFillQuad(float x0, float y0, float x1, float y1,
@@ -211,6 +226,13 @@ private:
     void bindForDrawing();
     void submitBatch();
     void downloadFromGpu();
+    PixelRect clippedRect(int x, int y, int width, int height) const;
+    PixelRect fullRect() const;
+    static void unionRect(PixelRect& destination, const PixelRect& source);
+    void markGpuDirty(const PixelRect& rect);
+    void markGpuDirtyFull();
+    void markCpuDirty(const PixelRect& rect, bool unknownRange);
+    void uploadRect(const PixelRect& rect);
     void uploadFullPixelBuffer(const color_t* pixels);
 
     // Image blit helpers
@@ -256,7 +278,10 @@ private:
     // CPU pixel buffer
     color_t* m_cpuBuffer;
     mutable PixelSyncState m_pixelSyncState;
-    std::vector<color_t> m_pixelTransferBuffer;
+    PixelRect m_cpuDirtyRect;
+    mutable PixelRect m_gpuDirtyRect;
+    bool m_cpuDirtyUnknown;
+    mutable std::vector<color_t> m_pixelTransferBuffer;
 
     // Dimensions
     int      m_width;

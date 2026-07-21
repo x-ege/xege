@@ -495,6 +495,73 @@ const color_t* IMAGE::getbuffer() const
     return reinterpret_cast<const color_t*>(m_pBuffer);
 }
 
+color_t* IMAGE::getbuffer_for_write(int x, int y, int width, int height)
+{
+    if (m_renderTarget) {
+        color_t* buffer =
+            m_renderTarget->getPixelBufferForWrite(x, y, width, height);
+        m_pBuffer = reinterpret_cast<PDWORD>(buffer);
+        return buffer;
+    }
+#ifdef _WIN32
+#ifdef EGE_GDIPLUS
+    if (m_graphics) {
+        m_graphics->Flush(Gdiplus::FlushIntentionSync);
+    }
+#endif
+    if (m_hDC) {
+        GdiFlush();
+    }
+#endif
+    return reinterpret_cast<color_t*>(m_pBuffer);
+}
+
+int IMAGE::updatebuffer(int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes)
+{
+    if (!pixels) return grNullPointer;
+    if (width <= 0 || height <= 0 || x < 0 || y < 0 ||
+        x > m_width - width || y > m_height - height) {
+        return grInvalidRegion;
+    }
+    const size_t rowBytes = static_cast<size_t>(width) * sizeof(color_t);
+    if (rowBytes > static_cast<size_t>(INT_MAX)) {
+        return grParamError;
+    }
+    if (pitchBytes == 0) {
+        pitchBytes = static_cast<int>(rowBytes);
+    }
+    if (pitchBytes < 0 || static_cast<size_t>(pitchBytes) < rowBytes) {
+        return grParamError;
+    }
+
+    if (m_renderTarget) {
+        return m_renderTarget->updatePixelBuffer(
+            x, y, width, height, pixels, pitchBytes) ? grOk : grError;
+    }
+
+#ifdef _WIN32
+#ifdef EGE_GDIPLUS
+    if (m_graphics) {
+        m_graphics->Flush(Gdiplus::FlushIntentionSync);
+    }
+#endif
+    if (m_hDC) {
+        GdiFlush();
+    }
+#endif
+    color_t* destination = reinterpret_cast<color_t*>(m_pBuffer);
+    if (!destination) return static_cast<int>(grInvalidMemory);
+    const unsigned char* sourceRow =
+        reinterpret_cast<const unsigned char*>(pixels);
+    for (int row = 0; row < height; ++row) {
+        std::memcpy(destination + static_cast<size_t>(y + row) * m_width + x,
+                    sourceRow, rowBytes);
+        sourceRow += pitchBytes;
+    }
+    return grOk;
+}
+
 image_storage_mode IMAGE::getStorageMode() const
 {
     return m_renderTarget ? IMAGE_STORAGE_GPU : IMAGE_STORAGE_CPU_BITMAP;
@@ -3823,6 +3890,16 @@ const color_t* getbuffer(PCIMAGE pImg)
     return img ? img->getbuffer() : NULL;
 }
 
+int updatebuffer(PIMAGE pImg, int x, int y, int width, int height,
+                 const color_t* pixels, int pitchBytes)
+{
+    PIMAGE img = CONVERT_IMAGE_CONST(pImg);
+    CONVERT_IMAGE_END;
+    return img
+        ? img->updatebuffer(x, y, width, height, pixels, pitchBytes)
+        : grNullPointer;
+}
+
 image_storage_mode getimagestoragemode(PCIMAGE pImg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pImg);
@@ -3839,9 +3916,15 @@ int setimagestoragemode(PIMAGE pImg, image_storage_mode mode)
 
 HDC getHDC(PCIMAGE pImg)
 {
-    PCIMAGE img = CONVERT_IMAGE_CONST(pImg);
+    PIMAGE img = const_cast<PIMAGE>(CONVERT_IMAGE_CONST(pImg));
     CONVERT_IMAGE_END;
-    return img->getdc();
+#ifdef _WIN32
+    if (img && img->getStorageMode() == IMAGE_STORAGE_GPU &&
+        img->setStorageMode(IMAGE_STORAGE_CPU_BITMAP) != grOk) {
+        return NULL;
+    }
+#endif
+    return img ? img->getdc() : NULL;
 }
 
 int resize_f(PIMAGE imgDest, int width, int height)
