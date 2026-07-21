@@ -7,7 +7,7 @@
 | 测试 | 主要覆盖内容 |
 | --- | --- |
 | `default_build_contract` | 从空目录重新配置，验证 Windows 默认 GDI、Linux/macOS 默认 OpenGL、单配置生成器默认 Release，以及 Linux bundled GLFW 的 X11/Wayland 默认值 |
-| `rendering_correctness` | 基础与增强图元、线型/端帽/连接、填充与渐变、viewport、路径、变换、文字与编码、图片混合/旋转、压缩、颜色工具、PNG/BMP 保存与重新加载 |
+| `rendering_correctness` | 基础与增强图元、线型/端帽/连接、填充与渐变、viewport、路径、变换、文字与编码、图片混合/旋转、像素缓冲与存储转换、压缩、颜色工具、PNG/BMP 保存与重新加载 |
 | `public_headers` | 公共头文件、Win32 兼容类型及常量的可编译性 |
 | `camera_frame_copy` | 不依赖设备的 BGRA stride/长度/溢出预检、逐行复制与目标缓冲 guard（所有平台） |
 | `camera_device_lifecycle` | 不依赖视频 fixture 或 GUI 的 provider 创建、设备枚举、失败打开、状态与重复关闭；Linux CI 会实际加载 V4L2 provider |
@@ -30,7 +30,7 @@
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
 | `image_buffer_performance` | `getbuffer` 首次/缓存读回、可写访问转换、保留 CPU Bitmap 指针后的逐次上传，以及独立 GPU→GPU `getimage` 复制性能基准 |
-| `pixel_access_performance` | 完整像素 get/put 家族、GPU 写后读同步、三种 `getbuffer` 访问意图、持久 CPU Bitmap 读写与逐次上屏的双后端性能基准；每项同时验证结果像素和存储模式 |
+| `pixel_access_performance` | 完整像素 get/put 家族、GPU 写后读同步、三种 `getbuffer` 访问意图、持久 CPU Bitmap 读写与逐次上屏，以及 `updatebuffer` 的 1 像素、64×64、全帧双后端性能基准；每项同时验证结果像素和存储模式 |
 
 `default_build_contract` 在 Windows 优先复用父构建已验证的 MSVC，并以
 `Ninja Multi-Config` 做空目录配置探测，避免非交互 CTest 中嵌套 MSBuild 的进程跟踪
@@ -44,6 +44,8 @@
 | 接口族 | 确定性断言 |
 | --- | --- |
 | `getbuffer` | const/访问意图/兼容可写重载、非法参数、存储类型查询与显式转换、IMAGE/当前绘图目标、GPU→CPU 首次回读、持久 CPU Bitmap 每次上屏上传、保留指针跨 EGE 绘制继续写入、普通绘图状态/GDI+ 仿射变换与画刷/resize 迁移，以及基础、拉伸、透明、Alpha、旋转、增强绘图和 `getimage` 的 CPU→GPU 采样桥与反向 GPU→CPU Bitmap 混合路径 |
+| `getHDC` | Windows GDI IMAGE 直接访问；OpenGL IMAGE 保留像素和状态地提升为 CPU Bitmap，并验证原生 HDC 写入成为权威像素 |
+| `updatebuffer` | 紧密和带 padding 的自上而下源行、IMAGE/当前屏幕目标、物理坐标不受 viewport 影响、GPU 存储保持、与后续 GPU/CPU 操作排序，以及空指针、越界、空区域和非法 stride |
 | `getimage`、`putimage` | 屏幕/IMAGE、整图/源矩形/拉伸重载，源和目标 viewport，裁剪、GPU/CPU 缓冲同步、自身重叠复制 |
 | BitBlt ROP | 15 个标准三元光栅操作（包括 pattern、blackness、whiteness）逐像素验证 |
 | `putimage_transparent`、`putimage_alphatransparent` | 默认范围、显式源矩形、负目标裁剪、颜色键、全局 alpha、目标 alpha 保留 |
@@ -67,8 +69,8 @@ python tests/tools/audit_public_api_coverage.py --summary
 ```
 
 审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名及标准化声明是否一致，并扫描
-测试和 demo 中的真实调用（忽略注释与字符串）。当前 290 个公共函数名均有直接自动化
-测试调用；去重后的 385 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
+测试和 demo 中的真实调用（忽略注释与字符串）。当前 291 个公共函数名均有直接自动化
+测试调用；去重后的 386 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
 若以后新增了未被直接测试、未被人工分类的公共函数，或新增声明没有任何参数个数证据，
 审计脚本会返回失败。
 
