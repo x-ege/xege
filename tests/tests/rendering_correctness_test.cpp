@@ -775,6 +775,120 @@ void testBufferMutationFeedsImageTransfer()
     ege::delimage(source);
 }
 
+void testExplicitBufferUpdates()
+{
+    ege::PIMAGE image = ege::newimage(6, 4);
+    resetImage(image, ege::BLUE);
+    const ege::image_storage_mode initialMode =
+        ege::getimagestoragemode(image);
+
+    const ege::color_t updatePixels[] = {
+        ege::GREEN, ege::CYAN, ege::WHITE,
+        ege::MAGENTA, ege::LIGHTGRAY, ege::WHITE,
+    };
+    expect(ege::updatebuffer(image, 1, 2, 2, 2, updatePixels,
+                             3 * static_cast<int>(sizeof(ege::color_t))) == ege::grOk,
+           "updatebuffer accepts a top-down source with padded rows");
+    expect(ege::getimagestoragemode(image) == initialMode,
+           "updatebuffer does not promote a GPU image to CPU bitmap storage");
+    expectPixel(image, 1, 2, ege::GREEN, "updatebuffer copies the first source row");
+    expectPixel(image, 2, 2, ege::CYAN, "updatebuffer copies the first row right edge");
+    expectPixel(image, 1, 3, ege::MAGENTA, "updatebuffer copies the second source row");
+    expectPixel(image, 2, 3, ege::LIGHTGRAY, "updatebuffer honors source pitch");
+    expectPixel(image, 3, 2, ege::BLUE,
+                "updatebuffer leaves pixels outside its destination unchanged");
+
+    resetImage(image, ege::BLUE);
+    ege::setviewport(2, 1, 6, 4, true, image);
+    const ege::color_t physicalPixel = ege::WHITE;
+    expect(ege::updatebuffer(image, 0, 0, 1, 1, &physicalPixel) == ege::grOk,
+           "updatebuffer accepts physical coordinates outside the viewport");
+    expect(ege::getpixel_f(0, 0, image) == ege::WHITE,
+           "updatebuffer coordinates do not include the viewport origin");
+    expect(ege::getpixel_f(2, 1, image) == ege::BLUE,
+           "updatebuffer does not offset its destination by the viewport origin");
+
+    expect(ege::updatebuffer(image, 0, 0, 1, 1, nullptr,
+                             static_cast<int>(sizeof(ege::color_t))) == ege::grNullPointer,
+           "updatebuffer rejects a null source pointer");
+    expect(ege::updatebuffer(image, 5, 3, 2, 1, updatePixels,
+                             3 * static_cast<int>(sizeof(ege::color_t))) ==
+               ege::grInvalidRegion,
+           "updatebuffer rejects a rectangle outside the image");
+    expect(ege::updatebuffer(image, 0, 0, 2, 1, updatePixels,
+                             static_cast<int>(sizeof(ege::color_t))) == ege::grParamError,
+           "updatebuffer rejects a source pitch shorter than one row");
+    expect(ege::updatebuffer(image, 0, 0, 0, 1, updatePixels) == ege::grInvalidRegion,
+           "updatebuffer rejects an empty destination rectangle");
+    expect(ege::updatebuffer(image, 0, 0, 1, 1, updatePixels, -1) == ege::grParamError,
+           "updatebuffer rejects a negative source pitch");
+
+    ege::delimage(image);
+}
+
+void testGpuPixelWritePathsStayGpu()
+{
+    ege::PIMAGE image = ege::newimage(8, 6);
+    const ege::image_storage_mode initialMode =
+        ege::getimagestoragemode(image);
+    resetImage(image, ege::BLUE);
+
+    ege::putpixel_f(1, 0, ege::RED, image);
+    ege::putpixel(2, 0, ege::GREEN, image);
+    expectPixel(image, 1, 0, ege::RED,
+                "a precise CPU pixel write survives a following GPU draw");
+    expectPixel(image, 2, 0, ege::GREEN,
+                "a GPU draw remains ordered after a precise CPU pixel write");
+
+    const int points[] = {
+        1, 1, static_cast<int>(ege::CYAN),
+        6, 4, static_cast<int>(ege::YELLOW),
+    };
+    ege::putpixels(2, points, image);
+    const int fastPoints[] = {
+        3, 2, static_cast<int>(ege::MAGENTA),
+        4, 3, static_cast<int>(ege::WHITE),
+    };
+    ege::putpixels_f(2, fastPoints, image);
+    expectPixel(image, 1, 1, ege::CYAN,
+                "putpixels commits its exact GPU staging region");
+    expectPixel(image, 6, 4, ege::YELLOW,
+                "putpixels preserves separated writes inside its dirty bounds");
+    expectPixel(image, 3, 2, ege::MAGENTA,
+                "putpixels_f commits its exact GPU staging region");
+    expectPixel(image, 4, 3, ege::WHITE,
+                "putpixels_f preserves separated writes inside its dirty bounds");
+
+    const ege::color_t alphaBases[] = {
+        EGEARGB(64, 10, 20, 30),
+        EGEARGB(91, 0, 0, 255),
+        ege::BLUE,
+        ege::BLUE,
+    };
+    expect(ege::updatebuffer(image, 0, 5, 4, 1, alphaBases) == ege::grOk,
+           "pixel-family fixture can be initialized without storage promotion");
+    ege::putpixel_savealpha_f(0, 5, ege::RED, image);
+    expect(EGEGET_A(ege::getpixel_f(0, 5, image)) == 64 &&
+               rgb(ege::getpixel_f(0, 5, image)) == rgb(ege::RED),
+           "putpixel_savealpha_f uses synchronized GPU pixels");
+
+    const ege::color_t halfRed = EGEARGB(128, 255, 0, 0);
+    ege::putpixel_withalpha(1, 5, halfRed, image);
+    expect(EGEGET_A(ege::getpixel_f(1, 5, image)) == 91,
+           "putpixel_withalpha preserves alpha on GPU-backed images");
+    ege::putpixel_alphablend(2, 5, halfRed, image);
+    expect(ege::getpixel_f(2, 5, image) == ege::alphablend(ege::BLUE, halfRed),
+           "putpixel_alphablend reads and updates synchronized GPU storage");
+    ege::putpixel_alphablend_f(3, 5, halfRed, 64, image);
+    expect(ege::getpixel_f(3, 5, image) ==
+               ege::alphablend(ege::BLUE, halfRed, 64),
+           "putpixel_alphablend_f honors an explicit alpha factor on GPU storage");
+
+    expect(ege::getimagestoragemode(image) == initialMode,
+           "internal pixel APIs do not invoke public writable-buffer promotion");
+    ege::delimage(image);
+}
+
 void testCpuBitmapStorageAndRetainedWrites()
 {
     ege::PIMAGE source = ege::newimage(4, 2);
@@ -800,6 +914,21 @@ void testCpuBitmapStorageAndRetainedWrites()
            "setimagestoragemode rejects an invalid storage mode");
 
 #ifdef _WIN32
+    ege::PIMAGE hdcBitmap = ege::newimage(3, 2);
+    resetImage(hdcBitmap, ege::BLACK);
+    HDC writableDc = ege::getHDC(hdcBitmap);
+    expect(writableDc != NULL,
+           "getHDC promotes a Windows OpenGL image to writable CPU storage");
+    expect(ege::getimagestoragemode(hdcBitmap) == ege::IMAGE_STORAGE_CPU_BITMAP,
+           "getHDC makes the promoted CPU bitmap storage observable");
+    if (writableDc != NULL) {
+        ::SetPixelV(writableDc, 1, 1, RGB(255, 0, 0));
+        ::GdiFlush();
+        expectPixel(hdcBitmap, 1, 1, ege::RED,
+                    "writes through the promoted HDC update authoritative pixels");
+    }
+    ege::delimage(hdcBitmap);
+
     ege::color_t* retainedPixels = ege::getbuffer(source);
     expect(retainedPixels != nullptr, "legacy writable getbuffer returns persistent storage");
     expect(ege::getimagestoragemode(source) == ege::IMAGE_STORAGE_CPU_BITMAP,
@@ -1189,6 +1318,11 @@ void testConstAndScreenBufferSynchronization()
     ege::setviewport(0, 0, 64, 64, true);
     ege::setbkcolor(ege::BLACK);
     ege::cleardevice();
+    ege::setviewport(10, 10, 64, 64, true);
+    const ege::color_t directScreenPixel = ege::GREEN;
+    expect(ege::updatebuffer(nullptr, 7, 6, 1, 1, &directScreenPixel) == ege::grOk,
+           "updatebuffer supports the current screen target");
+    ege::setviewport(0, 0, 64, 64, true);
     ege::color_t* screenPixels = ege::getbuffer(static_cast<ege::PIMAGE>(nullptr));
     expect(screenPixels != nullptr, "screen getbuffer returns writable storage");
     if (screenPixels) {
@@ -1210,6 +1344,8 @@ void testConstAndScreenBufferSynchronization()
            "screen buffer edits can be captured without presenting first");
     expectPixel(capture, 5, 6, ege::MAGENTA,
                 "an immediate image draw preserves earlier screen getbuffer mutations");
+    expectPixel(capture, 7, 6, ege::GREEN,
+                "updatebuffer remains visible after later screen buffer operations");
     expectPixel(capture, 8, 8, ege::RED,
                 "screen image drawing remains valid after direct buffer mutations");
     expectPixel(capture, 6, 7, ege::CYAN,
@@ -1263,8 +1399,8 @@ void testMixedBackendBufferSynchronization(ege::PIMAGE legacySource,
 #ifdef _WIN32
     expect(ege::getHDC(legacySource) != NULL,
            "getHDC remains available for a legacy GDI image in an OpenGL process");
-    expect(ege::getHDC(gpuDestination) == NULL,
-           "getHDC reports that an OpenGL render target has no GDI device context");
+    expect(ege::getimagestoragemode(gpuDestination) == ege::IMAGE_STORAGE_GPU,
+           "the mixed-backend destination begins in GPU storage");
 #endif
     resetImage(gpuDestination, ege::BLACK);
     ege::putimage(gpuDestination, 0, 0, legacySource);
@@ -3756,6 +3892,8 @@ int main()
     testPolygonCoordinates();
     testViewportOriginAndClip();
     testBufferMutationFeedsImageTransfer();
+    testExplicitBufferUpdates();
+    testGpuPixelWritePathsStayGpu();
     testCpuBitmapStorageAndRetainedWrites();
     testCpuBitmapTransferBridgeVariants();
     testCpuBitmapDestinationBridge();

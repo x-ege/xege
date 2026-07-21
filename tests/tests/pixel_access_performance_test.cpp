@@ -463,6 +463,75 @@ int main()
             passed = passed && !sameRgb(actual, ege::BLUE);
         }));
 
+    const int regionalUpdateOperations = 32;
+    const int regionalY = 7;
+    results.push_back(runBenchmark(
+        "updatebuffer_1px_committed", regionalUpdateOperations,
+        resetGpuFixtures,
+        [&]() {
+            const ege::color_t pixel = ege::MAGENTA;
+            for (int i = 0; i < regionalUpdateOperations; ++i) {
+                passed = passed && ege::updatebuffer(
+                    source, i, regionalY, 1, 1, &pixel) == ege::grOk;
+                ege::putimage(destination, 0, 0, source);
+            }
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            expectPixel(destination, regionalUpdateOperations - 1,
+                        regionalY, ege::MAGENTA, passed);
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
+        }));
+
+    const int blockSize = 64;
+    std::vector<ege::color_t> blockPixels(
+        static_cast<size_t>(blockSize) * blockSize, ege::LIGHTGREEN);
+    results.push_back(runBenchmark(
+        "updatebuffer_64x64_committed", regionalUpdateOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < regionalUpdateOperations; ++i) {
+                const int x = (i * 23) % (kWidth - blockSize);
+                const int y = (i * 29) % (kHeight - blockSize);
+                passed = passed && ege::updatebuffer(
+                    source, x, y, blockSize, blockSize,
+                    blockPixels.data()) == ege::grOk;
+                ege::putimage(destination, 0, 0, source);
+            }
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            const int last = regionalUpdateOperations - 1;
+            expectPixel(destination, (last * 23) % (kWidth - blockSize),
+                        (last * 29) % (kHeight - blockSize),
+                        ege::LIGHTGREEN, passed);
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
+        }));
+
+    const int fullFrameUpdateOperations = 8;
+    std::vector<ege::color_t> fullFramePixels(
+        static_cast<size_t>(kWidth) * kHeight, ege::LIGHTMAGENTA);
+    results.push_back(runBenchmark(
+        "updatebuffer_full_frame_committed", fullFrameUpdateOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < fullFrameUpdateOperations; ++i) {
+                passed = passed && ege::updatebuffer(
+                    source, 0, 0, kWidth, kHeight,
+                    fullFramePixels.data()) == ege::grOk;
+                ege::putimage(destination, 0, 0, source);
+            }
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            expectPixel(destination, kWidth / 2, kHeight / 2,
+                        ege::LIGHTMAGENTA, passed);
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
+        }));
+
     ege::PIMAGE accessImage = nullptr;
     ege::image_storage_mode accessModeBefore = ege::IMAGE_STORAGE_CPU_BITMAP;
     ege::color_t* accessPixels = nullptr;
