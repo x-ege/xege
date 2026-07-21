@@ -265,9 +265,9 @@ macOS/Linux demo 没有 `.exe` 后缀；`tasks.sh` 会兼容 VS Code Tasks 中�
 
 ### 性能诊断
 
-Debug 默认会对可确认的 OpenGL 像素同步慢路径输出一次性诊断；Release 默认不编译诊断
-热路径。运行程序前设置 `EGE_DIAGNOSTICS=log` 可保留日志但关闭 Windows 非模态提示窗，
-设置 `EGE_DIAGNOSTICS=off` 可完全静默；`NO_COLOR` 禁止终端颜色。完整编号、触发条件和
+Debug 默认会对可确认的 OpenGL 像素同步慢路径输出一次性日志诊断；Release 默认不编译诊断
+热路径。仅在运行程序前显式设置 `EGE_DIAGNOSTICS=all`（或 `popup`）才启用 Windows 非模态
+提示窗；设置 `EGE_DIAGNOSTICS=off` 可完全静默，`NO_COLOR` 禁止终端颜色。完整编号、触发条件和
 行为分级见 [`doc/performance-diagnostics.md`](doc/performance-diagnostics.md)。
 
 ## 运行问题排查

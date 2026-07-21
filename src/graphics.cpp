@@ -293,14 +293,16 @@ int swapbuffers()
             GLFWWindow* glWindow = dynamic_cast<GLFWWindow*>(pg->window);
             PIMAGE visualPage = (pg->visual_page >= 0 && pg->visual_page < BITMAP_PAGE_SIZE)
                 ? pg->img_page[pg->visual_page] : NULL;
-            if (glWindow != NULL && visualPage != NULL && visualPage->m_renderTarget != NULL) {
+            RenderTarget* visualSource = visualPage != NULL
+                ? visualPage->getRenderTargetForSampling() : NULL;
+            if (glWindow != NULL && visualSource != NULL) {
                 GlRenderTarget* screen = glWindow->getRenderTarget();
                 if (screen != NULL) {
                     const int screenWidth = screen->getWidth();
                     const int screenHeight = screen->getHeight();
                     screen->setViewport(0, 0, screenWidth, screenHeight, false);
                     screen->blitStretch(0, 0, screenWidth, screenHeight,
-                                        visualPage->m_renderTarget, 0, 0,
+                                        visualSource, 0, 0,
                                         visualPage->getwidth(), visualPage->getheight());
                 }
             }

@@ -246,11 +246,6 @@ public:
     virtual color_t* getPixelBuffer() = 0;
     virtual const color_t* getPixelBuffer() const = 0;
     virtual color_t* getPixelBufferForWrite(int x, int y, int width, int height) = 0;
-    // The free-function getbuffer(PIMAGE) API exposes a mutable pointer whose
-    // write range is unknowable. Internal buffer access must not be diagnosed
-    // as user behavior, so the public wrapper records that exposure explicitly.
-    virtual void noteLegacyWritableBufferExposure() {}
-    virtual void markPixelBufferDirty(int x, int y, int width, int height) = 0;
     virtual bool updatePixelBuffer(int x, int y, int width, int height,
                                    const color_t* pixels, int pitchBytes) = 0;
 

@@ -32,14 +32,15 @@ int main()
     const int readbackIterations = 8;
     const int cachedReadIterations = 1000;
     const int uploadIterations = 20;
-    const int regionalUploadIterations = 20;
     const int copyIterations = 20;
     bool passed = true;
 
     ege::PIMAGE source = ege::newimage(width, height);
     ege::PIMAGE destination = ege::newimage(width, height);
-    if (!source || !destination) {
+    ege::PIMAGE gpuCopySource = ege::newimage(width, height);
+    if (!source || !destination || !gpuCopySource) {
         std::cerr << "Unable to allocate image-buffer performance fixtures\n";
+        if (gpuCopySource) ege::delimage(gpuCopySource);
         if (destination) ege::delimage(destination);
         if (source) ege::delimage(source);
         framework.cleanup();
@@ -48,6 +49,7 @@ int main()
 
     clearImage(source, ege::BLUE);
     clearImage(destination, ege::BLACK);
+    clearImage(gpuCopySource, ege::CYAN);
 
     ege::PCIMAGE readOnlySource = source;
     PerformanceTimer firstReadTimer("first synchronized getbuffer read");
@@ -76,12 +78,21 @@ int main()
         }
     });
 
-    PerformanceTimer uploadTimer("getbuffer edit and GPU upload");
+    ege::color_t* persistentPixels = nullptr;
+    PerformanceTimer promotionTimer("writable getbuffer promotion");
+    const double promotionMs = promotionTimer.measureMs([&]() {
+        persistentPixels = ege::getbuffer(source);
+        passed = passed && persistentPixels != nullptr;
+#ifdef _WIN32
+        passed = passed && ege::getimagestoragemode(source) ==
+                               ege::IMAGE_STORAGE_CPU_BITMAP;
+#endif
+    });
+
+    PerformanceTimer uploadTimer("retained CPU bitmap edit and GPU upload");
     const double uploadMs = uploadTimer.measureMs([&]() {
         for (int i = 0; i < uploadIterations; ++i) {
-            ege::color_t* pixels = ege::getbuffer(source);
-            passed = passed && pixels != nullptr;
-            if (pixels) pixels[i] = ege::GREEN;
+            if (persistentPixels) persistentPixels[i] = ege::GREEN;
             ege::putimage(destination, 0, 0, source);
         }
         ege::PCIMAGE readOnlyDestination = destination;
@@ -90,53 +101,11 @@ int main()
         if (pixels) observedPixel ^= pixels[uploadIterations - 1];
     });
 
-    PerformanceTimer markedUploadTimer("marked getbuffer edit and regional GPU upload");
-    const double markedUploadMs = markedUploadTimer.measureMs([&]() {
-        for (int i = 0; i < regionalUploadIterations; ++i) {
-            const int x = i % width;
-            const int y = 1;
-            ege::color_t* pixels = ege::getbuffer(source);
-            passed = passed && pixels != nullptr;
-            if (pixels) {
-                pixels[y * width + x] = ege::YELLOW;
-                ege::markbufferdirty(source, x, y, 1, 1);
-            }
-            ege::putimage(destination, 0, 0, source);
-        }
-        ege::PCIMAGE readOnlyDestination = destination;
-        const ege::color_t* pixels = ege::getbuffer(readOnlyDestination);
-        passed = passed && pixels != nullptr;
-        if (pixels) {
-            observedPixel ^= pixels[width + regionalUploadIterations - 1];
-            passed = passed && pixels[width + regionalUploadIterations - 1] == ege::YELLOW;
-        }
-    });
-
-    PerformanceTimer directUpdateTimer("updatebuffer regional GPU upload");
-    const double directUpdateMs = directUpdateTimer.measureMs([&]() {
-        for (int i = 0; i < regionalUploadIterations; ++i) {
-            const int x = i % width;
-            const int y = 2;
-            const ege::color_t pixel = ege::MAGENTA;
-            passed = passed &&
-                ege::updatebuffer(source, x, y, 1, 1, &pixel) == ege::grOk;
-            ege::putimage(destination, 0, 0, source);
-        }
-        ege::PCIMAGE readOnlyDestination = destination;
-        const ege::color_t* pixels = ege::getbuffer(readOnlyDestination);
-        passed = passed && pixels != nullptr;
-        if (pixels) {
-            observedPixel ^= pixels[2 * width + regionalUploadIterations - 1];
-            passed = passed && pixels[2 * width + regionalUploadIterations - 1] == ege::MAGENTA;
-        }
-    });
-
-    clearImage(source, ege::CYAN);
     PerformanceTimer gpuCopyTimer("GPU-to-GPU getimage copies");
     const double gpuCopyMs = gpuCopyTimer.measureMs([&]() {
         for (int i = 0; i < copyIterations; ++i) {
             passed = passed &&
-                ege::getimage(destination, source, 0, 0, width, height) == ege::grOk;
+                ege::getimage(destination, gpuCopySource, 0, 0, width, height) == ege::grOk;
         }
         ege::PCIMAGE readOnlyDestination = destination;
         const ege::color_t* pixels = ege::getbuffer(readOnlyDestination);
@@ -150,15 +119,13 @@ int main()
               << cachedReadMs << " ms\n"
               << "  draw/readback cycles (" << readbackIterations << "): "
               << repeatedReadbackMs << " ms\n"
-              << "  edit/upload cycles (" << uploadIterations << "): "
+              << "  writable promotion: " << promotionMs << " ms\n"
+              << "  retained edit/upload cycles (" << uploadIterations << "): "
               << uploadMs << " ms\n"
-              << "  marked regional edit/upload cycles (" << regionalUploadIterations << "): "
-              << markedUploadMs << " ms\n"
-              << "  updatebuffer regional upload cycles (" << regionalUploadIterations << "): "
-              << directUpdateMs << " ms\n"
               << "  GPU getimage copies (" << copyIterations << "): "
               << gpuCopyMs << " ms\n";
 
+    ege::delimage(gpuCopySource);
     ege::delimage(destination);
     ege::delimage(source);
     framework.cleanup();

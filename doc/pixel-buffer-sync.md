@@ -1,189 +1,153 @@
-# 像素缓冲与 OpenGL 同步契约
-
-本文记录 `getbuffer`、逐像素读写和贴图路径在 GDI/OpenGL 双后端下的兼容目标、
-实现策略及无法隐藏的边界。这里的边界是长期契约，不是允许后端产生不同像素结果的借口。
+# 像素缓冲与 CPU/GPU 同步
 
 ## 兼容目标
 
-以下行为必须与既有 Windows GDI 后端一致；不一致应视为缺陷：
+旧版 Windows EGE 的 `IMAGE` 是 DIB：`getbuffer` 返回的指针直接指向图像的权威像素，
+用户可以长期保留该指针，并在任意两次 EGE 操作之间继续写入。OpenGL 的普通纹理无法
+可靠检测裸指针何时再次被修改，因此仅使用一次性暂存缓冲区无法完全兼容这个行为。
 
-- `color_t` 缓冲是从左上角开始、逐行向下的连续 ARGB32 数组，像素 `(x, y)` 位于
-  `buffer[y * getwidth(image) + x]`。
-- `getbuffer` 返回时能读到此前同一目标上的绘制结果；通过可写指针完成的修改在后续
-  EGE 绘制、贴图、保存或读取时可见。
-- CPU 修改和 GPU 绘制遵守 API 调用顺序，不得因同步优化丢失、覆盖或延迟一方的结果。
-- `getbuffer(nullptr)`、`markbufferdirty(nullptr, ...)` 和 `updatebuffer(nullptr, ...)`
-  操作当前绘图目标；物理缓冲坐标不叠加 viewport 原点，也不受 viewport 裁剪。
-- 像素方向、颜色通道、alpha、裁剪及目标区域以自动化像素断言为准，不能列为后端差异。
+Windows OpenGL 后端现在有两种图像存储：
 
-Windows 仍默认构建和使用 GDI；OpenGL 是构建时启用、由应用以 `INIT_OPENGL` 选择的后端。
-没有采用新接口的旧程序保持原有行为。
+- `IMAGE_STORAGE_GPU`：OpenGL render target 保存权威像素，适合主要由 EGE/GPU 绘制的图像。
+- `IMAGE_STORAGE_CPU_BITMAP`：Win32 DIB 保存权威像素，适合 `getbuffer`、软件绘制、相机帧和
+  其他反复写内存的场景。
 
-## 当前实现
+GDI 图像天然属于 `IMAGE_STORAGE_CPU_BITMAP`。Windows OpenGL 图像默认仍是 GPU 存储，
+因此没有使用可写缓冲区的既有程序不会承担额外上传成本。
 
-GDI 的 `IMAGE` 直接使用 top-down DIB。`getbuffer` 在返回 DIB 地址前调用 `GdiFlush`，
-使排队的 GDI 操作完成；CPU 和 GDI 实际访问同一份存储，不需要显式上传或读回。
+当前采用的是混合策略，而不是让所有像素接口都走 CPU Bitmap：
 
-OpenGL 的 `IMAGE` 同时维护纹理/帧缓冲和一份兼容旧接口的 CPU 镜像，并记录以下状态：
+- 公共可写 `getbuffer` 和 Windows `getHDC` 需要兼容可长期保留的裸指针/句柄，因此会把
+  OpenGL IMAGE 提升为持久 CPU Bitmap。
+- `getpixel`、const `getbuffer` 和显式 `IMAGE_BUFFER_READ` 保持 GPU 存储，并复用按需回读缓存。
+- EGE 自身已知修改范围的 `putpixel*`/`putpixels*` 路径以及公共 `updatebuffer` 保持 GPU 存储，
+  只同步确切或保守包围的矩形。
 
-| 状态 | 含义 | 下一次必要操作 |
-| --- | --- | --- |
-| synchronized | CPU 镜像与 GPU 内容一致 | 无 |
-| GPU newer | GPU 绘制修改了一个已知区域 | CPU 读取前只读回脏区 |
-| CPU newer | 可写缓冲修改了一个已知或未知区域 | GPU 使用前只上传脏区；未知区域按全图处理 |
-| screen texture newer | 窗口 back buffer 已复制到稳定纹理，CPU 尚未读取 | CPU 读取时从稳定纹理读回 |
+## `getbuffer` 访问方式
 
-图元批次、清屏、贴图、滤镜等 GPU 路径在完成时合并自己的目标脏区。OpenGL 读回和上传
-使用 `GL_BGRA/GL_UNSIGNED_BYTE`，只对行序做上下翻转，并复用中转缓冲，避免逐像素通道
-转换和每次分配。窗口在交换缓冲前保存稳定纹理，使之后读取屏幕不会误读下一帧的 back buffer。
+| 调用 | 旧像素 | Windows OpenGL 存储变化 | 用途 |
+|---|---|---|---|
+| `getbuffer(PCIMAGE)` | 同步后可读 | 不变化 | 兼容只读访问 |
+| `getbuffer(PIMAGE, IMAGE_BUFFER_READ)` | 同步后可读 | 不变化 | 明确承诺不写，避免转换 |
+| `getbuffer(PIMAGE)` | 保留 | 转成 CPU Bitmap | 旧接口；默认读写，保证兼容 |
+| `getbuffer(PIMAGE, IMAGE_BUFFER_READ_WRITE)` | 保留 | 转成 CPU Bitmap | 显式读写 |
+| `getbuffer(PIMAGE, IMAGE_BUFFER_WRITE_DISCARD)` | 丢弃 | 转成 CPU Bitmap | 将覆盖所需像素，避免首次 GPU 回读 |
 
-## 三种 CPU 像素访问方式
+`IMAGE_BUFFER_READ` 虽因历史 ABI 返回 `color_t*`，但写入该指针不受支持。使用
+`IMAGE_BUFFER_WRITE_DISCARD` 后，调用方必须在任何读取或绘制前初始化所有会被读取的像素。
 
-### 兼容方式：`getbuffer`
+也可以用 `setimagestoragemode(image, IMAGE_STORAGE_CPU_BITMAP)` 提前完成保留内容的转换，
+并用 `getimagestoragemode` 查询。CPU Bitmap 不会原地转回 GPU：这种转换会使用户仍持有的
+指针失效，因此返回 `grInvalidMode`；需要纯 GPU 图像时，应新建图像并复制内容。
 
-```cpp
-color_t* pixels = getbuffer(image);
-pixels[y * getwidth(image) + x] = RED;
-putimage(nullptr, 0, 0, image);
-```
+Windows 上对 GPU IMAGE 调用 `getHDC` 也会执行同样的保留内容转换。转换后的 HDC 与 DIB
+共享权威像素，后续 `SetPixel`、GDI 和 GDI+ 写入会在下一次 OpenGL 采样时被观察到。OpenGL
+窗口目标不能转换为离屏 DIB，没有 Win32 CPU 绘图后端的原生平台也会返回 `NULL`。
 
-这是完全兼容旧代码的方式。OpenGL 无法观察裸指针实际写了哪些地址，因此可写
-`getbuffer` 默认把整幅图标为“CPU 可能已修改”。它优先保证正确性，下一次 GPU 使用可能
-上传全图。
+## 精确区域更新
 
-只读代码应让实参具有 `PCIMAGE`/`const IMAGE*` 类型以选中 const 重载；该重载不会把
-CPU 镜像标成已修改。仅把可写返回值当作只读指针使用仍会触发保守的全图上传。
-
-### 兼容且可提示范围：`markbufferdirty`
+当调用方知道修改矩形且不需要长期保留裸指针时，应使用：
 
 ```cpp
-color_t* pixels = getbuffer(image);
-// ...只修改 [x, x + width) × [y, y + height)...
-markbufferdirty(image, x, y, width, height);
+int updatebuffer(PIMAGE image, int x, int y, int width, int height,
+                 const color_t* pixels, int pitchBytes = 0);
 ```
 
-`markbufferdirty` 把刚才由可写 `getbuffer` 产生的“未知全图”收窄到调用者声明的物理矩形。
-它不改变像素，只减少后续上传量。GDI 下它是无操作。
+源像素按自上而下 ARGB 行排列；`pitchBytes == 0` 表示紧密行。目标坐标是 IMAGE 的物理像素
+坐标，不叠加 viewport 原点，也不受 viewport clip 影响。成功调用不会回读目标纹理，也不会
+把 GPU IMAGE 提升为 CPU Bitmap；OpenGL 使用 `glTexSubImage2D` 上传确切矩形，窗口目标还会
+把同一区域更新到当前后缓冲。空矩形、越界矩形、空源指针和短/负 stride 会返回错误。
 
-调用者必须满足以下条件：
+EGE 内部的 `putpixel_f`、with-alpha/save-alpha/alpha-blend 家族会先按需回读一个像素，再只把
+该像素标为 CPU 新数据；`putpixels` 家族使用所有有效点的包围矩形。它们不调用公共可写
+`getbuffer`，所以 OpenGL IMAGE 不会因为普通像素 API 自动转为 CPU Bitmap。
 
-- 在一次写入批次结束后、该图像上的下一次 EGE 操作前调用；
-- 矩形覆盖自最近一次可写 `getbuffer` 以来的全部写入；
-- 多个不相邻的小区域可以分别完成“取指针、写入、标记”批次；若很零散，合并为包围矩形
-  通常比大量极小上传更实用；
-- 非法或空矩形不会收窄保守脏区，因此不会为了性能提示牺牲旧代码正确性。
+## 同步规则
 
-### 首选高频方式：`updatebuffer`
+GPU 图像会跟踪自上次 CPU 同步以来由图元、贴图、清屏等操作影响的矩形。第一次只读访问会
+提交待处理绘制并只回读该矩形；只要 GPU 内容没有再次变化，后续 `getpixel`、const
+`getbuffer` 和 `IMAGE_BUFFER_READ` 复用 CPU 缓存，不会按调用次数重复回读。文字等难以安全
+计算边界的路径使用整图脏区，宁可多传输也不缩小正确性范围。
 
-```cpp
-updatebuffer(image, x, y, width, height, sourcePixels, sourcePitchBytes);
-```
+CPU Bitmap 转换时只回读一次（写入丢弃除外）。转换后，Win32 DIB 同时服务于用户指针、
+GDI、GDI+ 和 EGE 像素接口，因此不存在两份 CPU 数据相互覆盖的问题。它作为 GPU 图像源或
+当前可视页上屏时，后端会在每次使用前执行完整纹理上传。这是有意采用的保守策略：即使
+用户从未再次调用 EGE，也能观察到通过旧指针完成的新写入。
 
-`updatebuffer` 明确表达“用给定 top-down ARGB32 数据覆盖这个矩形”。OpenGL 可以直接复制
-到 CPU 镜像并上传该子区域，不需要先把目标纹理读回；GDI 则逐行复制到 DIB。`pitchBytes`
-为 0 时表示紧密排列，非 0 时必须至少容纳一行。
+转换还会迁移颜色、线型、填充、字体、文字背景、viewport/clip、当前位置和写模式；已经
+创建的 GDI+ 仿射变换与多态画刷（包括渐变和纹理画刷）也会保留。也就是说，转换只改变
+权威像素存储，不应重置后续绘图可观察到的 IMAGE 状态。
 
-对相机帧、软件解码器、模拟器帧缓冲、持续更新的小块纹理等高频生产者，优先使用
-`updatebuffer`。如果算法必须读取并原地修改旧像素，使用 const `getbuffer` 读取后计算到独立
-缓冲，再以 `updatebuffer` 提交；只有必须原地写时才使用可写 `getbuffer` 加
-`markbufferdirty`。
+完整上传使用可复用的行翻转缓冲区，并以 `GL_BGRA`/`glTexSubImage2D` 直接匹配 Windows
+`color_t` 的内存布局。稳定尺寸下不会逐帧重新分配传输内存，也不再逐像素交换颜色通道；
+传输前后会保存并恢复 PBO 绑定以及 pack/unpack 的对齐、行长和跳过参数，避免调用方的原生
+OpenGL 像素状态改变 EGE 的内存布局。但上传带宽仍是整张图的 `width × height × 4` 字节，
+这是裸指针兼容所选择的明确成本。
 
-## 行为分级与诊断
+同步矩阵如下：
 
-像素接口的兼容性和性能是两个维度。一次合法的同步读取不能因为可能较慢就被描述成错误；
-诊断只针对能够可靠识别、且通常可以由调用者改写的重复或保守路径。
+| 源 | 目标 | 路径 |
+|---|---|---|
+| GPU | GPU | render target 直接复制/采样 |
+| CPU Bitmap | GPU | 每次从 DIB 刷新上传缓存，再由 GPU 采样 |
+| CPU Bitmap | CPU Bitmap | GDI/GDI+ 或 CPU 像素路径 |
+| GPU | CPU Bitmap | 必要时同步回读，再执行 CPU/GDI 路径 |
 
-| 场景 | 正确性契约 | 性能预期 | Debug 诊断 | 推荐方式 |
-| --- | --- | --- | --- | --- |
-| GPU 绘制后首次 const `getbuffer`/`getpixel` | 必须返回最新像素 | 可能同步等待一次 | 单次不提示 | 完成一批绘制后集中读取 |
-| CPU 镜像已同步后的重复只读访问 | 必须返回相同缓存内容 | 不产生新读回 | 不提示 | 可继续读取同一批次 |
-| 1 秒内同一目标发生 3 次真实 GPU→CPU 读回 | 结果仍完全兼容 | 通常是 CPU/GPU 往返瓶颈 | `EGE-PERF-002` | 避免“绘制一次、读取一次”的交替模式 |
-| 可写 `getbuffer` 后直接由 GPU 使用 | 必须保留裸指针写入 | 未知范围按整图上传 | `EGE-PERF-001` | 调用 `markbufferdirty`，或改用 `updatebuffer` |
-| 可写 `getbuffer` 后声明完整脏区 | 必须保留声明区域内写入 | 只上传声明区域 | 不提示 | 高频原地修改的兼容方式 |
-| `updatebuffer` 提交已知矩形 | 必须按调用顺序覆盖目标 | 不预读目标，直接区域上传 | 不提示 | 高频外部像素生产者的首选方式 |
-| 后续 EGE 绘制后继续写旧指针 | 无法可靠合并，明确不受支持 | 无可安全优化的实现 | 当前无法可靠检测 | 重新调用 `getbuffer` 或使用 `updatebuffer` |
-| 跨线程或并发访问同一 OpenGL 图像 | 不受支持 | 可能同时破坏 context 与数据一致性 | 不作为性能提示处理 | 只在图形/context 线程串行访问 |
+非 `SRCCOPY` 的三元光栅操作和三图像 alpha filter 仍可能使用 CPU 正确性路径，因而读取 GPU
+目标时会产生同步等待。这些是冷门兼容接口，不影响普通纹理复制的快速路径。
 
-诊断的编号、输出渠道、启停方式和非模态提示窗规则见
-[`performance-diagnostics.md`](performance-diagnostics.md)。
+## 性能使用原则
 
-## 无法完全隐藏的边界及原因
+- 连续只读 GPU 图像时，第一次 `getpixel`、const `getbuffer` 或 `IMAGE_BUFFER_READ` 完成
+  脏区回读，后续读取复用缓存。不要在 GPU 绘制和 CPU 读取之间逐像素交替；区域追踪能缩小
+  传输量，但每次交替仍会形成必须完成的 GPU/CPU 同步点。
+- 已知外部像素矩形时优先使用 `updatebuffer`。它不回读目标，也不改变存储模式，适合视频帧
+  分块、软件栅格器的已知 tile 或少量动态区域；若每帧覆盖整张图，仍需支付整帧传输带宽。
+- 反复由 CPU 修改的图像应转为 `IMAGE_STORAGE_CPU_BITMAP`，保留一次取得的指针并集中写入；
+  每帧只在实际采样或上屏时提交。CPU 侧读取性能与 GDI DIB 相当，但 OpenGL 上屏仍需传输
+  整张图。
+- 完全覆盖旧内容时使用 `IMAGE_BUFFER_WRITE_DISCARD`，可跳过首次 GPU 回读；需要保留旧内容
+  才使用 `IMAGE_BUFFER_READ_WRITE`。兼容无参数重载继续等价于读写访问。
+- DIB 上的 `getpixel_f` 通过 const `getbuffer()` 先同步待处理的 GDI/GDI+ 绘制，再读取权威
+  `m_pBuffer`；GPU render target 仍通过只读同步缓冲读取，不会把一次物理像素查询误标记为
+  待上传写入。
 
-### 1. GPU 绘制后的首次 CPU 读取可能阻塞
+专项数据由 `pixel_access_performance` 采集，并可用
+`tests/tools/run_pixel_performance_comparison.ps1` 在 Windows 上交替运行 GDI/OpenGL。基准只把
+正确性作为通过条件，不使用与 CPU、GPU、驱动相关的时间阈值。
 
-GDI DIB 常驻 CPU 内存，而 OpenGL 绘制结果首先位于 GPU。旧 `getpixel`/`getbuffer` 是同步
-返回接口，函数返回时数据必须可用，因此 GPU 尚未完成时需要等待并读回。PBO 或异步 staging
-只能把等待移到稍后；在不增加“提交读取/稍后取结果”异步接口的前提下，无法保证第一次读取
-完全不阻塞。
+## 指针与线程边界
 
-当前方案通过批量提交、精确 GPU 脏区和延迟到真正读取时再同步来降低成本。不要在逐帧热循环
-中交替执行一次 GPU 绘制和一次 CPU 读取；应先完成一批绘制，再集中读取需要的区域。
+- 持久 CPU Bitmap 的可写指针在图像 `resize`、重新加载为不同尺寸、删除，或窗口页缓冲
+  重建后失效；GPU IMAGE 的只读暂存指针还会在后续可写访问、`getHDC` 或显式 CPU Bitmap
+  提升时失效。发生这些转换后必须重新获取。
+- 图像访问和 OpenGL 上下文仍要求在图形线程串行执行，不支持并发读写同一图像。
+- GPU 存储会追踪内部操作的脏矩形；持久 CPU Bitmap 仍在每次采样时上传整图，因为库无法
+  观察旧裸指针或 HDC 在何时、何处被再次修改。没有增加公共脏区确认接口：若把它作为
+  正确性条件会破坏旧接口兼容，而把它仅作为提示又无法排除调用后通过保留指针继续写入。
+- Debug 构建可对短时间内重复发生的 CPU Bitmap 整图上传和 GPU 回读输出一次性诊断；它只
+  报告已经发生的同步代价，不改变兼容语义。编号与开关见
+  [`performance-diagnostics.md`](performance-diagnostics.md)。
+- GPU IMAGE 当前预留一张完整 CPU shadow 用于延迟回读；CPU Bitmap 的 OpenGL 采样桥还保留
+  一份可复用的 GPU render target。这是每张 1024×1024 图约 4 MiB 的额外 CPU 内存边界，
+  后续可通过延迟分配 staging 优化，但不能改变指针稳定性。
+- macOS/Linux 目前没有完整的 CPU 绘图后端，因此显式 GPU→CPU Bitmap 转换返回
+  `grInvalidMode`，兼容可写 `getbuffer` 仍使用既有 OpenGL 暂存缓冲语义。只读访问和 GPU 缓存
+  行为在各平台一致。
 
-### 2. 保留可写指针并跨越后续绘制再次写入不受支持
+## 自动化覆盖边界
 
-以下写法在 OpenGL 下没有可靠的自动合并方式：
+Windows 回归同时运行 GDI 和 OpenGL 模式，覆盖访问意图、显式转换、`getHDC` 自动提升、
+精确 `updatebuffer`、普通及 GDI+ 增强状态
+（仿射变换和渐变画刷）与 resize 迁移、
+保留指针跨 EGE 绘制继续写入、可视页上屏，以及 CPU Bitmap→GPU 和 GPU→CPU Bitmap 两个
+方向。贴图桥覆盖基础/拉伸复制、透明色、Alpha/Alpha-transparent/with-alpha、alpha filter、
+旋转、增强贴图、纹理填充和 `getimage`；文件解码还验证内部写入不会误触发公共可写缓冲转换。
 
-```cpp
-color_t* pixels = getbuffer(image);
-pixels[0] = RED;
-putpixel(1, 1, GREEN, image); // GPU 已在之后产生新结果
-pixels[2] = BLUE;             // 通过旧指针再次写入
-```
+无法在 Windows 机器上自动证明的边界是 macOS/Linux 的运行时行为、第三方代码在图形线程外
+并发写裸指针，以及用户在 `IMAGE_BUFFER_READ` 承诺只读后仍写入。前者需要对应平台 CI，
+后两者属于接口明确排除的未定义用法。
 
-原因是普通 C++ 指针写入没有回调、范围或时刻信息。若后端把整个旧 CPU 镜像上传，会覆盖
-中间的 GPU 绘制；若以后端 GPU 内容为准，又会丢失最后一次指针写入；每次 EGE 操作都全图
-读回则会把兼容代价变成稳定的性能瓶颈。
-
-正确用法是在任何可能修改图像的 EGE 操作之后重新调用 `getbuffer`，开始新的读/写批次；
-或者改用 `updatebuffer`。这与公共头文件中的指针使用约束一致。
-
-### 3. OpenGL 图像不提供可供 GDI 绘制的真实 HDC
-
-由 OpenGL 后端创建的 GPU `IMAGE` 的 `getHDC` 返回空值；OpenGL 窗口建立前创建、因而仍由
-GDI DIB 承载的旧图像可以继续返回 HDC，并通过混合后端贴图路径与 GPU 图像交换像素。
-
-把 OpenGL 纹理伪装成可由任意 Win32 API 直接绘制的 HDC，需要额外 DIB、双向同步和外部
-GDI 写入侦测，仍无法可靠得知外部写入范围。项目选择保留混合图像兼容路径，而不承诺 GPU
-图像本身具备 HDC；需要原生 GDI 绘制的程序应保留 GDI 后端或显式使用 GDI 图像作为中转。
-
-### 4. 像素缓冲访问具有图形线程约束
-
-OpenGL context 绑定线程，`getbuffer` 可能提交绘制并调用读回；`updatebuffer` 可能上传纹理。
-因此这些调用必须发生在拥有 EGE 图形 context 的线程，且不能与同一图像的绘制或缓冲访问
-并发执行。为了兼容旧 API，没有在每个像素操作外增加隐式跨线程调度和锁。
-
-### 5. 指针生命周期不因兼容而延长
-
-图像 resize、以不同尺寸重新加载、删除，或窗口缓冲重建后，旧地址失效。这是内存重新分配的
-必然结果，GDI/OpenGL 都不保证地址稳定。调用者不能缓存并在上述操作后继续使用旧指针。
-
-## 测试与性能门禁
-
-`rendering_correctness` 在 Windows GDI 和 Windows OpenGL 上运行同一组断言，覆盖 const/可写
-`getbuffer`、屏幕/离屏图像、GPU→CPU、CPU→GPU、显式脏区、带 stride 的区域更新、错误参数、
-后续绘制顺序及 GDI/OpenGL 混合图像。
-
-`image_buffer_performance` 分别记录首次读回、缓存只读、绘制/读回循环、旧式保守全图上传、
-`markbufferdirty` 区域上传、`updatebuffer` 区域上传及 GPU→GPU 复制。性能数据用于发现退化，
-不以特定机器上的固定毫秒数作为功能正确性门禁。
-
-`performance_diagnostics` 以相同操作分别运行 GDI/OpenGL 路径，验证诊断只来自公开可写
-缓冲暴露和真实 GPU 读回；内部缓冲访问、显式脏区、缓存只读、GDI 后端和关闭诊断的运行
-模式均不得误报。重定向的 stderr 也不得包含终端颜色控制字符。
-
-代码评审时，任何新增 GPU 写入路径都必须标出准确脏区或保守标记全图；任何内部已知写入
-范围的 CPU 路径都应使用范围化写接口。若无法证明范围正确，宁可退回全图同步，不能留下
-CPU/GPU 内容不一致。
-
-## 技术依据
-
-- Khronos 的 [`glReadPixels` 说明](https://wikis.khronos.org/opengl/GLAPI/glReadPixels)
-  规定客户端内存返回的数据按 OpenGL 的低行到高行排列，因此实现必须转换成 EGE 的
-  top-down 行序。
-- Khronos 的 [Pixel Buffer Object 指南](https://wikis.khronos.org/opengl/Pixel_Buffer_Object)
-  说明 PBO 可以把同步推迟到应用访问缓冲时，但若 `glReadPixels` 后立即映射读取，就没有
-  可用于隐藏传输延迟的并行工作。这正是旧同步 `getbuffer` 不能仅靠 PBO 消除等待的原因。
-- Khronos 的 [Synchronization 说明](https://wikis.khronos.org/opengl/Synchronization)
-  明确区分异步渲染命令与返回时必须已经填好客户端内存的非 PBO `glReadPixels`。因此当前
-  实现选择按需读回和缩小脏区；未来若增加异步读取，应作为独立接口，而不能改变
-  `getbuffer` 的返回语义。
+对应回归位于 `rendering_correctness`，缓冲区和完整像素接口性能采样分别位于独立的
+`image_buffer_performance`、`pixel_access_performance`（`performance` 标签），不会把机器
+相关耗时阈值混入功能门禁。

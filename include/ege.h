@@ -1680,6 +1680,21 @@ typedef IMAGE *PIMAGE;
 /// @brief Constant image object pointer type
 typedef const IMAGE *PCIMAGE;
 
+/** @brief Storage used by an IMAGE. */
+enum image_storage_mode
+{
+    IMAGE_STORAGE_GPU = 0,        ///< Rendering and authoritative pixels live in a GPU target
+    IMAGE_STORAGE_CPU_BITMAP = 1  ///< A persistent CPU bitmap is authoritative
+};
+
+/** @brief Intended access for the getbuffer(PIMAGE, image_buffer_access) overload. */
+enum image_buffer_access
+{
+    IMAGE_BUFFER_READ = 0,          ///< Read existing pixels; writing through the pointer is unsupported
+    IMAGE_BUFFER_READ_WRITE = 1,    ///< Preserve existing pixels and allow persistent writes
+    IMAGE_BUFFER_WRITE_DISCARD = 2  ///< Discard old pixels and allow persistent writes
+};
+
 /**
  * @brief Set code page
  *
@@ -4620,18 +4635,35 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * @brief Get image pixel buffer pointer
  * @param pimg Image object pointer to get buffer from; NULL selects the current drawing target
  * @return Writable top-down ARGB pixel array with image width × image height elements
- * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. Finish a write batch
- *       before the next EGE drawing/image operation so the OpenGL backend can upload it.
- * @note After any EGE operation may have rendered to the image, call getbuffer again before
- *       another write batch. Writes through an old retained pointer cannot be detected.
+ * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. On Windows OpenGL,
+ *       this overload is equivalent to IMAGE_BUFFER_READ_WRITE: the first call preserves
+ *       existing pixels and promotes the image to a persistent CPU bitmap.
+ * @note On Windows OpenGL, the returned pointer remains authoritative across later EGE
+ *       drawing and image operations. Whenever the image is sampled or presented, its
+ *       CPU bitmap is uploaded again so writes through a retained pointer remain visible.
  * @note The pointer is invalidated when the image is resized, reloaded with different
  *       dimensions, deleted, or (for NULL) when the window buffer is recreated.
  * @note OpenGL may perform a synchronous GPU readback. Call this only on the graphics/context
  *       thread; concurrent access to the image or returned storage is not supported.
- * @note OpenGL builds with performance diagnostics enabled (Debug by default) report if this
- *       unknown range later forces a complete upload without markbufferdirty(). Behavior is unchanged.
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
+
+/**
+ * @brief Get an image pixel buffer with an explicit access intent
+ * @param pimg Image object pointer; NULL selects the current drawing target
+ * @param access Required buffer access
+ * @return Top-down ARGB pixel array, or NULL if storage cannot be allocated
+ * @note IMAGE_BUFFER_READ avoids changing a GPU image into a CPU bitmap. The returned
+ *       pointer must not be written through in that mode.
+ * @note On Windows, either writable mode promotes an OpenGL image to persistent CPU
+ *       bitmap storage. IMAGE_BUFFER_WRITE_DISCARD avoids downloading old GPU pixels.
+ *       The caller must initialize every pixel that will subsequently be read.
+ * @note Native macOS/Linux OpenGL currently keeps the historical synchronized staging
+ *       buffer because no complete CPU drawing backend is available there.
+ * @note Promoting a GPU image to CPU bitmap storage invalidates pointers previously
+ *       returned by IMAGE_BUFFER_READ or the const overload; reacquire them afterwards.
+ */
+color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
 
 /**
  * @brief Get image pixel buffer pointer (read-only version)
@@ -4639,25 +4671,11 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
  * @return Read-only top-down ARGB pixel array with image width × image height elements
  * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. OpenGL synchronizes pending
  *       rendering before returning and may perform a synchronous GPU readback.
- *       Cached calls do not read back again; repeated real GPU-to-CPU transitions may be diagnosed.
- * @note The pointer has the same lifetime and thread restrictions as the writable overload.
+ * @note The pointer has the same thread restrictions as the writable overload. For a GPU
+ *       image it is also invalidated by a later writable getbuffer, getHDC, or explicit
+ *       promotion to CPU bitmap storage.
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
-
-/**
- * @brief Declare the region modified through the writable getbuffer pointer
- * @param pimg Image object pointer; NULL selects the current drawing target
- * @param x Left coordinate in the physical top-down image buffer
- * @param y Top coordinate in the physical top-down image buffer
- * @param width Modified region width
- * @param height Modified region height
- * @note Call after the write batch and before the next EGE operation on the image.
- *       Existing programs which do not call this function remain correct; the
- *       OpenGL backend conservatively treats the complete buffer as modified.
- * @note The declared rectangle must contain every write performed through the
- *       pointer since the last getbuffer call. Viewport origin is not applied.
- */
-void EGEAPI markbufferdirty(PIMAGE pimg, int x, int y, int width, int height);
 
 /**
  * @brief Copy a top-down ARGB pixel rectangle into an image
@@ -4670,11 +4688,22 @@ void EGEAPI markbufferdirty(PIMAGE pimg, int x, int y, int width, int height);
  * @param pitchBytes Source row stride in bytes; zero means width * sizeof(color_t)
  * @return grOk on success, grNullPointer, grInvalidRegion, or grParamError on failure
  * @note Unlike writable getbuffer, the OpenGL backend knows the exact changed
- *       rectangle and does not need to read the destination texture back first.
- *       Viewport origin and clipping are not applied.
+ *       rectangle and avoids a destination readback. Viewport origin and clipping
+ *       are not applied, and a GPU image remains in GPU storage.
  */
 int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
                         const color_t* pixels, int pitchBytes = 0);
+
+/** @brief Return the authoritative storage currently used by an image. */
+image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
+
+/**
+ * @brief Change an image's authoritative storage mode
+ * @return grOk on success, grInvalidMode when the requested transition is unsupported
+ * @note GPU-to-CPU promotion preserves pixels. CPU-to-GPU demotion is intentionally not
+ *       implicit because it would invalidate retained writable buffer pointers.
+ */
+int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief Resize image (fast version)
@@ -5376,9 +5405,11 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief Get drawing device context
  * @param pimg Image object pointer, if NULL then get drawing window's device context
- * @return GDI device context handle, or NULL when the selected target uses OpenGL
- * @note The returned HDC can be used only with a GDI-backed IMAGE or the GDI window target.
- *       OpenGL render targets do not expose a compatible HDC.
+ * @return GDI device context handle, or NULL if compatible storage cannot be created
+ * @note On Windows, requesting an HDC for an OpenGL IMAGE promotes it to persistent
+ *       CPU-bitmap storage while preserving pixels and drawing state. The transition
+ *       is observable with getimagestoragemode(), and later HDC writes remain authoritative.
+ * @note Native OpenGL platforms without a Win32-compatible CPU drawing backend return NULL.
  * @warning Do not manually release returned HDC, managed automatically by EGE library
  * @see getHWnd(), getHInstance()
  */

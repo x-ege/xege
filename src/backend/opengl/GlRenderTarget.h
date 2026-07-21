@@ -173,8 +173,6 @@ public:
     color_t* getPixelBuffer() override;
     const color_t* getPixelBuffer() const override;
     color_t* getPixelBufferForWrite(int x, int y, int width, int height) override;
-    void noteLegacyWritableBufferExposure() override;
-    void markPixelBufferDirty(int x, int y, int width, int height) override;
     bool updatePixelBuffer(int x, int y, int width, int height,
                            const color_t* pixels, int pitchBytes) override;
 
@@ -184,6 +182,11 @@ public:
 
     // Internal: sync CPU buffer to GPU texture (used by image blit)
     void syncToGpu();
+
+    // Internal: replace the texture with a top-down EGE color_t buffer.
+    // Used by persistent CPU Bitmap images without copying through this
+    // render target's compatibility buffer first.
+    void uploadPixelBuffer(const color_t* pixels);
 
     // Internal: capture screen framebuffer to texture before swap
     void captureScreenToTexture();
@@ -224,6 +227,7 @@ private:
     void submitBatch();
     void downloadFromGpu();
 #if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    void recordCpuBitmapUploadDiagnostic();
     void recordGpuReadbackDiagnostic();
 #endif
     PixelRect clippedRect(int x, int y, int width, int height) const;
@@ -233,6 +237,7 @@ private:
     void markGpuDirtyFull();
     void markCpuDirty(const PixelRect& rect, bool unknownRange);
     void uploadRect(const PixelRect& rect);
+    void uploadFullPixelBuffer(const color_t* pixels);
 
     // Image blit helpers
     void ensureImageShader();
@@ -281,13 +286,12 @@ private:
     mutable PixelRect m_gpuDirtyRect;
     bool m_cpuDirtyUnknown;
 #if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    bool m_legacyWritableExposure;
-#endif
-    mutable std::vector<color_t> m_pixelTransferBuffer;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    unsigned long long m_cpuBitmapUploadWindowStartMs;
+    unsigned int m_cpuBitmapUploadsInWindow;
     unsigned long long m_readbackWindowStartMs;
     unsigned int m_readbacksInWindow;
 #endif
+    mutable std::vector<color_t> m_pixelTransferBuffer;
 
     // Dimensions
     int      m_width;

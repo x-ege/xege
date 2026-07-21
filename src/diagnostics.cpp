@@ -22,13 +22,13 @@ namespace detail {
 namespace {
 
 struct DiagnosticState {
-    std::atomic<bool> fullUploadEmitted;
+    std::atomic<bool> cpuBitmapUploadEmitted;
     std::atomic<bool> repeatedReadbackEmitted;
     std::atomic<bool> popupShown;
     std::mutex outputMutex;
 
     DiagnosticState()
-        : fullUploadEmitted(false), repeatedReadbackEmitted(false),
+        : cpuBitmapUploadEmitted(false), repeatedReadbackEmitted(false),
           popupShown(false) {}
 };
 
@@ -67,8 +67,8 @@ bool runtimeDiagnosticsEnabled()
 bool runtimePopupEnabled()
 {
     const char* mode = runtimeMode();
-    return !equalsIgnoreCase(mode, "log") &&
-           !equalsIgnoreCase(mode, "stderr");
+    return equalsIgnoreCase(mode, "all") ||
+           equalsIgnoreCase(mode, "popup");
 }
 
 bool stderrSupportsColor()
@@ -87,19 +87,24 @@ std::string formatDiagnostic(
 {
     std::ostringstream message;
     switch (code) {
-    case PerformanceDiagnosticCode::LegacyWritableBufferFullUpload:
+    case PerformanceDiagnosticCode::RepeatedCpuBitmapFullUpload:
         message << "[EGE][performance][EGE-PERF-001] OpenGL IMAGE "
                 << context.width << 'x' << context.height
-                << ": writable getbuffer() was consumed without "
-                   "markbufferdirty(); the complete image must be uploaded. "
-                   "Call markbufferdirty() after an in-place edit, or use "
-                   "updatebuffer().";
+                << ": a persistent CPU bitmap required "
+                << context.occurrenceCount
+                << " complete uploads within "
+                << context.intervalMilliseconds
+                << " ms. Batch retained-pointer/HDC writes and minimize "
+                   "sampling; when stable CPU storage is required, sample at "
+                   "most once per frame. Otherwise, keep "
+                   "the image GPU-backed and use updatebuffer() for known "
+                   "regions.";
         break;
     case PerformanceDiagnosticCode::RepeatedGpuReadback:
         message << "[EGE][performance][EGE-PERF-002] OpenGL IMAGE "
                 << context.width << 'x' << context.height << ": "
                 << context.occurrenceCount
-                << " GPU-to-CPU synchronized readbacks occurred within "
+                << " pixel-buffer GPU-to-CPU readbacks occurred within "
                 << context.intervalMilliseconds
                 << " ms. Batch CPU-reading operations, or avoid alternating "
                    "GPU drawing with synchronous pixel access.";
@@ -226,8 +231,8 @@ void showFirstDiagnosticPopup() {}
 std::atomic<bool>& emissionFlag(PerformanceDiagnosticCode code)
 {
     DiagnosticState& state = diagnosticState();
-    if (code == PerformanceDiagnosticCode::LegacyWritableBufferFullUpload) {
-        return state.fullUploadEmitted;
+    if (code == PerformanceDiagnosticCode::RepeatedCpuBitmapFullUpload) {
+        return state.cpuBitmapUploadEmitted;
     }
     return state.repeatedReadbackEmitted;
 }

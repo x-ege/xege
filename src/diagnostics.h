@@ -8,7 +8,7 @@ namespace ege {
 namespace detail {
 
 enum class PerformanceDiagnosticCode {
-    LegacyWritableBufferFullUpload,
+    RepeatedCpuBitmapFullUpload,
     RepeatedGpuReadback
 };
 

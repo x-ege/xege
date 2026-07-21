@@ -68,6 +68,7 @@ int mousepos(int* x, int* y)
 void setwritemode(int mode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    img->m_writeMode = mode;
     if (img->m_renderTarget) {
         img->m_renderTarget->setRasterOp((RasterOp)mode);
     } else {
@@ -202,6 +203,8 @@ color_t getpixel_f(int x, int y, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_F_CONST(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
+        // Keep this physical-coordinate fast path read-only while preserving
+        // the legacy getbuffer() synchronization of pending GDI/GDI+ drawing.
         return img->getbuffer()[y * img->m_width + x];
     }
     return 0;
@@ -221,7 +224,8 @@ void putpixel_withalpha(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = colorblend_inline(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
@@ -231,7 +235,8 @@ void putpixel_withalpha_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = colorblend_inline_fast(dst_color, color, EGEGET_A(color));
     }
     CONVERT_IMAGE_END;
@@ -243,7 +248,8 @@ void putpixel_savealpha(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = EGECOLORA(color, EGEGET_A(dst_color));
     }
     CONVERT_IMAGE_END;
@@ -253,7 +259,8 @@ void putpixel_savealpha_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE_F(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = EGECOLORA(color, EGEGET_A(dst_color));
     }
     CONVERT_IMAGE_END;
@@ -265,7 +272,8 @@ void putpixel_alphablend(int x, int y, color_t color, PIMAGE pimg)
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color);
     }
     CONVERT_IMAGE_END;
@@ -275,7 +283,8 @@ void putpixel_alphablend_f(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color);
     }
     CONVERT_IMAGE_END;
@@ -287,7 +296,8 @@ void putpixel_alphablend(int x, int y, color_t color, unsigned char alphaFactor,
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color, alphaFactor);
     }
     CONVERT_IMAGE_END;
@@ -297,7 +307,8 @@ void putpixel_alphablend_f(int x, int y, color_t color, unsigned char alphaFacto
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (in_rect(x, y, img->m_width, img->m_height)) {
-        color_t& dst_color = img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
+        color_t& dst_color =
+            img->getbuffer_for_write(x, y, 1, 1)[y * img->m_width + x];
         dst_color = alphablend_inline(dst_color, color, alphaFactor);
     }
     CONVERT_IMAGE_END;
@@ -782,6 +793,7 @@ void setfillcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
+    img->m_fillstyle = SOLID_FILL;
     if (img->m_renderTarget) {
         // The Win32 backend replaces the current brush with a solid brush.
         // Preserve that observable behavior for the portable renderer too.
@@ -856,6 +868,7 @@ void EGEAPI setbkcolor_f(color_t color, PIMAGE pimg)
 
     if (img) {
         img->m_bk_color = color;
+        img->m_fontBkColor = color;
         if (img->m_hDC) {
 #ifdef _WIN32
             SetBkColor(img->m_hDC, ARGBTOZBGR(color));
@@ -896,6 +909,9 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
+    if (img) {
+        img->m_fontBkColor = color;
+    }
     if (img && img->m_hDC) {
 #ifdef _WIN32
         SetBkColor(img->m_hDC, ARGBTOZBGR(color));
@@ -910,6 +926,9 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 void setbkmode(int bkMode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img) {
+        img->m_bkMode = bkMode;
+    }
     if (img && img->m_hDC) {
 #ifdef _WIN32
         SetBkMode(img->m_hDC, bkMode);
@@ -1906,6 +1925,7 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
+    img->m_fillstyle = pattern;
     if (img->m_renderTarget) {
         const FillStyle style = (pattern >= EMPTY_FILL && pattern <= USER_FILL)
             ? static_cast<FillStyle>(pattern) : FILL_SOLID;

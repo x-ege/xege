@@ -77,7 +77,7 @@ bool TestFramework::hideWindow() {
     if (graphicsWindow && !windowHidden) {
 #ifdef _WIN32
         // ShowWindow returns the previous visibility state, not whether the
-        // request succeeded.  Check the resulting state so an already hidden
+        // request succeeded. Check the resulting state so an already hidden
         // test window is not reported as an error.
         ShowWindow((HWND)graphicsWindow, SW_HIDE);
         if (!IsWindowVisible((HWND)graphicsWindow)) {

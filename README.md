@@ -68,6 +68,8 @@ EGE 支持以下 开发工具/编译器：
 
 - **API 文档**：[API 参考](man/api.md)
 - **详细帮助**：`man` 目录下的 `index.htm`
+- **像素缓冲同步**：[CPU Bitmap 与 OpenGL 同步设计](doc/pixel-buffer-sync.md)
+- **性能诊断**：[CPU/GPU 像素同步慢路径诊断](doc/performance-diagnostics.md)
 
 ## IDE 插件
 
@@ -113,7 +115,7 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 | 特点 | 说明 |
 |------|------|
 | 零依赖轻量级 | 使用 `stb_image` 和 `sdefl/sinfl` 替代 `libpng`/`zlib`，无外部依赖，单库即可使用 |
-| 直接像素访问 | 提供兼容的 `getbuffer`，以及 `markbufferdirty`/`updatebuffer` 区域同步接口；详见[像素缓冲同步契约](doc/pixel-buffer-sync.md) |
+| 直接像素访问 | `getbuffer` 支持只读、读写和写入丢弃访问；Windows OpenGL 可自动切换为持久 CPU Bitmap，兼容保留指针的像素处理代码 |
 | 抗锯齿支持 | Windows 内置 GDI+ 支持；原生 OpenGL 后端提供兼容的 `ege_` 绘图接口 |
 | 预乘 Alpha 优化 | 默认使用 PRGB32 (预乘 Alpha) 格式，配合 `AlphaBlend` 实现 GPU 加速混合 |
 | 多图像格式支持 | 支持 PNG, JPEG, BMP, GIF, TGA, PSD, HDR 等常见图像格式 |

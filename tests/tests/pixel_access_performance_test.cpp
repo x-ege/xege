@@ -164,8 +164,10 @@ int main()
     }
 
     const std::string backend = backendName();
+    const ege::image_storage_mode initialSourceMode =
+        ege::getimagestoragemode(source);
     std::vector<BenchmarkResult> results;
-    const auto resetFixtures = [&]() {
+    const auto resetGpuFixtures = [&]() {
         clearImage(source, ege::BLUE);
         clearImage(destination, ege::BLACK);
         synchronizeImage(source, passed);
@@ -175,7 +177,7 @@ int main()
     const int cachedReadOperations = 200000;
     results.push_back(runBenchmark(
         "getpixel_cached", cachedReadOperations,
-        resetFixtures,
+        resetGpuFixtures,
         [&]() {
             for (int i = 0; i < cachedReadOperations; ++i) {
                 observedPixel ^= ege::getpixel(
@@ -186,7 +188,7 @@ int main()
 
     results.push_back(runBenchmark(
         "getpixel_f_cached", cachedReadOperations,
-        resetFixtures,
+        resetGpuFixtures,
         [&]() {
             for (int i = 0; i < cachedReadOperations; ++i) {
                 observedPixel ^= ege::getpixel_f(
@@ -195,12 +197,12 @@ int main()
         },
         [&]() { expectPixel(source, 0, 0, ege::BLUE, passed); }));
 
-    const int readAfterDrawOperations = 64;
+    const int synchronizationCycles = 32;
     results.push_back(runBenchmark(
-        "putpixel_getpixel_cycle", readAfterDrawOperations,
-        resetFixtures,
+        "putpixel_getpixel_cycle", synchronizationCycles,
+        resetGpuFixtures,
         [&]() {
-            for (int i = 0; i < readAfterDrawOperations; ++i) {
+            for (int i = 0; i < synchronizationCycles; ++i) {
                 const int x = (i * 37) % kWidth;
                 const int y = (i * 61) % kHeight;
                 ege::putpixel(x, y, ege::RED, source);
@@ -208,16 +210,35 @@ int main()
             }
         },
         [&]() {
-            const int last = readAfterDrawOperations - 1;
+            const int last = synchronizationCycles - 1;
             expectPixel(source, (last * 37) % kWidth,
                         (last * 61) % kHeight, ege::RED, passed);
+        }));
+
+    results.push_back(runBenchmark(
+        "getbuffer_read_after_draw_cycle", synchronizationCycles,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < synchronizationCycles; ++i) {
+                const int x = (i * 37) % kWidth;
+                const int y = (i * 61) % kHeight;
+                ege::putpixel(x, y, ege::YELLOW, source);
+                ege::color_t* pixels =
+                    ege::getbuffer(source, ege::IMAGE_BUFFER_READ);
+                passed = passed && pixels != nullptr;
+                if (pixels) observedPixel ^= pixels[y * kWidth + x];
+            }
+        },
+        [&]() {
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
         }));
 
     const int pixelWriteOperations = 20000;
     const int lastPixelWrite = pixelWriteOperations - 1;
     results.push_back(runBenchmark(
         "putpixel_committed", pixelWriteOperations,
-        resetFixtures,
+        resetGpuFixtures,
         [&]() {
             for (int i = 0; i < pixelWriteOperations; ++i) {
                 ege::putpixel((i * 37) % kWidth, (i * 61) % kHeight,
@@ -231,8 +252,8 @@ int main()
         }));
 
     results.push_back(runBenchmark(
-        "putpixel_f_committed", pixelWriteOperations,
-        resetFixtures,
+        "putpixel_f_staging_committed", pixelWriteOperations,
+        resetGpuFixtures,
         [&]() {
             for (int i = 0; i < pixelWriteOperations; ++i) {
                 ege::putpixel_f((i * 37) % kWidth, (i * 61) % kHeight,
@@ -244,17 +265,19 @@ int main()
         [&]() {
             expectPixel(destination, (lastPixelWrite * 37) % kWidth,
                         (lastPixelWrite * 61) % kHeight, ege::CYAN, passed);
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
         }));
 
     std::vector<int> pointTriples(static_cast<size_t>(pixelWriteOperations) * 3);
     for (int i = 0; i < pixelWriteOperations; ++i) {
         pointTriples[static_cast<size_t>(i) * 3] = (i * 37) % kWidth;
         pointTriples[static_cast<size_t>(i) * 3 + 1] = (i * 61) % kHeight;
-        pointTriples[static_cast<size_t>(i) * 3 + 2] = ege::YELLOW;
+        pointTriples[static_cast<size_t>(i) * 3 + 2] = ege::LIGHTRED;
     }
     results.push_back(runBenchmark(
-        "putpixels_committed", pixelWriteOperations,
-        resetFixtures,
+        "putpixels_staging_committed", pixelWriteOperations,
+        resetGpuFixtures,
         [&]() {
             ege::putpixels(pixelWriteOperations, pointTriples.data(), source);
             ege::putimage(destination, 0, 0, source);
@@ -262,73 +285,213 @@ int main()
         },
         [&]() {
             expectPixel(destination, (lastPixelWrite * 37) % kWidth,
-                        (lastPixelWrite * 61) % kHeight, ege::YELLOW, passed);
+                        (lastPixelWrite * 61) % kHeight,
+                        ege::LIGHTRED, passed);
         }));
 
-    const int regionalUploadOperations = 32;
+    results.push_back(runBenchmark(
+        "putpixels_f_staging_committed", pixelWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            ege::putpixels_f(pixelWriteOperations, pointTriples.data(), source);
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            expectPixel(destination, (lastPixelWrite * 37) % kWidth,
+                        (lastPixelWrite * 61) % kHeight,
+                        ege::LIGHTRED, passed);
+        }));
+
+    const int alphaWriteOperations = 10000;
+    const int lastAlphaWrite = alphaWriteOperations - 1;
+    results.push_back(runBenchmark(
+        "putpixel_withalpha_staging_committed", alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_withalpha(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    EGEARGB(128, 255, 0, 0), source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            const ege::color_t actual = ege::getpixel_f(
+                (lastAlphaWrite * 37) % kWidth,
+                (lastAlphaWrite * 61) % kHeight, destination);
+            observedPixel ^= actual;
+            passed = passed && !sameRgb(actual, ege::BLUE);
+        }));
+
+    results.push_back(runBenchmark(
+        "putpixel_withalpha_f_staging_committed", alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_withalpha_f(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    EGEARGB(128, 0, 255, 0), source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            const ege::color_t actual = ege::getpixel_f(
+                (lastAlphaWrite * 37) % kWidth,
+                (lastAlphaWrite * 61) % kHeight, destination);
+            observedPixel ^= actual;
+            passed = passed && !sameRgb(actual, ege::BLUE);
+        }));
+
+    results.push_back(runBenchmark(
+        "putpixel_savealpha_staging_committed", alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_savealpha(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    ege::MAGENTA, source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            expectPixel(destination, (lastAlphaWrite * 37) % kWidth,
+                        (lastAlphaWrite * 61) % kHeight,
+                        ege::MAGENTA, passed);
+        }));
+
+    results.push_back(runBenchmark(
+        "putpixel_savealpha_f_staging_committed", alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_savealpha_f(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    ege::MAGENTA, source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            expectPixel(destination, (lastAlphaWrite * 37) % kWidth,
+                        (lastAlphaWrite * 61) % kHeight,
+                        ege::MAGENTA, passed);
+        }));
+
+    results.push_back(runBenchmark(
+        "putpixel_alphablend_staging_committed", alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_alphablend(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    EGEARGB(128, 255, 0, 0), source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            const ege::color_t actual = ege::getpixel_f(
+                (lastAlphaWrite * 37) % kWidth,
+                (lastAlphaWrite * 61) % kHeight, destination);
+            observedPixel ^= actual;
+            passed = passed && !sameRgb(actual, ege::BLUE);
+        }));
+
+    results.push_back(runBenchmark(
+        "putpixel_alphablend_f_staging_committed", alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_alphablend_f(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    EGEARGB(128, 255, 0, 0), source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            const ege::color_t actual = ege::getpixel_f(
+                (lastAlphaWrite * 37) % kWidth,
+                (lastAlphaWrite * 61) % kHeight, destination);
+            observedPixel ^= actual;
+            passed = passed && !sameRgb(actual, ege::BLUE);
+        }));
+
+    results.push_back(runBenchmark(
+        "putpixel_alphablend_factor_staging_committed",
+        alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_alphablend(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    EGEARGB(192, 255, 0, 0), 96, source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            const ege::color_t actual = ege::getpixel_f(
+                (lastAlphaWrite * 37) % kWidth,
+                (lastAlphaWrite * 61) % kHeight, destination);
+            observedPixel ^= actual;
+            passed = passed && !sameRgb(actual, ege::BLUE);
+        }));
+
+    results.push_back(runBenchmark(
+        "putpixel_alphablend_factor_f_staging_committed",
+        alphaWriteOperations,
+        resetGpuFixtures,
+        [&]() {
+            for (int i = 0; i < alphaWriteOperations; ++i) {
+                ege::putpixel_alphablend_f(
+                    (i * 37) % kWidth, (i * 61) % kHeight,
+                    EGEARGB(192, 255, 0, 0), 96, source);
+            }
+            ege::putimage(destination, 0, 0, source);
+            synchronizeImage(destination, passed);
+        },
+        [&]() {
+            const ege::color_t actual = ege::getpixel_f(
+                (lastAlphaWrite * 37) % kWidth,
+                (lastAlphaWrite * 61) % kHeight, destination);
+            observedPixel ^= actual;
+            passed = passed && !sameRgb(actual, ege::BLUE);
+        }));
+
+    const int regionalUpdateOperations = 32;
     const int regionalY = 7;
     results.push_back(runBenchmark(
-        "getbuffer_legacy_1px_committed", regionalUploadOperations,
-        resetFixtures,
-        [&]() {
-            for (int i = 0; i < regionalUploadOperations; ++i) {
-                ege::color_t* pixels = ege::getbuffer(source);
-                passed = passed && pixels != nullptr;
-                if (pixels) pixels[regionalY * kWidth + i] = ege::RED;
-                ege::putimage(destination, 0, 0, source);
-            }
-            synchronizeImage(destination, passed);
-        },
-        [&]() {
-            expectPixel(destination, regionalUploadOperations - 1,
-                        regionalY, ege::RED, passed);
-        }));
-
-    results.push_back(runBenchmark(
-        "getbuffer_marked_1px_committed", regionalUploadOperations,
-        resetFixtures,
-        [&]() {
-            for (int i = 0; i < regionalUploadOperations; ++i) {
-                ege::color_t* pixels = ege::getbuffer(source);
-                passed = passed && pixels != nullptr;
-                if (pixels) {
-                    pixels[regionalY * kWidth + i] = ege::GREEN;
-                    ege::markbufferdirty(source, i, regionalY, 1, 1);
-                }
-                ege::putimage(destination, 0, 0, source);
-            }
-            synchronizeImage(destination, passed);
-        },
-        [&]() {
-            expectPixel(destination, regionalUploadOperations - 1,
-                        regionalY, ege::GREEN, passed);
-        }));
-
-    results.push_back(runBenchmark(
-        "updatebuffer_1px_committed", regionalUploadOperations,
-        resetFixtures,
+        "updatebuffer_1px_committed", regionalUpdateOperations,
+        resetGpuFixtures,
         [&]() {
             const ege::color_t pixel = ege::MAGENTA;
-            for (int i = 0; i < regionalUploadOperations; ++i) {
-                passed = passed &&
-                    ege::updatebuffer(source, i, regionalY, 1, 1, &pixel) == ege::grOk;
+            for (int i = 0; i < regionalUpdateOperations; ++i) {
+                passed = passed && ege::updatebuffer(
+                    source, i, regionalY, 1, 1, &pixel) == ege::grOk;
                 ege::putimage(destination, 0, 0, source);
             }
             synchronizeImage(destination, passed);
         },
         [&]() {
-            expectPixel(destination, regionalUploadOperations - 1,
+            expectPixel(destination, regionalUpdateOperations - 1,
                         regionalY, ege::MAGENTA, passed);
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
         }));
 
     const int blockSize = 64;
     std::vector<ege::color_t> blockPixels(
         static_cast<size_t>(blockSize) * blockSize, ege::LIGHTGREEN);
     results.push_back(runBenchmark(
-        "updatebuffer_64x64_committed", regionalUploadOperations,
-        resetFixtures,
+        "updatebuffer_64x64_committed", regionalUpdateOperations,
+        resetGpuFixtures,
         [&]() {
-            for (int i = 0; i < regionalUploadOperations; ++i) {
+            for (int i = 0; i < regionalUpdateOperations; ++i) {
                 const int x = (i * 23) % (kWidth - blockSize);
                 const int y = (i * 29) % (kHeight - blockSize);
                 passed = passed && ege::updatebuffer(
@@ -339,20 +502,22 @@ int main()
             synchronizeImage(destination, passed);
         },
         [&]() {
-            const int last = regionalUploadOperations - 1;
+            const int last = regionalUpdateOperations - 1;
             expectPixel(destination, (last * 23) % (kWidth - blockSize),
                         (last * 29) % (kHeight - blockSize),
                         ege::LIGHTGREEN, passed);
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
         }));
 
-    const int fullFrameOperations = 8;
+    const int fullFrameUpdateOperations = 8;
     std::vector<ege::color_t> fullFramePixels(
         static_cast<size_t>(kWidth) * kHeight, ege::LIGHTMAGENTA);
     results.push_back(runBenchmark(
-        "updatebuffer_full_frame_committed", fullFrameOperations,
-        resetFixtures,
+        "updatebuffer_full_frame_committed", fullFrameUpdateOperations,
+        resetGpuFixtures,
         [&]() {
-            for (int i = 0; i < fullFrameOperations; ++i) {
+            for (int i = 0; i < fullFrameUpdateOperations; ++i) {
                 passed = passed && ege::updatebuffer(
                     source, 0, 0, kWidth, kHeight,
                     fullFramePixels.data()) == ege::grOk;
@@ -363,7 +528,186 @@ int main()
         [&]() {
             expectPixel(destination, kWidth / 2, kHeight / 2,
                         ege::LIGHTMAGENTA, passed);
+            passed = passed &&
+                ege::getimagestoragemode(source) == initialSourceMode;
         }));
+
+    ege::PIMAGE accessImage = nullptr;
+    ege::image_storage_mode accessModeBefore = ege::IMAGE_STORAGE_CPU_BITMAP;
+    ege::color_t* accessPixels = nullptr;
+    const auto resetAccessImage = [&]() {
+        if (accessImage) ege::delimage(accessImage);
+        accessImage = ege::newimage(kWidth, kHeight);
+        passed = passed && accessImage != nullptr;
+        if (accessImage) {
+            clearImage(accessImage, ege::BLUE);
+            accessModeBefore = ege::getimagestoragemode(accessImage);
+        }
+        accessPixels = nullptr;
+    };
+
+    results.push_back(runBenchmark(
+        "getbuffer_read_first", 1,
+        resetAccessImage,
+        [&]() {
+            if (accessImage) {
+                accessPixels = ege::getbuffer(
+                    accessImage, ege::IMAGE_BUFFER_READ);
+                if (accessPixels) {
+                    observedPixel ^= accessPixels[
+                        (kHeight / 2) * kWidth + kWidth / 2];
+                }
+            }
+        },
+        [&]() {
+            passed = passed && accessPixels != nullptr;
+            if (accessImage) {
+                passed = passed &&
+                    ege::getimagestoragemode(accessImage) == accessModeBefore;
+            }
+        }));
+
+    results.push_back(runBenchmark(
+        "getbuffer_read_write_promotion", 1,
+        resetAccessImage,
+        [&]() {
+            if (accessImage) {
+                accessPixels = ege::getbuffer(
+                    accessImage, ege::IMAGE_BUFFER_READ_WRITE);
+                if (accessPixels) {
+                    observedPixel ^= accessPixels[
+                        (kHeight / 2) * kWidth + kWidth / 2];
+                }
+            }
+        },
+        [&]() {
+            passed = passed && accessPixels != nullptr;
+#ifdef _WIN32
+            if (accessImage) {
+                passed = passed && ege::getimagestoragemode(accessImage) ==
+                                       ege::IMAGE_STORAGE_CPU_BITMAP;
+            }
+#else
+            if (accessImage) {
+                passed = passed &&
+                    ege::getimagestoragemode(accessImage) == accessModeBefore;
+            }
+#endif
+        }));
+
+    results.push_back(runBenchmark(
+        "getbuffer_write_discard_promotion", 1,
+        resetAccessImage,
+        [&]() {
+            if (accessImage) {
+                accessPixels = ege::getbuffer(
+                    accessImage, ege::IMAGE_BUFFER_WRITE_DISCARD);
+                if (accessPixels) {
+                    accessPixels[(kHeight / 2) * kWidth + kWidth / 2] =
+                        ege::WHITE;
+                }
+            }
+        },
+        [&]() {
+            passed = passed && accessPixels != nullptr;
+            if (accessImage && accessPixels) {
+                expectPixel(accessImage, kWidth / 2, kHeight / 2,
+                            ege::WHITE, passed);
+            }
+#ifdef _WIN32
+            if (accessImage) {
+                passed = passed && ege::getimagestoragemode(accessImage) ==
+                                       ege::IMAGE_STORAGE_CPU_BITMAP;
+            }
+#endif
+        }));
+
+    if (accessImage) {
+        ege::delimage(accessImage);
+        accessImage = nullptr;
+    }
+
+    ege::PIMAGE cpuSource = ege::newimage(kWidth, kHeight);
+    ege::PIMAGE cpuDestination = ege::newimage(kWidth, kHeight);
+    ege::color_t* retainedPixels = cpuSource
+        ? ege::getbuffer(cpuSource, ege::IMAGE_BUFFER_READ_WRITE) : nullptr;
+    passed = passed && cpuSource != nullptr && cpuDestination != nullptr &&
+             retainedPixels != nullptr;
+    const bool hasPersistentCpuBitmap = cpuSource != nullptr &&
+        ege::getimagestoragemode(cpuSource) == ege::IMAGE_STORAGE_CPU_BITMAP;
+
+    if (hasPersistentCpuBitmap && cpuDestination && retainedPixels) {
+        const auto resetCpuBitmapFixtures = [&]() {
+            std::fill(retainedPixels,
+                      retainedPixels + static_cast<size_t>(kWidth) * kHeight,
+                      ege::BLUE);
+            clearImage(cpuDestination, ege::BLACK);
+            synchronizeImage(cpuDestination, passed);
+        };
+
+        results.push_back(runBenchmark(
+            "cpu_bitmap_getpixel_cached", cachedReadOperations,
+            resetCpuBitmapFixtures,
+            [&]() {
+                for (int i = 0; i < cachedReadOperations; ++i) {
+                    observedPixel ^= ege::getpixel(
+                        (i * 37) % kWidth, (i * 61) % kHeight, cpuSource);
+                }
+            },
+            [&]() { expectPixel(cpuSource, 0, 0, ege::BLUE, passed); }));
+
+        results.push_back(runBenchmark(
+            "cpu_bitmap_putpixel_committed", pixelWriteOperations,
+            resetCpuBitmapFixtures,
+            [&]() {
+                for (int i = 0; i < pixelWriteOperations; ++i) {
+                    ege::putpixel((i * 37) % kWidth, (i * 61) % kHeight,
+                                  ege::LIGHTGREEN, cpuSource);
+                }
+                ege::putimage(cpuDestination, 0, 0, cpuSource);
+                synchronizeImage(cpuDestination, passed);
+            },
+            [&]() {
+                expectPixel(cpuDestination,
+                            (lastPixelWrite * 37) % kWidth,
+                            (lastPixelWrite * 61) % kHeight,
+                            ege::LIGHTGREEN, passed);
+            }));
+
+        results.push_back(runBenchmark(
+            "cpu_bitmap_retained_writes_committed", pixelWriteOperations,
+            resetCpuBitmapFixtures,
+            [&]() {
+                for (int i = 0; i < pixelWriteOperations; ++i) {
+                    retainedPixels[((i * 61) % kHeight) * kWidth +
+                                   ((i * 37) % kWidth)] = ege::LIGHTCYAN;
+                }
+                ege::putimage(cpuDestination, 0, 0, cpuSource);
+                synchronizeImage(cpuDestination, passed);
+            },
+            [&]() {
+                expectPixel(cpuDestination,
+                            (lastPixelWrite * 37) % kWidth,
+                            (lastPixelWrite * 61) % kHeight,
+                            ege::LIGHTCYAN, passed);
+            }));
+
+        const int retainedUploadCycles = 20;
+        results.push_back(runBenchmark(
+            "cpu_bitmap_retained_1px_upload_cycles", retainedUploadCycles,
+            resetCpuBitmapFixtures,
+            [&]() {
+                for (int i = 0; i < retainedUploadCycles; ++i) {
+                    retainedPixels[7 * kWidth + i] = ege::LIGHTMAGENTA;
+                    ege::putimage(cpuDestination, 0, 0, cpuSource);
+                }
+                synchronizeImage(cpuDestination, passed);
+            },
+            [&]() {
+                expectPixel(cpuDestination, retainedUploadCycles - 1, 7,
+                            ege::LIGHTMAGENTA, passed);
+            }));
+    }
 
     std::cout << "PIXEL_PERF_CONFIG"
               << " backend=" << backend
@@ -378,6 +722,8 @@ int main()
     }
     std::cout << "PIXEL_PERF_CHECKSUM value=" << observedPixel << '\n';
 
+    if (cpuDestination) ege::delimage(cpuDestination);
+    if (cpuSource) ege::delimage(cpuSource);
     ege::delimage(destination);
     ege::delimage(source);
     framework.cleanup();

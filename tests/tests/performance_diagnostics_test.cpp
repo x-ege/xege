@@ -115,9 +115,11 @@ bool runtimeDiagnosticsDisabled()
 {
     const char* mode = std::getenv("EGE_DIAGNOSTICS");
     if (!mode) return false;
-    return (mode[0] == 'o' || mode[0] == 'O') &&
-           (mode[1] == 'f' || mode[1] == 'F') &&
-           (mode[2] == 'f' || mode[2] == 'F') && mode[3] == '\0';
+    std::string normalized(mode);
+    for (char& value : normalized) {
+        if (value >= 'A' && value <= 'Z') value = static_cast<char>(value - 'A' + 'a');
+    }
+    return normalized == "off" || normalized == "false" || normalized == "0";
 }
 
 #if defined(_WIN32) && defined(EGE_BUILD_OPENGL)
@@ -164,7 +166,9 @@ int runPopupSmokeTest()
 
     ege::color_t* pixels = ege::getbuffer(source);
     if (pixels) pixels[0] = ege::GREEN;
-    ege::putimage(destination, 0, 0, source);
+    for (int iteration = 0; iteration < 3; ++iteration) {
+        ege::putimage(destination, 0, 0, source);
+    }
     ege::delay_ms(0);
 
     PopupObservation observation;
@@ -210,14 +214,17 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    ege::PIMAGE source = ege::newimage(32, 32);
+    ege::PIMAGE cpuBitmapSource = ege::newimage(32, 32);
+    ege::PIMAGE gpuReadbackSource = ege::newimage(24, 24);
+    ege::PIMAGE exactUpdateSource = ege::newimage(16, 16);
     ege::PIMAGE destination = ege::newimage(32, 32);
-    ege::PIMAGE markedSource = ege::newimage(16, 16);
-    if (!source || !destination || !markedSource) {
+    if (!cpuBitmapSource || !gpuReadbackSource ||
+        !exactUpdateSource || !destination) {
         std::cerr << "FAIL: unable to allocate diagnostics fixtures\n";
-        if (markedSource) ege::delimage(markedSource);
         if (destination) ege::delimage(destination);
-        if (source) ege::delimage(source);
+        if (exactUpdateSource) ege::delimage(exactUpdateSource);
+        if (gpuReadbackSource) ege::delimage(gpuReadbackSource);
+        if (cpuBitmapSource) ege::delimage(cpuBitmapSource);
         framework.cleanup();
         return EXIT_FAILURE;
     }
@@ -225,35 +232,39 @@ int main(int argc, char** argv)
     StderrCapture capture;
     if (!capture.start()) {
         std::cerr << "FAIL: unable to capture stderr\n";
-        ege::delimage(markedSource);
         ege::delimage(destination);
-        ege::delimage(source);
+        ege::delimage(exactUpdateSource);
+        ege::delimage(gpuReadbackSource);
+        ege::delimage(cpuBitmapSource);
         framework.cleanup();
         return EXIT_FAILURE;
     }
 
-    // A declared dirty rectangle must not be diagnosed as a conservative
-    // upload. Its different image size makes a false positive observable even
-    // though each diagnostic code is emitted only once per process.
-    ege::color_t* markedPixels = ege::getbuffer(markedSource);
-    if (markedPixels) {
-        markedPixels[0] = ege::YELLOW;
-        ege::markbufferdirty(markedSource, 0, 0, 1, 1);
-    }
-    ege::putimage(destination, 0, 0, markedSource);
-
-    // A writable legacy buffer with no explicit dirty rectangle forces the
-    // OpenGL backend to conservatively upload the complete image. Repeat it
-    // to verify that a diagnostic code is emitted at most once per process.
-    for (int iteration = 0; iteration < 2; ++iteration) {
-        ege::color_t* pixels = ege::getbuffer(source);
-        if (pixels) pixels[iteration] = ege::GREEN;
-        ege::putimage(destination, 0, 0, source);
+    // Exact updates stay GPU-backed and must not be diagnosed as persistent
+    // CPU-bitmap uploads, even when the image is sampled repeatedly.
+    const ege::image_storage_mode exactMode =
+        ege::getimagestoragemode(exactUpdateSource);
+    const ege::color_t exactPixel = ege::YELLOW;
+    bool setupSucceeded =
+        ege::updatebuffer(exactUpdateSource, 0, 0, 1, 1, &exactPixel) == ege::grOk &&
+        ege::getimagestoragemode(exactUpdateSource) == exactMode;
+    for (int iteration = 0; iteration < 3; ++iteration) {
+        ege::putimage(destination, 0, 0, exactUpdateSource);
     }
 
-    // Repeated const access to an already synchronized CPU copy is cheap and
+    // A retained writable pointer promotes the image to persistent CPU-bitmap
+    // storage. Repeated OpenGL sampling must report the real full-upload cost once.
+    ege::color_t* cpuPixels = ege::getbuffer(cpuBitmapSource);
+    if (cpuPixels) {
+        cpuPixels[0] = ege::GREEN;
+    }
+    for (int iteration = 0; iteration < 5; ++iteration) {
+        ege::putimage(destination, 0, 0, cpuBitmapSource);
+    }
+
+    // Repeated const access to an already synchronized GPU shadow is cheap and
     // must not count as repeated GPU readback.
-    ege::PCIMAGE cachedSource = source;
+    ege::PCIMAGE cachedSource = exactUpdateSource;
     for (int iteration = 0; iteration < 10; ++iteration) {
         const ege::color_t* pixels = ege::getbuffer(cachedSource);
         if (pixels) {
@@ -265,13 +276,13 @@ int main(int argc, char** argv)
     // Count actual GPU-to-CPU transitions, not API calls against an already
     // synchronized buffer. Three immediate draw/read cycles cross the debug
     // diagnostic threshold while remaining deterministic and inexpensive.
-    ege::PCIMAGE readOnlySource = source;
+    ege::PCIMAGE readOnlySource = gpuReadbackSource;
     for (int iteration = 0; iteration < 3; ++iteration) {
-        ege::setcolor(ege::RED, source);
-        ege::line(0, iteration, 20, iteration, source);
+        ege::setcolor(ege::RED, gpuReadbackSource);
+        ege::line(0, iteration, 20, iteration, gpuReadbackSource);
         const ege::color_t* pixels = ege::getbuffer(readOnlySource);
         if (pixels) {
-            volatile ege::color_t observed = pixels[iteration * 32];
+            volatile ege::color_t observed = pixels[iteration * 24];
             (void)observed;
         }
     }
@@ -281,7 +292,7 @@ int main(int argc, char** argv)
         !runtimeDiagnosticsDisabled() &&
         ege::detail::performanceDiagnosticsCompiled();
 
-    bool passed = true;
+    bool passed = setupSucceeded;
     if (expectMessages) {
         passed = passed && occurrenceCount(diagnostics, "EGE-PERF-001") == 1;
         passed = passed && occurrenceCount(diagnostics, "EGE-PERF-002") == 1;
@@ -289,7 +300,9 @@ int main(int argc, char** argv)
             "EGE-PERF-001] OpenGL IMAGE 32x32") != std::string::npos;
         passed = passed && diagnostics.find(
             "EGE-PERF-001] OpenGL IMAGE 16x16") == std::string::npos;
-        passed = passed && diagnostics.find("markbufferdirty") != std::string::npos;
+        passed = passed &&
+            diagnostics.find("persistent CPU bitmap") != std::string::npos;
+        passed = passed && diagnostics.find("updatebuffer()") != std::string::npos;
         passed = passed && diagnostics.find("GPU-to-CPU") != std::string::npos;
     } else {
         passed = passed && diagnostics.find("EGE-PERF-") == std::string::npos;
@@ -302,9 +315,10 @@ int main(int argc, char** argv)
         std::cerr << "FAIL: unexpected diagnostic output:\n" << diagnostics;
     }
 
-    ege::delimage(markedSource);
     ege::delimage(destination);
-    ege::delimage(source);
+    ege::delimage(exactUpdateSource);
+    ege::delimage(gpuReadbackSource);
+    ege::delimage(cpuBitmapSource);
     framework.cleanup();
     return passed ? EXIT_SUCCESS : EXIT_FAILURE;
 }

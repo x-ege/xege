@@ -1254,6 +1254,21 @@ typedef IMAGE *PIMAGE;
 /// @brief 常量图像对象指针类型
 typedef const IMAGE *PCIMAGE;
 
+/** @brief IMAGE 使用的权威存储类型。 */
+enum image_storage_mode
+{
+    IMAGE_STORAGE_GPU = 0,        ///< GPU 渲染目标保存权威像素
+    IMAGE_STORAGE_CPU_BITMAP = 1  ///< 持久 CPU 位图保存权威像素
+};
+
+/** @brief getbuffer(PIMAGE, image_buffer_access) 重载声明的访问方式。 */
+enum image_buffer_access
+{
+    IMAGE_BUFFER_READ = 0,          ///< 读取已有像素，不允许通过返回指针写入
+    IMAGE_BUFFER_READ_WRITE = 1,    ///< 保留已有像素并允许持久写入
+    IMAGE_BUFFER_WRITE_DISCARD = 2  ///< 丢弃旧像素并允许持久写入
+};
+
 /**
  * @brief 设置代码页
  *
@@ -4145,18 +4160,32 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * @brief 获取图像像素缓冲区指针
  * @param pimg 要获取缓冲区的图像对象指针；NULL 表示当前绘图目标
  * @return 可写的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
- * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。一次修改应在下一个 EGE
- *       绘图或图像操作之前完成，以便 OpenGL 后端同步到 GPU。
- * @note 图像经过任何可能产生绘制的 EGE 操作后，如需再次写入，必须重新调用
- *       getbuffer。后端无法检测通过旧指针进行的新一轮修改。
+ * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。Windows OpenGL 下，本重载
+ *       等价于 IMAGE_BUFFER_READ_WRITE：首次调用会保留旧像素，并把图像提升为持久
+ *       CPU 位图。
+ * @note Windows OpenGL 下，返回指针在后续 EGE 绘图和图像操作之间仍是权威存储。
+ *       图像每次被采样或上屏时都会重新上传 CPU 位图，因此继续通过原指针写入仍可见。
  * @note 调整图像尺寸、以不同尺寸重新载入图像、删除图像，或者窗口缓冲区因窗口
  *       尺寸变化而重建后，原指针失效。
  * @note OpenGL 后端可能同步等待 GPU 回读。只能在图形/上下文线程调用；不支持并发
  *       访问图像或返回的缓冲区。
- * @note 启用性能诊断的 OpenGL 构建（默认为 Debug）中，如果未知写入范围因
- *       未调用 markbufferdirty 而触发整图上传，会报告性能诊断；诊断不改变原有行为。
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
+
+/**
+ * @brief 按指定访问方式获取图像像素缓冲区
+ * @param pimg 图像对象指针；NULL 表示当前绘图目标
+ * @param access 所需的缓冲区访问方式
+ * @return 按行从上到下排列的 ARGB 像素数组；分配失败时返回 NULL
+ * @note IMAGE_BUFFER_READ 不会把 GPU 图像转换为 CPU 位图，此模式下不得写入返回指针。
+ * @note Windows 下的可写模式会把 OpenGL 图像提升为持久 CPU 位图；
+ *       IMAGE_BUFFER_WRITE_DISCARD 不回读旧的 GPU 像素，调用方必须初始化后续会读取的
+ *       每一个像素。
+ * @note macOS/Linux 原生 OpenGL 目前仍使用历史同步暂存缓冲区，因为尚无完整 CPU 绘图后端。
+ * @note GPU 图像提升为 CPU 位图存储后，IMAGE_BUFFER_READ 或 const 重载此前返回的指针
+ *       会失效；转换后必须重新获取。
+ */
+color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
 
 /**
  * @brief 获取图像像素缓冲区指针（只读版本）
@@ -4164,38 +4193,37 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
  * @return 只读的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
  * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。OpenGL 后端会先同步待处理的
  *       绘制，必要时会同步等待 GPU 回读。
- *       已缓存的重复读取不会再次回读；短时间反复发生真实 GPU→CPU 转换时可能提示诊断。
- * @note 指针的有效期和线程限制与可写重载相同。
+ * @note 线程限制与可写重载相同。GPU 图像后来调用可写 getbuffer、getHDC 或显式提升为
+ *       CPU 位图存储时，此前返回的只读指针也会失效。
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
 
 /**
- * @brief 声明通过可写 getbuffer 指针修改的像素区域
- * @param pimg 图像指针；NULL 表示当前绘图目标
- * @param x 修改区域在物理图像缓冲区中的左坐标
- * @param y 修改区域在物理图像缓冲区中的上坐标
- * @param width 修改区域宽度
- * @param height 修改区域高度
- * @note 应在一批指针写入完成后、下一次针对该图像的 EGE 操作前调用。旧程序不调用
- *       本函数仍保持正确；OpenGL 后端会保守地把整个缓冲区视为已修改。
- * @note 声明区域必须覆盖本次 getbuffer 之后的全部写入，不应用 viewport 偏移。
- */
-void EGEAPI markbufferdirty(PIMAGE pimg, int x, int y, int width, int height);
-
-/**
- * @brief 将一块自顶向下的 ARGB 像素矩形复制到图像
+ * @brief 将一块自上而下的 ARGB 像素矩形复制到图像
  * @param pimg 目标图像；NULL 表示当前绘图目标
- * @param x 目标物理图像左坐标
- * @param y 目标物理图像上坐标
+ * @param x 目标矩形左边界（图像物理坐标）
+ * @param y 目标矩形上边界（图像物理坐标）
  * @param width 矩形宽度
  * @param height 矩形高度
- * @param pixels 源自顶向下 ARGB 像素
- * @param pitchBytes 源行跨度（字节）；0 表示 width * sizeof(color_t)
+ * @param pixels 自上而下排列的源 ARGB 像素
+ * @param pitchBytes 源数据每行字节数；0 表示 width * sizeof(color_t)
  * @return 成功返回 grOk；失败返回 grNullPointer、grInvalidRegion 或 grParamError
- * @note OpenGL 后端能够获知精确修改区域，不需要先回读目标贴图；不应用 viewport。
+ * @note 与可写 getbuffer 不同，OpenGL 后端可准确得知修改区域，因此无需回读
+ *       目标纹理。坐标不受视口原点和裁剪影响，GPU 图像也不会转为 CPU 位图。
  */
 int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
                         const color_t* pixels, int pitchBytes = 0);
+
+/** @brief 获取图像当前使用的权威存储类型。 */
+image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
+
+/**
+ * @brief 修改图像的权威存储类型
+ * @return 成功返回 grOk；不支持的转换返回 grInvalidMode
+ * @note GPU 到 CPU 的提升会保留像素。CPU 到 GPU 不会隐式执行，因为这会使用户保留的
+ *       可写缓冲区指针失效。
+ */
+int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief 调整图像尺寸（快速版本）
@@ -4897,9 +4925,11 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief 获取绘图设备上下文
  * @param pimg 图像对象指针，如果为 NULL 则获取绘图窗口的设备上下文
- * @return GDI 设备上下文句柄；所选目标使用 OpenGL 时返回 NULL
- * @note 返回的 HDC 只能用于 GDI 后端的 IMAGE 或 GDI 窗口目标；OpenGL 渲染目标
- *       不提供兼容的 HDC
+ * @return GDI 设备上下文句柄；无法创建兼容存储时返回 NULL
+ * @note 在 Windows 上，为 OpenGL IMAGE 请求 HDC 会在保留像素和绘图状态的同时，
+ *       将图像提升为持久 CPU 位图。可通过 getimagestoragemode() 观察这一转换，
+ *       后续通过该 HDC 的写入仍是权威数据。
+ * @note 没有 Win32 兼容 CPU 绘图后端的原生 OpenGL 平台返回 NULL。
  * @warning 不要手动释放返回的 HDC，由 EGE 库自动管理
  * @see getHWnd(), getHInstance()
  */

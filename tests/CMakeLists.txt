@@ -102,6 +102,9 @@ add_test_executable(putimage_rotate_test tests/putimage_rotate_test.cpp)
 add_test_executable(putimage_comparison_test tests/putimage_comparison_test.cpp)
 add_test_executable(putimage_alphablend_comprehensive_test tests/putimage_alphablend_comprehensive_test.cpp)
 add_test_executable(rendering_correctness_test tests/rendering_correctness_test.cpp)
+if(EGE_BUILD_OPENGL)
+    target_include_directories(rendering_correctness_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
+endif()
 add_test_executable(performance_diagnostics_test tests/performance_diagnostics_test.cpp)
 target_include_directories(performance_diagnostics_test PRIVATE
     ${PROJECT_SOURCE_DIR}/src
@@ -248,10 +251,32 @@ if(EGE_BUILD_OPENGL)
                 EGE_TEST_OPENGL=1 EGE_DIAGNOSTICS=off
                 $<TARGET_FILE:performance_diagnostics_test>
         )
+        add_test(
+            NAME performance_diagnostics_opengl_disabled_false
+            COMMAND ${CMAKE_COMMAND} -E env
+                EGE_TEST_OPENGL=1 EGE_DIAGNOSTICS=false
+                $<TARGET_FILE:performance_diagnostics_test>
+        )
+        add_test(
+            NAME performance_diagnostics_opengl_disabled_0
+            COMMAND ${CMAKE_COMMAND} -E env
+                EGE_TEST_OPENGL=1 EGE_DIAGNOSTICS=0
+                $<TARGET_FILE:performance_diagnostics_test>
+        )
     else()
         add_test(
             NAME performance_diagnostics_opengl_disabled
             COMMAND ${CMAKE_COMMAND} -E env EGE_DIAGNOSTICS=off
+                $<TARGET_FILE:performance_diagnostics_test>
+        )
+        add_test(
+            NAME performance_diagnostics_opengl_disabled_false
+            COMMAND ${CMAKE_COMMAND} -E env EGE_DIAGNOSTICS=false
+                $<TARGET_FILE:performance_diagnostics_test>
+        )
+        add_test(
+            NAME performance_diagnostics_opengl_disabled_0
+            COMMAND ${CMAKE_COMMAND} -E env EGE_DIAGNOSTICS=0
                 $<TARGET_FILE:performance_diagnostics_test>
         )
     endif()
@@ -343,7 +368,11 @@ if(EGE_BUILD_OPENGL)
         LABELS "correctness;window;exit"
         TIMEOUT 15
     )
-    set_tests_properties(performance_diagnostics_opengl_disabled PROPERTIES
+    set_tests_properties(
+        performance_diagnostics_opengl_disabled
+        performance_diagnostics_opengl_disabled_false
+        performance_diagnostics_opengl_disabled_0
+        PROPERTIES
         LABELS "correctness;diagnostics;opengl"
     )
 endif()

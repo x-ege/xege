@@ -18,6 +18,32 @@
 
 namespace ege {
 
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+static const unsigned int kDiagnosticWindowMs = 1000;
+static const unsigned int kDiagnosticThreshold = 3;
+
+static unsigned long long diagnosticNowMs()
+{
+    return static_cast<unsigned long long>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+}
+
+static bool recordDiagnosticOccurrence(
+    unsigned long long now, unsigned long long& windowStart,
+    unsigned int& occurrences)
+{
+    if (occurrences == 0 || now - windowStart > kDiagnosticWindowMs) {
+        windowStart = now;
+        occurrences = 1;
+    } else {
+        ++occurrences;
+    }
+    return occurrences == kDiagnosticThreshold;
+}
+#endif
+
+
 // ============================================================
 // Shader source code
 // ============================================================
@@ -413,7 +439,7 @@ GlRenderTarget::GlRenderTarget()
       m_cpuBuffer(nullptr), m_pixelSyncState(PixelSyncState::Synchronized),
       m_cpuDirtyUnknown(false),
 #if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-      m_legacyWritableExposure(false),
+      m_cpuBitmapUploadWindowStartMs(0), m_cpuBitmapUploadsInWindow(0),
       m_readbackWindowStartMs(0), m_readbacksInWindow(0),
 #endif
       m_width(0), m_height(0), m_isOnScreen(false), m_initialized(false),
@@ -473,9 +499,6 @@ void GlRenderTarget::markGpuDirty(const PixelRect& rect) {
     }
     m_cpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = false;
-#endif
     m_pixelSyncState = PixelSyncState::GpuNewer;
 }
 
@@ -486,23 +509,15 @@ void GlRenderTarget::markGpuDirtyFull() {
 void GlRenderTarget::markCpuDirty(const PixelRect& rect, bool unknownRange) {
     if (rect.empty()) return;
     if (unknownRange) {
-        // Preserve already declared writes while remembering that the newest
-        // writable-pointer exposure has not been described yet. If it is not
-        // followed by markPixelBufferDirty(), syncToGpu() falls back to the
-        // complete image.
         if (m_pixelSyncState != PixelSyncState::CpuNewer) {
             m_cpuDirtyRect = PixelRect();
         }
         m_cpuDirtyUnknown = true;
+    } else if (m_pixelSyncState != PixelSyncState::CpuNewer) {
+        m_cpuDirtyRect = rect;
+        m_cpuDirtyUnknown = false;
     } else {
-        if (m_pixelSyncState != PixelSyncState::CpuNewer) {
-            m_cpuDirtyRect = rect;
-            m_cpuDirtyUnknown = false;
-        } else {
-            unionRect(m_cpuDirtyRect, rect);
-            // An internal precise write cannot narrow an earlier unresolved
-            // public writable-pointer exposure.
-        }
+        unionRect(m_cpuDirtyRect, rect);
     }
     m_gpuDirtyRect = PixelRect();
     m_pixelSyncState = PixelSyncState::CpuNewer;
@@ -536,9 +551,6 @@ bool GlRenderTarget::initOnScreen(int width, int height) {
     m_cpuDirtyRect = fullRect();
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = false;
-#endif
 
     initShaders();
     initVBO();
@@ -572,9 +584,6 @@ bool GlRenderTarget::initOffscreen(int width, int height) {
     m_cpuDirtyRect = fullRect();
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = false;
-#endif
 
     initShaders();
     initVBO();
@@ -2257,8 +2266,8 @@ void GlRenderTarget::drawGlyphTexture(GLuint tex, int texW, int texH,
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 
-    // Glyph transforms can rotate the destination. Until glyph bounds are
-    // accumulated here, retain the conservative full-target fallback.
+    // Glyph transforms may rotate the destination. Keep a conservative
+    // full-target fallback until exact glyph bounds are accumulated here.
     markGpuDirtyFull();
 }
 
@@ -2457,44 +2466,18 @@ color_t* GlRenderTarget::getPixelBufferForWrite(
     return m_cpuBuffer;
 }
 
-void GlRenderTarget::noteLegacyWritableBufferExposure() {
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = true;
-#endif
-}
-
-void GlRenderTarget::markPixelBufferDirty(
-    int x, int y, int width, int height) {
-    const PixelRect dirty = clippedRect(x, y, width, height);
-    if (dirty.empty()) return;
-
-    // This function narrows the conservative full-image exposure created by
-    // writable getPixelBuffer(). Its public contract requires no intervening
-    // EGE operation, so CpuNewer is the expected state here.
-    if (m_pixelSyncState == PixelSyncState::CpuNewer) {
-        // Accumulate regions declared for earlier writable-buffer batches.
-        // Clearing unknown only resolves the most recent pointer exposure;
-        // already known dirty pixels must remain pending.
-        unionRect(m_cpuDirtyRect, dirty);
-        m_cpuDirtyUnknown = false;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-        m_legacyWritableExposure = false;
-#endif
-    }
-}
-
 bool GlRenderTarget::updatePixelBuffer(
     int x, int y, int width, int height,
     const color_t* pixels, int pitchBytes) {
+    if (!m_initialized || !m_cpuBuffer) return false;
     const PixelRect dirty = clippedRect(x, y, width, height);
     if (!pixels || dirty.empty() || dirty.left != x || dirty.top != y ||
         dirty.right != x + width || dirty.bottom != y + height) {
         return false;
     }
 
-    // Complete earlier API calls first. Unlike getPixelBuffer(), this explicit
-    // overwrite does not need current destination pixels and therefore never
-    // performs a GPU-to-CPU readback.
+    // Finish earlier calls first. This exact overwrite does not need current
+    // destination pixels and therefore avoids a GPU-to-CPU readback.
     submitBatch();
     syncToGpu();
     const PixelSyncState stateBeforeUpdate = m_pixelSyncState;
@@ -2520,27 +2503,55 @@ bool GlRenderTarget::updatePixelBuffer(
     }
     m_cpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = false;
-#endif
 
     if (m_isOnScreen) {
+        // updatebuffer uses physical image coordinates and explicitly ignores
+        // the EGE viewport. The texture upload already follows that contract;
+        // temporarily disable EGE clipping while copying the changed region
+        // into the window back buffer as well.
+        const bool savedViewportClip = m_vpClip;
+        m_vpClip = false;
         drawImageQuad(m_texture, m_width, m_height,
                       x, y, width, height, x - m_vpLeft, y - m_vpTop,
                       width, height, 0, 0, 0, 1.0f, 1.0f, 0, 0);
+        m_vpClip = savedViewportClip;
     }
     return true;
 }
+
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+void GlRenderTarget::recordCpuBitmapUploadDiagnostic()
+{
+    if (recordDiagnosticOccurrence(
+            diagnosticNowMs(), m_cpuBitmapUploadWindowStartMs,
+            m_cpuBitmapUploadsInWindow)) {
+        detail::reportPerformanceDiagnostic(
+            detail::PerformanceDiagnosticCode::RepeatedCpuBitmapFullUpload,
+            detail::PerformanceDiagnosticContext(
+                m_width, m_height, m_cpuBitmapUploadsInWindow,
+                kDiagnosticWindowMs));
+    }
+}
+
+void GlRenderTarget::recordGpuReadbackDiagnostic()
+{
+    if (recordDiagnosticOccurrence(
+            diagnosticNowMs(), m_readbackWindowStartMs,
+            m_readbacksInWindow)) {
+        detail::reportPerformanceDiagnostic(
+            detail::PerformanceDiagnosticCode::RepeatedGpuReadback,
+            detail::PerformanceDiagnosticContext(
+                m_width, m_height, m_readbacksInWindow,
+                kDiagnosticWindowMs));
+    }
+}
+#endif
 
 void GlRenderTarget::downloadFromGpu() {
     const bool gpuPixelsNeedDownload =
         m_pixelSyncState == PixelSyncState::GpuNewer ||
         (m_isOnScreen && m_pixelSyncState == PixelSyncState::ScreenTextureNewer);
     if (!m_initialized || !m_cpuBuffer || !gpuPixelsNeedDownload) return;
-
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    recordGpuReadbackDiagnostic();
-#endif
 
     const PixelRect dirty = m_gpuDirtyRect.empty() ? fullRect() : m_gpuDirtyRect;
     const int dirtyWidth = dirty.right - dirty.left;
@@ -2550,10 +2561,16 @@ void GlRenderTarget::downloadFromGpu() {
     GLint previousReadBuffer = GL_BACK;
     GLint previousPackBuffer = 0;
     GLint previousPackAlignment = 4;
+    GLint previousPackRowLength = 0;
+    GLint previousPackSkipPixels = 0;
+    GLint previousPackSkipRows = 0;
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &previousReadFramebuffer);
     glGetIntegerv(GL_READ_BUFFER, &previousReadBuffer);
     glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &previousPackBuffer);
     glGetIntegerv(GL_PACK_ALIGNMENT, &previousPackAlignment);
+    glGetIntegerv(GL_PACK_ROW_LENGTH, &previousPackRowLength);
+    glGetIntegerv(GL_PACK_SKIP_PIXELS, &previousPackSkipPixels);
+    glGetIntegerv(GL_PACK_SKIP_ROWS, &previousPackSkipRows);
 
     GLuint screenReadFramebuffer = 0;
     if (m_isOnScreen) {
@@ -2570,14 +2587,19 @@ void GlRenderTarget::downloadFromGpu() {
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
     m_pixelTransferBuffer.resize(static_cast<size_t>(dirtyWidth) * dirtyHeight);
     glReadPixels(dirty.left, m_height - dirty.bottom,
                  dirtyWidth, dirtyHeight, GL_BGRA, GL_UNSIGNED_BYTE,
                  m_pixelTransferBuffer.data());
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    recordGpuReadbackDiagnostic();
+#endif
 
     // OpenGL returns the lowest row first; EGE buffers are top-down. BGRA
-    // matches color_t byte layout, so each row can be copied without a
-    // per-pixel channel conversion.
+    // matches color_t byte layout, so rows need only be flipped vertically.
     for (int glRow = 0; glRow < dirtyHeight; ++glRow) {
         const int egeY = dirty.bottom - 1 - glRow;
         std::memcpy(m_cpuBuffer + static_cast<size_t>(egeY) * m_width + dirty.left,
@@ -2590,9 +2612,9 @@ void GlRenderTarget::downloadFromGpu() {
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = false;
-#endif
+    glPixelStorei(GL_PACK_SKIP_ROWS, previousPackSkipRows);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, previousPackSkipPixels);
+    glPixelStorei(GL_PACK_ROW_LENGTH, previousPackRowLength);
     glPixelStorei(GL_PACK_ALIGNMENT, previousPackAlignment);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, previousPackBuffer);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, previousReadFramebuffer);
@@ -2601,32 +2623,6 @@ void GlRenderTarget::downloadFromGpu() {
         glDeleteFramebuffers(1, &screenReadFramebuffer);
     }
 }
-
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-void GlRenderTarget::recordGpuReadbackDiagnostic() {
-    const unsigned int diagnosticWindowMs = 1000;
-    const unsigned int diagnosticThreshold = 3;
-    const unsigned long long now = static_cast<unsigned long long>(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count());
-
-    if (m_readbacksInWindow == 0 ||
-        now - m_readbackWindowStartMs > diagnosticWindowMs) {
-        m_readbackWindowStartMs = now;
-        m_readbacksInWindow = 1;
-    } else {
-        ++m_readbacksInWindow;
-    }
-
-    if (m_readbacksInWindow == diagnosticThreshold) {
-        detail::reportPerformanceDiagnostic(
-            detail::PerformanceDiagnosticCode::RepeatedGpuReadback,
-            detail::PerformanceDiagnosticContext(
-                m_width, m_height, m_readbacksInWindow,
-                diagnosticWindowMs));
-    }
-}
-#endif
 
 void GlRenderTarget::uploadRect(const PixelRect& dirty) {
     if (!m_initialized || !m_cpuBuffer || dirty.empty()) return;
@@ -2644,16 +2640,28 @@ void GlRenderTarget::uploadRect(const PixelRect& dirty) {
     GLint previousTexture = 0;
     GLint previousUnpackBuffer = 0;
     GLint previousUnpackAlignment = 4;
+    GLint previousUnpackRowLength = 0;
+    GLint previousUnpackSkipPixels = 0;
+    GLint previousUnpackSkipRows = 0;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
     glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &previousUnpackBuffer);
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousUnpackAlignment);
+    glGetIntegerv(GL_UNPACK_ROW_LENGTH, &previousUnpackRowLength);
+    glGetIntegerv(GL_UNPACK_SKIP_PIXELS, &previousUnpackSkipPixels);
+    glGetIntegerv(GL_UNPACK_SKIP_ROWS, &previousUnpackSkipRows);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, dirty.left, m_height - dirty.bottom,
                     dirtyWidth, dirtyHeight, GL_BGRA, GL_UNSIGNED_BYTE,
                     m_pixelTransferBuffer.data());
     glBindTexture(GL_TEXTURE_2D, previousTexture);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, previousUnpackSkipRows);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, previousUnpackSkipPixels);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, previousUnpackRowLength);
     glPixelStorei(GL_UNPACK_ALIGNMENT, previousUnpackAlignment);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, previousUnpackBuffer);
 }
@@ -2689,16 +2697,66 @@ void GlRenderTarget::captureScreenToTexture() {
     m_pixelSyncState = PixelSyncState::ScreenTextureNewer;
 }
 
+void GlRenderTarget::uploadFullPixelBuffer(const color_t* pixels) {
+    if (!pixels || !m_initialized || !m_texture) return;
+
+    const size_t rowPixels = static_cast<size_t>(m_width);
+    m_pixelTransferBuffer.resize(rowPixels * m_height);
+    for (int glY = 0; glY < m_height; ++glY) {
+        const int egeY = m_height - 1 - glY;
+        std::memcpy(m_pixelTransferBuffer.data() +
+                        static_cast<size_t>(glY) * rowPixels,
+                    pixels + static_cast<size_t>(egeY) * rowPixels,
+                    rowPixels * sizeof(color_t));
+    }
+
+    GLint previousTexture = 0;
+    GLint previousUnpackBuffer = 0;
+    GLint previousUnpackAlignment = 4;
+    GLint previousUnpackRowLength = 0;
+    GLint previousUnpackSkipPixels = 0;
+    GLint previousUnpackSkipRows = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+    glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &previousUnpackBuffer);
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousUnpackAlignment);
+    glGetIntegerv(GL_UNPACK_ROW_LENGTH, &previousUnpackRowLength);
+    glGetIntegerv(GL_UNPACK_SKIP_PIXELS, &previousUnpackSkipPixels);
+    glGetIntegerv(GL_UNPACK_SKIP_ROWS, &previousUnpackSkipRows);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height,
+                    GL_BGRA, GL_UNSIGNED_BYTE,
+                    m_pixelTransferBuffer.data());
+    glBindTexture(GL_TEXTURE_2D, previousTexture);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, previousUnpackSkipRows);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, previousUnpackSkipPixels);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, previousUnpackRowLength);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, previousUnpackAlignment);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, previousUnpackBuffer);
+}
+
+void GlRenderTarget::uploadPixelBuffer(const color_t* pixels) {
+    if (!pixels || !m_initialized) return;
+
+    // Preserve ordering if this render target was previously used for drawing,
+    // then replace its complete contents with the CPU Bitmap snapshot.
+    submitBatch();
+    uploadFullPixelBuffer(pixels);
+#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
+    recordCpuBitmapUploadDiagnostic();
+#endif
+    // The external bitmap, not m_cpuBuffer, supplied the upload. Mark the
+    // texture newer so an unexpected internal read cannot expose stale data.
+    markGpuDirtyFull();
+}
+
 void GlRenderTarget::syncToGpu() {
     if (!m_cpuBuffer || !m_initialized ||
         m_pixelSyncState != PixelSyncState::CpuNewer) return;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    if (m_cpuDirtyUnknown && m_legacyWritableExposure) {
-        detail::reportPerformanceDiagnostic(
-            detail::PerformanceDiagnosticCode::LegacyWritableBufferFullUpload,
-            detail::PerformanceDiagnosticContext(m_width, m_height));
-    }
-#endif
     const PixelRect dirty = (m_cpuDirtyUnknown || m_cpuDirtyRect.empty())
         ? fullRect() : m_cpuDirtyRect;
     uploadRect(dirty);
@@ -2706,9 +2764,6 @@ void GlRenderTarget::syncToGpu() {
     m_cpuDirtyRect = PixelRect();
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
-#if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = false;
-#endif
 }
 
 void GlRenderTarget::rebuild(int width, int height) {
@@ -2748,7 +2803,10 @@ void GlRenderTarget::rebuild(int width, int height) {
     m_gpuDirtyRect = PixelRect();
     m_cpuDirtyUnknown = false;
 #if EGE_ENABLE_PERFORMANCE_DIAGNOSTICS
-    m_legacyWritableExposure = false;
+    m_cpuBitmapUploadWindowStartMs = 0;
+    m_cpuBitmapUploadsInWindow = 0;
+    m_readbackWindowStartMs = 0;
+    m_readbacksInWindow = 0;
 #endif
     m_pixelTransferBuffer.clear();
     m_projectionDirty = true;

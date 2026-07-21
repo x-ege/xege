@@ -1,13 +1,13 @@
 # EGE 测试套件
 
-测试套件同时覆盖 EGE 的行为正确性和 `putimage*` 性能。跨平台重构以确定性的像素、状态和文件往返断言为主，不依赖人工观察窗口截图。所有 `putimage*` 计时程序都带有 `performance` 标签，不作为每个平台/配置都重复执行的功能门禁。
+测试套件同时覆盖 EGE 的行为正确性以及贴图、像素缓冲性能。跨平台重构以确定性的像素、状态和文件往返断言为主，不依赖人工观察窗口截图。所有计时程序都带有 `performance` 标签，不作为每个平台/配置都重复执行的功能门禁。
 
 ## 覆盖范围
 
 | 测试 | 主要覆盖内容 |
 | --- | --- |
 | `default_build_contract` | 从空目录重新配置，验证 Windows 默认 GDI、Linux/macOS 默认 OpenGL、单配置生成器默认 Release，以及 Linux bundled GLFW 的 X11/Wayland 默认值 |
-| `rendering_correctness` | 基础与增强图元、线型/端帽/连接、填充与渐变、viewport、路径、变换、文字与编码、图片混合/旋转、压缩、颜色工具、PNG/BMP 保存与重新加载 |
+| `rendering_correctness` | 基础与增强图元、线型/端帽/连接、填充与渐变、viewport、路径、变换、文字与编码、图片混合/旋转、像素缓冲与存储转换、压缩、颜色工具、PNG/BMP 保存与重新加载 |
 | `public_headers` | 公共头文件、Win32 兼容类型及常量的可编译性 |
 | `camera_frame_copy` | 不依赖设备的 BGRA stride/长度/溢出预检、逐行复制与目标缓冲 guard（所有平台） |
 | `camera_device_lifecycle` | 不依赖视频 fixture 或 GUI 的 provider 创建、设备枚举、失败打开、状态与重复关闭；Linux CI 会实际加载 V4L2 provider |
@@ -22,7 +22,7 @@
 | `attach_hwnd` | Windows 真实宿主消息线程、子窗口关联和关闭生命周期；OpenGL 构建运行 GDI/OpenGL 两种变体 |
 | `console_contract` | 以隔离的无控制台子进程验证控制台分配、清理、显示/隐藏、键盘查询/读取和关闭，不影响调用测试的终端 |
 | `inputbox_contract` | 以隔离子进程和原生 EDIT 控件注入验证 ASCII/Unicode 模态输入、返回值与退出；OpenGL 构建运行 GDI/OpenGL 两种变体 |
-| `performance_diagnostics` | Debug 慢路径编号、每进程一次去重、显式脏区/内部访问/缓存只读不误报、GDI 静默、运行时关闭及重定向 stderr 无颜色控制符；Windows OpenGL Debug 可用 `--popup-smoke` 验证非模态提示窗 |
+| `performance_diagnostics` | Debug 下验证重复 CPU Bitmap 整图上传和像素缓冲访问触发的真实 GPU 回读诊断、进程内去重、`updatebuffer`/缓存读取无误报、GDI/运行时关闭无输出及重定向日志无颜色；可见 popup smoke 仅显式运行 |
 | `putimage_basic` | 基础图片复制和缩放 |
 | `putimage_alphablend` | alpha blend |
 | `putimage_transparent` | 透明色复制 |
@@ -30,8 +30,8 @@
 | `putimage_comparison` | 多种图片路径的结果对比 |
 | `putimage_alphablend_comprehensive` | alpha 边界值和组合场景 |
 | `putimage_performance` | 多分辨率图片操作性能基准 |
-| `image_buffer_performance` | `getbuffer` 首次/缓存读回、保守全图上传、显式脏区上传、`updatebuffer` 区域上传，以及 GPU→GPU `getimage` 复制性能基准 |
-| `pixel_access_performance` | `getpixel(_f)`、`putpixel(_f)`、`putpixels`、旧式/显式脏区 `getbuffer` 及不同区域大小 `updatebuffer` 的预热、多样本中位数/P95 对比 |
+| `image_buffer_performance` | `getbuffer` 首次/缓存读回、可写访问转换、保留 CPU Bitmap 指针后的逐次上传，以及独立 GPU→GPU `getimage` 复制性能基准 |
+| `pixel_access_performance` | 完整像素 get/put 家族、GPU 写后读同步、三种 `getbuffer` 访问意图、持久 CPU Bitmap 读写与逐次上屏，以及 `updatebuffer` 的 1 像素、64×64、全帧双后端性能基准；每项同时验证结果像素和存储模式 |
 
 `default_build_contract` 在 Windows 优先复用父构建已验证的 MSVC，并以
 `Ninja Multi-Config` 做空目录配置探测，避免非交互 CTest 中嵌套 MSBuild 的进程跟踪
@@ -42,9 +42,15 @@
 `putimage_*` 专项程序是计时/压力程序，不包含像素断言；贴图功能门禁集中在
 `rendering_correctness`，并在 Windows GDI 与 Windows OpenGL 模式下运行同一组断言。
 
+像素缓冲的兼容与同步契约见 [`../doc/pixel-buffer-sync.md`](../doc/pixel-buffer-sync.md)，慢路径
+诊断的触发条件和运行时开关见
+[`../doc/performance-diagnostics.md`](../doc/performance-diagnostics.md)。
+
 | 接口族 | 确定性断言 |
 | --- | --- |
-| `getbuffer`、`markbufferdirty`、`updatebuffer` | const/可写重载、IMAGE/当前绘图目标、GPU→CPU 回读、保守及显式区域 CPU→GPU 上传、带 stride 的区域更新、参数错误、直接修改后的绘制顺序，以及 GDI DIB 与 OpenGL IMAGE 的双向同步 |
+| `getbuffer` | const/访问意图/兼容可写重载、非法参数、存储类型查询与显式转换、IMAGE/当前绘图目标、GPU→CPU 首次回读、持久 CPU Bitmap 每次上屏上传、保留指针跨 EGE 绘制继续写入、普通绘图状态/GDI+ 仿射变换与画刷/resize 迁移，以及基础、拉伸、透明、Alpha、旋转、增强绘图和 `getimage` 的 CPU→GPU 采样桥与反向 GPU→CPU Bitmap 混合路径 |
+| `getHDC` | Windows GDI IMAGE 直接访问；OpenGL IMAGE 保留像素和状态地提升为 CPU Bitmap，并验证原生 HDC 写入成为权威像素 |
+| `updatebuffer` | 紧密和带 padding 的自上而下源行、IMAGE/当前屏幕目标、物理坐标不受 viewport 影响、GPU 存储保持、与后续 GPU/CPU 操作排序，以及空指针、越界、空区域和非法 stride |
 | `getimage`、`putimage` | 屏幕/IMAGE、整图/源矩形/拉伸重载，源和目标 viewport，裁剪、GPU/CPU 缓冲同步、自身重叠复制 |
 | BitBlt ROP | 15 个标准三元光栅操作（包括 pattern、blackness、whiteness）逐像素验证 |
 | `putimage_transparent`、`putimage_alphatransparent` | 默认范围、显式源矩形、负目标裁剪、颜色键、全局 alpha、目标 alpha 保留 |
@@ -59,10 +65,6 @@
 实现中未参与解码或缩放，本轮保持该行为，不把它描述成已生效的缩放功能。新增贴图重载或
 后端分支时，应先更新上表并补充同一组 GDI/OpenGL 像素断言。
 
-像素缓冲的 CPU/GPU 所有权、推荐调用方式及不能由旧同步接口隐藏的行为边界，见
-[`doc/pixel-buffer-sync.md`](../doc/pixel-buffer-sync.md)；性能诊断编号、阈值和启停规则见
-[`doc/performance-diagnostics.md`](../doc/performance-diagnostics.md)。
-
 ## 公共 API 覆盖审计
 
 从仓库根目录运行公共声明静态审计：
@@ -72,8 +74,8 @@ python tests/tools/audit_public_api_coverage.py --summary
 ```
 
 审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名及标准化声明是否一致，并扫描
-测试和 demo 中的真实调用（忽略注释与字符串）。当前 290 个公共函数名均有直接自动化
-测试调用；去重后的 384 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
+测试和 demo 中的真实调用（忽略注释与字符串）。当前 291 个公共函数名均有直接自动化
+测试调用；去重后的 386 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
 若以后新增了未被直接测试、未被人工分类的公共函数，或新增声明没有任何参数个数证据，
 审计脚本会返回失败。
 
@@ -165,13 +167,21 @@ ctest --test-dir build/native-debug \
 ctest --test-dir build/native-debug --output-on-failure -L performance
 ```
 
-Windows Release 双后端像素基准可用专用脚本交替运行，避免固定执行顺序持续偏向
-某个后端。脚本会保存每轮原始日志、CSV 汇总和机器环境清单：
+Windows Release 下可用同一工具交替启动 GDI/OpenGL 独立进程，避免固定启动顺序造成
+热状态偏差，并生成逐轮原始数据和汇总对比：
 
 ```powershell
-& "tests/tools/run_pixel_performance_comparison.ps1" `
-  -Runs 5 -Configuration Release
+powershell -NoProfile -File tests/tools/run_pixel_performance_comparison.ps1 `
+  -Runs 5 `
+  -Configuration Release `
+  -GdiBuildDirectory build/gdi `
+  -OpenGlBuildDirectory build/opengl
 ```
+
+`pixel_access_performance` 对每项执行 3 次预热和 21 次计时，报告中位数、P95、均值、
+标准差和每操作耗时；对比工具再取 5 个独立进程中位数的中位数。输出目录包含每轮日志、
+`raw.csv`、`comparison.csv` 和 `environment.json`。性能结果不设置跨机器硬阈值，像素错误或
+存储模式错误仍会使测试失败。
 
 只运行渲染正确性测试：
 
