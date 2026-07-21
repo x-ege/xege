@@ -1,8 +1,51 @@
-# Windows 像素接口双后端合并前基准（2026-07-21）
+# Windows 像素接口双后端合并与性能报告（2026-07-21）
 
 > 历史基准说明：本文表格和原始结果来自两分支统一之前的 hybrid 候选实现，用于架构取舍。
 > 当前统一分支在此正确性主线上合入性能诊断与增强统计工具；最终门禁结果应以统一分支本次
 > CTest、demo 截图和新性能输出为准，不应把下列旧提交号当作当前 revision。
+
+## 合并后最终验证（2026-07-21）
+
+最终实现由合并提交 `45b6b07` 统一；随后提交 `768d2a1` 只修正性能报告工具在
+Windows CIM 信息不可访问时的降级行为，不改变被测库或测试二进制。以下结果来自
+`768d2a1` 的干净工作区、Release 构建、GDI/OpenGL 各 5 个独立进程，每项每进程
+21 个计时样本。旧表格仍保留用于说明方案演进，但本节数据是当前结论。
+
+### 最终门禁
+
+| 检查 | 结果 |
+| --- | --- |
+| Windows GDI Release | 功能 13/13；性能 9/9 |
+| Windows OpenGL Release | 功能 24/24；性能 18/18，包含同构 GDI 基线与 OpenGL 运行时变体 |
+| Release demos | GDI/OpenGL 两套 `demos` 目标各 37 个普通 demo 构建成功 |
+| 固定帧截图 | `graph_alpha`、`graph_ball`、`test_demo` 3/3 通过；MAE 分别为 0.00491、0.39016、0.64298 |
+| 公共 API 静态审计 | 双语头函数名 291/291、标准化声明 386/386；直接测试引用 291/291、声明参数数量证据 386/386 |
+
+### 合并后关键像素基准
+
+| 场景 | 每样本操作数 | GDI 中位数 | OpenGL 中位数 | OpenGL/GDI |
+| --- | ---: | ---: | ---: | ---: |
+| `getpixel_cached` | 200,000 | 0.2630 ms | 1.0635 ms | 4.04× |
+| `getpixel_f_cached` | 200,000 | 18.3492 ms | 0.6762 ms | 0.04× |
+| `cpu_bitmap_getpixel_cached` | 200,000 | 0.2415 ms | 0.2677 ms | 1.11× |
+| `getbuffer_read_first` | 1 | 0.0004 ms | 1.7408 ms | 4352×* |
+| `getbuffer_read_write_promotion` | 1 | 0.0004 ms | 2.5851 ms | 6463×* |
+| `getbuffer_write_discard_promotion` | 1 | 0.0004 ms | 0.9433 ms | 2358×* |
+| `cpu_bitmap_retained_1px_upload_cycles` | 20 | 2.7294 ms | 9.6727 ms | 3.54× |
+| `updatebuffer_1px_committed` | 32 | 4.5517 ms | 10.6673 ms | 2.34× |
+| `updatebuffer_64x64_committed` | 32 | 4.3666 ms | 9.1106 ms | 2.09× |
+| `updatebuffer_full_frame_committed` | 8 | 1.7538 ms | 5.7433 ms | 3.27× |
+
+表中带 * 的单次 GDI 操作接近计时分辨率，倍数只反映分母很小，应以 OpenGL 的绝对耗时为主。
+`WRITE_DISCARD` 比保留内容的 `READ_WRITE` 提升约 63.5%，说明跳过首次 GPU 回读有效。
+CPU Bitmap 的缓存读取与 GDI 基本对齐，但保留指针每次采样的整图上传仍是明确成本；
+已知区域应继续使用 `updatebuffer`。GDI `getpixel_f` 的当前数据包含每次 const
+`getbuffer()` 所需的 GDI/GDI+ 同步，这是即时观察 HDC/GDI+ 写入的正确性成本，不能用
+绕过同步的旧数据替代。
+
+原始日志、逐进程统计、后端汇总、对比表和环境快照位于
+`build/pixel-performance-results/unified-merge-final-clean/`；截图和差分报告位于
+`build/visual-results/unified-merge-final/`。这些构建产物不提交到仓库。
 
 ## 结论
 
