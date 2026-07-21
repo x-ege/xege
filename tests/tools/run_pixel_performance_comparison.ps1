@@ -92,6 +92,18 @@ function Get-NearestRankPercentile {
     return [double]$sorted[$index]
 }
 
+function Get-OptionalCimInstance {
+    param([Parameter(Mandatory = $true)][string]$ClassName)
+
+    try {
+        return @(Get-CimInstance -ClassName $ClassName -ErrorAction Stop)
+    } catch {
+        Write-Warning ("Unable to query {0}; environment metadata will be incomplete: {1}" -f `
+            $ClassName, $_.Exception.Message)
+        return @()
+    }
+}
+
 function Invoke-BenchmarkRun {
     param(
         [Parameter(Mandatory = $true)][string]$Backend,
@@ -283,11 +295,11 @@ $trackedDirty = $LASTEXITCODE -ne 0
 $indexDirty = $LASTEXITCODE -ne 0
 $untracked = @(& git -C $repositoryRoot ls-files --others --exclude-standard)
 
-$processor = Get-CimInstance -ClassName Win32_Processor |
+$processor = Get-OptionalCimInstance -ClassName Win32_Processor |
     Select-Object -First 1 Name, NumberOfCores, NumberOfLogicalProcessors
-$videoControllers = @(Get-CimInstance -ClassName Win32_VideoController |
+$videoControllers = @(Get-OptionalCimInstance -ClassName Win32_VideoController |
     Select-Object Name, DriverVersion)
-$operatingSystem = Get-CimInstance -ClassName Win32_OperatingSystem |
+$operatingSystem = Get-OptionalCimInstance -ClassName Win32_OperatingSystem |
     Select-Object Caption, Version, BuildNumber
 
 $environment = [pscustomobject][ordered]@{
