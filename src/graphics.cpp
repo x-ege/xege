@@ -123,9 +123,9 @@ static void ui_msg_process(EGEMSG& qmsg)
     }
     qmsg.flag |= 1;
     if (qmsg.message >= WM_KEYFIRST && qmsg.message <= WM_KEYLAST) {
-        if (qmsg.message == WM_KEYDOWN) {
+        if (qmsg.message == WM_KEYDOWN || qmsg.message == WM_SYSKEYDOWN) {
             pg->egectrl_root->keymsgdown((unsigned)qmsg.wParam, 0); // 以后补加flag
-        } else if (qmsg.message == WM_KEYUP) {
+        } else if (qmsg.message == WM_KEYUP || qmsg.message == WM_SYSKEYUP) {
             pg->egectrl_root->keymsgup((unsigned)qmsg.wParam, 0); // 以后补加flag
         } else if (qmsg.message == WM_CHAR) {
             pg->egectrl_root->keymsgchar((unsigned)qmsg.wParam, 0); // 以后补加flag
@@ -466,7 +466,7 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
 {
     /* https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keydown */
     unsigned msg = 0;
-    if (message == WM_KEYDOWN && keycode < MAX_KEY_VCODE) {
+    if ((message == WM_KEYDOWN || message == WM_SYSKEYDOWN) && keycode < MAX_KEY_VCODE) {
         msg                      = 1;
         pg->keystatemap[keycode] = true;
 
@@ -485,7 +485,7 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
         }
 
     }
-    if (message == WM_KEYUP && keycode < MAX_KEY_VCODE) {
+    if ((message == WM_KEYUP || message == WM_SYSKEYUP) && keycode < MAX_KEY_VCODE) {
         pg->keystatemap[keycode] = false;
 
         if (pg->key_release_count[keycode] < UINT16_MAX) {
@@ -637,7 +637,9 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         }
         break;
     case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
     case WM_KEYUP:
+    case WM_SYSKEYUP:
     case WM_CHAR:
         // if (hWnd == pg->hwnd)
         {

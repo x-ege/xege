@@ -11,9 +11,9 @@ static int _getkey(_graph_setting* pg)
     while (pg->msgkey_queue->pop(msg)) {
         if (msg.message == WM_CHAR) {
             return (KEYMSG_CHAR | ((int)msg.wParam & 0xFFFF));
-        } else if (msg.message == WM_KEYDOWN) {
+        } else if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
             return (KEYMSG_DOWN | ((int)msg.wParam & 0xFFFF) | (msg.lParam & 0x40000000 ? 0 : KEYMSG_FIRSTDOWN));
-        } else if (msg.message == WM_KEYUP) {
+        } else if (msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP) {
             return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
         }
     }
@@ -26,8 +26,8 @@ static int peekkey(_graph_setting* pg)
     EGEMSG msg;
 
     while (pg->msgkey_queue->pop(msg)) {
-        if (msg.message == WM_CHAR || msg.message == WM_KEYDOWN) {
-            if (msg.message == WM_KEYDOWN) {
+        if (msg.message == WM_CHAR || msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
+            if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
                 if (msg.wParam <= key_space || (msg.wParam >= key_0 && msg.wParam < key_f1) ||
                     (msg.wParam >= key_semicolon && msg.wParam <= key_quote))
                 {
@@ -37,12 +37,12 @@ static int peekkey(_graph_setting* pg)
             pg->msgkey_queue->unpop();
             if (msg.message == WM_CHAR) {
                 return (KEYMSG_CHAR | ((int)msg.wParam & 0xFFFF));
-            } else if (msg.message == WM_KEYDOWN) {
+            } else if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
                 if (msg.wParam >= 0x70 && msg.wParam < 0x80) {
                     return (KEYMSG_DOWN | ((int)msg.wParam + 0x100));
                 }
                 return (KEYMSG_DOWN | ((int)msg.wParam & 0xFFFF));
-            } else if (msg.message == WM_KEYUP) {
+            } else if (msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP) {
                 return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
             }
         }
@@ -57,15 +57,15 @@ static int peekallkey(_graph_setting* pg, int flag)
 
     while (pg->msgkey_queue->pop(msg)) {
         if ((msg.message == WM_CHAR    && (flag & KEYMSG_CHAR_FLAG)) ||
-            (msg.message == WM_KEYUP   && (flag & KEYMSG_UP_FLAG)) ||
-            (msg.message == WM_KEYDOWN && (flag & KEYMSG_DOWN_FLAG)))
+            ((msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP)   && (flag & KEYMSG_UP_FLAG)) ||
+            ((msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) && (flag & KEYMSG_DOWN_FLAG)))
         {
             pg->msgkey_queue->unpop();
             if (msg.message == WM_CHAR) {
                 return (KEYMSG_CHAR | ((int)msg.wParam & 0xFFFF));
-            } else if (msg.message == WM_KEYDOWN) {
+            } else if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
                 return (KEYMSG_DOWN | ((int)msg.wParam & 0xFFFF) | (msg.lParam & 0x40000000 ? 0 : KEYMSG_FIRSTDOWN));
-            } else if (msg.message == WM_KEYUP) {
+            } else if (msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP) {
                 return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
             }
         }
