@@ -44,7 +44,7 @@ static int peekkey(_graph_setting* pg)
                 return (KEYMSG_DOWN | ((int)msg.wParam & 0xFFFF));
             } else if (msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP) {
                 return (KEYMSG_UP | ((int)msg.wParam & 0xFFFF));
-            }
+            } // Unreachable block? Unable to make the reason clear.
         }
     }
     return 0;
