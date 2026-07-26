@@ -1238,8 +1238,8 @@ void testCpuBitmapDestinationBridge()
     ege::PIMAGE cpuDestination = ege::newimage(6, 6);
     resetImage(gpuSource, ege::RED);
 
-    // This matrix exists only in a Windows OpenGL runtime. GDI images are
-    // already CPU bitmaps, while native OpenGL currently declines promotion.
+    // This matrix requires a runtime that can promote an OpenGL IMAGE to a
+    // persistent CPU bitmap. Native OpenGL currently declines promotion.
     if (ege::getimagestoragemode(gpuSource) != ege::IMAGE_STORAGE_GPU) {
         ege::delimage(cpuDestination);
         ege::delimage(gpuSource);
@@ -1249,14 +1249,21 @@ void testCpuBitmapDestinationBridge()
     ege::color_t* retainedDestination =
         ege::getbuffer(cpuDestination, ege::IMAGE_BUFFER_WRITE_DISCARD);
     expect(retainedDestination != nullptr,
-           "a GPU process can create a writable CPU bitmap destination");
-    expect(ege::getimagestoragemode(cpuDestination) == ege::IMAGE_STORAGE_CPU_BITMAP,
-           "the mixed destination remains CPU-backed");
+           "a GPU process exposes writable destination pixels");
     if (!retainedDestination) {
         ege::delimage(cpuDestination);
         ege::delimage(gpuSource);
         return;
     }
+    if (ege::getimagestoragemode(cpuDestination) != ege::IMAGE_STORAGE_CPU_BITMAP) {
+        expect(ege::getimagestoragemode(cpuDestination) == ege::IMAGE_STORAGE_GPU,
+               "native OpenGL keeps a writable destination in GPU storage");
+        ege::delimage(cpuDestination);
+        ege::delimage(gpuSource);
+        return;
+    }
+    expect(ege::getimagestoragemode(cpuDestination) == ege::IMAGE_STORAGE_CPU_BITMAP,
+           "the mixed destination remains CPU-backed");
 
     const auto clearDestination = [&]() {
         std::fill(retainedDestination, retainedDestination + 36, ege::BLACK);
@@ -1374,14 +1381,30 @@ void testCpuBitmapTransferBridgeVariants()
     ege::color_t* retainedPixels =
         ege::getbuffer(source, ege::IMAGE_BUFFER_WRITE_DISCARD);
     expect(retainedPixels != nullptr,
-           "CPU bitmap transfer fixture exposes persistent writable pixels");
+           "pixel transfer fixture exposes writable pixels");
     if (!retainedPixels) {
         ege::delimage(destination);
         ege::delimage(source);
         return;
     }
+    const bool hasPersistentCpuBitmap =
+        ege::getimagestoragemode(source) == ege::IMAGE_STORAGE_CPU_BITMAP;
+    if (!hasPersistentCpuBitmap) {
+        expect(ege::getimagestoragemode(source) == ege::IMAGE_STORAGE_GPU,
+               "native OpenGL keeps writable staging pixels in GPU storage");
+    }
 
     const auto fillSource = [&](ege::color_t color) {
+        // A persistent CPU bitmap keeps the original pointer authoritative.
+        // Native OpenGL exposes a staging buffer instead, so reacquire it to
+        // declare each new CPU write before the image is sampled again.
+        if (!hasPersistentCpuBitmap) {
+            retainedPixels =
+                ege::getbuffer(source, ege::IMAGE_BUFFER_READ_WRITE);
+            expect(retainedPixels != nullptr,
+                   "native OpenGL reacquires writable staging pixels");
+            if (!retainedPixels) return;
+        }
         std::fill(retainedPixels, retainedPixels + 4, color);
     };
     const auto prepareDestination = [&]() {
@@ -1403,61 +1426,61 @@ void testCpuBitmapTransferBridgeVariants()
     fillSource(ege::BLUE);
     prepareDestination();
     expect(ege::putimage_transparent(destination, source, 3, 3, ege::MAGENTA) == ege::grOk,
-           "CPU bitmap bridge accepts transparent putimage");
+           "pixel buffer bridge accepts transparent putimage");
     expectPixel(destination, 3, 3, ege::BLUE,
-                "transparent putimage observes the latest retained-pointer write");
+                "transparent putimage observes the latest writable-buffer write");
 
     fillSource(ege::CYAN);
     prepareDestination();
     expect(ege::putimage_alphablend(destination, source, 4, 4, 255,
                                     ege::COLORTYPE_PRGB32) == ege::grOk,
-           "CPU bitmap bridge accepts alpha blend");
+           "pixel buffer bridge accepts alpha blend");
     expectPixel(destination, 4, 4, ege::CYAN,
-                "alpha blend observes the latest retained-pointer write");
+                "alpha blend observes the latest writable-buffer write");
 
     fillSource(ege::YELLOW);
     prepareDestination();
     expect(ege::putimage_alphatransparent(destination, source, 5, 5,
                                           ege::MAGENTA, 255) == ege::grOk,
-           "CPU bitmap bridge accepts alpha-transparent transfer");
+           "pixel buffer bridge accepts alpha-transparent transfer");
     expectPixel(destination, 5, 5, ege::YELLOW,
-                "alpha-transparent transfer observes retained-pointer writes");
+                "alpha-transparent transfer observes writable-buffer writes");
 
     fillSource(ege::WHITE);
     prepareDestination();
     expect(ege::putimage_withalpha(destination, source, 6, 6) == ege::grOk,
-           "CPU bitmap bridge accepts per-pixel alpha transfer");
+           "pixel buffer bridge accepts per-pixel alpha transfer");
     expectPixel(destination, 6, 6, ege::WHITE,
-                "per-pixel alpha transfer observes retained-pointer writes");
+                "per-pixel alpha transfer observes writable-buffer writes");
 
     fillSource(ege::RED);
     prepareDestination();
     expect(ege::putimage_rotate(destination, source, 7, 7, 0.0f, 0.0f,
                                 0.0f, false, -1, false) == ege::grOk,
-           "CPU bitmap bridge accepts rotated transfer");
+           "pixel buffer bridge accepts rotated transfer");
     expectPixel(destination, 7, 7, ege::RED,
-                "zero-angle rotated transfer samples a CPU bitmap");
+                "zero-angle rotated transfer samples the latest pixels");
 
     fillSource(ege::GREEN);
     prepareDestination();
     expect(ege::putimage_rotatezoom(destination, source, 8, 8, 0.0f, 0.0f,
                                     0.0f, 1.0f, false, -1, false) == ege::grOk,
-           "CPU bitmap bridge accepts rotate-zoom transfer");
+           "pixel buffer bridge accepts rotate-zoom transfer");
     expectPixel(destination, 8, 8, ege::GREEN,
-                "unit rotate-zoom transfer samples a CPU bitmap");
+                "unit rotate-zoom transfer samples the latest pixels");
 
     fillSource(ege::BLUE);
     prepareDestination();
     ege::ege_drawimage(source, 9, 9, destination);
     expectPixel(destination, 9, 9, ege::BLUE,
-                "enhanced drawimage samples a CPU bitmap through the GPU bridge");
+                "enhanced drawimage samples writable pixels through the GPU bridge");
 
     fillSource(ege::MAGENTA);
     ege::PIMAGE copied = ege::newimage();
     expect(ege::getimage(copied, source, 0, 0, 2, 2) == ege::grOk,
-           "getimage accepts a persistent CPU bitmap source");
+           "getimage accepts a writable pixel-buffer source");
     expectPixel(copied, 1, 1, ege::MAGENTA,
-                "getimage observes the latest retained-pointer write");
+                "getimage observes the latest writable-buffer write");
     expect(ege::getimagestoragemode(destination) == destinationMode,
            "sampling a CPU bitmap does not demote the GPU destination");
 
@@ -1491,6 +1514,8 @@ void testConstAndScreenBufferSynchronization()
     ege::setviewport(0, 0, 64, 64, true);
     ege::color_t* screenPixels = ege::getbuffer(static_cast<ege::PIMAGE>(nullptr));
     expect(screenPixels != nullptr, "screen getbuffer returns writable storage");
+    const bool hasPersistentScreenBuffer =
+        ege::getimagestoragemode(nullptr) == ege::IMAGE_STORAGE_CPU_BITMAP;
     if (screenPixels) {
         screenPixels[6 * 64 + 5] = ege::MAGENTA;
     }
@@ -1498,12 +1523,20 @@ void testConstAndScreenBufferSynchronization()
     ege::PIMAGE stamp = ege::newimage(2, 2);
     resetImage(stamp, ege::RED);
     ege::putimage(nullptr, 8, 8, stamp);
+    if (!hasPersistentScreenBuffer) {
+        screenPixels = ege::getbuffer(static_cast<ege::PIMAGE>(nullptr),
+                                      ege::IMAGE_BUFFER_READ_WRITE);
+        expect(screenPixels != nullptr,
+               "native OpenGL reacquires screen staging pixels after GPU drawing");
+    }
     if (screenPixels) {
         screenPixels[7 * 64 + 6] = ege::CYAN;
     }
     ege::flushwindow();
-    expect(ege::getimagestoragemode(nullptr) == ege::IMAGE_STORAGE_CPU_BITMAP,
-           "presenting keeps a CPU-backed visual page authoritative");
+    expect(ege::getimagestoragemode(nullptr) ==
+               (hasPersistentScreenBuffer ? ege::IMAGE_STORAGE_CPU_BITMAP
+                                          : ege::IMAGE_STORAGE_GPU),
+           "presenting preserves the visual page storage mode");
 
     ege::PIMAGE capture = ege::newimage();
     expect(ege::getimage(capture, 0, 0, 12, 12) == ege::grOk,
@@ -1515,7 +1548,9 @@ void testConstAndScreenBufferSynchronization()
     expectPixel(capture, 8, 8, ege::RED,
                 "screen image drawing remains valid after direct buffer mutations");
     expectPixel(capture, 6, 7, ege::CYAN,
-                "a retained screen buffer pointer remains writable after an EGE draw");
+                hasPersistentScreenBuffer
+                    ? "a retained screen buffer pointer remains writable after an EGE draw"
+                    : "reacquired screen staging pixels remain writable after an EGE draw");
 
     ege::delimage(stamp);
     ege::delimage(capture);

@@ -253,8 +253,12 @@ int main(int argc, char** argv)
     }
 
     // A retained writable pointer promotes the image to persistent CPU-bitmap
-    // storage. Repeated OpenGL sampling must report the real full-upload cost once.
+    // storage when that capability is available. Repeated OpenGL sampling must
+    // report the real full-upload cost once only on those runtimes.
     ege::color_t* cpuPixels = ege::getbuffer(cpuBitmapSource);
+    const bool hasPersistentCpuBitmap =
+        ege::getimagestoragemode(cpuBitmapSource) ==
+        ege::IMAGE_STORAGE_CPU_BITMAP;
     if (cpuPixels) {
         cpuPixels[0] = ege::GREEN;
     }
@@ -294,15 +298,18 @@ int main(int argc, char** argv)
 
     bool passed = setupSucceeded;
     if (expectMessages) {
-        passed = passed && occurrenceCount(diagnostics, "EGE-PERF-001") == 1;
+        passed = passed && occurrenceCount(diagnostics, "EGE-PERF-001") ==
+            (hasPersistentCpuBitmap ? 1u : 0u);
         passed = passed && occurrenceCount(diagnostics, "EGE-PERF-002") == 1;
         passed = passed && diagnostics.find(
-            "EGE-PERF-001] OpenGL IMAGE 32x32") != std::string::npos;
-        passed = passed && diagnostics.find(
             "EGE-PERF-001] OpenGL IMAGE 16x16") == std::string::npos;
-        passed = passed &&
-            diagnostics.find("persistent CPU bitmap") != std::string::npos;
-        passed = passed && diagnostics.find("updatebuffer()") != std::string::npos;
+        if (hasPersistentCpuBitmap) {
+            passed = passed && diagnostics.find(
+                "EGE-PERF-001] OpenGL IMAGE 32x32") != std::string::npos;
+            passed = passed &&
+                diagnostics.find("persistent CPU bitmap") != std::string::npos;
+            passed = passed && diagnostics.find("updatebuffer()") != std::string::npos;
+        }
         passed = passed && diagnostics.find("GPU-to-CPU") != std::string::npos;
     } else {
         passed = passed && diagnostics.find("EGE-PERF-") == std::string::npos;

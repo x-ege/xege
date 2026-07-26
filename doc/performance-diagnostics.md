@@ -82,8 +82,9 @@ CMake 缓存项 `EGE_PERFORMANCE_DIAGNOSTICS` 接受以下值：
 ## 自动化验证
 
 `performance_diagnostics` 在 GDI、OpenGL、运行时关闭以及 Debug/Release 编译策略下验证编号、
-去重、持久 CPU Bitmap 重复上传、真实 GPU 重复读回、`updatebuffer`/缓存读取误报边界和无颜色
-重定向输出。Windows OpenGL Debug 的同一测试程序还接受 `--popup-smoke`，用于本地短暂显示
+去重、真实 GPU 重复读回、`updatebuffer`/缓存读取误报边界和无颜色重定向输出；持久 CPU
+Bitmap 重复上传仅在运行时支持该存储模式的平台验证。Windows OpenGL Debug 的同一测试程序
+还接受 `--popup-smoke`，用于本地短暂显示
 真实窗口并程序化确认提示窗属于 EGE 主窗口、带有
 `WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`、不会改变前台焦点；该可见 smoke 不注册为默认 CTest，
 避免 hosted/headless 测试创建交互式 UI。
