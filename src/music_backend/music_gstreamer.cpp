@@ -1,5 +1,6 @@
 #if defined(__linux__) && defined(EGE_MUSIC_HAS_GSTREAMER)
 
+#include "ege.h"
 #include "music_backend.h"
 
 #include <gst/gst.h>

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "ege.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -15,23 +14,26 @@ namespace detail
  *
  * MUSIC is an old public class whose two data members are part of its ABI.
  * Platform backends therefore live outside the public object and are kept in
- * a registry owned by music.cpp.
+ * a registry owned by music.cpp. Keep this header independent of ege.h so
+ * Objective-C++ backends can include Apple framework headers without
+ * colliding with EGE's Win32-compatible BOOL typedef.
  */
 class MusicBackend
 {
 public:
     virtual ~MusicBackend() = default;
 
-    virtual DWORD Open(const std::string& path) = 0;
-    virtual DWORD Play(DWORD from, DWORD to, bool repeat) = 0;
-    virtual DWORD Pause() = 0;
-    virtual DWORD Stop() = 0;
-    virtual DWORD Seek(DWORD to) = 0;
-    virtual DWORD SetVolume(float value) = 0;
-    virtual DWORD Close() = 0;
-    virtual DWORD GetPosition() = 0;
-    virtual DWORD GetLength() = 0;
-    virtual DWORD GetPlayStatus() = 0;
+    virtual std::uint32_t Open(const std::string& path) = 0;
+    virtual std::uint32_t Play(std::uint32_t from, std::uint32_t to,
+                               bool repeat) = 0;
+    virtual std::uint32_t Pause() = 0;
+    virtual std::uint32_t Stop() = 0;
+    virtual std::uint32_t Seek(std::uint32_t to) = 0;
+    virtual std::uint32_t SetVolume(float value) = 0;
+    virtual std::uint32_t Close() = 0;
+    virtual std::uint32_t GetPosition() = 0;
+    virtual std::uint32_t GetLength() = 0;
+    virtual std::uint32_t GetPlayStatus() = 0;
 };
 
 #if defined(__APPLE__)

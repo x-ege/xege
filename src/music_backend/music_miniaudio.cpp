@@ -1,5 +1,6 @@
 #if defined(__linux__)
 
+#include "ege.h"
 #include "music_backend.h"
 
 #define MINIAUDIO_IMPLEMENTATION

@@ -20,16 +20,24 @@ namespace detail
 namespace
 {
 
-constexpr DWORD kSuccess = 0;
+using MusicResult = std::uint32_t;
 
-DWORD millisecondsFromSeconds(NSTimeInterval seconds)
+constexpr MusicResult kSuccess           = 0;
+constexpr MusicResult kMusicError        = UINT32_MAX;
+constexpr MusicResult kMusicModeNotOpen  = 0x0;
+constexpr MusicResult kMusicModeNotReady = 0x20C;
+constexpr MusicResult kMusicModePause    = 0x211;
+constexpr MusicResult kMusicModePlay     = 0x20E;
+constexpr MusicResult kMusicModeStop     = 0x20D;
+
+MusicResult millisecondsFromSeconds(NSTimeInterval seconds)
 {
     if (!std::isfinite(seconds) || seconds < 0) {
-        return MUSIC_ERROR;
+        return kMusicError;
     }
     const double milliseconds = seconds * 1000.0;
-    return static_cast<DWORD>(
-        std::min<double>(milliseconds, MUSIC_ERROR - 1));
+    return static_cast<MusicResult>(
+        std::min<double>(milliseconds, kMusicError - 1));
 }
 
 class MacOSMusicBackend final : public MusicBackend
@@ -42,17 +50,17 @@ public:
         Close();
     }
 
-    DWORD Open(const std::string& path) override
+    MusicResult Open(const std::string& path) override
     {
         if (path.empty()) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
 
         @autoreleasepool {
             NSString* filePath =
                 [[NSString alloc] initWithUTF8String:path.c_str()];
             if (filePath == nil) {
-                return MUSIC_ERROR;
+                return kMusicError;
             }
             NSURL* fileURL = [NSURL fileURLWithPath:filePath];
 
@@ -67,16 +75,16 @@ public:
                 m_audioPlayer = nil;
                 if (!openMIDI(fileURL)) {
                     releasePlayersLocked();
-                    return MUSIC_ERROR;
+                    return kMusicError;
                 }
             }
 
             if (!(m_duration > 0) || !std::isfinite(m_duration)) {
                 releasePlayersLocked();
-                return MUSIC_ERROR;
+                return kMusicError;
             }
 
-            m_status = MUSIC_MODE_STOP;
+            m_status = kMusicModeStop;
             m_open   = true;
             m_exit   = false;
             try {
@@ -85,37 +93,37 @@ public:
             } catch (...) {
                 m_open = false;
                 releasePlayersLocked();
-                return MUSIC_ERROR;
+                return kMusicError;
             }
         }
         return kSuccess;
     }
 
-    DWORD Play(DWORD from, DWORD to, bool repeat) override
+    MusicResult Play(MusicResult from, MusicResult to, bool repeat) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (!m_open) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
 
         @autoreleasepool {
             const bool defaultFullLoop =
-                repeat && from == MUSIC_ERROR && to == MUSIC_ERROR;
+                repeat && from == kMusicError && to == kMusicError;
             NSTimeInterval start =
-                from == MUSIC_ERROR
+                from == kMusicError
                     ? (defaultFullLoop ? 0 : currentPositionLocked())
                     : static_cast<NSTimeInterval>(from) / 1000.0;
             NSTimeInterval end =
-                to == MUSIC_ERROR
+                to == kMusicError
                     ? m_duration
                     : static_cast<NSTimeInterval>(to) / 1000.0;
             start = std::clamp<NSTimeInterval>(start, 0, m_duration);
             end   = std::clamp<NSTimeInterval>(end, 0, m_duration);
             if (start >= end) {
-                return MUSIC_ERROR;
+                return kMusicError;
             }
 
-            if (from != MUSIC_ERROR || defaultFullLoop ||
+            if (from != kMusicError || defaultFullLoop ||
                 currentPositionLocked() >= m_duration) {
                 setPositionLocked(start);
             }
@@ -124,53 +132,53 @@ public:
             m_rangeEnd   = end;
             m_repeat     = repeat;
             if (!startLocked()) {
-                return MUSIC_ERROR;
+                return kMusicError;
             }
 
-            m_status = MUSIC_MODE_PLAY;
+            m_status = kMusicModePlay;
             m_condition.notify_all();
             return kSuccess;
         }
     }
 
-    DWORD Pause() override
+    MusicResult Pause() override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (!m_open) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
         @autoreleasepool {
             stopLocked();
-            m_status = MUSIC_MODE_PAUSE;
+            m_status = kMusicModePause;
         }
         return kSuccess;
     }
 
-    DWORD Stop() override
+    MusicResult Stop() override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (!m_open) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
         @autoreleasepool {
             stopLocked();
             m_repeat = false;
-            m_status = MUSIC_MODE_STOP;
+            m_status = kMusicModeStop;
         }
         return kSuccess;
     }
 
-    DWORD Seek(DWORD to) override
+    MusicResult Seek(MusicResult to) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (!m_open) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
 
         const NSTimeInterval target =
             static_cast<NSTimeInterval>(to) / 1000.0;
         if (target > m_duration) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
         @autoreleasepool {
             setPositionLocked(target);
@@ -178,11 +186,11 @@ public:
         return kSuccess;
     }
 
-    DWORD SetVolume(float value) override
+    MusicResult SetVolume(float value) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (!m_open || !std::isfinite(value)) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
 
         value = std::clamp(value, 0.0f, 1.0f);
@@ -196,7 +204,7 @@ public:
         return kSuccess;
     }
 
-    DWORD Close() override
+    MusicResult Close() override
     {
         {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -215,38 +223,38 @@ public:
             stopLocked();
             releasePlayersLocked();
             m_open   = false;
-            m_status = MUSIC_MODE_NOT_OPEN;
+            m_status = kMusicModeNotOpen;
         }
         return kSuccess;
     }
 
-    DWORD GetPosition() override
+    MusicResult GetPosition() override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (!m_open) {
-            return MUSIC_ERROR;
+            return kMusicError;
         }
         @autoreleasepool {
             return millisecondsFromSeconds(currentPositionLocked());
         }
     }
 
-    DWORD GetLength() override
+    MusicResult GetLength() override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        return m_open ? millisecondsFromSeconds(m_duration) : MUSIC_ERROR;
+        return m_open ? millisecondsFromSeconds(m_duration) : kMusicError;
     }
 
-    DWORD GetPlayStatus() override
+    MusicResult GetPlayStatus() override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (!m_open) {
-            return MUSIC_MODE_NOT_OPEN;
+            return kMusicModeNotOpen;
         }
         @autoreleasepool {
-            if (m_status == MUSIC_MODE_PLAY && !isPlayingLocked() &&
+            if (m_status == kMusicModePlay && !isPlayingLocked() &&
                 !m_repeat) {
-                m_status = MUSIC_MODE_STOP;
+                m_status = kMusicModeStop;
             }
         }
         return m_status;
@@ -373,7 +381,7 @@ private:
                 m_condition.wait_for(lock, std::chrono::milliseconds(5),
                                      [this] { return m_exit; });
                 if (m_exit || !m_open ||
-                    m_status != MUSIC_MODE_PLAY) {
+                    m_status != kMusicModePlay) {
                     continue;
                 }
 
@@ -388,11 +396,11 @@ private:
                     if (m_repeat) {
                         setPositionLocked(m_rangeStart);
                         if (!startLocked()) {
-                            m_status = MUSIC_MODE_NOT_READY;
+                            m_status = kMusicModeNotReady;
                         }
                     } else {
                         setPositionLocked(m_rangeEnd);
-                        m_status = MUSIC_MODE_STOP;
+                        m_status = kMusicModeStop;
                     }
                 }
             }
@@ -430,7 +438,7 @@ private:
     NSTimeInterval m_duration   = 0;
     NSTimeInterval m_rangeStart = 0;
     NSTimeInterval m_rangeEnd   = 0;
-    DWORD          m_status     = MUSIC_MODE_NOT_OPEN;
+    MusicResult    m_status     = kMusicModeNotOpen;
     PlayerKind     m_kind       = PlayerKind::None;
     bool           m_open       = false;
     bool           m_exit       = false;
