@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Static lower-bound audit of EGE's exported free-function coverage.
+"""Static audit of EGE's exported free-function coverage.
 
 This intentionally reports evidence instead of declaring behavioral coverage:
-an identifier used by a test may still leave type-distinct overloads with the
-same arity, branches, or platform paths untested.  The audit checks both name
-references and whether every unique declaration accepts at least one argument
-count used by a test, and keeps the two public headers in sync.
+branches, hardware, and platform paths still need focused runtime tests.  The
+audit checks direct name references, call arities, compiler-selected overload
+signatures, and keeps the two public headers in sync.
 """
 
 from __future__ import annotations
@@ -19,8 +18,10 @@ from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_HEADERS = (ROOT / "include" / "ege.h", ROOT / "include" / "ege.zh_CN.h")
+OVERLOAD_TEST = ROOT / "tests" / "tests" / "public_api_overload_test.cpp"
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}
 MANUAL_ONLY: dict[str, str] = {}
+Signature = tuple[str, str, tuple[str, ...]]
 
 
 def code_only(text: str) -> str:
@@ -123,6 +124,90 @@ def split_arguments(source: str) -> list[str]:
     return arguments
 
 
+def without_default(argument: str) -> str:
+    depth = 0
+    for index, current in enumerate(argument):
+        if current in "([{":
+            depth += 1
+        elif current in ")]}" and depth > 0:
+            depth -= 1
+        elif current == "=" and depth == 0:
+            return argument[:index].strip()
+    return argument.strip()
+
+
+def normalize_type(source: str) -> str:
+    normalized = " ".join(source.split())
+    normalized = re.sub(r"\s*([*&])\s*", r"\1", normalized)
+    return normalized
+
+
+def parameter_type(argument: str) -> str:
+    argument = without_default(argument)
+    if argument == "...":
+        return argument
+    array_match = re.search(r"\b[A-Za-z_]\w*(\s*\[[^\]]*\])\s*$", argument)
+    if array_match:
+        return normalize_type(argument[:array_match.start()] + array_match.group(1))
+    name_match = re.search(r"\b[A-Za-z_]\w*\s*$", argument)
+    if name_match is None:
+        raise ValueError(f"cannot identify parameter name in {argument!r}")
+    return normalize_type(argument[:name_match.start()])
+
+
+def exported_signatures(header: Path) -> set[Signature]:
+    source = code_only(header.read_text(encoding="utf-8"))
+    signatures: set[Signature] = set()
+    pattern = re.compile(
+        r"(?m)^[ \t]*(?P<return>[A-Za-z_][\w:<>\s*&]*?)"
+        r"\s+EGEAPI\s+(?P<name>[A-Za-z_]\w*)\s*\("
+    )
+    for match in pattern.finditer(source):
+        closing = matching_paren(source, match.end() - 1)
+        if closing is None:
+            continue
+        return_type = re.sub(r"^inline\s+", "", match.group("return").strip())
+        arguments = split_arguments(source[match.end():closing])
+        signatures.add((
+            match.group("name"),
+            normalize_type(return_type),
+            tuple(parameter_type(argument) for argument in arguments),
+        ))
+    return signatures
+
+
+def overload_signature_evidence(path: Path) -> set[Signature]:
+    source = code_only(path.read_text(encoding="utf-8"))
+    signatures: set[Signature] = set()
+    for match in re.finditer(r"\bEGE_EXPECT_OVERLOAD\s*\(", source):
+        closing = matching_paren(source, match.end() - 1)
+        if closing is None:
+            continue
+        arguments = split_arguments(source[match.end():closing])
+        if len(arguments) != 3:
+            continue
+        return_type, name, parameters = arguments
+        parameters = parameters.strip()
+        if not (parameters.startswith("(") and parameters.endswith(")")):
+            continue
+        signatures.add((
+            name.strip(),
+            normalize_type(return_type),
+            tuple(normalize_type(parameter)
+                  for parameter in split_arguments(parameters[1:-1])),
+        ))
+    return signatures
+
+
+def signature_record(signature: Signature) -> dict[str, object]:
+    name, return_type, parameters = signature
+    return {
+        "name": name,
+        "return_type": return_type,
+        "parameter_types": list(parameters),
+    }
+
+
 def exported_declarations(header: Path) -> set[tuple[str, str, int, Optional[int]]]:
     source = code_only(header.read_text(encoding="utf-8"))
     declarations: set[tuple[str, str, int, Optional[int]]] = set()
@@ -180,8 +265,13 @@ def audit() -> dict[str, object]:
     header_declarations = {
         path.name: exported_declarations(path) for path in PUBLIC_HEADERS
     }
+    header_signatures = {
+        path.name: exported_signatures(path) for path in PUBLIC_HEADERS
+    }
     canonical = header_sets[PUBLIC_HEADERS[0].name]
     canonical_declarations = header_declarations[PUBLIC_HEADERS[0].name]
+    canonical_signatures = header_signatures[PUBLIC_HEADERS[0].name]
+    overload_evidence = overload_signature_evidence(OVERLOAD_TEST)
     test_source = source_text(ROOT / "tests")
     tests = referenced_names(canonical, test_source)
     demos = referenced_names(canonical, source_text(ROOT / "demo"))
@@ -207,6 +297,39 @@ def audit() -> dict[str, object]:
             header_declarations[PUBLIC_HEADERS[0].name]
             == header_declarations[PUBLIC_HEADERS[1].name]
         ),
+        "signatures": {
+            name: len(signatures)
+            for name, signatures in header_signatures.items()
+        },
+        "signatures_match": (
+            header_signatures[PUBLIC_HEADERS[0].name]
+            == header_signatures[PUBLIC_HEADERS[1].name]
+        ),
+        "signature_header_only": {
+            PUBLIC_HEADERS[0].name: [
+                signature_record(signature)
+                for signature in sorted(
+                    header_signatures[PUBLIC_HEADERS[0].name]
+                    - header_signatures[PUBLIC_HEADERS[1].name]
+                )
+            ],
+            PUBLIC_HEADERS[1].name: [
+                signature_record(signature)
+                for signature in sorted(
+                    header_signatures[PUBLIC_HEADERS[1].name]
+                    - header_signatures[PUBLIC_HEADERS[0].name]
+                )
+            ],
+        },
+        "exact_declaration_covered": len(canonical_signatures & overload_evidence),
+        "uncovered_exact_declarations": [
+            signature_record(signature)
+            for signature in sorted(canonical_signatures - overload_evidence)
+        ],
+        "stale_exact_declaration_evidence": [
+            signature_record(signature)
+            for signature in sorted(overload_evidence - canonical_signatures)
+        ],
         "declaration_header_only": {
             PUBLIC_HEADERS[0].name: [
                 declaration_record(declaration, set())
@@ -245,6 +368,7 @@ def audit() -> dict[str, object]:
 def print_text(result: dict[str, object], include_names: bool) -> None:
     headers = result["headers"]
     declarations = result["declarations"]
+    signatures = result["signatures"]
     direct = result["direct_test"]
     demo_only = result["demo_only"]
     unreferenced = result["unreferenced"]
@@ -255,8 +379,13 @@ def print_text(result: dict[str, object], include_names: bool) -> None:
     declaration_total = declarations[PUBLIC_HEADERS[0].name]
     declaration_covered = result["declaration_arity_covered"]
     print(f"unique declarations: {declarations} (match={result['declarations_match']})")
+    print(f"exact signatures: {signatures} (match={result['signatures_match']})")
     print(f"declaration arity evidence: {declaration_covered}/{declaration_total} "
           f"({declaration_covered / declaration_total:.1%})")
+    exact_covered = result["exact_declaration_covered"]
+    exact_total = signatures[PUBLIC_HEADERS[0].name]
+    print(f"exact declaration evidence: {exact_covered}/{exact_total} "
+          f"({exact_covered / exact_total:.1%})")
     print(f"direct test references: {len(direct)}/{total} ({len(direct) / total:.1%})")
     print(f"demo-only references: {len(demo_only)}/{total} ({len(demo_only) / total:.1%})")
     print(f"no test/demo reference: {len(unreferenced)}/{total} ({len(unreferenced) / total:.1%})")
@@ -278,6 +407,14 @@ def print_text(result: dict[str, object], include_names: bool) -> None:
         if unclassified:
             print("\nunclassified_without_direct_test:")
             print("  " + ", ".join(unclassified))
+        for label in ("uncovered_exact_declarations",
+                      "stale_exact_declaration_evidence"):
+            values = result[label]
+            if values:
+                print(f"\n{label}:")
+                for signature in values:
+                    parameters = ", ".join(signature["parameter_types"])
+                    print(f"  {signature['return_type']} {signature['name']}({parameters})")
         uncovered_declarations = result["uncovered_declaration_arities"]
         if uncovered_declarations:
             print("\nuncovered_declaration_arities:")
@@ -302,7 +439,10 @@ def main() -> int:
         print_text(result, not args.summary)
     return 0 if (result["headers_match"] and
                  result["declarations_match"] and
+                 result["signatures_match"] and
                  not result["uncovered_declaration_arities"] and
+                 not result["uncovered_exact_declarations"] and
+                 not result["stale_exact_declaration_evidence"] and
                  not result["unclassified_without_direct_test"]) else 1
 
 

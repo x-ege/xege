@@ -21,6 +21,7 @@ public:
     {
         CTL_INIT; // must be the first line
         size(64, 16);
+        m_caption[0]  = '\0';
         m_color       = WHITE;
         m_bkcolor     = BLACK;
         m_fontheight  = 12;

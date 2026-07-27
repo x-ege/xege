@@ -6,9 +6,14 @@
 #define EGE_CONVERT_TO_WSTR_WITH(mbStr, block)                                               \
     {                                                                                        \
         int    bufsize = ::MultiByteToWideChar(::ege::getcodepage(), 0, mbStr, -1, NULL, 0); \
-        WCHAR* wStr    = new WCHAR[bufsize];                                                 \
-        ::MultiByteToWideChar(::ege::getcodepage(), 0, mbStr, -1, &wStr[0], bufsize);        \
-        block delete wStr;                                                                   \
+        if (bufsize > 0) {                                                                   \
+            WCHAR* wStr = new WCHAR[bufsize];                                                \
+            if (::MultiByteToWideChar(                                                       \
+                    ::ege::getcodepage(), 0, mbStr, -1, &wStr[0], bufsize) > 0) {             \
+                block                                                                        \
+            }                                                                                \
+            delete[] wStr;                                                                   \
+        }                                                                                    \
     }
 
 namespace ege
@@ -93,6 +98,12 @@ public:
         visible(false);
 
         if (msg.hEvent) ::CloseHandle(msg.hEvent);
+#else
+        // sys_edit wraps a native Win32 EDIT child. Reporting success here
+        // would leave Unix callers waiting on a control that does not exist.
+        (void)multiline;
+        (void)scrollbar;
+        return grError;
 #endif
         return grOk;
     }
@@ -165,7 +176,7 @@ public:
         lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
         lf.lfQuality        = DEFAULT_QUALITY;
         lf.lfPitchAndFamily = DEFAULT_PITCH;
-        lstrcpyW(lf.lfFaceName, fontface);
+        lstrcpynW(lf.lfFaceName, fontface, LF_FACESIZE);
         HFONT hFont = CreateFontIndirectW(&lf);
         if (hFont) {
             ::SendMessageW(m_hwnd, WM_SETFONT, (WPARAM)hFont, 0);

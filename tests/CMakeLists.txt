@@ -115,6 +115,11 @@ if(WIN32)
     )
 endif()
 add_test_executable(public_headers_test tests/public_headers_test.cpp)
+add_test_executable(public_api_overload_test tests/public_api_overload_test.cpp)
+add_test_executable(music_contract_test tests/music_contract_test.cpp)
+add_test_executable(control_contract_test tests/control_contract_test.cpp)
+add_test_executable(array_contract_test tests/array_contract_test.cpp)
+target_include_directories(array_contract_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
 add_test_executable(camera_frame_copy_test tests/camera_frame_copy_test.cpp)
 if(EGE_ENABLE_CAMERA_CAPTURE)
     add_test_executable(camera_device_lifecycle_test
@@ -172,6 +177,10 @@ set_target_properties(
     rendering_correctness_test
     performance_diagnostics_test
     public_headers_test
+    public_api_overload_test
+    music_contract_test
+    control_contract_test
+    array_contract_test
     camera_frame_copy_test
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -224,6 +233,10 @@ add_test(NAME putimage_alphablend_comprehensive COMMAND putimage_alphablend_comp
 add_test(NAME rendering_correctness COMMAND rendering_correctness_test)
 add_test(NAME performance_diagnostics COMMAND performance_diagnostics_test)
 add_test(NAME public_headers COMMAND public_headers_test)
+add_test(NAME public_api_overloads COMMAND public_api_overload_test)
+add_test(NAME music_contract COMMAND music_contract_test)
+add_test(NAME control_contract COMMAND control_contract_test)
+add_test(NAME array_contract COMMAND array_contract_test)
 add_test(NAME camera_frame_copy COMMAND camera_frame_copy_test)
 if(EGE_ENABLE_CAMERA_CAPTURE)
     add_test(NAME camera_device_lifecycle COMMAND camera_device_lifecycle_test)
@@ -328,6 +341,19 @@ set_tests_properties(performance_diagnostics PROPERTIES
     LABELS "correctness;diagnostics"
 )
 set_tests_properties(public_headers PROPERTIES LABELS "correctness;compile")
+set_tests_properties(public_api_overloads PROPERTIES
+    LABELS "correctness;compile;api"
+)
+set_tests_properties(music_contract PROPERTIES
+    LABELS "correctness;music;api"
+)
+set_tests_properties(control_contract PROPERTIES
+    LABELS "correctness;control;api;window"
+    TIMEOUT 20
+)
+set_tests_properties(array_contract PROPERTIES
+    LABELS "correctness;container;headless"
+)
 set_tests_properties(camera_frame_copy PROPERTIES LABELS "correctness;camera")
 if(EGE_ENABLE_CAMERA_CAPTURE)
     set_tests_properties(camera_device_lifecycle PROPERTIES

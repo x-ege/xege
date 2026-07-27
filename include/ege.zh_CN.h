@@ -5238,8 +5238,9 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
  * MUSIC 类提供了基于 Windows Media Control Interface (MCI) 的音乐播放功能，
  * 支持播放 WAV、MP3、MIDI 等多种音频格式。
  *
- * @note 该类基于 Windows MCI 实现，仅支持 Windows 平台
- * @note 支持的音频格式包括：WAV, MP3, MIDI 等
+ * @note 播放目前由 Windows MCI 实现。其它平台的 OpenFile 和播放操作返回
+ *       MUSIC_ERROR，Close 保持幂等，GetPlayStatus 返回 MUSIC_MODE_NOT_OPEN。
+ * @note Windows MCI 通常支持 WAV、MP3、MIDI 以及系统已安装的其它编解码器。
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC

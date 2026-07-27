@@ -89,6 +89,9 @@ DWORD MUSIC::OpenFile(const wchar_t* _szStr)
 // play the music stream.
 DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR       mciERR = ERROR_SUCCESS;
     MCI_PLAY_PARMS mci_p  = {0};
@@ -113,6 +116,9 @@ DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
 
 DWORD MUSIC::RepeatPlay(DWORD dwFrom, DWORD dwTo)
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR       mciERR = ERROR_SUCCESS;
     MCI_PLAY_PARMS mci_p  = {0};
@@ -138,6 +144,9 @@ DWORD MUSIC::RepeatPlay(DWORD dwFrom, DWORD dwTo)
 // pause the music stream.
 DWORD MUSIC::Pause()
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR          mciERR = ERROR_SUCCESS;
     MCI_GENERIC_PARMS mci_p  = {0};
@@ -152,6 +161,9 @@ DWORD MUSIC::Pause()
 // stop the music stream.
 DWORD MUSIC::Stop()
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR          mciERR = ERROR_SUCCESS;
     MCI_GENERIC_PARMS mci_p  = {0};
@@ -165,6 +177,9 @@ DWORD MUSIC::Stop()
 
 DWORD MUSIC::SetVolume(float value)
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR                mciERR = ERROR_SUCCESS;
     MCI_DGV_SETAUDIO_PARMSW mci_p  = {0};
@@ -179,6 +194,9 @@ DWORD MUSIC::SetVolume(float value)
 // seek the music stream playposition to `dwTo`
 DWORD MUSIC::Seek(DWORD dwTo)
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCIERROR       mciERR = ERROR_SUCCESS;
     MCI_SEEK_PARMS mci_p  = {0};
@@ -212,6 +230,9 @@ DWORD MUSIC::Close()
 // get the playing position. return by milliseconds
 DWORD MUSIC::GetPosition()
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCI_STATUS_PARMS mci_p = {0};
 
@@ -226,6 +247,9 @@ DWORD MUSIC::GetPosition()
 // get the length of the music stream. return by milliseconds
 DWORD MUSIC::GetLength()
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_ERROR;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCI_STATUS_PARMS mci_p = {0};
 
@@ -239,6 +263,9 @@ DWORD MUSIC::GetLength()
 
 DWORD MUSIC::GetPlayStatus()
 {
+    if (m_DID == MUSIC_ERROR) {
+        return MUSIC_MODE_NOT_OPEN;
+    }
     MUSIC_ASSERT_TRUE(m_DID);
     MCI_STATUS_PARMS mci_p = {0};
 
@@ -252,18 +279,44 @@ DWORD MUSIC::GetPlayStatus()
 #else
 MUSIC::MUSIC() { m_DID = MUSIC_ERROR; m_dwCallBack = 0; }
 MUSIC::~MUSIC() {}
-DWORD MUSIC::OpenFile(const char* _szStr) { return 0; }
-DWORD MUSIC::OpenFile(const wchar_t* _szStr) { return 0; }
-DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo) { return 0; }
-DWORD MUSIC::RepeatPlay(DWORD dwFrom, DWORD dwTo) { return 0; }
-DWORD MUSIC::Pause() { return 0; }
-DWORD MUSIC::Stop() { return 0; }
-DWORD MUSIC::SetVolume(float value) { return 0; }
-DWORD MUSIC::Seek(DWORD dwTo) { return 0; }
-DWORD MUSIC::Close() { return 0; }
-DWORD MUSIC::GetPosition() { return 0; }
-DWORD MUSIC::GetLength() { return 0; }
-DWORD MUSIC::GetPlayStatus() { return 0; }
+DWORD MUSIC::OpenFile(const char* _szStr)
+{
+    (void)_szStr;
+    return MUSIC_ERROR;
+}
+DWORD MUSIC::OpenFile(const wchar_t* _szStr)
+{
+    (void)_szStr;
+    return MUSIC_ERROR;
+}
+DWORD MUSIC::Play(DWORD dwFrom, DWORD dwTo)
+{
+    (void)dwFrom;
+    (void)dwTo;
+    return MUSIC_ERROR;
+}
+DWORD MUSIC::RepeatPlay(DWORD dwFrom, DWORD dwTo)
+{
+    (void)dwFrom;
+    (void)dwTo;
+    return MUSIC_ERROR;
+}
+DWORD MUSIC::Pause() { return MUSIC_ERROR; }
+DWORD MUSIC::Stop() { return MUSIC_ERROR; }
+DWORD MUSIC::SetVolume(float value)
+{
+    (void)value;
+    return MUSIC_ERROR;
+}
+DWORD MUSIC::Seek(DWORD dwTo)
+{
+    (void)dwTo;
+    return MUSIC_ERROR;
+}
+DWORD MUSIC::Close() { return ERROR_SUCCESS; }
+DWORD MUSIC::GetPosition() { return MUSIC_ERROR; }
+DWORD MUSIC::GetLength() { return MUSIC_ERROR; }
+DWORD MUSIC::GetPlayStatus() { return MUSIC_MODE_NOT_OPEN; }
 #endif
 
 } // namespace ege

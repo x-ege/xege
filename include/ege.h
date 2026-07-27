@@ -5714,8 +5714,10 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
  * MUSIC class provides music playback functionality based on Windows Media Control Interface (MCI),
  * supports playing various audio formats such as WAV, MP3, MIDI, etc.
  *
- * @note This class is based on Windows MCI implementation, only supports Windows platform
- * @note Supported audio formats include: WAV, MP3, MIDI, etc.
+ * @note Playback is currently implemented by Windows MCI. On other platforms
+ *       OpenFile and playback operations return MUSIC_ERROR, Close remains
+ *       idempotent, and GetPlayStatus returns MUSIC_MODE_NOT_OPEN.
+ * @note Windows MCI commonly supports WAV, MP3, MIDI and other installed codecs.
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC

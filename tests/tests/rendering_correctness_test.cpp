@@ -2634,8 +2634,16 @@ void testEnhancedPathApi()
     ege::ege_path_addcircle(aggregatePath, 48.0f, 16.0f, 6.0f);
     ege::ege_path_addellipse(aggregatePath, 58.0f, 8.0f, 14.0f, 10.0f);
     ege::ege_path_addpie(aggregatePath, 74.0f, 8.0f, 14.0f, 12.0f, 20.0f, 120.0f);
+    const int pointsBeforeWideText = ege::ege_path_pointcount(aggregatePath);
     ege::ege_path_addtext(aggregatePath, 2.0f, 40.0f, L"A", 12.0f, -1,
                           L"Arial", 0);
+    expect(ege::ege_path_pointcount(aggregatePath) > pointsBeforeWideText,
+           "wide ege_path_addtext appends glyph geometry");
+    const int pointsBeforeNarrowText = ege::ege_path_pointcount(aggregatePath);
+    ege::ege_path_addtext(aggregatePath, 18.0f, 40.0f, "B", 12.0f, -1,
+                          "Arial", 0);
+    expect(ege::ege_path_pointcount(aggregatePath) > pointsBeforeNarrowText,
+           "narrow ege_path_addtext appends glyph geometry");
     ege::ege_path_addpolygon(aggregatePath, 3, sourcePoints);
     ege::ege_path_addclosedcurve(aggregatePath, 3, sourcePoints);
     ege::ege_path_addclosedcurve(aggregatePath, 3, sourcePoints, 0.5f);
@@ -3112,12 +3120,20 @@ void testAdditionalPrimitiveEntryPoints()
     resetImage(image, ege::BLACK);
     ege::moveto(3, 4, image);
     ege::lineto_f(24.0f, 4.0f, image);
-    ege::linerel(0, 12, image);
+    expectPixel(image, 14, 4, ege::WHITE,
+                "lineto_f draws from the current position");
+
+    resetImage(image, ege::BLACK);
+    ege::moveto(8, 8, image);
+    ege::linerel(16, 0, image);
+    expectPixel(image, 16, 8, ege::WHITE,
+                "integer linerel draws relative to the current position");
+
+    resetImage(image, ege::BLACK);
+    ege::moveto(24, 12, image);
     ege::linerel_f(-12.0f, 0.0f, image);
-    expect(countPixelsDifferentFrom(image, ege::BLACK) > 20,
-           "lineto_f and linerel variants draw from the current position");
-    expectPixel(image, 24, 10, ege::WHITE,
-                "integer linerel draws the segment to its new position");
+    expectPixel(image, 18, 12, ege::WHITE,
+                "floating-point linerel draws relative to the current position");
 
     resetImage(image, ege::BLACK);
     ege::moveto(2, 6, image);
@@ -3127,31 +3143,61 @@ void testAdditionalPrimitiveEntryPoints()
 
     resetImage(image, ege::BLACK);
     ege::arcf(16.0f, 16.0f, 0.0f, 180.0f, 10.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 8,
+           "arcf draws a floating-point arc");
+
+    resetImage(image, ege::BLACK);
     ege::arc(16, 16, 180, 360, 10, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 8,
+           "arc draws an integer arc");
+
+    resetImage(image, ege::BLACK);
     ege::circlef(44.0f, 16.0f, 9.0f, image);
-    expect(countPixelsDifferentFrom(image, ege::BLACK) > 20,
-           "arcf and circlef draw floating-point outlines");
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 8,
+           "circlef draws a floating-point outline");
 
     resetImage(image, ege::BLACK);
     ege::setfillcolor(ege::GREEN, image);
     ege::fillcirclef(12.0f, 12.0f, 7.0f, image);
-    ege::solidcirclef(30.0f, 12.0f, 7.0f, image);
-    ege::fillellipsef(48.0f, 12.0f, 7.0f, 5.0f, image);
-    ege::solidellipsef(12.0f, 30.0f, 7.0f, 5.0f, image);
     expectPixel(image, 12, 12, ege::GREEN,
                 "fillcirclef fills its center");
+
+    resetImage(image, ege::BLACK);
+    ege::solidcirclef(30.0f, 12.0f, 7.0f, image);
+    expectPixel(image, 30, 12, ege::GREEN,
+                "solidcirclef fills its center");
+
+    resetImage(image, ege::BLACK);
+    ege::fillellipsef(48.0f, 12.0f, 7.0f, 5.0f, image);
     expectPixel(image, 48, 12, ege::GREEN,
                 "fillellipsef fills its center");
+
+    resetImage(image, ege::BLACK);
+    ege::solidellipsef(12.0f, 30.0f, 7.0f, 5.0f, image);
+    expectPixel(image, 12, 30, ege::GREEN,
+                "solidellipsef fills its center");
 
     resetImage(image, ege::BLACK);
     ege::setfillcolor(ege::CYAN, image);
     ege::setlinecolor(ege::WHITE, image);
     ege::pie(12, 50, 0, 90, 9, 7, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 8,
+           "pie produces integer geometry");
+
+    resetImage(image, ege::BLACK);
     ege::pief(32.0f, 50.0f, 0.0f, 90.0f, 9.0f, 7.0f, image);
+    expect(countPixelsDifferentFrom(image, ege::BLACK) > 8,
+           "pief produces floating-point geometry");
+
+    resetImage(image, ege::BLACK);
     ege::fillpief(50.0f, 50.0f, 0.0f, 90.0f, 8.0f, 7.0f, image);
+    expect(countPixelsEqualTo(image, ege::CYAN) > 0,
+           "fillpief paints its floating-point pie interior");
+
+    resetImage(image, ege::BLACK);
     ege::solidpief(50.0f, 30.0f, 0.0f, 90.0f, 8.0f, 7.0f, image);
-    expect(countPixelsDifferentFrom(image, ege::BLACK) > 30,
-           "integer and floating-point pie routes produce geometry");
+    expect(countPixelsEqualTo(image, ege::CYAN) > 0,
+           "solidpief paints its floating-point pie interior");
 
     resetImage(image, ege::BLACK);
     ege::pieslice(12, 12, 0, 90, 8, image);
@@ -3751,6 +3797,12 @@ void testPngAndBmpRoundTrip()
     const std::string unicodeUtf8Path = tempPath("-\u56fe\u50cf.png");
     const std::wstring unicodeWidePath =
         L"xege-rendering-correctness-" + std::to_wstring(tempProcessId()) + L"-\u56fe\u50cf.png";
+    const std::string directWidePngPath = tempPath(".direct-wide.png");
+    const std::string directWideBmpPath = tempPath(".direct-wide.bmp");
+    const std::wstring directWidePngPathW(directWidePngPath.begin(),
+                                          directWidePngPath.end());
+    const std::wstring directWideBmpPathW(directWideBmpPath.begin(),
+                                          directWideBmpPath.end());
 
     ege::PIMAGE source = ege::newimage(7, 5);
     resetImage(source, ege::WHITE);
@@ -3769,6 +3821,10 @@ void testPngAndBmpRoundTrip()
            "savepng writes an alpha-channel PNG file");
     expect(ege::savebmp(source, alphaBmpPath.c_str(), true) == ege::grOk,
            "savebmp writes an alpha-channel BITMAPV4 file");
+    expect(ege::savepng(source, directWidePngPathW.c_str()) == ege::grOk,
+           "savepng writes through the wide filename overload");
+    expect(ege::savebmp(source, directWideBmpPathW.c_str()) == ege::grOk,
+           "savebmp writes through the wide filename overload");
     expect(ege::saveimage(source, genericPngPath.c_str()) == ege::grOk,
            "saveimage dispatches a .png filename to PNG encoding");
     expect(ege::saveimage(source, genericBmpPath.c_str()) == ege::grOk,
@@ -3851,6 +3907,10 @@ void testPngAndBmpRoundTrip()
     ege::PIMAGE bmp = ege::newimage();
     ege::PIMAGE alphaPng = ege::newimage();
     ege::PIMAGE alphaBmp = ege::newimage();
+    ege::PIMAGE narrowZoomArguments = ege::newimage();
+    ege::PIMAGE widePng = ege::newimage();
+    ege::PIMAGE widePngSpecific = ege::newimage();
+    ege::PIMAGE wideBmp = ege::newimage();
     expect(ege::getimage(png, pngPath.c_str()) == ege::grOk, "PNG output can be loaded again");
     expect(ege::getimage_pngfile(pngSpecific, pngPath.c_str()) == ege::grOk,
            "getimage_pngfile loads PNG output through its compatibility entry point");
@@ -3859,11 +3919,27 @@ void testPngAndBmpRoundTrip()
            "alpha-channel PNG output can be loaded again");
     expect(ege::getimage(alphaBmp, alphaBmpPath.c_str()) == ege::grOk,
            "alpha-channel BMP output can be loaded again");
+    expect(ege::getimage(narrowZoomArguments, pngPath.c_str(), 31, 29) == ege::grOk,
+           "narrow getimage accepts the legacy zoom arguments");
+    expect(ege::getimage(widePng, directWidePngPathW.c_str(), 31, 29) == ege::grOk,
+           "wide getimage accepts a filename and legacy zoom arguments");
+    expect(ege::getimage_pngfile(widePngSpecific, directWidePngPathW.c_str()) == ege::grOk,
+           "getimage_pngfile loads through the wide filename overload");
+    expect(ege::getimage(wideBmp, directWideBmpPathW.c_str()) == ege::grOk,
+           "wide getimage loads BMP output");
 
     expect(ege::getwidth(png) == 7 && ege::getheight(png) == 5, "PNG preserves dimensions");
     expect(ege::getwidth(pngSpecific) == 7 && ege::getheight(pngSpecific) == 5,
            "getimage_pngfile preserves PNG dimensions");
     expect(ege::getwidth(bmp) == 7 && ege::getheight(bmp) == 5, "BMP preserves dimensions");
+    expect(ege::getwidth(narrowZoomArguments) == 7 &&
+               ege::getheight(narrowZoomArguments) == 5 &&
+               ege::getwidth(widePng) == 7 && ege::getheight(widePng) == 5,
+           "legacy getimage zoom arguments preserve the established unscaled decode behavior");
+    expect(ege::getwidth(widePngSpecific) == 7 &&
+               ege::getheight(widePngSpecific) == 5 &&
+               ege::getwidth(wideBmp) == 7 && ege::getheight(wideBmp) == 5,
+           "wide PNG/BMP compatibility entry points preserve dimensions");
     expectPixel(png, 1, 0, ege::RED, "PNG preserves a top-row drawn pixel");
     expectPixel(png, 5, 4, ege::BLUE, "PNG preserves a bottom-row drawn pixel");
     expectPixel(bmp, 1, 0, ege::RED, "BMP preserves a top-row drawn pixel");
@@ -3889,6 +3965,10 @@ void testPngAndBmpRoundTrip()
     ege::delimage(bmp);
     ege::delimage(pngSpecific);
     ege::delimage(png);
+    ege::delimage(wideBmp);
+    ege::delimage(widePngSpecific);
+    ege::delimage(widePng);
+    ege::delimage(narrowZoomArguments);
     ege::delimage(source);
     std::remove(pngPath.c_str());
     std::remove(bmpPath.c_str());
@@ -3897,6 +3977,8 @@ void testPngAndBmpRoundTrip()
     std::remove(genericPngPath.c_str());
     std::remove(genericBmpPath.c_str());
     std::remove(defaultPngPath.c_str());
+    std::remove(directWidePngPath.c_str());
+    std::remove(directWideBmpPath.c_str());
 #ifdef _WIN32
     _wremove(unicodeWidePath.c_str());
 #else

@@ -9,6 +9,10 @@
 | `default_build_contract` | 从空目录重新配置，验证 Windows 默认 GDI、Linux/macOS 默认 OpenGL、单配置生成器默认 Release，以及 Linux bundled GLFW 的 X11/Wayland 默认值 |
 | `rendering_correctness` | 基础与增强图元、线型/端帽/连接、填充与渐变、viewport、路径、变换、文字与编码、图片混合/旋转、像素缓冲与存储转换、压缩、颜色工具、PNG/BMP 保存与重新加载 |
 | `public_headers` | 公共头文件、Win32 兼容类型及常量的可编译性 |
+| `public_api_overloads` | 让编译器逐一选择两个公共头中全部 386 个精确函数签名，防止同参数个数的类型重载被静态审计误判为覆盖 |
+| `music_contract` | 未打开对象的状态和错误返回；Unix 无播放后端时明确失败而不是假成功 |
+| `control_contract` | 控件树生命周期、状态、键盘/鼠标传播、label/button/fps 绘制、PushTarget 与 sys_edit 平台契约 |
+| `array_contract` | 内部动态数组的复制、赋值、缩容、清空后再增长及所有权释放 |
 | `camera_frame_copy` | 不依赖设备的 BGRA stride/长度/溢出预检、逐行复制与目标缓冲 guard（所有平台） |
 | `camera_device_lifecycle` | 不依赖视频 fixture 或 GUI 的 provider 创建、设备枚举、失败打开、状态与重复关闭；Linux CI 会实际加载 V4L2 provider |
 | `camera_capture` | 视频 fixture 驱动的相机 open/start/grab/image-copy/stop/close 生命周期（macOS/Windows） |
@@ -73,16 +77,16 @@
 python tests/tools/audit_public_api_coverage.py --summary
 ```
 
-审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名及标准化声明是否一致，并扫描
-测试和 demo 中的真实调用（忽略注释与字符串）。当前 291 个公共函数名均有直接自动化
-测试调用；去重后的 386 个公共声明也都至少有一种测试调用参数个数落在其可接受范围内。
-若以后新增了未被直接测试、未被人工分类的公共函数，或新增声明没有任何参数个数证据，
-审计脚本会返回失败。
+审计同时检查 `ege.h` 与 `ege.zh_CN.h` 的导出函数名、标准化声明、返回类型和参数类型
+是否一致，并扫描测试和 demo 中的真实调用（忽略注释与字符串）。当前 291 个公共函数名
+均有直接自动化测试调用；去重后的 386 个公共声明都有参数个数证据。
+`public_api_overload_test.cpp` 还会让编译器选择每一个精确函数指针类型，审计脚本再校验
+这份编译证据与两个公共头一致。新增声明若没有调用或精确重载证据，审计会返回失败。
 
-这是静态覆盖下限：它不能区分参数个数相同但参数类型不同的重载，也不等价于每个默认参数、
-分支和平台路径都已覆盖。重要的 char/wchar、IMAGE/当前目标及后端重载仍需显式行为断言；
-双后端共享行为必须由相同断言分别运行，窗口/输入生命周期及模态交互接口使用带超时保护
-的后端测试，demo 视觉验证作为更高层的补充。
+这是声明与入口覆盖，不等价于每个默认参数、错误分支、硬件设备和平台路径都已覆盖。
+重要的 char/wchar、IMAGE/当前目标及后端重载仍需显式行为断言；双后端共享行为必须由
+相同断言分别运行，窗口/输入生命周期及模态交互接口使用带超时保护的后端测试，真实
+相机、音频设备和 demo 视觉验证作为更高层的补充。
 
 ## 构建与运行
 
