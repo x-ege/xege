@@ -133,6 +133,7 @@ int main()
         ProbeControl root;
         ProbeControl parent(ProbeControl::inherit_level_e, &root);
         ProbeControl child(ProbeControl::inherit_level_e, &parent);
+        stage("main controls constructed");
         expect(child.parent() == &parent, "nested controls keep their parent");
         parent.move(7, 9);
         expect(parent.getx() == 7 && parent.gety() == 9,
@@ -176,6 +177,7 @@ int main()
         parent.keymsgchar('y', 3);
         expect(child.keyChar == 1,
                "unconsumed character events reach captured children");
+        stage("base control checks completed");
 
         {
             ProbeControl promoted(ProbeControl::inherit_level_e, &parent);
@@ -199,6 +201,7 @@ int main()
                    text.bkcolor() == ege::BLUE && text.transparent() &&
                    text.alpha() == 255,
                "label properties and alpha clamping round-trip");
+        stage("label properties completed");
 
         CountingButton action(CountingButton::inherit_level_e, &root);
         action.caption("run");
@@ -224,6 +227,7 @@ int main()
         expect(action.clicks == 2,
                "button dispatches keyboard and mouse clicks");
         action.onLostFocus();
+        stage("button checks completed");
 
         ege::PIMAGE target = ege::newimage(96, 64);
         ege::setbkcolor(ege::BLACK, target);
@@ -234,6 +238,7 @@ int main()
         text.draw(target);
         expect(changedPixels(target, ege::BLACK) > 0,
                "label draw contributes visible pixels");
+        stage("label drawing completed");
 
         ege::fps counter(ege::fps::inherit_level_e, &root);
         expect(counter.isdirectdraw() && !counter.isenable(),
@@ -243,6 +248,7 @@ int main()
         counter.onDraw(target);
         expect(changedPixels(target, ege::BLACK) > 0,
                "fps draws its current value");
+        stage("fps drawing completed");
 
         ege::PIMAGE previousTarget = ege::gettarget();
         {
