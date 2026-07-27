@@ -51,17 +51,32 @@ public:
     {
         m_capacity = arr.m_capacity;
         m_size     = arr.m_size;
-        m_arr      = new T[m_size];
+        m_arr      = m_capacity > 0 ? new T[m_capacity] : NULL;
 
         for (size_t i = 0; i < m_size; ++i) {
             m_arr[i] = arr.m_arr[i];
         }
     }
 
+    Array& operator=(const Array& arr)
+    {
+        if (this != &arr) {
+            T* replacement = arr.m_capacity > 0 ? new T[arr.m_capacity] : NULL;
+            for (size_t i = 0; i < arr.m_size; ++i) {
+                replacement[i] = arr.m_arr[i];
+            }
+            delete[] m_arr;
+            m_arr      = replacement;
+            m_capacity = arr.m_capacity;
+            m_size     = arr.m_size;
+        }
+        return *this;
+    }
+
     ~Array()
     {
         if (m_arr) {
-            delete m_arr;
+            delete[] m_arr;
             m_arr = NULL;
         }
     }
@@ -69,16 +84,17 @@ public:
     void resize(size_t sz, T c = T())
     {
         if (m_arr == NULL) {
-            m_arr = new T[sz];
+            m_arr = sz > 0 ? new T[sz] : NULL;
             for (size_t i = 0; i < sz; ++i) {
                 m_arr[i] = c;
             }
             m_capacity = sz;
             m_size     = 0;
         } else {
-            T*     arr = new T[sz];
+            T*     arr = sz > 0 ? new T[sz] : NULL;
             size_t i   = 0;
-            for (; i < m_size; ++i) {
+            const size_t retained = m_size < sz ? m_size : sz;
+            for (; i < retained; ++i) {
                 arr[i] = m_arr[i];
             }
             for (; i < sz; ++i) {
@@ -87,9 +103,7 @@ public:
             m_capacity = sz;
             delete[] m_arr;
             m_arr = arr;
-            if (m_size > m_capacity) {
-                m_size = m_capacity;
-            }
+            m_size = retained;
         }
     }
 

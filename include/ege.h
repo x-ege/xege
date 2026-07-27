@@ -78,14 +78,451 @@
 #define __STDC_CONSTANT_MACROS
 #endif
 
+// The project historically shipped its own stdint.h for old Windows toolchains.
+// On modern non-Windows platforms (e.g. AppleClang on macOS), including it will
+// conflict with the system <stdint.h>/<cstdint>.
+#if defined(_WIN32) || defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include "ege/stdint.h"
+#endif
 
 #if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include <windef.h>
 #include <winuser.h>
 #include <wingdi.h>
-#else
+#elif defined(_WIN32)
 #include <windows.h>
+#else
+// Linux/Cross-platform definitions
+#include <stdint.h>
+#include <cstddef>
+#include <wchar.h>
+#include <string.h>
+#include <strings.h>
+
+// Some Windows-compatible constants/functions are referenced by legacy demos and user code.
+// Provide minimal shims on non-Windows platforms.
+
+// Code page constants (subset)
+#ifndef CP_ACP
+#define CP_ACP 0
+#endif
+#ifndef CP_UTF8
+#define CP_UTF8 65001
+#endif
+
+// Virtual-Key codes (subset used by demos)
+#ifndef VK_UP
+#define VK_UP 0x26
+#endif
+#ifndef VK_DOWN
+#define VK_DOWN 0x28
+#endif
+#ifndef VK_LEFT
+#define VK_LEFT 0x25
+#endif
+#ifndef VK_RIGHT
+#define VK_RIGHT 0x27
+#endif
+#ifndef VK_SPACE
+#define VK_SPACE 0x20
+#endif
+#ifndef VK_F2
+#define VK_F2 0x71
+#endif
+#ifndef VK_NUMPAD0
+#define VK_NUMPAD0 0x60
+#endif
+
+// ROP2 raster operation codes (subset used by demos)
+#ifndef R2_COPYPEN
+#define R2_COPYPEN 13
+#endif
+#ifndef R2_XORPEN
+#define R2_XORPEN 7
+#endif
+
+// Misc Win32 API shims used by legacy demos
+#ifndef MB_OK
+#define MB_OK 0
+#endif
+
+#ifndef stricmp
+#define stricmp strcasecmp
+#endif
+
+static inline int MessageBoxA(void* /*hWnd*/, const char* /*lpText*/, const char* /*lpCaption*/, unsigned int /*uType*/)
+{
+    // no-op fallback: keep demo code buildable on non-Windows platforms.
+    return 0;
+}
+
+#ifdef __cplusplus
+#include <cwchar>
+#include <string>
+
+// A small, header-only approximation of Win32 MultiByteToWideChar.
+// It primarily supports UTF-8 (CP_UTF8) and a best-effort fallback for other code pages.
+static inline int MultiByteToWideChar(unsigned int CodePage, unsigned long /*dwFlags*/, const char* lpMultiByteStr,
+    int cbMultiByte, wchar_t* lpWideCharStr, int cchWideChar)
+{
+    if (!lpMultiByteStr) {
+        return 0;
+    }
+
+    const bool nullTerminated = (cbMultiByte == -1);
+    const size_t inLen = nullTerminated ? strlen(lpMultiByteStr) : (cbMultiByte < 0 ? 0u : (size_t)cbMultiByte);
+
+    std::wstring out;
+    try {
+        if (CodePage == CP_UTF8) {
+            const unsigned char* bytes = reinterpret_cast<const unsigned char*>(lpMultiByteStr);
+            size_t offset = 0;
+            while (offset < inLen) {
+                const unsigned char lead = bytes[offset];
+                uint32_t codepoint = 0xFFFDU;
+                size_t sequenceLength = 1;
+                bool valid = true;
+
+                if (lead < 0x80U) {
+                    codepoint = lead;
+                } else if (lead >= 0xC2U && lead <= 0xDFU) {
+                    sequenceLength = 2;
+                    valid = offset + sequenceLength <= inLen &&
+                            (bytes[offset + 1] & 0xC0U) == 0x80U;
+                    if (valid) {
+                        codepoint = ((lead & 0x1FU) << 6) |
+                                    (bytes[offset + 1] & 0x3FU);
+                    }
+                } else if (lead >= 0xE0U && lead <= 0xEFU) {
+                    sequenceLength = 3;
+                    valid = offset + sequenceLength <= inLen &&
+                            (bytes[offset + 1] & 0xC0U) == 0x80U &&
+                            (bytes[offset + 2] & 0xC0U) == 0x80U;
+                    if (valid) {
+                        valid = !(lead == 0xE0U && bytes[offset + 1] < 0xA0U) &&
+                                !(lead == 0xEDU && bytes[offset + 1] >= 0xA0U);
+                    }
+                    if (valid) {
+                        codepoint = ((lead & 0x0FU) << 12) |
+                                    ((bytes[offset + 1] & 0x3FU) << 6) |
+                                    (bytes[offset + 2] & 0x3FU);
+                    }
+                } else if (lead >= 0xF0U && lead <= 0xF4U) {
+                    sequenceLength = 4;
+                    valid = offset + sequenceLength <= inLen &&
+                            (bytes[offset + 1] & 0xC0U) == 0x80U &&
+                            (bytes[offset + 2] & 0xC0U) == 0x80U &&
+                            (bytes[offset + 3] & 0xC0U) == 0x80U;
+                    if (valid) {
+                        valid = !(lead == 0xF0U && bytes[offset + 1] < 0x90U) &&
+                                !(lead == 0xF4U && bytes[offset + 1] > 0x8FU);
+                    }
+                    if (valid) {
+                        codepoint = ((lead & 0x07U) << 18) |
+                                    ((bytes[offset + 1] & 0x3FU) << 12) |
+                                    ((bytes[offset + 2] & 0x3FU) << 6) |
+                                    (bytes[offset + 3] & 0x3FU);
+                    }
+                } else {
+                    valid = false;
+                }
+
+                if (!valid) {
+                    codepoint = 0xFFFDU;
+                    sequenceLength = 1;
+                }
+                offset += sequenceLength;
+
+                if (sizeof(wchar_t) == 2 && codepoint > 0xFFFFU) {
+                    codepoint -= 0x10000U;
+                    out.push_back(static_cast<wchar_t>(0xD800U + (codepoint >> 10)));
+                    out.push_back(static_cast<wchar_t>(0xDC00U + (codepoint & 0x3FFU)));
+                } else {
+                    out.push_back(static_cast<wchar_t>(codepoint));
+                }
+            }
+        } else {
+            // Best-effort: treat input as current locale multibyte.
+            std::mbstate_t st{};
+            const char* src = lpMultiByteStr;
+            size_t remaining = inLen;
+            while (remaining > 0) {
+                wchar_t wc;
+                size_t consumed = mbrtowc(&wc, src, remaining, &st);
+                if (consumed == (size_t)-1 || consumed == (size_t)-2) {
+                    // Invalid sequence: replace and move on one byte.
+                    out.push_back(L'?');
+                    ++src;
+                    --remaining;
+                    std::mbstate_t rst{};
+                    st = rst;
+                    continue;
+                }
+                if (consumed == 0) {
+                    break;
+                }
+                out.push_back(wc);
+                src += consumed;
+                remaining -= consumed;
+            }
+        }
+    } catch (...) {
+        return 0;
+    }
+
+    // Win32 semantics: if cbMultiByte == -1, the result includes the terminator.
+    const int required = (int)out.size() + (nullTerminated ? 1 : 0);
+    if (!lpWideCharStr || cchWideChar == 0) {
+        return required;
+    }
+    if (cchWideChar < required) {
+        return 0;
+    }
+
+    if (!out.empty()) {
+        wmemcpy(lpWideCharStr, out.data(), out.size());
+    }
+    if (nullTerminated) {
+        lpWideCharStr[out.size()] = L'\0';
+    }
+    return required;
+}
+#endif
+
+typedef void* HWND;
+typedef void* HDC;
+typedef void* HINSTANCE;
+typedef void* HICON;
+typedef void* HMENU;
+typedef void* HMODULE;
+typedef void* LPVOID;
+typedef void* PVOID;
+typedef void* HANDLE;
+typedef uint32_t DWORD;
+typedef uint16_t WORD;
+typedef uint8_t BYTE;
+typedef uint32_t UINT;
+typedef int32_t LONG;
+typedef int BOOL;
+typedef const char* LPCSTR;
+typedef char* LPSTR;
+typedef const wchar_t* LPCWSTR;
+typedef wchar_t* LPWSTR;
+typedef intptr_t LONG_PTR;
+typedef uintptr_t ULONG_PTR;
+typedef LONG_PTR LRESULT;
+typedef ULONG_PTR WPARAM;
+typedef LONG_PTR LPARAM;
+
+typedef union _LARGE_INTEGER {
+    struct {
+        DWORD LowPart;
+        LONG HighPart;
+    } u;
+    int64_t QuadPart;
+} LARGE_INTEGER;
+
+typedef void* HBRUSH;
+typedef void* HBITMAP;
+typedef void* HFONT;
+typedef DWORD* PDWORD;
+typedef wchar_t WCHAR;
+typedef WORD ATOM;
+
+typedef struct tagPOINT {
+  LONG x;
+  LONG y;
+} POINT, *PPOINT, *NPPOINT, *LPPOINT;
+
+typedef struct tagSIZE {
+  LONG cx;
+  LONG cy;
+} SIZE, *PSIZE, *LPSIZE;
+
+#define AC_SRC_OVER 0x00
+#define BI_RGB 0
+#define BI_BITFIELDS 3
+
+#define TRANSPARENT 1
+#define OPAQUE 2
+
+typedef struct _BLENDFUNCTION {
+  BYTE BlendOp;
+  BYTE BlendFlags;
+  BYTE SourceConstantAlpha;
+  BYTE AlphaFormat;
+} BLENDFUNCTION, *PBLENDFUNCTION;
+
+#pragma pack(push, 1)
+typedef struct tagBITMAPFILEHEADER {
+  WORD  bfType;
+  DWORD bfSize;
+  WORD  bfReserved1;
+  WORD  bfReserved2;
+  DWORD bfOffBits;
+} BITMAPFILEHEADER, *PBITMAPFILEHEADER;
+#pragma pack(pop)
+
+typedef struct tagBITMAPINFOHEADER {
+  DWORD biSize;
+  LONG  biWidth;
+  LONG  biHeight;
+  WORD  biPlanes;
+  WORD  biBitCount;
+  DWORD biCompression;
+  DWORD biSizeImage;
+  LONG  biXPelsPerMeter;
+  LONG  biYPelsPerMeter;
+  DWORD biClrUsed;
+  DWORD biClrImportant;
+} BITMAPINFOHEADER, *PBITMAPINFOHEADER;
+
+typedef struct {
+  DWORD        bV4Size;
+  LONG         bV4Width;
+  LONG         bV4Height;
+  WORD         bV4Planes;
+  WORD         bV4BitCount;
+  DWORD        bV4V4Compression;
+  DWORD        bV4SizeImage;
+  LONG         bV4XPelsPerMeter;
+  LONG         bV4YPelsPerMeter;
+  DWORD        bV4ClrUsed;
+  DWORD        bV4ClrImportant;
+  DWORD        bV4RedMask;
+  DWORD        bV4GreenMask;
+  DWORD        bV4BlueMask;
+  DWORD        bV4AlphaMask;
+  DWORD        bV4CSType;
+  // CIEXYZTRIPLE bV4Endpoints; // Simplified for now
+  DWORD        bV4Endpoints[9];
+  DWORD        bV4GammaRed;
+  DWORD        bV4GammaGreen;
+  DWORD        bV4GammaBlue;
+} BITMAPV4HEADER, *PBITMAPV4HEADER;
+
+#ifndef LF_FACESIZE
+#define LF_FACESIZE 32
+#endif
+
+typedef struct tagLOGFONTA {
+  LONG lfHeight;
+  LONG lfWidth;
+  LONG lfEscapement;
+  LONG lfOrientation;
+  LONG lfWeight;
+  BYTE lfItalic;
+  BYTE lfUnderline;
+  BYTE lfStrikeOut;
+  BYTE lfCharSet;
+  BYTE lfOutPrecision;
+  BYTE lfClipPrecision;
+  BYTE lfQuality;
+  BYTE lfPitchAndFamily;
+  char lfFaceName[LF_FACESIZE];
+} LOGFONTA, *PLOGFONTA, *LPLOGFONTA;
+
+typedef struct tagLOGFONTW {
+  LONG  lfHeight;
+  LONG  lfWidth;
+  LONG  lfEscapement;
+  LONG  lfOrientation;
+  LONG  lfWeight;
+  BYTE  lfItalic;
+  BYTE  lfUnderline;
+  BYTE  lfStrikeOut;
+  BYTE  lfCharSet;
+  BYTE  lfOutPrecision;
+  BYTE  lfClipPrecision;
+  BYTE  lfQuality;
+  BYTE  lfPitchAndFamily;
+  wchar_t lfFaceName[LF_FACESIZE];
+} LOGFONTW, *PLOGFONTW, *LPLOGFONTW;
+
+#define CALLBACK
+#define WINAPI
+#define EGE_CDECL
+#define __stdcall
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+// Win32-compatible input message constants used by the portable event queue.
+#define WM_KEYFIRST       0x0100
+#define WM_KEYDOWN        0x0100
+#define WM_KEYUP          0x0101
+#define WM_CHAR           0x0102
+#define WM_KEYLAST        0x0109
+#define WM_MOUSEFIRST     0x0200
+#define WM_MOUSEMOVE      0x0200
+#define WM_LBUTTONDOWN    0x0201
+#define WM_LBUTTONUP      0x0202
+#define WM_LBUTTONDBLCLK  0x0203
+#define WM_RBUTTONDOWN    0x0204
+#define WM_RBUTTONUP      0x0205
+#define WM_RBUTTONDBLCLK  0x0206
+#define WM_MBUTTONDOWN    0x0207
+#define WM_MBUTTONUP      0x0208
+#define WM_MBUTTONDBLCLK  0x0209
+#define WM_XBUTTONDOWN    0x020B
+#define WM_XBUTTONUP      0x020C
+#define WM_XBUTTONDBLCLK  0x020D
+#define WM_MOUSELAST      0x020D
+
+#define MK_LBUTTON  0x0001
+#define MK_RBUTTON  0x0002
+#define MK_SHIFT    0x0004
+#define MK_CONTROL  0x0008
+#define MK_MBUTTON  0x0010
+#define MK_XBUTTON1 0x0020
+#define MK_XBUTTON2 0x0040
+
+#define VK_LBUTTON  0x01
+#define VK_RBUTTON  0x02
+#define VK_MBUTTON  0x04
+#define VK_XBUTTON1 0x05
+#define VK_XBUTTON2 0x06
+
+#define MAKELPARAM(low, high) ((LPARAM)((uint16_t)(low) | ((uint32_t)(uint16_t)(high) << 16)))
+#define GET_X_LPARAM(value) ((int)(int16_t)((uintptr_t)(value) & 0xFFFFU))
+#define GET_Y_LPARAM(value) ((int)(int16_t)(((uintptr_t)(value) >> 16) & 0xFFFFU))
+#define GET_WHEEL_DELTA_WPARAM(value) ((int)(int16_t)(((uintptr_t)(value) >> 16) & 0xFFFFU))
+#define GET_XBUTTON_WPARAM(value) ((unsigned int)(((uintptr_t)(value) >> 16) & 0xFFFFU))
+#define XBUTTON1 0x0001
+#define XBUTTON2 0x0002
+
+#define CW_USEDEFAULT ((int)0x80000000)
+
+#define SRCCOPY     (DWORD)0x00CC0020
+#define SRCPAINT    (DWORD)0x00EE0086
+#define SRCAND      (DWORD)0x008800C6
+#define SRCINVERT   (DWORD)0x00660046
+#define SRCERASE    (DWORD)0x00440328
+#define NOTSRCCOPY  (DWORD)0x00330008
+#define NOTSRCERASE (DWORD)0x001100A6
+#define MERGECOPY   (DWORD)0x00C000CA
+#define MERGEPAINT  (DWORD)0x00BB0226
+#define PATCOPY     (DWORD)0x00F00021
+#define PATPAINT    (DWORD)0x00FB0A09
+#define PATINVERT   (DWORD)0x005A0049
+#define DSTINVERT   (DWORD)0x00550009
+#define BLACKNESS   (DWORD)0x00000042
+#define WHITENESS   (DWORD)0x00FF0062
+
+#define PS_SOLID 0
+#define PS_DASH 1
+#define PS_DOT 2
+#define PS_DASHDOT 3
+#define PS_DASHDOTDOT 4
+#define PS_NULL 5
+#define PS_INSIDEFRAME 6
+#define PS_USERSTYLE 7
+#define PS_ALTERNATE 8
+
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1300)
@@ -157,7 +594,9 @@
 #   endif
 #endif
 
+#ifdef _WIN32
 #define EGE_GDIPLUS
+#endif
 
 #define EGERGBA(r, g, b, a)  ((::ege::color_t)(((r) << 16) | ((g) << 8) | (b) | ((a) << 24)))
 #define EGERGB(r, g, b)      EGERGBA(r, g, b, 0xFF)
@@ -237,6 +676,9 @@ enum initmode_flag
     INIT_NOFORCEEXIT     = 0x10,  ///< Don't force exit program when closing window, only set internal flag, is_run() can get the flag
     INIT_UNICODE         = 0x20,  ///< Unicode character messages (equivalent to setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< Hidden window
+#if defined(EGE_BUILD_OPENGL)
+    INIT_OPENGL          = 0x80,  ///< OpenGL mode (only available when built with EGE_BUILD_OPENGL)
+#endif
     INIT_WITHLOGO        = 0x100, ///< Show EGE Logo animation on startup (not shown by default in Debug version)
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< Animation mode
 };
@@ -1238,6 +1680,21 @@ typedef IMAGE *PIMAGE;
 /// @brief Constant image object pointer type
 typedef const IMAGE *PCIMAGE;
 
+/** @brief Storage used by an IMAGE. */
+enum image_storage_mode
+{
+    IMAGE_STORAGE_GPU = 0,        ///< Rendering and authoritative pixels live in a GPU target
+    IMAGE_STORAGE_CPU_BITMAP = 1  ///< A persistent CPU bitmap is authoritative
+};
+
+/** @brief Intended access for the getbuffer(PIMAGE, image_buffer_access) overload. */
+enum image_buffer_access
+{
+    IMAGE_BUFFER_READ = 0,          ///< Read existing pixels; writing through the pointer is unsupported
+    IMAGE_BUFFER_READ_WRITE = 1,    ///< Preserve existing pixels and allow persistent writes
+    IMAGE_BUFFER_WRITE_DISCARD = 2  ///< Discard old pixels and allow persistent writes
+};
+
 /**
  * @brief Set code page
  *
@@ -1380,6 +1837,9 @@ void EGEAPI seticon(int icon_id);
  * @brief Attach to existing window handle
  * @param hWnd Window handle to attach to
  * @return Operation result code
+ * @note Call before initgraph(). The EGE native window is created as a child of hWnd;
+ *       the host must remain valid until the graphics environment is closed.
+ * @note Passing NULL clears the host selection for the next window creation.
  */
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -2493,6 +2953,13 @@ void EGEAPI floodfill     (int x, int y, int borderColor, PIMAGE pimg = NULL);
  */
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
+/**
+ * @brief Set global alpha transparency
+ * @param alpha Alpha value (0-255, 0 fully transparent, 255 fully opaque)
+ * @param pimg Target image pointer, NULL means current ege window
+ */
+void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
+
 #ifdef EGE_GDIPLUS
 /// @defgroup EGEGDIPlus EGE GDI+ enhanced functions
 /// Enhanced drawing functions that require EGE_GDIPLUS macro to be defined
@@ -2505,12 +2972,6 @@ void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NUL
  */
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
-/**
- * @brief Set global alpha transparency
- * @param alpha Alpha value (0-255, 0 fully transparent, 255 fully opaque)
- * @param pimg Target image pointer, NULL means current ege window
- */
-void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 
 /**
  * @brief Draw line (GDI+ enhanced version)
@@ -3400,6 +3861,50 @@ ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL);
 ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);
 
 
+#else // !EGE_GDIPLUS
+
+// Cross-platform fallback declarations when GDI+ enhanced backend is not available.
+// These APIs provide the portable enhanced-drawing subset used by existing EGE
+// programs. Platform-specific GDI+ objects remain available only on Windows.
+
+void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
+
+void EGEAPI ege_line(float x1, float y1, float x2, float y2, PIMAGE pimg = NULL);
+void EGEAPI ege_drawpoly(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+void EGEAPI ege_fillpoly(int numOfPoints, const ege_point* points, PIMAGE pimg = NULL);
+
+void EGEAPI ege_circle       (float x, float y, float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_fillcircle   (float x, float y, float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_ellipse      (float x, float y, float w, float h, PIMAGE pimg = NULL);
+void EGEAPI ege_fillellipse  (float x, float y, float w, float h, PIMAGE pimg = NULL);
+
+void EGEAPI ege_fillrect     (float x, float y, float w, float h, PIMAGE pimg = NULL);
+
+void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius, PIMAGE pimg = NULL);
+void EGEAPI ege_roundrect    (float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
+void EGEAPI ege_fillroundrect(float x, float y, float w, float h,  float radius1, float radius2, float radius3, float radius4, PIMAGE pimg = NULL);
+
+void EGEAPI ege_setpattern_none(PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_lineargradient(float x1, float y1, color_t c1, float x2, float y2, color_t c2, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_pathgradient(ege_point center, color_t centerColor, int count, const ege_point* points, int colorCount, const color_t* pointColors, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_ellipsegradient(ege_point center, color_t centerColor, float x, float y, float w, float h, color_t color, PIMAGE pimg = NULL);
+void EGEAPI ege_setpattern_texture(PIMAGE imgSrc, float x, float y, float w, float h, PIMAGE pimg = NULL);
+
+void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, PIMAGE pimg = NULL);
+void EGEAPI ege_drawimage(PCIMAGE imgSrc,int xDest, int yDest, int widthDest, int heightDest, int xSrc, int ySrc, int widthSrc, int heightSrc,PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg = NULL);
+
+void EGEAPI ege_transform_rotate(float angle, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_translate(float x, float y, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_scale(float xScale, float yScale, PIMAGE pimg = NULL);
+void EGEAPI ege_transform_reset(PIMAGE pimg = NULL);
+void EGEAPI ege_get_transform(ege_transform_matrix* matrix, PIMAGE pimg = NULL);
+void EGEAPI ege_set_transform(const ege_transform_matrix* matrix, PIMAGE pimg = NULL);
+ege_point EGEAPI ege_transform_calc(ege_point p, PIMAGE pimg = NULL);
+ege_point EGEAPI ege_transform_calc(float x, float y, PIMAGE pimg = NULL);
+
 #endif
 
 // It is not supported in VC 6.0.
@@ -4120,28 +4625,85 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * - Image acquisition: getimage() series functions to get image data from different sources
  * - Image saving: saveimage(), savepng(), savebmp() save images to files
  *
- * Supported image formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * File decoding supports PNG, BMP, JPEG, GIF, PSD, HDR, PGM/PPM/PNM, and TGA.
+ * Windows may additionally decode TIFF, Exif, WMF, and EMF through GDI+.
  * Support getting images from window, file, resource, other IMAGE objects
  * @{
  */
 
 /**
  * @brief Get image pixel buffer pointer
- * @param pimg Image object pointer to get buffer from, default is NULL (represents window)
- * @return First address of image buffer, buffer is one-dimensional array with size = image width × image height
- * @note Pixel at coordinate (x, y) corresponds to buffer index: buffer[y * width + x]
- * @note Returned pointer can directly manipulate pixel data, changes take effect immediately
+ * @param pimg Image object pointer to get buffer from; NULL selects the current drawing target
+ * @return Writable top-down ARGB pixel array with image width × image height elements
+ * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. On Windows OpenGL,
+ *       this overload is equivalent to IMAGE_BUFFER_READ_WRITE: the first call preserves
+ *       existing pixels and promotes the image to a persistent CPU bitmap.
+ * @note On Windows OpenGL, the returned pointer remains authoritative across later EGE
+ *       drawing and image operations. Whenever the image is sampled or presented, its
+ *       CPU bitmap is uploaded again so writes through a retained pointer remain visible.
+ * @note The pointer is invalidated when the image is resized, reloaded with different
+ *       dimensions, deleted, or (for NULL) when the window buffer is recreated.
+ * @note OpenGL may perform a synchronous GPU readback. Call this only on the graphics/context
+ *       thread; concurrent access to the image or returned storage is not supported.
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
 
 /**
+ * @brief Get an image pixel buffer with an explicit access intent
+ * @param pimg Image object pointer; NULL selects the current drawing target
+ * @param access Required buffer access
+ * @return Top-down ARGB pixel array, or NULL if storage cannot be allocated
+ * @note IMAGE_BUFFER_READ avoids changing a GPU image into a CPU bitmap. The returned
+ *       pointer must not be written through in that mode.
+ * @note On Windows, either writable mode promotes an OpenGL image to persistent CPU
+ *       bitmap storage. IMAGE_BUFFER_WRITE_DISCARD avoids downloading old GPU pixels.
+ *       The caller must initialize every pixel that will subsequently be read.
+ * @note Native macOS/Linux OpenGL currently keeps the historical synchronized staging
+ *       buffer because no complete CPU drawing backend is available there.
+ * @note Promoting a GPU image to CPU bitmap storage invalidates pointers previously
+ *       returned by IMAGE_BUFFER_READ or the const overload; reacquire them afterwards.
+ */
+color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
+
+/**
  * @brief Get image pixel buffer pointer (read-only version)
- * @param pimg Image object pointer to get buffer from, default is NULL (represents window)
- * @return First address of image buffer (read-only), buffer is one-dimensional array with size = image width × image height
- * @note Pixel at coordinate (x, y) corresponds to buffer index: buffer[y * width + x]
- * @note Returned pointer can only read pixel data, cannot modify
+ * @param pimg Image object pointer to get buffer from; NULL selects the current drawing target
+ * @return Read-only top-down ARGB pixel array with image width × image height elements
+ * @note Pixel (x, y) is stored at buffer[y * getwidth(pimg) + x]. OpenGL synchronizes pending
+ *       rendering before returning and may perform a synchronous GPU readback.
+ * @note The pointer has the same thread restrictions as the writable overload. For a GPU
+ *       image it is also invalidated by a later writable getbuffer, getHDC, or explicit
+ *       promotion to CPU bitmap storage.
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
+
+/**
+ * @brief Copy a top-down ARGB pixel rectangle into an image
+ * @param pimg Destination image; NULL selects the current drawing target
+ * @param x Destination left coordinate in physical image pixels
+ * @param y Destination top coordinate in physical image pixels
+ * @param width Rectangle width
+ * @param height Rectangle height
+ * @param pixels Source top-down ARGB pixels
+ * @param pitchBytes Source row stride in bytes; zero means width * sizeof(color_t)
+ * @return grOk on success, grNullPointer, grInvalidRegion, or grParamError on failure
+ * @note Unlike writable getbuffer, the OpenGL backend knows the exact changed
+ *       rectangle and avoids a destination readback. Viewport origin and clipping
+ *       are not applied, and a GPU image remains in GPU storage.
+ */
+int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes = 0);
+
+/** @brief Return the authoritative storage currently used by an image. */
+image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
+
+/**
+ * @brief Change an image's authoritative storage mode
+ * @return grOk on success, grInvalidMode when the requested transition is unsupported
+ * @note GPU-to-CPU promotion preserves pixels. CPU-to-GPU demotion is intentionally not
+ *       implicit because it would invalidate retained writable buffer pointers.
+ */
+int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief Resize image (fast version)
@@ -4190,6 +4752,7 @@ int  EGEAPI getimage(PIMAGE imgDest, int xSrc, int ySrc, int widthSrc, int heigh
  * @param heightSrc Height of region to get image from
  * @return Returns grOk(0) on success, corresponding error code on failure
  * @note Copy image data from specified region of source IMAGE object to destination IMAGE object
+ * @note The destination keeps the requested size; portions outside the source bounds are clipped
  * @see getimage(PIMAGE, int, int, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc);
@@ -4201,7 +4764,8 @@ int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int wid
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Supports PNG, BMP, JPEG, GIF, PSD, HDR, PGM/PPM/PNM, and TGA.
+ *       Windows may additionally decode TIFF, Exif, WMF, and EMF through GDI+.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const wchar_t*, int, int)
  */
@@ -4214,7 +4778,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  imageFile, int zoomWidth = 0, 
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Supports PNG, BMP, JPEG, GIF, PSD, HDR, PGM/PPM/PNM, and TGA.
+ *       Windows may additionally decode TIFF, Exif, WMF, and EMF through GDI+.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const char*, int, int)
  */
@@ -4228,7 +4793,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth = 0
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows resource decoding uses GDI+ and supports BMP, GIF, JPEG, PNG,
+ *       TIFF, Exif, WMF, and EMF. Native resources are not available on other platforms.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const wchar_t*, const wchar_t*, int, int)
  */
@@ -4242,7 +4808,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  resType, const char*  resName,
  * @param zoomWidth Set image scaling width, 0 means use original width, no scaling
  * @param zoomHeight Set image scaling height, 0 means use original height, no scaling
  * @return Returns grOk(0) on success, corresponding error code on failure (grAllocError/grFileNotFound/grNullPointer/grIOerror)
- * @note Supported formats: PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows resource decoding uses GDI+ and supports BMP, GIF, JPEG, PNG,
+ *       TIFF, Exif, WMF, and EMF. Native resources are not available on other platforms.
  * @note If image contains multiple frames, only get first frame
  * @see getimage(PIMAGE, const char*, const char*, int, int)
  */
@@ -4838,8 +5405,11 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief Get drawing device context
  * @param pimg Image object pointer, if NULL then get drawing window's device context
- * @return Device context handle (HDC)
- * @note Returns Windows system device context handle, can be used for GDI drawing operations
+ * @return GDI device context handle, or NULL if compatible storage cannot be created
+ * @note On Windows, requesting an HDC for an OpenGL IMAGE promotes it to persistent
+ *       CPU-bitmap storage while preserving pixels and drawing state. The transition
+ *       is observable with getimagestoragemode(), and later HDC writes remain authoritative.
+ * @note Native OpenGL platforms without a Win32-compatible CPU drawing backend return NULL.
  * @warning Do not manually release returned HDC, managed automatically by EGE library
  * @see getHWnd(), getHInstance()
  */
@@ -4907,9 +5477,8 @@ double          EGEAPI randomf();
  * @param text Prompt text
  * @param buf Buffer to store input text
  * @param len Buffer length
- * @return Returns non-zero value on success, 0 on failure or cancel
- * @note Shows a modal dialog for user to input single line text
- * @warning Ensure buffer is large enough to avoid overflow
+ * @return Number of input characters; 0 for empty input or invalid buffer arguments
+ * @note Shows a modal dialog for user to input text. The buffer remains bounded by len.
  * @see inputbox_getline(const wchar_t*, const wchar_t*, LPWSTR, int)
  */
 int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, int len);
@@ -4920,9 +5489,8 @@ int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, i
  * @param text Prompt text
  * @param buf Buffer to store input text
  * @param len Buffer length
- * @return Returns non-zero value on success, 0 on failure or cancel
- * @note Shows a modal dialog for user to input single line text, supports Unicode characters
- * @warning Ensure buffer is large enough to avoid overflow
+ * @return Number of input characters; 0 for empty input or invalid buffer arguments
+ * @note Shows a modal dialog for user to input text, including Unicode. The buffer remains bounded by len.
  * @see inputbox_getline(const char*, const char*, LPSTR, int)
  */
 int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len);
@@ -5143,11 +5711,15 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 /**
  * @brief Music playback class
  *
- * MUSIC class provides music playback functionality based on Windows Media Control Interface (MCI),
- * supports playing various audio formats such as WAV, MP3, MIDI, etc.
+ * MUSIC provides cross-platform file playback while retaining the original
+ * Windows-compatible API and object layout.
  *
- * @note This class is based on Windows MCI implementation, only supports Windows platform
- * @note Supported audio formats include: WAV, MP3, MIDI, etc.
+ * @note Windows uses MCI. macOS uses AVFAudio and the system DLS synthesizer.
+ *       Linux prefers GStreamer when available and otherwise uses the bundled
+ *       miniaudio decoder/output backend.
+ * @note Exact formats depend on the platform. The Linux miniaudio fallback
+ *       supports WAV, MP3 and FLAC; Linux MIDI needs a GStreamer MIDI decoder
+ *       and a soundfont installed at runtime.
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC
@@ -5184,7 +5756,7 @@ public:
      * @brief Open music file (ASCII version)
      * @param filepath Music file path (including filename)
      * @return Returns 0 on success, non-zero on failure
-     * @note Supports WAV, MP3, MIDI and other formats, playback state becomes MUSIC_MODE_STOP after successful opening
+     * @note Format support is platform-dependent; playback state becomes MUSIC_MODE_STOP after a successful open
      * @note If another file is already opened, it will be automatically closed
      * @see OpenFile(const wchar_t*), Close()
      */
@@ -5194,7 +5766,7 @@ public:
      * @brief Open music file (Unicode version)
      * @param filepath Music file path (including filename)
      * @return Returns 0 on success, non-zero on failure
-     * @note Supports WAV, MP3, MIDI and other formats, playback state becomes MUSIC_MODE_STOP after successful opening
+     * @note Format support is platform-dependent; playback state becomes MUSIC_MODE_STOP after a successful open
      * @note If another file is already opened, it will be automatically closed
      * @see OpenFile(const char*), Close()
      */
@@ -5233,8 +5805,7 @@ public:
      * @brief Seek to playback position
      * @param dwTo Target playback position (milliseconds)
      * @return Returns 0 on success, non-zero on failure
-     * @note Currently this function is invalid, recommend using Play(dwTo) instead
-     * @deprecated Recommend using Play(dwTo) to achieve seeking
+     * @note The macOS and Linux backends preserve the current play/pause state
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);

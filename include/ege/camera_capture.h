@@ -204,7 +204,7 @@ public:
 
     /**
      * @brief 关闭相机设备, 释放资源.
-     * @note 调用这个方法后, CameraCapture 对象不应该再被使用.
+     * @note 关闭后可以再次调用 open() 打开捕获源.
      *       这个方法会在 CameraCapture 对象被销毁时自动调用.
      */
     void close();

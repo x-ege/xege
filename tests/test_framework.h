@@ -1,7 +1,7 @@
 #ifndef TEST_FRAMEWORK_H
 #define TEST_FRAMEWORK_H
 
-#include <windows.h>
+#include "ege.h"
 #include <iostream>
 #include <vector>
 #include <string>

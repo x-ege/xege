@@ -1,0 +1,19 @@
+# dev.cmake (developer-local overrides)
+#
+# 用法：把本文件复制为仓库根目录的 dev.cmake（该文件已被 .gitignore 忽略）。
+# dev.cmake 仅用于本地开发时预设一些 CMake 选项，避免改动提交到仓库的文件。
+#
+# 注意：这里建议只写 set(... CACHE ... FORCE) 这种“显式覆盖”，以保证行为可预期。
+
+# 示例：在 Linux/macOS 上默认启用 OpenGL 原生模式（native + GLFW/OpenGL）。
+# set(EGE_BUILD_OPENGL ON CACHE BOOL "Build with OpenGL backend" FORCE)
+
+# 示例：本地总是构建 demo
+# set(EGE_BUILD_DEMO ON CACHE BOOL "Build ege demos" FORCE)
+
+# 示例：本地关闭 tests/temp
+# set(EGE_BUILD_TEST OFF CACHE BOOL "Build ege tests" FORCE)
+# set(EGE_BUILD_TEMP OFF CACHE BOOL "Build ege temp" FORCE)
+
+# 示例：更快的本地迭代（按需打开/关闭）
+# set(EGE_DISABLE_DEBUG_INFO ON CACHE BOOL "Disable debug info to avoid LNK4099 warnings" FORCE)

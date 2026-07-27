@@ -1,3 +1,11 @@
+// The localized header historically duplicated all declarations and platform
+// shims from ege.h.  On native Unix that copy still included <windows.h> and
+// had already drifted from the OpenGL API surface.  Use the canonical public
+// header there; Windows keeps the localized declarations and documentation.
+#if !defined(_WIN32) && !defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
+#include "ege.h"
+#else
+
 /*********************************************************
  * EGE (Easy Graphics Engine)  25.11
  * FileName:    ege.h
@@ -78,7 +86,12 @@
 #define __STDC_CONSTANT_MACROS
 #endif
 
+// 项目历史上为旧的 Windows 工具链自带了一个 stdint.h。
+// 在现代非 Windows 平台（例如 macOS 上的 AppleClang）无条件包含它会与系统
+// <stdint.h>/<cstdint> 冲突。
+#if defined(_WIN32) || defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include "ege/stdint.h"
+#endif
 
 #if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include <windef.h>
@@ -237,6 +250,9 @@ enum initmode_flag
     INIT_NOFORCEEXIT     = 0x10,  ///< 关闭窗口时不强制退出程序，只设置内部标志位，is_run() 可以获取标志位
     INIT_UNICODE         = 0x20,  ///< Unicode字符消息 (等同于setunicodecharmessage(true))
     INIT_HIDE            = 0x40,  ///< 隐藏窗口
+#if defined(EGE_BUILD_OPENGL)
+    INIT_OPENGL          = 0x80,  ///< OpenGL 模式（仅当以 EGE_BUILD_OPENGL 构建时可用）
+#endif
     INIT_WITHLOGO        = 0x100, ///< 启动时显示EGE Logo 动画 (Debug版本下默认不显示)
     INIT_ANIMATION       = INIT_DEFAULT | INIT_RENDERMANUAL | INIT_NOFORCEEXIT ///< 动画模式
 };
@@ -1238,6 +1254,21 @@ typedef IMAGE *PIMAGE;
 /// @brief 常量图像对象指针类型
 typedef const IMAGE *PCIMAGE;
 
+/** @brief IMAGE 使用的权威存储类型。 */
+enum image_storage_mode
+{
+    IMAGE_STORAGE_GPU = 0,        ///< GPU 渲染目标保存权威像素
+    IMAGE_STORAGE_CPU_BITMAP = 1  ///< 持久 CPU 位图保存权威像素
+};
+
+/** @brief getbuffer(PIMAGE, image_buffer_access) 重载声明的访问方式。 */
+enum image_buffer_access
+{
+    IMAGE_BUFFER_READ = 0,          ///< 读取已有像素，不允许通过返回指针写入
+    IMAGE_BUFFER_READ_WRITE = 1,    ///< 保留已有像素并允许持久写入
+    IMAGE_BUFFER_WRITE_DISCARD = 2  ///< 丢弃旧像素并允许持久写入
+};
+
 /**
  * @brief 设置代码页
  *
@@ -1380,6 +1411,9 @@ void EGEAPI seticon(int icon_id);
  * @brief 附加到已有的窗口句柄
  * @param hWnd 要附加的窗口句柄
  * @return 操作结果代码
+ * @note 必须在 initgraph() 前调用。EGE 原生窗口会创建为 hWnd 的子窗口；
+ *       在图形环境关闭前，宿主窗口必须保持有效
+ * @note 传入 NULL 会清除下一次窗口创建所使用的宿主
  */
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -2492,6 +2526,13 @@ void EGEAPI floodfill     (int x, int y, int borderColor, PIMAGE pimg = NULL);
  */
 void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NULL);
 
+/**
+ * @brief 设置全局Alpha透明度
+ * @param alpha Alpha值（0-255，0完全透明，255完全不透明）
+ * @param pimg 目标图像指针，NULL 表示当前ege窗口
+ */
+void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
+
 #ifdef EGE_GDIPLUS
 /// @defgroup EGEGDIPlus EGE GDI+增强函数
 /// 需要定义EGE_GDIPLUS宏才能使用的增强绘图功能
@@ -2504,12 +2545,6 @@ void EGEAPI floodfillsurface (int x, int y, color_t areaColor, PIMAGE pimg = NUL
  */
 void EGEAPI ege_enable_aa(bool enable, PIMAGE pimg = NULL);
 
-/**
- * @brief 设置全局Alpha透明度
- * @param alpha Alpha值（0-255，0完全透明，255完全不透明）
- * @param pimg 目标图像指针，NULL 表示当前ege窗口
- */
-void EGEAPI ege_setalpha(int alpha, PIMAGE pimg = NULL);
 
 /**
  * @brief 绘制直线（GDI+增强版本）
@@ -4115,28 +4150,80 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * - 图像获取：getimage() 系列函数从不同源获取图像数据
  * - 图像保存：saveimage(), savepng(), savebmp() 保存图像到文件
  *
- * 支持的图像格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * 文件解码支持 PNG、BMP、JPEG、GIF、PSD、HDR、PGM/PPM/PNM 和 TGA；
+ * Windows 还可通过 GDI+ 解码 TIFF、Exif、WMF 和 EMF。
  * 支持从窗口、文件、资源、其他IMAGE对象获取图像
  * @{
  */
 
 /**
  * @brief 获取图像像素缓冲区指针
- * @param pimg 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口）
- * @return 图像缓冲区首地址，缓冲区为一维数组，大小为 图像宽度×图像高度
- * @note 坐标为(x, y)的像素对应缓冲区索引：buffer[y * width + x]
- * @note 返回的指针可以直接操作像素数据，修改后会立即生效
+ * @param pimg 要获取缓冲区的图像对象指针；NULL 表示当前绘图目标
+ * @return 可写的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
+ * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。Windows OpenGL 下，本重载
+ *       等价于 IMAGE_BUFFER_READ_WRITE：首次调用会保留旧像素，并把图像提升为持久
+ *       CPU 位图。
+ * @note Windows OpenGL 下，返回指针在后续 EGE 绘图和图像操作之间仍是权威存储。
+ *       图像每次被采样或上屏时都会重新上传 CPU 位图，因此继续通过原指针写入仍可见。
+ * @note 调整图像尺寸、以不同尺寸重新载入图像、删除图像，或者窗口缓冲区因窗口
+ *       尺寸变化而重建后，原指针失效。
+ * @note OpenGL 后端可能同步等待 GPU 回读。只能在图形/上下文线程调用；不支持并发
+ *       访问图像或返回的缓冲区。
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
 
 /**
+ * @brief 按指定访问方式获取图像像素缓冲区
+ * @param pimg 图像对象指针；NULL 表示当前绘图目标
+ * @param access 所需的缓冲区访问方式
+ * @return 按行从上到下排列的 ARGB 像素数组；分配失败时返回 NULL
+ * @note IMAGE_BUFFER_READ 不会把 GPU 图像转换为 CPU 位图，此模式下不得写入返回指针。
+ * @note Windows 下的可写模式会把 OpenGL 图像提升为持久 CPU 位图；
+ *       IMAGE_BUFFER_WRITE_DISCARD 不回读旧的 GPU 像素，调用方必须初始化后续会读取的
+ *       每一个像素。
+ * @note macOS/Linux 原生 OpenGL 目前仍使用历史同步暂存缓冲区，因为尚无完整 CPU 绘图后端。
+ * @note GPU 图像提升为 CPU 位图存储后，IMAGE_BUFFER_READ 或 const 重载此前返回的指针
+ *       会失效；转换后必须重新获取。
+ */
+color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
+
+/**
  * @brief 获取图像像素缓冲区指针（只读版本）
- * @param pimg 要获取缓冲区的图像对象指针，默认为 NULL（表示窗口）
- * @return 图像缓冲区首地址（只读），缓冲区为一维数组，大小为 图像宽度×图像高度
- * @note 坐标为(x, y)的像素对应缓冲区索引：buffer[y * width + x]
- * @note 返回的指针只能读取像素数据，不能修改
+ * @param pimg 要获取缓冲区的图像对象指针；NULL 表示当前绘图目标
+ * @return 只读的自顶向下 ARGB 像素数组，共有 图像宽度×图像高度 个元素
+ * @note 坐标 (x, y) 对应 buffer[y * getwidth(pimg) + x]。OpenGL 后端会先同步待处理的
+ *       绘制，必要时会同步等待 GPU 回读。
+ * @note 线程限制与可写重载相同。GPU 图像后来调用可写 getbuffer、getHDC 或显式提升为
+ *       CPU 位图存储时，此前返回的只读指针也会失效。
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
+
+/**
+ * @brief 将一块自上而下的 ARGB 像素矩形复制到图像
+ * @param pimg 目标图像；NULL 表示当前绘图目标
+ * @param x 目标矩形左边界（图像物理坐标）
+ * @param y 目标矩形上边界（图像物理坐标）
+ * @param width 矩形宽度
+ * @param height 矩形高度
+ * @param pixels 自上而下排列的源 ARGB 像素
+ * @param pitchBytes 源数据每行字节数；0 表示 width * sizeof(color_t)
+ * @return 成功返回 grOk；失败返回 grNullPointer、grInvalidRegion 或 grParamError
+ * @note 与可写 getbuffer 不同，OpenGL 后端可准确得知修改区域，因此无需回读
+ *       目标纹理。坐标不受视口原点和裁剪影响，GPU 图像也不会转为 CPU 位图。
+ */
+int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes = 0);
+
+/** @brief 获取图像当前使用的权威存储类型。 */
+image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
+
+/**
+ * @brief 修改图像的权威存储类型
+ * @return 成功返回 grOk；不支持的转换返回 grInvalidMode
+ * @note GPU 到 CPU 的提升会保留像素。CPU 到 GPU 不会隐式执行，因为这会使用户保留的
+ *       可写缓冲区指针失效。
+ */
+int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief 调整图像尺寸（快速版本）
@@ -4185,6 +4272,7 @@ int  EGEAPI getimage(PIMAGE imgDest, int xSrc, int ySrc, int widthSrc, int heigh
  * @param heightSrc 要获取图像的区域高度
  * @return 成功返回 grOk(0)，失败返回相应错误码
  * @note 从源 IMAGE 对象的指定区域复制图像数据到目标 IMAGE 对象
+ * @note 目标图像保持请求的尺寸，超出源图像边界的部分会被裁剪
  * @see getimage(PIMAGE, int, int, int, int)
  */
 int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int widthSrc, int heightSrc);
@@ -4196,7 +4284,8 @@ int  EGEAPI getimage(PIMAGE imgDest, PCIMAGE imgSrc, int xSrc, int ySrc, int wid
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note 支持 PNG、BMP、JPEG、GIF、PSD、HDR、PGM/PPM/PNM 和 TGA；
+ *       Windows 还可通过 GDI+ 解码 TIFF、Exif、WMF 和 EMF
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const wchar_t*, int, int)
  */
@@ -4209,7 +4298,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  imageFile, int zoomWidth = 0, 
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note 支持 PNG、BMP、JPEG、GIF、PSD、HDR、PGM/PPM/PNM 和 TGA；
+ *       Windows 还可通过 GDI+ 解码 TIFF、Exif、WMF 和 EMF
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const char*, int, int)
  */
@@ -4223,7 +4313,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth = 0
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows 资源通过 GDI+ 解码，支持 BMP、GIF、JPEG、PNG、TIFF、Exif、WMF
+ *       和 EMF；其他平台不提供 Win32 资源加载
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const wchar_t*, const wchar_t*, int, int)
  */
@@ -4237,7 +4328,8 @@ int  EGEAPI getimage(PIMAGE imgDest, const char*  resType, const char*  resName,
  * @param zoomWidth 设定图像缩放至的宽度，0 表示使用原始宽度，不缩放
  * @param zoomHeight 设定图像缩放至的高度，0 表示使用原始高度，不缩放
  * @return 成功返回 grOk(0)，失败返回相应错误码（grAllocError/grFileNotFound/grNullPointer/grIOerror）
- * @note 支持格式：PNG, BMP, JPG, GIF, EMF, WMF, ICO
+ * @note Windows 资源通过 GDI+ 解码，支持 BMP、GIF、JPEG、PNG、TIFF、Exif、WMF
+ *       和 EMF；其他平台不提供 Win32 资源加载
  * @note 如果图像包含多帧，仅获取第一帧
  * @see getimage(PIMAGE, const char*, const char*, int, int)
  */
@@ -4833,8 +4925,11 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief 获取绘图设备上下文
  * @param pimg 图像对象指针，如果为 NULL 则获取绘图窗口的设备上下文
- * @return 设备上下文句柄(HDC)
- * @note 返回的是 Windows 系统的设备上下文句柄，可用于 GDI 绘图操作
+ * @return GDI 设备上下文句柄；无法创建兼容存储时返回 NULL
+ * @note 在 Windows 上，为 OpenGL IMAGE 请求 HDC 会在保留像素和绘图状态的同时，
+ *       将图像提升为持久 CPU 位图。可通过 getimagestoragemode() 观察这一转换，
+ *       后续通过该 HDC 的写入仍是权威数据。
+ * @note 没有 Win32 兼容 CPU 绘图后端的原生 OpenGL 平台返回 NULL。
  * @warning 不要手动释放返回的 HDC，由 EGE 库自动管理
  * @see getHWnd(), getHInstance()
  */
@@ -4902,9 +4997,8 @@ double          EGEAPI randomf();
  * @param text 提示文本
  * @param buf 用于存储输入文本的缓冲区
  * @param len 缓冲区长度
- * @return 成功返回非零值，失败或取消返回 0
- * @note 显示一个模态对话框让用户输入单行文本
- * @warning 确保缓冲区足够大以避免溢出
+ * @return 输入字符数；空输入或缓冲区参数无效时返回 0
+ * @note 显示模态输入框，输出始终限制在 len 指定的缓冲区范围内
  * @see inputbox_getline(const wchar_t*, const wchar_t*, LPWSTR, int)
  */
 int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, int len);
@@ -4915,9 +5009,8 @@ int EGEAPI inputbox_getline(const char*  title, const char*  text, LPSTR  buf, i
  * @param text 提示文本
  * @param buf 用于存储输入文本的缓冲区
  * @param len 缓冲区长度
- * @return 成功返回非零值，失败或取消返回 0
- * @note 显示一个模态对话框让用户输入单行文本，支持 Unicode 字符
- * @warning 确保缓冲区足够大以避免溢出
+ * @return 输入字符数；空输入或缓冲区参数无效时返回 0
+ * @note 显示支持 Unicode 的模态输入框，输出始终限制在 len 指定的缓冲区范围内
  * @see inputbox_getline(const char*, const char*, LPSTR, int)
  */
 int EGEAPI inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len);
@@ -5142,11 +5235,12 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 /**
  * @brief 音乐播放类
  *
- * MUSIC 类提供了基于 Windows Media Control Interface (MCI) 的音乐播放功能，
- * 支持播放 WAV、MP3、MIDI 等多种音频格式。
+ * MUSIC 在保留原有 Windows 兼容 API 和对象布局的同时，提供跨平台文件播放。
  *
- * @note 该类基于 Windows MCI 实现，仅支持 Windows 平台
- * @note 支持的音频格式包括：WAV, MP3, MIDI 等
+ * @note Windows 使用 MCI；macOS 使用 AVFAudio 和系统 DLS 合成器；Linux
+ *       优先使用 GStreamer，缺失时回退到内置 miniaudio。
+ * @note 具体格式取决于平台。Linux miniaudio 回退支持 WAV、MP3 和 FLAC；
+ *       Linux MIDI 需要运行时安装 GStreamer MIDI 解码插件和 soundfont。
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC
@@ -5183,7 +5277,7 @@ public:
      * @brief 打开音乐文件（ASCII 版本）
      * @param filepath 音乐文件路径（包含文件名）
      * @return 操作成功返回 0，操作失败返回非 0
-     * @note 支持 WAV、MP3、MIDI 等格式，成功打开后播放状态为 MUSIC_MODE_STOP
+     * @note 格式支持取决于平台；成功打开后播放状态为 MUSIC_MODE_STOP
      * @note 如果已经打开了其他文件，会自动关闭原文件
      * @see OpenFile(const wchar_t*), Close()
      */
@@ -5193,7 +5287,7 @@ public:
      * @brief 打开音乐文件（Unicode 版本）
      * @param filepath 音乐文件路径（包含文件名）
      * @return 操作成功返回 0，操作失败返回非 0
-     * @note 支持 WAV、MP3、MIDI 等格式，成功打开后播放状态为 MUSIC_MODE_STOP
+     * @note 格式支持取决于平台；成功打开后播放状态为 MUSIC_MODE_STOP
      * @note 如果已经打开了其他文件，会自动关闭原文件
      * @see OpenFile(const char*), Close()
      */
@@ -5232,8 +5326,7 @@ public:
      * @brief 定位播放位置
      * @param dwTo 目标播放位置（毫秒）
      * @return 操作成功返回 0，操作失败返回非 0
-     * @note 目前此函数无效，建议使用 Play(dwTo) 代替
-     * @deprecated 推荐使用 Play(dwTo) 实现定位播放
+     * @note macOS 和 Linux 后端会保留当前的播放/暂停状态
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);
@@ -5325,4 +5418,6 @@ uint32_t EGEAPI ege_uncompress_size(const void* compressData, uint32_t compressS
     #endif
 #endif
 
-#endif
+#endif // EGE_H
+
+#endif // native Unix uses the canonical ege.h declarations

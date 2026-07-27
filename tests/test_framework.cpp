@@ -1,10 +1,29 @@
 #include "test_framework.h"
+#include "test_shutdown.h"
 #include "ege.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <cstdlib>
+
+namespace {
+
+ege::initmode_flag testInitMode()
+{
+    ege::initmode_flag mode = static_cast<ege::initmode_flag>(
+        ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+#if defined(_WIN32) && defined(EGE_BUILD_OPENGL)
+    const char* openGlMode = std::getenv("EGE_TEST_OPENGL");
+    if (openGlMode != nullptr && openGlMode[0] == '1') {
+        mode = static_cast<ege::initmode_flag>(mode | ege::INIT_OPENGL);
+    }
+#endif
+    return mode;
+}
+
+} // namespace
 
 // 全局测试框架实例
 TestFramework* g_testFramework = nullptr;
@@ -21,7 +40,7 @@ TestFramework::~TestFramework() {
 bool TestFramework::initialize(int windowWidth, int windowHeight) {
     try {        
         // 初始化图形窗口
-        ege::initgraph(windowWidth, windowHeight, ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+        ege::initgraph(windowWidth, windowHeight, testInitMode());
         
         // 获取窗口句柄
         graphicsWindow = ege::getHWnd();
@@ -47,8 +66,8 @@ bool TestFramework::initialize(int windowWidth, int windowHeight) {
 }
 
 void TestFramework::cleanup() {
-    if (ege::is_run()) {
-        ege::closegraph();
+    if (graphicsWindow && !shutdown_graphics_for_test()) {
+        logWarning("Timed out while shutting down the graphics test window");
     }
     graphicsWindow = nullptr;
     windowHidden = false;
@@ -56,7 +75,12 @@ void TestFramework::cleanup() {
 
 bool TestFramework::hideWindow() {
     if (graphicsWindow && !windowHidden) {
-        if (ShowWindow(graphicsWindow, SW_HIDE)) {
+#ifdef _WIN32
+        // ShowWindow returns the previous visibility state, not whether the
+        // request succeeded. Check the resulting state so an already hidden
+        // test window is not reported as an error.
+        ShowWindow((HWND)graphicsWindow, SW_HIDE);
+        if (!IsWindowVisible((HWND)graphicsWindow)) {
             windowHidden = true;
             logInfo("Graphics window hidden");
             return true;
@@ -64,13 +88,19 @@ bool TestFramework::hideWindow() {
             logError("Failed to hide graphics window");
             return false;
         }
+#else
+        windowHidden = true;
+        return true;
+#endif
     }
     return windowHidden;
 }
 
 bool TestFramework::showWindow() {
     if (graphicsWindow && windowHidden) {
-        if (ShowWindow(graphicsWindow, SW_SHOW)) {
+#ifdef _WIN32
+        ShowWindow((HWND)graphicsWindow, SW_SHOW);
+        if (IsWindowVisible((HWND)graphicsWindow)) {
             windowHidden = false;
             logInfo("Graphics window shown");
             return true;
@@ -78,6 +108,10 @@ bool TestFramework::showWindow() {
             logError("Failed to show graphics window");
             return false;
         }
+#else
+        windowHidden = false;
+        return true;
+#endif
     }
     return !windowHidden;
 }
@@ -90,7 +124,7 @@ bool TestFramework::setResolution(int width, int height) {
         }
         
         // 重新初始化窗口
-        ege::initgraph(width, height, ege::INIT_RENDERMANUAL | ege::INIT_NOFORCEEXIT | ege::INIT_HIDE);
+        ege::initgraph(width, height, testInitMode());
         
         // 更新窗口句柄
         graphicsWindow = ege::getHWnd();
@@ -104,7 +138,9 @@ bool TestFramework::setResolution(int width, int height) {
         
         // 如果之前是隐藏状态，保持隐藏
         if (windowHidden) {
-            ShowWindow(graphicsWindow, SW_HIDE);
+#ifdef _WIN32
+            ShowWindow((HWND)graphicsWindow, SW_HIDE);
+#endif
         }
         
         logInfo("Resolution changed to: " + std::to_string(width) + "x" + std::to_string(height));

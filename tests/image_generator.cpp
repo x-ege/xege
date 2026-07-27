@@ -108,18 +108,15 @@ PIMAGE ImageGenerator::createCheckerboardImage(int width, int height, int square
         abort();
     }
 
-    settarget(img);
-
+    color_t* pixels = getbuffer(img);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int squareX = x / squareSize;
             int squareY = y / squareSize;
-            color_t color = ((squareX + squareY) % 2 == 0) ? color1 : color2;
-            putpixel(x, y, color);
+            pixels[y * width + x] = ((squareX + squareY) % 2 == 0) ? color1 : color2;
         }
     }
 
-    settarget(nullptr);
     return img;
 }
 

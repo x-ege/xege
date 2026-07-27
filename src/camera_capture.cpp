@@ -13,6 +13,20 @@
 #include <algorithm>
 #include <vector>
 
+#if defined(_WIN32) && defined(_MSC_VER)
+// Keep the raw graphics.lib consumer experience compatible with EGE's
+// header-driven auto-linking. These directives travel with the camera object
+// in the static library, so users do not need to discover ccap's Media
+// Foundation dependencies manually.
+#pragma comment(lib, "mf.lib")
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "propsys.lib")
+#endif
+
+#include "camera_frame_copy.h"
 #include "image.h"
 
 using namespace ccap;
@@ -77,10 +91,7 @@ public:
 
     PIMAGE getImage() override
     {
-        // 检查是否需要更新图像数据：
-        // 1. m_frame != m_realFrame.get() 表示帧数据已更新（新帧或帧被复用）
-        // 2. m_realImage == nullptr 表示图像尚未创建
-        if ((m_frame != m_realFrame.get() || m_realImage == nullptr) && m_realFrame) {
+        if (m_realFrame) {
             if (m_realFrame->pixelFormat != ccap::PixelFormat::BGRA32) {
                 fputs("ege: 抓取到的图像格式不正确, 请上报一个错误!!", stderr);
                 fputs("ege: The captured image format is incorrect, please report an error!!", stderr);
@@ -88,23 +99,38 @@ public:
                 return nullptr;
             }
 
-            // 更新一下数据.
-            m_frame = m_realFrame.get();
-            if (!m_realImage) {
-                m_realImage = std::make_shared<ege::IMAGE>(m_realFrame->width, m_realFrame->height, ege::BLACK);
+            const detail::BgraFrameView frameView = {
+                m_realFrame->data[0], m_realFrame->sizeInBytes,
+                m_realFrame->width, m_realFrame->height, m_realFrame->stride[0]
+            };
+            std::size_t imageBytes = 0;
+            if (!detail::validateBgraFrameLayout(frameView, nullptr, &imageBytes)) {
+                fputs("ege: captured BGRA frame has invalid dimensions, stride, or data size\n", stderr);
+                return nullptr;
             }
 
-            auto* img    = m_realImage.get();
-            auto* buffer = img->getbuffer();
-
-            if (m_realFrame->width * 4 == m_realFrame->stride[0]) { // 已对齐
-                assert(m_realFrame->sizeInBytes >= m_realFrame->width * m_realFrame->height * 4);
-                memcpy(buffer, m_realFrame->data[0], m_realFrame->sizeInBytes);
-            } else { // 未对齐
-                for (uint32_t i = 0; i < m_realFrame->height; ++i) {
-                    memcpy(buffer + i * m_realFrame->width, m_realFrame->data[0] + i * m_realFrame->stride[0],
-                        m_realFrame->width * 4);
+            // 检查是否需要更新图像数据：
+            // 1. m_frame != m_realFrame.get() 表示帧数据已更新（新帧或帧被复用）
+            // 2. m_realImage == nullptr 表示图像尚未创建
+            // 3. 帧尺寸发生变化时需要重建图像，避免复用旧尺寸的缓冲区
+            const bool imageSizeChanged = m_realImage &&
+                                          (m_realImage->getwidth() != static_cast<int>(m_realFrame->width) ||
+                                           m_realImage->getheight() != static_cast<int>(m_realFrame->height));
+            if (m_frame != m_realFrame.get() || !m_realImage || imageSizeChanged) {
+                std::shared_ptr<ege::IMAGE> image = m_realImage;
+                if (!image || imageSizeChanged) {
+                    image = std::make_shared<ege::IMAGE>(static_cast<int>(m_realFrame->width),
+                                                         static_cast<int>(m_realFrame->height),
+                                                         ege::BLACK);
                 }
+
+                if (!detail::copyBgraFramePixels(image->getbuffer(), imageBytes, frameView)) {
+                    fputs("ege: failed to copy captured BGRA frame pixels\n", stderr);
+                    return nullptr;
+                }
+
+                m_realImage = std::move(image);
+                m_frame     = m_realFrame.get();
             }
         }
 
@@ -122,18 +148,26 @@ public:
                 fputs("ege: 抓取到的图像格式不正确, 请上报一个错误!!", stderr);
                 fputs("ege: The captured image format is incorrect, please report an error!!", stderr);
                 assert(0);
-                return m_realImage.get();
+                return nullptr;
             }
 
-            PIMAGE img    = new ege::IMAGE(m_realFrame->width, m_realFrame->height, ege::BLACK);
-            auto*  buffer = img->getbuffer();
-            if (m_realFrame->width * 4 == m_realFrame->stride[0]) { // 已对齐
-                memcpy(buffer, m_realFrame->data[0], m_realFrame->sizeInBytes);
-            } else { // 未对齐
-                for (uint32_t i = 0; i < m_realFrame->height; ++i) {
-                    memcpy(buffer + i * m_realFrame->width, m_realFrame->data[0] + i * m_realFrame->stride[0],
-                        m_realFrame->width * 4);
-                }
+            const detail::BgraFrameView frameView = {
+                m_realFrame->data[0], m_realFrame->sizeInBytes,
+                m_realFrame->width, m_realFrame->height, m_realFrame->stride[0]
+            };
+            std::size_t imageBytes = 0;
+            if (!detail::validateBgraFrameLayout(frameView, nullptr, &imageBytes)) {
+                fputs("ege: captured BGRA frame has invalid dimensions, stride, or data size\n", stderr);
+                return nullptr;
+            }
+
+            PIMAGE img = new ege::IMAGE(static_cast<int>(m_realFrame->width),
+                                        static_cast<int>(m_realFrame->height),
+                                        ege::BLACK);
+            if (!detail::copyBgraFramePixels(img->getbuffer(), imageBytes, frameView)) {
+                delete img;
+                fputs("ege: failed to copy captured BGRA frame pixels\n", stderr);
+                return nullptr;
             }
             return img;
         }
@@ -316,7 +350,7 @@ bool CameraCapture::open(int index, bool autoStart)
 #if EGE_ENABLE_CAMERA_CAPTURE
 
     if (index < 0) {
-        return open("");
+        return open("", autoStart);
     }
 
     auto deviceNames = m_provider ? m_provider->findDeviceNames() : std::vector<std::string>();

@@ -33,6 +33,27 @@ if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
   include(./ege_release.cmake)
 endif()
 
+set(EGE_DEMO_VALIDATION_BACKEND "" CACHE STRING
+  "Force demos to use GDI or OpenGL and disable the startup logo (validation only)")
+set_property(CACHE EGE_DEMO_VALIDATION_BACKEND PROPERTY STRINGS "" GDI OPENGL)
+string(TOUPPER "${EGE_DEMO_VALIDATION_BACKEND}" EGE_DEMO_VALIDATION_BACKEND)
+
+if(EGE_DEMO_VALIDATION_BACKEND AND
+   NOT EGE_DEMO_VALIDATION_BACKEND STREQUAL "GDI" AND
+   NOT EGE_DEMO_VALIDATION_BACKEND STREQUAL "OPENGL")
+  message(FATAL_ERROR
+    "EGE_DEMO_VALIDATION_BACKEND must be empty, GDI, or OPENGL")
+endif()
+
+if(EGE_DEMO_VALIDATION_BACKEND STREQUAL "OPENGL" AND
+   DEFINED EGE_BUILD_OPENGL AND NOT EGE_BUILD_OPENGL)
+  message(FATAL_ERROR
+    "OpenGL demo validation requires -DEGE_BUILD_OPENGL=ON")
+endif()
+
+set(EGE_DEMO_VALIDATION_HEADER
+  "${CMAKE_CURRENT_SOURCE_DIR}/../tests/support/demo_validation_initgraph.h")
+
 file(
   GLOB DEMO_SRCS
   LIST_DIRECTORIES false
@@ -47,6 +68,18 @@ macro(ege_add_executable name source)
   add_executable(${name} ${source})
   target_link_libraries(${name} xege)
 
+  if(EGE_DEMO_VALIDATION_BACKEND)
+    target_compile_definitions(${name} PRIVATE
+      "EGE_DEMO_VALIDATION_${EGE_DEMO_VALIDATION_BACKEND}=1")
+    if(MSVC)
+      target_compile_options(${name} PRIVATE
+        "/FI${EGE_DEMO_VALIDATION_HEADER}")
+    else()
+      target_compile_options(${name} PRIVATE
+        -include "${EGE_DEMO_VALIDATION_HEADER}")
+    endif()
+  endif()
+
   if(MSVC)
     target_compile_options(${name} PRIVATE
       /source-charset:utf-8
@@ -59,8 +92,8 @@ macro(ege_add_executable name source)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_HOST_UNIX)
       target_compile_definitions(${name} PRIVATE _FORTIFY_SOURCE=0)
-      target_link_options(${name}
-        PRIVATE -static)
+      # target_link_options(${name}
+      #   PRIVATE -static)
     endif()
   endif()
 endmacro()
@@ -85,9 +118,10 @@ if(NOT CMAKE_HOST_UNIX)
   # GMP demos are excluded on Unix hosts due to compatibility issues or specific requirements.
   # If the exclusion is intended for specific Unix-like environments, refine the condition below.
   message(CHECK_START "Finding GMP Library")
-  find_library(gmp gmp)
+  find_path(GMPXX_INCLUDE_DIR NAMES gmpxx.h)
+  find_library(GMP_LIBRARY NAMES gmp)
 
-  if(gmp)
+  if(GMPXX_INCLUDE_DIR AND GMP_LIBRARY)
     message(CHECK_PASS "found")
     file(
       GLOB GMP_DEMO_SRCS
@@ -99,7 +133,8 @@ if(NOT CMAKE_HOST_UNIX)
     foreach(GMP_DEMO_SRC ${GMP_DEMO_SRCS})
       get_filename_component(DEMO_NAME ${GMP_DEMO_SRC} NAME_WE)
       ege_add_executable_demo(${DEMO_NAME} ${GMP_DEMO_SRC})
-      target_link_libraries(${DEMO_NAME} gmp)
+      target_include_directories(${DEMO_NAME} PRIVATE ${GMPXX_INCLUDE_DIR})
+      target_link_libraries(${DEMO_NAME} ${GMP_LIBRARY})
     endforeach()
   else()
     message(CHECK_PASS "not found")

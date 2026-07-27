@@ -1,180 +1,103 @@
-name: MSVC Build
+name: MSVC GDI Build and Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, feature/opengl-backend]
   pull_request:
-    # 所有分支的 PR 都触发
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: msvc-gdi-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  vs2026-build:
-    name: MSVC 2026 Build (${{ matrix.build_type }})
-    runs-on: windows-latest
+  msvc-gdi:
+    name: ${{ matrix.name }} ${{ matrix.build-type }}
+    runs-on: windows-2022
+    timeout-minutes: 45
     strategy:
+      fail-fast: false
       matrix:
-        build_type: ["Release", "Debug"]
+        include:
+          - name: VS2022
+            toolset: v143
+            build-type: Debug
+          - name: VS2022
+            toolset: v143
+            build-type: Release
+          - name: VS2019-toolset
+            toolset: v142
+            build-type: Debug
+          - name: VS2019-toolset
+            toolset: v142
+            build-type: Release
+
     steps:
-      - name: Check VS2026 (v145 toolset) availability
-        id: check_vs2026
-        run: |
-          # Check if VS2026 and its v145 toolset are available using vswhere
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          
-          # Check for VS2026 installation
-          $vs2026 = & $vswhere -version "[18.0,19.0)" -property installationPath 2>$null
-          
-          $v145Found = $false
-          if ($vs2026) {
-            $v145Path = Join-Path $vs2026 "MSBuild\Microsoft\VC\v145"
-            if (Test-Path $v145Path) {
-              $v145Found = $true
-              echo "✅ v145 toolset found at: $v145Path"
-            }
-          }
-          
-          if ($vs2026 -and $v145Found) {
-            echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
-            echo "✅ Visual Studio 2026 is installed at: $vs2026"
-          } else {
-            echo "VS2026_AVAILABLE=false" >> $env:GITHUB_OUTPUT
-            echo "⏭️ VS2026 with v145 toolset is not available on this runner."
-            echo "⏭️ Skipping VS2026 build."
-            echo ""
-            echo "=== Available Visual Studio Installations (via vswhere) ==="
-            & $vswhere -all -format text
-          }
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Configure default Windows GDI build
         shell: powershell
+        run: >
+          cmake -S . -B build/msvc
+          -A x64
+          -T ${{ matrix.toolset }}
+          -DEGE_BUILD_OPENGL=OFF
+          -DEGE_ENABLE_CAMERA_CAPTURE=ON
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEST=ON
+          -DEGE_BUILD_TEMP=OFF
 
-      - name: Checkout repository
-        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
-        uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio environment
-        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
-        uses: microsoft/setup-msbuild@v1.1
-
-      - name: Configure CMake
-        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
+      - name: Build library, demos, and tests
         run: |
-          mkdir build-vs2026
-          cd build-vs2026
-          cmake .. -T v145 -DEGE_BUILD_DEMO=ON
+          cmake --build build/msvc `
+            --config ${{ matrix.build-type }} `
+            --parallel
+          cmake --build build/msvc `
+            --config ${{ matrix.build-type }} `
+            --target demos `
+            --parallel
 
-      - name: Build
-        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
-        env:
-          DO_TEST_RELEASE_LIBS: true
+      - name: Run Windows GDI functional tests
+        run: >
+          ctest --test-dir build/msvc
+          -C ${{ matrix.build-type }}
+          --output-on-failure
+          --no-tests=error
+          --timeout 300
+          -LE performance
+
+      - name: Stage the raw VS2022 release library
+        if: matrix.name == 'VS2022' && matrix.build-type == 'Release'
+        shell: powershell
         run: |
-          cd build-vs2026
-          cmake --build . --config ${{ matrix.build_type }} --parallel
+          New-Item -ItemType Directory -Force -Path Release/lib/vs2022/x64
+          Copy-Item build/msvc/Release/graphics.lib Release/lib/vs2022/x64/graphics.lib
 
-  vs2022-build:
-    name: MSVC 2022 Build (${{ matrix.build_type }})
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        build_type: ["Release", "Debug"]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio environment
-        uses: microsoft/setup-msbuild@v1.1
+      - name: Configure a standalone prebuilt-library consumer
+        if: matrix.name == 'VS2022' && matrix.build-type == 'Release'
+        shell: powershell
+        run: >
+          cmake -S demo -B build/prebuilt-consumer
+          -A x64
+          -T v143
+          -DEGE_BUILD_DEMO_WITH_PREBUILT_LIBS=ON
 
-      - name: Configure CMake
-        run: |
-          mkdir build-vs2022
-          cd build-vs2022
-          cmake .. -T v143 -DEGE_BUILD_DEMO=ON # vs2022
-      - name: Build
-        env:
-          DO_TEST_RELEASE_LIBS: true
-        run: |
-          cd build-vs2022
-          cmake --build . --config ${{ matrix.build_type }} --parallel
+      - name: Link camera and drawing demos against raw graphics.lib
+        if: matrix.name == 'VS2022' && matrix.build-type == 'Release'
+        run: >
+          cmake --build build/prebuilt-consumer
+          --config Release
+          --target camera_base graph_5star
+          --parallel
 
-  vs2019-build:
-    name: MSVC 2019 Build (${{ matrix.build_type }})
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        build_type: ["Release", "Debug"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Setup Visual Studio environment
-        uses: microsoft/setup-msbuild@v1.1
-
-      - name: Configure CMake
-        run: |
-          mkdir build-vs2019
-          cd build-vs2019
-          cmake .. -T v142 -DEGE_BUILD_DEMO=ON
-      - name: Build
-        env:
-          DO_TEST_RELEASE_LIBS: true
-        run: |
-          cd build-vs2019
-          cmake --build . --config ${{ matrix.build_type }} --parallel
-
-  # VS2015-2017 使用 windows-2019 runner（预装了 v140 和 v141 工具集）
-  vs2017-build:
-    name: MSVC 2017 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
-    strategy:
-      matrix:
-        build_type: ["Release", "Debug"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio environment
-        uses: microsoft/setup-msbuild@v1.1
-
-      - name: Configure CMake
-        run: |
-          mkdir build-vs2017
-          cd build-vs2017
-          cmake .. -T v141 -DEGE_BUILD_DEMO=ON # vs2017
-
-      - name: Build
-        env:
-          DO_TEST_RELEASE_LIBS: true
-        run: |
-          cd build-vs2017
-          cmake --build . --config ${{ matrix.build_type }} --parallel
-
-  vs2015-build:
-    name: MSVC 2015 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
-    strategy:
-      matrix:
-        build_type: ["Release", "Debug"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio environment
-        uses: microsoft/setup-msbuild@v1.1
-
-      - name: Configure CMake
-        run: |
-          mkdir build-vs2015
-          cd build-vs2015
-          cmake .. -T v140 # vs2015
-
-      - name: Build
-        env:
-          DO_TEST_RELEASE_LIBS: true
-        run: |
-          cd build-vs2015
-          cmake --build . --config ${{ matrix.build_type }} --parallel
-
-  # 注意：VS2010-VS2013 (v100-v120) 已从 CI 中移除
-  # 原因：Chocolatey 已移除这些旧版本的 build tools 包，且微软官方也不再提供独立安装程序
-  # 这些编译器版本已超过 10 年，现代 GitHub Actions runner 不再支持
+# VS2017/v141 prebuilt-package compatibility is exercised by release.yml,
+# which installs the optional v141 component on windows-2022 explicitly.

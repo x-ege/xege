@@ -1,317 +1,284 @@
-# EGE 编译指南
+# EGE 构建指南
 
-EGE 源码使用 CMake 构建编译系统，以支持各种编译器和 IDE。
+EGE 使用 CMake 构建。日常开发优先使用仓库自带的 VS Code Tasks 或
+`tasks.sh`；需要可复现的 CI、IDE 集成或自定义工具链时，直接使用标准 CMake
+命令。
 
-EGE 的子模块已使用 git submodule 进行管理，在克隆源代码后运行 `git submodule update --init --recursive` 来同步源代码，或者
-直接执行 CMake 构建步骤，CMake 中已配置了自动同步子模块的指令。同步后的子模块被放置在 3rdparty 子目录下。当然，同步功能是由 [Git](https://git-scm.com/) 
-支持的，用户需要预先安装好 Git 。
+项目声明的最低 CMake 版本为 3.13；新环境建议使用当前稳定版。特定 generator
+可能有更高要求，例如 Visual Studio 2026 需要 CMake 4.2 或更新版本。
 
-请在 [cmake.org](https://cmake.org) 下载最新版 CMake，并在安装时选择将 CMake
-目录添加到 `PATH` 环境变量中。本指南默认在 CMD 或者 PowerShell 命令行下进行编译，
-但仍使用 `$` 作为提示符。如果您对 CMake 有足够的把握，亦可使用 CMake GUI
-进行配置和生成。
+测试的完整说明见 [`tests/README.md`](tests/README.md)。本文件只保留构建所需的
+平台约定和推荐入口。
 
-在 Linux 环境下编译需要安装 [mingw-w64](https://www.mingw-w64.org/) 工具链，
-`CMakeLists.txt`已经配置好了环境，在 Linux 下会自动改用 mingw-w64 工具链。
-Linux 环境下运行相关程序需要使用 [wine](https://www.winehq.org/) 模拟层，并在 wine
-配置中修改 `libgcc_s_seh-1.dll` 、 `libssp-0.dll` 、 `libstdc++-6.dll` 的
-函数库顶替配置，方便起见，可以添加 `-static` 配置编译，免去配置过程（`CMakeLists.txt`
-中在 Linux 环境下默认开启）。
+## 构建方式的选择
 
-## 快速编译
+| 场景 | 推荐入口 |
+| --- | --- |
+| VS Code 本地开发 | `Terminal > Run Task...`，选择 `.vscode/tasks.json` 中的任务 |
+| macOS/Linux 命令行开发 | `bash -l tasks.sh ...` |
+| Windows 命令行开发 | 在 Git Bash 中运行 `bash -l tasks.sh ...` |
+| CI、IDE 或自定义工具链 | 直接使用 `cmake -S`、`cmake --build` 和 `ctest` |
+| 生成多套 Windows 发布库 | 按需使用 `build_commands.bat` 中与本机工具链对应的命令 |
 
-windows端可以通过运行根目录下的`build_commands.bat`批处理脚本快速在windows下编译代码，
-此代码会尝试检查计算机中是否有配置好的MinGW、Visual Studio 2022等环境，并尝试编译，
-编译得到的文件位于新生成的`build`文件夹下，其中`build/lib`中会分别存放好编译得到的静态库。
+`build_commands.bat` 是编译器兼容矩阵脚本，不是日常“一键构建”入口。它会顺序
+尝试多代 Visual Studio、MinGW 和 VC6 命令，其中部分旧 generator 需要对应年代的
+CMake 和工具链；不要在只安装了一个现代工具链的环境中直接运行整个文件。
 
-具体而言，目前支持快速编译的列表如下：
+## 快速开始
 
- - MinGW
- - Visual Studio 2008
- - Visual Studio 2010
- - Visual Studio 2012
- - Visual Studio 2013
- - Visual Studio 2015
- - Visual Studio 2017
- - Visual Studio 2019
- - Visual Studio 2022
-
-详细信息请检查脚本具体内容。
-
-## 常见部分 Linux 发行版以及 MacOS 安装编译运行环境
+查看便捷脚本支持的参数：
 
 ```sh
-# Ubuntu 16.04及以上发行版
-sudo apt-get install mingw-w64 wine
-
-# Arch Linux
-sudo pacman -S mingw-w64 wine
-
-# MacOS
-brew install mingw-w64 wine
+bash -l tasks.sh --help
 ```
 
-## 基本编译步骤
-
-1. 创建 build 文件夹并设为当前目录
-
-  ```sh
-  mkdir build
-  cd build
-  ```
-
-2. 执行 `cmake` 命令生成编译配置文件
-
-  ```sh
-  cmake .. [编译配置]
-  ```
-
-  `[编译配置]` 指定特定的编译平台，将在后文详述。
-
-3. 进行编译
-
-  ```sh
-  cmake --build .
-  ```
-
-编译过程将在 `build` 目录下生成相应的静态库文件。
-
-如果想在完成编译后使用其它编译器再次编译，请先清空 `build` 目录，CMD 命令为
+常用命令：
 
 ```sh
-for /D %d in (*) do @rmdir %d /S /Q
-del * /S /Q
+# Debug 库
+# Windows GDI 与 OpenGL 使用彼此隔离的构建目录
+bash -l tasks.sh --gdi --release --target demos --build
+bash -l tasks.sh --opengl --release --target demos --build
+
+bash -l tasks.sh --debug --target xege --build
+
+# Debug 库和全部 demo
+bash -l tasks.sh --debug --target demos --build
+
+# Release 库和全部 demo
+bash -l tasks.sh --release --target demos --build
 ```
 
-清空目录后再从步骤 2 继续执行。
+`--gdi` 和 `--opengl` 会分别使用 `build/gdi` 和 `build/opengl`（单配置生成器还会
+追加 Debug/Release），并设置对应的 CMake 后端选项；Windows OpenGL 模式同时
+启用仓库内置 GLFW。未指定后端参数的旧命令保持原有目录和平台默认行为。
 
-## 编译配置
+脚本会在构建目录尚未配置时自动运行 CMake。Windows 下必须从 Git Bash 或其他
+POSIX shell 调用；直接使用 PowerShell/CMD 时请改用下文的标准 CMake 命令。
 
-不同编译平台的差别主要是配置编译步骤的第二步。
+不要在同一构建目录中切换 generator、编译器、目标架构或
+`EGE_BUILD_OPENGL`。为不同组合使用独立目录；需要重新配置现有脚本目录时，可用
+对应的 `Reload CMake Project` VS Code Task 或 `tasks.sh --reload`。
 
-### MinGW
+## 平台默认值
+
+| 主机平台 | 默认后端 | 默认 GLFW | 产物 |
+| --- | --- | --- | --- |
+| Windows | GDI | 不需要 | Windows `.exe` / `graphics.lib` |
+| macOS | 原生 OpenGL | 仓库内置版本 | 原生可执行文件 / `libgraphics.a` |
+| Linux | 原生 OpenGL | 仓库内置版本，默认 X11 | 原生可执行文件 / `libgraphics.a` |
+
+Windows 可以用 `-DEGE_BUILD_OPENGL=ON` 编译 OpenGL 后端，但程序仍需通过
+`INIT_OPENGL` 显式选择它。macOS/Linux 无需显式传入该选项。
+
+## macOS 和 Linux
+
+### 依赖
 
 ```sh
-cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+# macOS
+xcode-select --install
+
+# Ubuntu / Debian：bundled GLFW + X11
+sudo apt-get update
+sudo apt-get install cmake ninja-build xorg-dev libgl1-mesa-dev
+
+# Arch Linux：bundled GLFW + X11
+sudo pacman -S cmake ninja libx11 libxrandr libxinerama libxcursor libxi mesa
 ```
 
-CMake 会自动检测安装的 MinGW 编译器并生成编译配置。
+### 推荐的标准 CMake 构建
 
-编译配置中的 `-DCMAKE_BUILD_TYPE=Release` 是构建类型（Build type），表示生成优化级别较高的
-发布版。
-
-如果想指定编译套件（如 Dev-C++ 自带的 TDM-GCC 4.9.2），可在执行 `cmake`
-前设置 `PATH` 环境变量指向特定的 MinGW 所在位置，CMake 在配置时会采用最先
-在 PATH 中检测到的编译器进行编译。例如，Dev-C++ 安装目录为 `C:\Dev-Cpp`，则
-在 CMD 中执行以下命令：
-
-```cmd
-set PATH="C:\Dev-Cpp\MinGW64\bin";%PATH%
-```
-
-在 PowerShell 中则是：
-
-```ps
-$env:PATH="C:\Dev-Cpp\MinGW64\bin;$env:PATH"
-```
-
-注意，CodeBlocks 附带的 MinGW 只能在
-[MSYS Makefiles 配置](#msys-makefiles-配置)
-下编译。在此建议您下载不附带 MinGW 的 CodeBlocks 并单独安装最新版 TDM-GCC64，
-CodeBlocks 会自动识别已安装的 TDM-GCC。
-
-#### 使用 64 位 MinGW 编译 32 位 EGE 库
-
-以上步骤对 32 位与 64 位 MinGW 均适用，分别会产生对应 64 位和 32 位版本的 EGE 静态库。
-
-64 位 MinGW 支持编译 32 位目标，要想达到这一效果，在以上步骤中设置 `PATH` 环境变量
-之后，执行 `cmake` 之前需要设置 `CC` 和 `CXX` 环境变量。在 CMD 中命令为：
-
-```cmd
-set CC="gcc -m32"
-set CXX="g++ -m32"
-```
-
-在 PowerShell 中为：
-
-```ps
-$env:CC="gcc -m32"
-$env:CXX="g++ -m32"
-```
-
-之后再执行 `cmake .. -G "MinGW Makefiles"` 命令。
-
-#### MSYS Makefiles 配置
-
-如果您在使用 MSYS2 或 git-bash，您可以用 `MSYS Makefiles` 生成适合此类环境的编译系统。
-
-所需要的命令和上面描述的没有区别，但需要把 CMD 或 PowerShell 命令换成 Bash 命令，
-比如设置环境变量：
+下面的命令不显式设置 OpenGL，用于遵循并验证 macOS/Linux 的默认原生后端：
 
 ```sh
-export PATH=/C/Dev-Cpp/MinGW64/bin:$PATH
+cmake -S . -B build/native-debug -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DEGE_BUILD_DEMO=ON \
+  -DEGE_BUILD_TEST=ON \
+  -DEGE_BUILD_TEMP=OFF
+
+cmake --build build/native-debug --parallel
+cmake --build build/native-debug --target demos --parallel
+ctest --test-dir build/native-debug --output-on-failure -LE performance
 ```
 
-相应的 CMake 生成指令是
+Ninja、Unix Makefiles 等单配置 generator 在未指定 `CMAKE_BUILD_TYPE` 时，EGE
+默认使用 `Release`。建议开发和 CI 仍显式指定配置，避免复用目录时产生歧义。
+
+### 使用系统 GLFW
+
+默认的 `EGE_USE_BUNDLED_GLFW=ON` 使用 `3rdparty/ccap` 内固定版本的 GLFW。
+如需使用系统包：
 
 ```sh
-cmake .. -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release
+# Ubuntu / Debian
+sudo apt-get install libglfw3-dev
+
+cmake -S . -B build/system-glfw -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DEGE_USE_BUNDLED_GLFW=OFF \
+  -DEGE_BUILD_TEMP=OFF
+cmake --build build/system-glfw --parallel
 ```
 
-注意，您需要从 `pacman` 包管理器安装或者
-[相关网站](https://sourceforge.net/projects/ezwinports/files/)
-上下载 MSYS make 程序并将其复制到可执行路径如 `/usr/bin` 中。
+macOS 可通过 Homebrew 安装 `glfw`，Arch Linux 可安装 `glfw`，然后使用相同的
+CMake 选项。
 
-扩展阅读：[Windows 上的编译系统](https://www.chirsz.cc/blog/2020-03/compile-sys-on-win.html)
+### Linux Wayland
 
-### Visual C++ 6.0
-
-CMake 自 3.6 后停止了对生成 VC6 项目的支持，但仍可生成 NMake 编译系统以支持 VC6 编译。
-
-首先，检查你的 VC6 安装目录（以下用 `VC6PATH` 指称，如果是免安装版则对应解压出的
-`vc6` 文件夹的路径，这个路径应包含 `VC98` 和 `Common` 文件夹），在
-`VC6PATH\VC98\Bin` 文件夹中的 `VCVARS32.BAT` 文件中开始部分的内容应和 `VC6PATH`
-相一致，例如安装到 `D:\VC6` 的 VC6，在 `D:\VC6\VC98\Bin\VCVARS32.BAT` 中的开头部分
-应当是：
-
-```bat
-rem Root of Visual Developer Studio installed files.
-rem
-set MSDevDir=D:\VC6\Common\msdev98
-
-rem
-rem Root of Visual C++ installed files.
-rem
-set MSVCDir=D:\VC6\VC98
-```
-
-不一致的情况常出现于免安装版 VC6，此时需修改 `VCVARS32.BAT` 内容使其与 VC6 实际所在
-目录一致。
-
-确认 `VCVARS32.BAT` 内容正确后，在 EGE 源码的 `src\build` 目录下执行此批处理文件，
-在上面的例子中就是执行：
+Bundled GLFW 在 Linux 默认只启用 X11。Wayland 是显式 opt-in，并且必须使用
+独立构建目录：
 
 ```sh
-"D:\VC6\VC98\Bin\VCVARS32.BAT"
+sudo apt-get install libgl1-mesa-dev libwayland-dev libwayland-bin libxkbcommon-dev
+
+cmake -S . -B build/wayland -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DGLFW_BUILD_X11=OFF \
+  -DGLFW_BUILD_WAYLAND=ON \
+  -DEGE_BUILD_TEMP=OFF
+cmake --build build/wayland --parallel
 ```
 
-执行成功后即建立 VC6 命令行环境，就可以继续执行编译步骤二了：
+CI 会编译 Wayland 配置；自动化窗口运行测试仍以 X11 + Xvfb 为主。
+
+## Windows
+
+安装 Visual Studio 或 Visual Studio Build Tools 时，选择
+[Desktop development with C++](https://learn.microsoft.com/cpp/build/vscpp-step-0-installation)
+工作负载和 CMake 组件。直接运行 MSVC 命令时，使用 Developer PowerShell 或
+Developer Command Prompt。
+
+EGE 支持 Visual Studio 2017 至 2026。Visual Studio 2026 使用 `v145` 工具集和
+`Visual Studio 18 2026` generator；该 generator 从
+[CMake 4.2](https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2018%202026.html)
+开始提供。使用 VS2026 时应安装 CMake 4.2 或更新版本。
+
+当前 GitHub hosted Windows CI 持续验证 v141、v142 和 v143 工具集；VS2026/v145
+已进入源码和本地构建脚本支持范围，但仍需要安装了 VS2026 的环境做实际验证。
+
+### Visual Studio 2026 / MSVC
+
+默认构建 Windows GDI 后端：
+
+```powershell
+cmake -S . -B build/vs2026 `
+  -G "Visual Studio 18 2026" `
+  -A x64 `
+  -DEGE_BUILD_DEMO=ON `
+  -DEGE_BUILD_TEST=ON `
+  -DEGE_BUILD_TEMP=OFF
+
+cmake --build build/vs2026 --config Debug --parallel
+cmake --build build/vs2026 --config Debug --target demos --parallel
+ctest --test-dir build/vs2026 -C Debug --output-on-failure -LE performance
+```
+
+构建 32 位库时把 `-A x64` 改成 `-A Win32`。使用 Visual Studio 2022 时把
+generator 改成 `Visual Studio 17 2022`；也可以省略 `-G`，让 CMake 选择本机
+默认 generator，但显式指定更适合可复现构建。
+
+Visual Studio 是多配置 generator，配置阶段不要依赖 `CMAKE_BUILD_TYPE`，应在
+构建和测试阶段使用 `--config Debug/Release` 与 `ctest -C Debug/Release`。MSVC
+输出名称为：
+
+- Debug：`graphicsd.lib`
+- Release、RelWithDebInfo、MinSizeRel：`graphics.lib`
+
+### Windows OpenGL（显式开启）
+
+```powershell
+cmake -S . -B build/windows-opengl `
+  -A x64 `
+  -DEGE_BUILD_OPENGL=ON `
+  -DEGE_USE_BUNDLED_GLFW=ON `
+  -DEGE_BUILD_DEMO=ON `
+  -DEGE_BUILD_TEST=ON `
+  -DEGE_BUILD_TEMP=OFF
+
+cmake --build build/windows-opengl --config Release --parallel
+```
+
+这会把 GDI 和 OpenGL 能力编入 Windows 库；未传 `INIT_OPENGL` 的现有程序仍走
+GDI，不改变默认行为。
+
+GitHub 托管的 Windows runner 没有可用的 WGL 驱动，因此常规
+`native-opengl-build.yml` 会编译全部 OpenGL 用例，但只运行默认 GDI 兼容用例。
+仓库另有可手动触发的 `windows-opengl-runtime.yml`：它要求带
+`self-hosted`、`windows`、`x64`、`opengl` 标签且具有交互式桌面和 OpenGL 3.3
+驱动的 runner，并在那里运行 GDI/OpenGL 全部功能与性能门禁。
+
+### MinGW-w64
+
+在 MSYS2/MinGW shell 中优先使用其自带的现代 GCC、CMake 和 Ninja。也可以使用
+`MinGW Makefiles`：
 
 ```sh
-cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build/mingw -G "MinGW Makefiles" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DEGE_BUILD_OPENGL=OFF \
+  -DEGE_BUILD_DEMO=ON \
+  -DEGE_BUILD_TEST=ON \
+  -DEGE_BUILD_TEMP=OFF
+cmake --build build/mingw --parallel
+ctest --test-dir build/mingw --output-on-failure -LE performance
 ```
 
-编译配置中的 `-DCMAKE_BUILD_TYPE=Release` 是构建类型（Build type），表示生成优化级别较高的
-发布版。
+VC6、Visual Studio 2010–2015 和旧版 MinGW 仅保留兼容性用途，不作为现代开发
+环境推荐。它们通常需要匹配的历史 CMake/toolchain；相应命令仍可在
+`build_commands.bat` 中查阅。
 
-如果编译的源文件中使用 UTF-8 字符串字面量, 那么在之后的编译阶段需要临时修改 locale 来让 VC6 能够
-处理 UTF-8 字符串。相关处理已经位于 `utils\patch-locale.bat` 脚本中, 使用此脚本执行编译命令即可。
-例如编译示例程序:
+## Demo、测试和临时程序
 
-```bat
-.\utils\patch-locale.bat cmake --build build --target demos
-```
-
-### Visual Studio
-
-使用 `cmake -G` 命令查看支持的 Visual Studio 版本，选择自己安装的 VS 版本，
-如“Visual Studio 14 2015”作为 `-G` 的参数传递给 CMake。可用 `-A` 参数指定
-目标平台，VS2017 及更早的 Visual Studio 默认为 32 位 x86 平台 `Win32`，
-VS2019 则与所在平台一致。可选的参数有 `Win32`，`x64`，`ARM`，`ARM64`。
-
-因此编译 32 位 EGE 库需要执行：
+构建全部 demo：
 
 ```sh
-cmake .. -G "Visual Studio 14 2015" -A Win32
+cmake --build <build-dir> --target demos --parallel
 ```
 
-编译 64 位 EGE 库：
+多配置 generator 需要附加 `--config Debug` 或 `--config Release`。原生
+macOS/Linux demo 没有 `.exe` 后缀；`tasks.sh` 会兼容 VS Code Tasks 中沿用的
+`.exe` 名称并映射到原生文件。
 
-```sh
-cmake .. -G "Visual Studio 14 2015" -A x64
-```
+功能测试、性能测试、Sanitizer、相机 fixture 和 Linux Xvfb 的标准命令统一维护在
+[`tests/README.md`](tests/README.md)，不要从旧构建目录推断测试结果。
 
-另外要注意的一点是，Visual Studio 的步骤三应该是：
+临时实验可以放在被 Git 忽略的 `temp/` 目录，并提供自己的 `CMakeLists.txt`。
+根项目会在 `EGE_BUILD_TEMP=ON` 且目录存在时添加它；正式回归应放在 `tests/`。
 
-```sh
-cmake --build . --config Release
-cmake --build . --config Debug
-```
+## 主要 CMake 选项
 
-因为 Visual Studio 是多配置的编译系统，需要在执行编译时选择配置类型（Configuration type）。
-EGE 现在为 MSVC 提供了 Debug 和 Release 两个版本的静态库：
-- `graphics.lib` - Release 版本
-- `graphicsd.lib` - Debug 版本
+| 选项 | Windows 默认值 | macOS/Linux 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `EGE_BUILD_OPENGL` | `OFF` | `ON` | 选择要编译的图形后端能力 |
+| `EGE_USE_BUNDLED_GLFW` | `OFF` | `ON` | 使用 `ccap` 内固定版本的 GLFW |
+| `EGE_BUILD_DEMO` | 顶层构建为 `ON` | 顶层构建为 `ON` | 添加 demo 目标 |
+| `EGE_BUILD_TEST` | 顶层构建为 `ON` | 顶层构建为 `ON` | 添加 CTest 测试 |
+| `EGE_BUILD_TEMP` | 顶层构建为 `ON` | 顶层构建为 `ON` | 添加本地 `temp/` 实验目标 |
+| `EGE_ENABLE_CAMERA_CAPTURE` | C++17 可用时 `ON` | C++17 可用时 `ON` | 构建相机模块 |
+| `EGE_PERFORMANCE_DIAGNOSTICS` | `AUTO` | `AUTO` | `AUTO` 仅在 Debug 编译性能诊断；也可显式设为 `ON` 或 `OFF` |
+| `EGE_DISABLE_DEBUG_INFO` | `OFF` | `OFF` | 禁用调试信息，主要用于规避特定 MSVC 链接警告 |
 
-头文件 `ege.h` 会根据 `_DEBUG` 宏自动选择链接正确的库文件。建议同时编译 Debug 和 Release 两个版本，
-以便用户在不同配置下使用。
+`EGE_BUILD_FOR_LINUX` 是由平台和 `EGE_BUILD_OPENGL` 推导的内部兼容选项，不应
+由新构建手动设置。
 
-## 编译示例程序
+### 性能诊断
 
-示例程序是一批来自社区贡献的 EGE 项目，用于演示和测试，其多数为单文件项目，源代码位于 `demo` 目录下。
+Debug 默认会对可确认的 OpenGL 像素同步慢路径输出一次性日志诊断；Release 默认不编译诊断
+热路径。仅在运行程序前显式设置 `EGE_DIAGNOSTICS=all`（或 `popup`）才启用 Windows 非模态
+提示窗；设置 `EGE_DIAGNOSTICS=off` 可完全静默，`NO_COLOR` 禁止终端颜色。完整编号、触发条件和
+行为分级见 [`doc/performance-diagnostics.md`](doc/performance-diagnostics.md)。
 
-项目 CMake 配置中设置了 `demos` 目标，编译时通过 `--target` 或 `-t` 指定，即在编译项目时执行：
+## 运行问题排查
 
-```sh
-cmake --build . --target demos
-```
-
-即可在构建目录下的 `demo` 文件夹中生成各可执行文件。
-
-Linux 环境下，需要修改 `demo/egelogo.rc` 文件，将路径分隔符 `\\` 改为 `/`。
-
-## 编译临时测试文件
-
-有时候为了测试新添加的功能，需要写一些测试用例，但编译安装修改后 EGE 再在项目外编译测试程序
-比较麻烦，在项目里修改 CMake 配置并添加源文件和编译指令又会被 git 识别为未暂存的修改，会对 git
-使用造成干扰。
-
-项目 CMake 配置中已经写好了，开发者可以新建 `temp` 目录并添加源文件和 `CMakeLists.txt` 配置
-文件，编译系统会自动配置，在编译 EGE 库后编译 `temp` 目录，而 temp 目录已被 `.gitignore`
-排除在外，不会对 git 使用造成干扰。
-
-例如，我们想要测试读取字符输入，于是新建 `temp` 目录，在 `temp` 目录下
-新建 `CMakeLists.txt` 内容如下：
-
-```cmake
-add_executable(temp_test temp_test.cpp)
-
-target_link_libraries(temp_test xege)
-
-```
-
-新建 `temp/temp_test.cpp` 内容如下：
-
-```cpp
-#include <ege.h>
-
-using namespace ege;
-
-int main(int argc, char const *argv[])
-{
-  initgraph(640, 480);
-
-  circle(120, 120, 100);
-
-  int i = 0;
-  while (is_run()) {
-    key_msg msg = getkey();
-    if (msg.msg == key_msg_char) {
-      xyprintf(0, i * 20, "%d", msg.key);
-      ++i;
-    }
-  }
-
-  return 0;
-}
-
-```
-
-执行前文所述编译步骤后在 `build/temp` 目录下就会生成可执行文件 `temp_test.exe`。
-
-## Linux 环境下编译例程
-
-在 Linux 系统下，编译依赖 EGE 的程序，同样要使用 `mingw-w64` 工具链中的 `g++`，并且根据
-环境可能需要添加额外的编译参数 `-D_FORTIFY_SOURCE=0`
-（参考链接 [undefined reference to `__memcpy_chk'](https://github.com/msys2/MINGW-packages/issues/5868)。
-为了简化单文件编译指令，EGE `utils` 目录下提供了`ege_g++.sh` 脚本，可按需使用。
+- Linux X11 窗口需要可用的 `DISPLAY` 和 OpenGL/GLX。Headless 环境使用 Xvfb，
+  命令见 `tests/README.md`。
+- Wayland 构建需要真实 Wayland 会话才能运行窗口程序；CI 当前只保证该配置可编译。
+- macOS 图形程序需要 GUI session。部分 hosted runner 没有可用的 NSGL 环境，因此
+  CI 会把编译门禁与无需窗口的确定性测试分开。
+- 如果 bundled GLFW/ccap 缺失且 CMake 无法自动同步，再运行
+  `git submodule update --init --recursive`，不要把它作为每次构建步骤。
+- Unix 上显式设置 `-DEGE_BUILD_OPENGL=OFF` 会进入已弃用的 mingw-w64 → Windows
+  `.exe` 交叉编译路径。仅在维护旧流程时使用，并为它创建独立构建目录；运行产物还
+  需要 Wine。

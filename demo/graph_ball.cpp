@@ -6,8 +6,10 @@
 #include <graphics.h>
 #include <ege/fps.h>
 #include <math.h>
+#include <cstdio>
+#include <cstdlib>
 
-#define myrand(m)                 ((float)random(10000) * m / 10000.0f)
+#define myrand(m)                 ((float)(rand() % 10000) * m / 10000.0f)
 #define IsCrash(a, b)             ((a.x - b.x)*(a.x - b.x)+(a.y - b.y)*(a.y - b.y) < (a.r + b.r)*(a.r + b.r))
 #define IsWEdge(a)               (a.x < a.r || a.x >= 640-a.r)
 #define IsHEdge(a)               (a.y < a.r || a.y >= 480-a.r)
@@ -42,9 +44,9 @@ public:
 		for ( i = 0; i < n; i++ ) {
 			do {
 				goon = false;
-				obj[i].x = ( float )random( getwidth() );
-				obj[i].y = ( float )random( getheight() );
-				obj[i].r = random( 40 ) + 20;
+				obj[i].x = ( float )(rand() % getwidth());
+				obj[i].y = ( float )(rand() % getheight());
+				obj[i].r = (rand() % 40) + 20;
 				if ( IsEdge( obj[i] ) )
 					goon = true;
 				else if ( i != 0 )
@@ -152,18 +154,30 @@ private:
  * Initializes the graphics window and runs the animation loop.
  */
 int main() {
-	setinitmode( INIT_ANIMATION );
+	setinitmode( INIT_RENDERMANUAL );
 	initgraph( 640, 480 );
-	randomize(); // Initialize random seed
+	srand(42); // Initialize random seed with fixed value for reproducibility
 
 	AniObj aniobj; // Create AniObj object
-	fps f;
 	ege_enable_aa( true );
 
-	for (; is_run(); delay_fps(120)) {
-		aniobj.updateobj(); // Update object positions
+	// Run 10 frames then screenshot
+	for (int frameCount = 1; frameCount <= 10; frameCount++) {
+		aniobj.updateobj();
 		cleardevice();
-		aniobj.drawobj(); // Draw objects
+		aniobj.drawobj();
+
+		// Pump OS events (needed on macOS to keep window responsive)
+		delay_fps(10);
+
+		// Save screenshot at frame 10
+		if (frameCount == 10) {
+			PIMAGE img = newimage(getwidth(), getheight());
+			getimage(img, 0, 0, getwidth(), getheight());
+			saveimage(img, "graph_ball_frame10.png");
+			delimage(img);
+			printf("Screenshot saved: graph_ball_frame10.png\n");
+		}
 	}
 
 	closegraph();

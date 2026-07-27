@@ -3,10 +3,11 @@
 [![MSVC Build](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml)
 [![MinGW Windows Build](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml)
 [![MinGW Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
+[![Native OpenGL Build](https://github.com/x-ege/xege/actions/workflows/native-opengl-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/native-opengl-build.yml)
 [![License](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/x-ege/xege)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](https://github.com/x-ege/xege)
 
-EGE (Easy Graphics Engine) 是一个 Windows 下的简易绘图库，提供类似 BGI (`graphics.h`) 的接口，专为 C/C++ 初学者设计。
+EGE (Easy Graphics Engine) 是一个面向 Windows、Linux 和 macOS 的简易绘图库，提供类似 BGI (`graphics.h`) 的接口，专为 C/C++ 初学者设计。Windows 保留成熟的 GDI/GDI+ 后端，Linux/macOS 默认使用原生 OpenGL 后端。
 
 ## 目录
 
@@ -67,6 +68,8 @@ EGE 支持以下 开发工具/编译器：
 
 - **API 文档**：[API 参考](man/api.md)
 - **详细帮助**：`man` 目录下的 `index.htm`
+- **像素缓冲同步**：[CPU Bitmap 与 OpenGL 同步设计](doc/pixel-buffer-sync.md)
+- **性能诊断**：[CPU/GPU 像素同步慢路径诊断](doc/performance-diagnostics.md)
 
 ## IDE 插件
 
@@ -91,7 +94,9 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
    - `EGE: 在当前工作区设置 ege 项目` - 使用预编译库创建项目
    - `EGE: 在当前工作区设置带有 EGE 源代码的 ege 项目` - 使用源码创建项目
    - `EGE: 构建并运行当前文件` - 快速编译运行单个 cpp 文件
-3. 插件支持 Windows、macOS（需 mingw-w64 + wine）和 Linux
+3. 插件支持 Windows、Linux 和 macOS。
+    - Linux/macOS：默认启用原生 OpenGL 模式，可直接构建和运行（无需 wine）；显式设置 `-DEGE_BUILD_OPENGL=OFF` 才进入已弃用的 mingw-w64 + wine 兼容路径。
+    - Linux bundled GLFW 默认使用经过运行测试的 X11 后端；Wayland 可显式启用并由 CI 验证编译，配置方法见 [BUILD.md](BUILD.md)。
 
 > 更多详情请访问插件主页：[CLion 插件](https://github.com/x-ege/ege-clion-plugin) | [VS Code 插件](https://github.com/x-ege/ege-vscode-plugin)
 
@@ -110,13 +115,14 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 | 特点 | 说明 |
 |------|------|
 | 零依赖轻量级 | 使用 `stb_image` 和 `sdefl/sinfl` 替代 `libpng`/`zlib`，无外部依赖，单库即可使用 |
-| 直接像素访问 | 提供 `getbuffer` 接口直接访问图像像素数据，实现高效的软件渲染和图像处理 |
-| 抗锯齿支持 | 内置 GDI+ 支持，`ege_` 系列函数提供高质量抗锯齿绘图 |
+| 直接像素访问 | `getbuffer` 支持只读、读写和写入丢弃访问；Windows OpenGL 可自动切换为持久 CPU Bitmap，兼容保留指针的像素处理代码 |
+| 抗锯齿支持 | Windows 内置 GDI+ 支持；原生 OpenGL 后端提供兼容的 `ege_` 绘图接口 |
 | 预乘 Alpha 优化 | 默认使用 PRGB32 (预乘 Alpha) 格式，配合 `AlphaBlend` 实现 GPU 加速混合 |
 | 多图像格式支持 | 支持 PNG, JPEG, BMP, GIF, TGA, PSD, HDR 等常见图像格式 |
 | 灵活的图像操作 | 支持图像旋转、缩放、透明贴图、Alpha 滤镜等高级变换 |
 | 坐标变换系统 | 提供 `ege_transform_*` 系列函数，支持平移、旋转、缩放等矩阵变换 |
-| 完善的输入处理 | 支持键盘、鼠标（含双击、扩展键）、输入法等多种输入方式 |
+| 完善的输入处理 | 支持键盘、Unicode 字符和鼠标（含双击、扩展键）；Windows 后端另支持系统输入法控件 |
+| 跨平台音乐播放 | Windows 使用 MCI，macOS 使用系统 AVFAudio，Linux 优先 GStreamer 并内置 miniaudio 回退 |
 | 相机捕获支持 | 基于 [ccap](https://github.com/wysaid/CameraCapture) 提供摄像头采集功能 (C++17) |
 | 跨编译器兼容 | 从 VS2017 到 VS2026，MinGW 全系列均可编译，兼容性极强 |
 
@@ -125,6 +131,11 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 EGE 使用 [CMake](https://cmake.org) 作为构建系统。
 
 详细编译步骤请参阅 [编译指南](BUILD.md)。
+
+Linux 的音乐播放默认自动检测 GStreamer；未安装其开发包时会使用内置
+miniaudio，不会增加必选系统依赖。可通过
+`-DEGE_MUSIC_GSTREAMER=ON|OFF|AUTO` 控制，格式和 MIDI 部署说明见
+[MUSIC 跨平台后端](doc/music-backend.md)。
 
 ## 社区与支持
 

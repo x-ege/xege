@@ -8,7 +8,9 @@
 #include <climits>
 #include <cmath>
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #ifndef EGE_TEMP_MIN
 #define EGE_TEMP_MIN(a, b)  ((b) < (a) ? (b) : (a))

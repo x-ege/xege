@@ -3,7 +3,9 @@
 
 #include "mouse.h"
 
+#ifdef _WIN32
 #include <windowsx.h>
+#endif
 
 namespace ege
 {

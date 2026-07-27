@@ -102,13 +102,18 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
     float cameraRatio = (float)cameraWidth / cameraHeight;
 
     // 获取屏幕可用区域（考虑任务栏）
+    // 非 Windows 平台不依赖 Win32 API，跳过此限制（仍受 MIN/MAX_LONG_EDGE 约束）。
+    int screenAvailWidth = 1 << 30;
+    int screenAvailHeight = 1 << 30;
+#ifdef _WIN32
     RECT workArea;
     SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
-    int screenAvailWidth = workArea.right - workArea.left;
-    int screenAvailHeight = workArea.bottom - workArea.top;
+    screenAvailWidth = workArea.right - workArea.left;
+    screenAvailHeight = workArea.bottom - workArea.top;
     // 留一点边距，避免窗口贴边
     screenAvailWidth -= 20;
     screenAvailHeight -= 40;
+#endif
 
     // 计算目标窗口长边
     int targetLongEdge = cameraLongEdge;
@@ -187,7 +192,7 @@ bool switchCamera(ege::CameraCapture& camera, int deviceIndex, int deviceCount, 
     }
 
     // 先关闭当前相机
-    if (camera.isStarted()) {
+    if (camera.isOpened()) {
         camera.close();
     }
 
@@ -196,12 +201,56 @@ bool switchCamera(ege::CameraCapture& camera, int deviceIndex, int deviceCount, 
     camera.setFrameRate(30);
 
     // 打开新相机
-    if (!camera.open(deviceIndex)) {
+    if (!camera.open(deviceIndex, false)) {
         return false;
     }
 
-    camera.start();
+    if (!camera.start()) {
+        camera.close();
+        return false;
+    }
     return true;
+}
+
+// 以非阻塞方式等待首帧，同时持续处理窗口事件。
+std::shared_ptr<ege::CameraFrame> waitForCameraFrame(ege::CameraCapture& camera,
+                                                     unsigned int timeoutInMs)
+{
+    const double deadline = fclock() + timeoutInMs / 1000.0;
+    do {
+        auto frame = camera.grabFrame(0);
+        if (frame) {
+            return frame;
+        }
+        if (timeoutInMs == 0 || !is_run()) {
+            break;
+        }
+        delay_ms(10);
+    } while (fclock() < deadline);
+    return {};
+}
+
+// 某些系统会枚举出可以打开、但无法实际产出帧的设备。逐个探测并选择首个可用设备。
+std::shared_ptr<ege::CameraFrame> openFirstWorkingCamera(ege::CameraCapture& camera,
+                                                        int startIndex,
+                                                        int deviceCount,
+                                                        int& selectedIndex,
+                                                        int resWidth = WINDOW_WIDTH,
+                                                        int resHeight = WINDOW_HEIGHT)
+{
+    for (int offset = 0; offset < deviceCount && is_run(); ++offset) {
+        const int candidate = (startIndex + offset) % deviceCount;
+        if (!switchCamera(camera, candidate, deviceCount, resWidth, resHeight)) {
+            continue;
+        }
+        auto frame = waitForCameraFrame(camera, 3000);
+        if (frame) {
+            selectedIndex = candidate;
+            return frame;
+        }
+        camera.close();
+    }
+    return {};
 }
 
 // 分辨率信息结构体
@@ -274,9 +323,13 @@ int main()
         }
     }
 
-    // 打开第一个相机设备
-    if (!switchCamera(camera, 0, deviceCount)) {
-        fputs(TEXT_ERROR_OPEN_FAILED, stderr);
+    // 从第一个设备开始探测，跳过能打开但无法产出图像的设备。
+    std::shared_ptr<CameraFrame> frame =
+        openFirstWorkingCamera(camera, 0, deviceCount, currentDeviceIndex);
+    if (!frame) {
+        fputs(is_run() ? TEXT_ERROR_GRAB_FAILED : TEXT_CAMERA_CLOSED, stderr);
+        camera.close();
+        closegraph();
         return -1;
     }
 
@@ -286,14 +339,14 @@ int main()
     for (; camera.isStarted() && is_run(); delay_fps(60)) {
         cleardevice();
 
-        auto newFrame = camera.grabFrame(3000); // 最多等待 3 秒
-        if (!newFrame) {
-            fputs(TEXT_ERROR_GRAB_FAILED, stderr);
-            break;
+        // 稳态渲染不阻塞事件循环；暂时没有新帧时继续显示上一帧。
+        auto newFrame = camera.grabFrame(0);
+        if (newFrame) {
+            frame = newFrame;
         }
 
         // 这里的 getImage 重复调用没有额外开销.
-        auto* img = newFrame->getImage();
+        auto* img = frame->getImage();
         if (img) {
             auto w = getwidth(img);
             auto h = getheight(img);
@@ -343,8 +396,10 @@ int main()
             if (newDeviceIndex >= 0 && newDeviceIndex != currentDeviceIndex) {
                 printf(TEXT_SWITCHING_CAMERA, newDeviceIndex);
                 printf("\n");
-                if (switchCamera(camera, newDeviceIndex, deviceCount)) {
-                    currentDeviceIndex = newDeviceIndex;
+                auto candidateFrame = openFirstWorkingCamera(
+                    camera, newDeviceIndex, deviceCount, currentDeviceIndex);
+                if (candidateFrame) {
+                    frame = candidateFrame;
                     // 获取新相机的分辨率列表
                     resolutions = getResolutionList(camera);
                     currentResolutionIndex = 0;
@@ -358,6 +413,12 @@ int main()
                 printf(TEXT_SWITCHING_RESOLUTION, newWidth, newHeight);
                 printf("\n");
                 if (switchCamera(camera, currentDeviceIndex, deviceCount, newWidth, newHeight)) {
+                    auto candidateFrame = waitForCameraFrame(camera, 3000);
+                    if (!candidateFrame) {
+                        camera.close();
+                        continue;
+                    }
+                    frame = candidateFrame;
                     currentResolutionIndex = newResolutionIndex;
                     // 调整窗口大小以匹配相机分辨率比例
                     adjustWindowToCamera(newWidth, newHeight);
@@ -434,6 +495,7 @@ int main()
 
     fputs(TEXT_CAMERA_CLOSED, stderr);
     camera.close();
+    closegraph();
 
     return 0;
 }

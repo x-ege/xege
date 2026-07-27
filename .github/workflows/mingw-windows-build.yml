@@ -2,7 +2,7 @@ name: MinGW Windows Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, feature/opengl-backend ]
   pull_request:
     # 所有分支的 PR 都触发
   workflow_dispatch:
@@ -16,14 +16,18 @@ on:
         - Release
         - Debug
 
+permissions:
+  contents: read
+
 jobs:
   # 使用 MSYS2 最新版 MinGW 构建（默认）
   mingw-msys2-latest:
     name: MSYS2 Latest - ${{ matrix.build_type }}
-    runs-on: windows-latest
+    runs-on: windows-2022
+    timeout-minutes: 45
     strategy:
       matrix:
-        build_type: ["Release", "Debug"]
+        build_type: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.build_type) || '["Release","Debug"]') }}
 
     steps:
       - name: Checkout repository
@@ -70,7 +74,6 @@ jobs:
         shell: msys2 {0}
         env:
           BUILD_TYPE: ${{ matrix.build_type }}
-          DO_TEST_RELEASE_LIBS: true
         run: |
           # Set up environment
           export CC=gcc
@@ -91,10 +94,38 @@ jobs:
             -DCMAKE_CXX_COMPILER=g++ \
             -DCMAKE_RC_COMPILER=windres \
             -DCMAKE_MAKE_PROGRAM=mingw32-make \
-            -DEGE_BUILD_DEMO=ON
+            -DEGE_BUILD_OPENGL=OFF \
+            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
+            -DEGE_BUILD_DEMO=ON \
+            -DEGE_BUILD_TEST=ON \
+            -DEGE_BUILD_TEMP=OFF
 
           # Build the project
           cmake --build . --parallel $(nproc)
+          cmake --build . --target demos --parallel $(nproc)
+
+      - name: Run Windows GDI functional tests
+        shell: msys2 {0}
+        run: |
+          ctest --test-dir build-mingw \
+            --output-on-failure \
+            --no-tests=error \
+            --timeout 300 \
+            -LE performance
+
+      - name: Link standalone consumers against raw libgraphics.a
+        if: matrix.build_type == 'Release'
+        shell: msys2 {0}
+        run: |
+          mkdir -p Release/lib/mingw64
+          cp build-mingw/libgraphics.a Release/lib/mingw64/libgraphics.a
+          cmake -S demo -B build-mingw-consumer \
+            -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DEGE_BUILD_DEMO_WITH_PREBUILT_LIBS=ON
+          cmake --build build-mingw-consumer \
+            --target camera_base graph_5star \
+            --parallel $(nproc)
 
       - name: Package MinGW artifacts
         shell: msys2 {0}
@@ -104,8 +135,8 @@ jobs:
           # Create build-type specific directory structure
           mkdir -p ${BUILD_TYPE}/lib/mingw64-msys2
 
-          # Copy built libraries
-          find build-mingw -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw64-msys2/ \;
+          cp build-mingw/libgraphics.a \
+            ${BUILD_TYPE}/lib/mingw64-msys2/libgraphics.a
 
           # List generated files
           echo "Generated MinGW libraries for $BUILD_TYPE:"
@@ -122,11 +153,11 @@ jobs:
   # 使用 WinLibs GCC 14.2.0 构建（Code::Blocks 25.03 内置版本）
   mingw-codeblocks-25:
     name: Code::Blocks 25.03 (GCC 14.2) - ${{ matrix.build_type }}
-    runs-on: windows-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
+    runs-on: windows-2022
+    timeout-minutes: 45
     strategy:
       matrix:
-        build_type: ["Release", "Debug"]
+        build_type: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.build_type) || '["Release","Debug"]') }}
 
     steps:
       - name: Checkout repository
@@ -164,15 +195,15 @@ jobs:
         shell: cmd
         env:
           BUILD_TYPE: ${{ matrix.build_type }}
-          DO_TEST_RELEASE_LIBS: true
         run: |
           set PATH=C:\mingw-winlibs-gcc14\mingw64\bin;%PATH%
           
           mkdir build-winlibs-gcc14
           cd build-winlibs-gcc14
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DEGE_BUILD_DEMO=ON
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DEGE_BUILD_OPENGL=OFF -DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_BUILD_DEMO=ON -DEGE_BUILD_TEST=OFF -DEGE_BUILD_TEMP=OFF
           cmake --build . --parallel
+          cmake --build . --target demos --parallel
 
       - name: Package artifacts
         shell: powershell
@@ -181,7 +212,7 @@ jobs:
         run: |
           $buildType = $env:BUILD_TYPE
           New-Item -ItemType Directory -Force -Path "$buildType/lib/mingw64-codeblocks"
-          Get-ChildItem -Path "build-winlibs-gcc14" -Recurse -Filter "*.a" | Copy-Item -Destination "$buildType/lib/mingw64-codeblocks/"
+          Copy-Item "build-winlibs-gcc14/libgraphics.a" -Destination "$buildType/lib/mingw64-codeblocks/libgraphics.a"
           echo "Generated libraries:"
           Get-ChildItem "$buildType/lib/mingw64-codeblocks/"
 
@@ -196,11 +227,11 @@ jobs:
   # 使用 WinLibs GCC 13.1.0 构建（CLion 内置版本）
   mingw-clion:
     name: CLion (GCC 13.1) - ${{ matrix.build_type }}
-    runs-on: windows-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (contains(github.head_ref, 'workflow') || contains(github.head_ref, 'test')))
+    runs-on: windows-2022
+    timeout-minutes: 45
     strategy:
       matrix:
-        build_type: ["Release", "Debug"]
+        build_type: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.build_type) || '["Release","Debug"]') }}
 
     steps:
       - name: Checkout repository
@@ -238,15 +269,15 @@ jobs:
         shell: cmd
         env:
           BUILD_TYPE: ${{ matrix.build_type }}
-          DO_TEST_RELEASE_LIBS: true
         run: |
           set PATH=C:\mingw-winlibs-gcc13\mingw64\bin;%PATH%
           
           mkdir build-winlibs-gcc13
           cd build-winlibs-gcc13
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DEGE_BUILD_DEMO=ON
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DEGE_BUILD_OPENGL=OFF -DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_BUILD_DEMO=ON -DEGE_BUILD_TEST=OFF -DEGE_BUILD_TEMP=OFF
           cmake --build . --parallel
+          cmake --build . --target demos --parallel
 
       - name: Package artifacts
         shell: powershell
@@ -255,7 +286,7 @@ jobs:
         run: |
           $buildType = $env:BUILD_TYPE
           New-Item -ItemType Directory -Force -Path "$buildType/lib/mingw64-clion"
-          Get-ChildItem -Path "build-winlibs-gcc13" -Recurse -Filter "*.a" | Copy-Item -Destination "$buildType/lib/mingw64-clion/"
+          Copy-Item "build-winlibs-gcc13/libgraphics.a" -Destination "$buildType/lib/mingw64-clion/libgraphics.a"
           echo "Generated libraries:"
           Get-ChildItem "$buildType/lib/mingw64-clion/"
 

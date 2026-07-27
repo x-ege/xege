@@ -11,13 +11,13 @@ PerformanceTimer::PerformanceTimer(const std::string& name)
 }
 
 void PerformanceTimer::start() {
-    startTime = std::chrono::high_resolution_clock::now();
+    startTime = std::chrono::steady_clock::now();
     isRunning = true;
 }
 
 void PerformanceTimer::stop() {
     if (isRunning) {
-        endTime = std::chrono::high_resolution_clock::now();
+        endTime = std::chrono::steady_clock::now();
         isRunning = false;
     }
 }
@@ -28,12 +28,10 @@ void PerformanceTimer::reset() {
 
 double PerformanceTimer::getElapsedMs() const {
     if (isRunning) {
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime);
-        return duration.count() / 1000.0;
+        const auto currentTime = std::chrono::steady_clock::now();
+        return std::chrono::duration<double, std::milli>(currentTime - startTime).count();
     } else {
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-        return duration.count() / 1000.0;
+        return std::chrono::duration<double, std::milli>(endTime - startTime).count();
     }
 }
 
@@ -43,7 +41,7 @@ double PerformanceTimer::getElapsedSeconds() const {
 
 long long PerformanceTimer::getElapsedMicroseconds() const {
     if (isRunning) {
-        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto currentTime = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime);
         return duration.count();
     } else {

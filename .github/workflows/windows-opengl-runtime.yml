@@ -1,0 +1,58 @@
+name: Windows OpenGL Runtime Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-opengl-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-opengl-runtime:
+    # GitHub-hosted Windows runners do not expose a usable WGL driver. The
+    # `opengl` label identifies a physical or virtual self-hosted runner whose
+    # interactive Windows session has a working OpenGL 3.3 driver.
+    runs-on: [self-hosted, windows, x64, opengl]
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure OpenGL-enabled Windows build
+        run: >
+          cmake -S . -B build/windows-opengl-runtime
+          -A x64
+          -DEGE_BUILD_OPENGL=ON
+          -DEGE_USE_BUNDLED_GLFW=ON
+          -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEST=ON
+          -DEGE_BUILD_TEMP=OFF
+
+      - name: Build library, tests, and demos
+        run: |
+          cmake --build build/windows-opengl-runtime --config Release --parallel
+          cmake --build build/windows-opengl-runtime --config Release --target demos --parallel
+
+      - name: Run GDI and OpenGL functional gates
+        run: >
+          ctest --test-dir build/windows-opengl-runtime
+          -C Release
+          --output-on-failure
+          --timeout 300
+          --no-tests=error
+          -LE performance
+
+      - name: Run image performance gates
+        run: >
+          ctest --test-dir build/windows-opengl-runtime
+          -C Release
+          --output-on-failure
+          --timeout 300
+          --no-tests=error
+          -L performance
