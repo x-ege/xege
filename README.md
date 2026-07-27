@@ -122,6 +122,7 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 | 灵活的图像操作 | 支持图像旋转、缩放、透明贴图、Alpha 滤镜等高级变换 |
 | 坐标变换系统 | 提供 `ege_transform_*` 系列函数，支持平移、旋转、缩放等矩阵变换 |
 | 完善的输入处理 | 支持键盘、Unicode 字符和鼠标（含双击、扩展键）；Windows 后端另支持系统输入法控件 |
+| 跨平台音乐播放 | Windows 使用 MCI，macOS 使用系统 AVFAudio，Linux 优先 GStreamer 并内置 miniaudio 回退 |
 | 相机捕获支持 | 基于 [ccap](https://github.com/wysaid/CameraCapture) 提供摄像头采集功能 (C++17) |
 | 跨编译器兼容 | 从 VS2017 到 VS2026，MinGW 全系列均可编译，兼容性极强 |
 
@@ -130,6 +131,11 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 EGE 使用 [CMake](https://cmake.org) 作为构建系统。
 
 详细编译步骤请参阅 [编译指南](BUILD.md)。
+
+Linux 的音乐播放默认自动检测 GStreamer；未安装其开发包时会使用内置
+miniaudio，不会增加必选系统依赖。可通过
+`-DEGE_MUSIC_GSTREAMER=ON|OFF|AUTO` 控制，格式和 MIDI 部署说明见
+[MUSIC 跨平台后端](doc/music-backend.md)。
 
 ## 社区与支持
 

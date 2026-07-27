@@ -5711,13 +5711,15 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 /**
  * @brief Music playback class
  *
- * MUSIC class provides music playback functionality based on Windows Media Control Interface (MCI),
- * supports playing various audio formats such as WAV, MP3, MIDI, etc.
+ * MUSIC provides cross-platform file playback while retaining the original
+ * Windows-compatible API and object layout.
  *
- * @note Playback is currently implemented by Windows MCI. On other platforms
- *       OpenFile and playback operations return MUSIC_ERROR, Close remains
- *       idempotent, and GetPlayStatus returns MUSIC_MODE_NOT_OPEN.
- * @note Windows MCI commonly supports WAV, MP3, MIDI and other installed codecs.
+ * @note Windows uses MCI. macOS uses AVFAudio and the system DLS synthesizer.
+ *       Linux prefers GStreamer when available and otherwise uses the bundled
+ *       miniaudio decoder/output backend.
+ * @note Exact formats depend on the platform. The Linux miniaudio fallback
+ *       supports WAV, MP3 and FLAC; Linux MIDI needs a GStreamer MIDI decoder
+ *       and a soundfont installed at runtime.
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC
@@ -5754,7 +5756,7 @@ public:
      * @brief Open music file (ASCII version)
      * @param filepath Music file path (including filename)
      * @return Returns 0 on success, non-zero on failure
-     * @note Supports WAV, MP3, MIDI and other formats, playback state becomes MUSIC_MODE_STOP after successful opening
+     * @note Format support is platform-dependent; playback state becomes MUSIC_MODE_STOP after a successful open
      * @note If another file is already opened, it will be automatically closed
      * @see OpenFile(const wchar_t*), Close()
      */
@@ -5764,7 +5766,7 @@ public:
      * @brief Open music file (Unicode version)
      * @param filepath Music file path (including filename)
      * @return Returns 0 on success, non-zero on failure
-     * @note Supports WAV, MP3, MIDI and other formats, playback state becomes MUSIC_MODE_STOP after successful opening
+     * @note Format support is platform-dependent; playback state becomes MUSIC_MODE_STOP after a successful open
      * @note If another file is already opened, it will be automatically closed
      * @see OpenFile(const char*), Close()
      */
@@ -5803,8 +5805,7 @@ public:
      * @brief Seek to playback position
      * @param dwTo Target playback position (milliseconds)
      * @return Returns 0 on success, non-zero on failure
-     * @note Currently this function is invalid, recommend using Play(dwTo) instead
-     * @deprecated Recommend using Play(dwTo) to achieve seeking
+     * @note The macOS and Linux backends preserve the current play/pause state
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);

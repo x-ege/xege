@@ -32,6 +32,16 @@ option(EGE_BUILD_DEMO "Build ege demos" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEST "Build ege tests" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEMP "Build ege temp" ${EGE_IS_ROOT_PROJECT})
 
+# Linux MUSIC uses GStreamer when its development files are available, with
+# the bundled miniaudio backend kept as a zero-configuration fallback.
+set(EGE_MUSIC_GSTREAMER "AUTO" CACHE STRING
+    "Linux GStreamer MUSIC backend: AUTO, ON, or OFF")
+set_property(CACHE EGE_MUSIC_GSTREAMER PROPERTY STRINGS AUTO ON OFF)
+string(TOUPPER "${EGE_MUSIC_GSTREAMER}" _EGE_MUSIC_GSTREAMER_MODE)
+if(NOT _EGE_MUSIC_GSTREAMER_MODE MATCHES "^(AUTO|ON|OFF)$")
+    message(FATAL_ERROR "EGE_MUSIC_GSTREAMER must be AUTO, ON, or OFF")
+endif()
+
 # Performance diagnostics are enabled for Debug configurations by default and
 # compiled out of production configurations. ON/OFF allow integrators to
 # override that policy without changing the public API or runtime behavior.
@@ -68,6 +78,7 @@ message(STATUS "EGE_CLEAR_OPTIONS_CACHE: ${EGE_CLEAR_OPTIONS_CACHE}")
 message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
 message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
 message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
+message(STATUS "EGE_MUSIC_GSTREAMER: ${_EGE_MUSIC_GSTREAMER_MODE}")
 message(STATUS "EGE_PERFORMANCE_DIAGNOSTICS: ${_EGE_PERFORMANCE_DIAGNOSTICS_MODE}")
 message(STATUS "EGE_DISABLE_DEBUG_INFO: ${EGE_DISABLE_DEBUG_INFO}")
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
@@ -243,6 +254,7 @@ file(GLOB_RECURSE EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/
 # recursive common-source glob silently compiled both Win32 and OpenGL backends
 # into native Unix builds and defeated the advertised isolation.
 list(FILTER EGE_CPP_SRC EXCLUDE REGEX "/src/backend/(opengl|win32)/")
+list(FILTER EGE_CPP_SRC EXCLUDE REGEX "/src/music_backend/")
 add_library(xege STATIC ${EGE_CPP_SRC})
 
 target_include_directories(xege PUBLIC include)
@@ -296,6 +308,57 @@ if(EGE_ENABLE_CPP17)
     set(CMAKE_CXX_EXTENSIONS OFF)
     target_compile_features(xege PRIVATE cxx_std_17)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
+endif()
+
+# MUSIC playback
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    find_package(Threads REQUIRED)
+    target_sources(xege PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/music_backend/music_miniaudio.cpp)
+    target_include_directories(xege PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/miniaudio)
+    target_link_libraries(xege PRIVATE Threads::Threads ${CMAKE_DL_LIBS})
+
+    set(_EGE_MUSIC_HAS_GSTREAMER OFF)
+    if(NOT _EGE_MUSIC_GSTREAMER_MODE STREQUAL "OFF")
+        find_package(PkgConfig QUIET)
+        if(PkgConfig_FOUND)
+            pkg_check_modules(EGE_GSTREAMER QUIET IMPORTED_TARGET
+                gstreamer-1.0)
+        endif()
+        if(EGE_GSTREAMER_FOUND)
+            set(_EGE_MUSIC_HAS_GSTREAMER ON)
+            target_sources(xege PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/music_backend/music_gstreamer.cpp)
+            target_link_libraries(xege PRIVATE PkgConfig::EGE_GSTREAMER)
+            target_compile_definitions(xege PRIVATE
+                EGE_MUSIC_HAS_GSTREAMER=1)
+        elseif(_EGE_MUSIC_GSTREAMER_MODE STREQUAL "ON")
+            message(FATAL_ERROR
+                "EGE_MUSIC_GSTREAMER=ON requires the gstreamer-1.0 "
+                "development package")
+        endif()
+    endif()
+
+    if(_EGE_MUSIC_HAS_GSTREAMER)
+        message(STATUS "MUSIC backend: GStreamer, with miniaudio fallback")
+    else()
+        message(STATUS "MUSIC backend: miniaudio")
+    endif()
+elseif(APPLE)
+    enable_language(OBJCXX)
+    set(_EGE_MUSIC_MACOS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/music_backend/music_macos.mm)
+    target_sources(xege PRIVATE ${_EGE_MUSIC_MACOS_SOURCE})
+    set_source_files_properties(${_EGE_MUSIC_MACOS_SOURCE}
+        PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    target_link_libraries(xege PRIVATE
+        "-framework Foundation"
+        "-framework AVFAudio"
+        "-framework AudioToolbox"
+    )
+    message(STATUS
+        "MUSIC backend: AVFAudio (AVAudioPlayer + AVAudioSequencer/DLSSynth)")
 endif()
 
 # Camera capture

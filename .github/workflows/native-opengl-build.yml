@@ -48,7 +48,14 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build xorg-dev libgl1-mesa-dev xvfb
+          sudo apt-get install -y \
+            ninja-build \
+            xorg-dev \
+            libgl1-mesa-dev \
+            xvfb \
+            libgstreamer1.0-dev \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good
 
       - name: Configure native OpenGL build
         run: >-

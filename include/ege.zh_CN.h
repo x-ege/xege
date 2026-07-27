@@ -5235,12 +5235,12 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 /**
  * @brief 音乐播放类
  *
- * MUSIC 类提供了基于 Windows Media Control Interface (MCI) 的音乐播放功能，
- * 支持播放 WAV、MP3、MIDI 等多种音频格式。
+ * MUSIC 在保留原有 Windows 兼容 API 和对象布局的同时，提供跨平台文件播放。
  *
- * @note 播放目前由 Windows MCI 实现。其它平台的 OpenFile 和播放操作返回
- *       MUSIC_ERROR，Close 保持幂等，GetPlayStatus 返回 MUSIC_MODE_NOT_OPEN。
- * @note Windows MCI 通常支持 WAV、MP3、MIDI 以及系统已安装的其它编解码器。
+ * @note Windows 使用 MCI；macOS 使用 AVFAudio 和系统 DLS 合成器；Linux
+ *       优先使用 GStreamer，缺失时回退到内置 miniaudio。
+ * @note 具体格式取决于平台。Linux miniaudio 回退支持 WAV、MP3 和 FLAC；
+ *       Linux MIDI 需要运行时安装 GStreamer MIDI 解码插件和 soundfont。
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC
@@ -5277,7 +5277,7 @@ public:
      * @brief 打开音乐文件（ASCII 版本）
      * @param filepath 音乐文件路径（包含文件名）
      * @return 操作成功返回 0，操作失败返回非 0
-     * @note 支持 WAV、MP3、MIDI 等格式，成功打开后播放状态为 MUSIC_MODE_STOP
+     * @note 格式支持取决于平台；成功打开后播放状态为 MUSIC_MODE_STOP
      * @note 如果已经打开了其他文件，会自动关闭原文件
      * @see OpenFile(const wchar_t*), Close()
      */
@@ -5287,7 +5287,7 @@ public:
      * @brief 打开音乐文件（Unicode 版本）
      * @param filepath 音乐文件路径（包含文件名）
      * @return 操作成功返回 0，操作失败返回非 0
-     * @note 支持 WAV、MP3、MIDI 等格式，成功打开后播放状态为 MUSIC_MODE_STOP
+     * @note 格式支持取决于平台；成功打开后播放状态为 MUSIC_MODE_STOP
      * @note 如果已经打开了其他文件，会自动关闭原文件
      * @see OpenFile(const char*), Close()
      */
@@ -5326,8 +5326,7 @@ public:
      * @brief 定位播放位置
      * @param dwTo 目标播放位置（毫秒）
      * @return 操作成功返回 0，操作失败返回非 0
-     * @note 目前此函数无效，建议使用 Play(dwTo) 代替
-     * @deprecated 推荐使用 Play(dwTo) 实现定位播放
+     * @note macOS 和 Linux 后端会保留当前的播放/暂停状态
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);

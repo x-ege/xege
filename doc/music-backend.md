@@ -1,32 +1,63 @@
-# MUSIC 跨平台后端方案
+# MUSIC 跨平台后端
 
-## 当前契约
+## 实现矩阵
 
-Windows 继续使用 MCI，保持既有格式支持、返回值和 ABI。Linux/macOS 目前没有播放
-后端；这些平台会明确返回 `MUSIC_ERROR`，而不是像旧占位实现那样报告成功却始终处于
-未打开状态。`Close()` 对未打开对象仍然成功，`GetPlayStatus()` 返回
-`MUSIC_MODE_NOT_OPEN`。
-
-## 方案比较
-
-| 方案 | 优点 | 代价与限制 |
+| 平台 | 默认实现 | 格式与说明 |
 | --- | --- | --- |
-| 内置 miniaudio（推荐） | 单头文件、许可宽松、WAV/MP3/FLAC 解码和 Linux/macOS/Windows 输出统一；可避免要求用户安装开发包 | 需要维护 vendored 版本；MIDI 不在核心解码范围；仍需验证 ALSA/PulseAudio/PipeWire 运行时 |
-| SDL2_mixer | API 成熟，格式覆盖较广 | 给图形库增加 SDL2/SDL_mixer 系统依赖，和现有 GLFW 窗口栈无关且偏重 |
-| GStreamer | Linux 桌面格式和设备支持最广 | 开发包、运行时插件和部署复杂，难以维持 EGE 的轻量依赖模型 |
-| 外部播放器进程 | 实现快 | 生命周期、定位、音量、错误传播和安全转义都不可靠，不适合作为库后端 |
+| Windows | MCI | 保留原有实现、返回值和格式行为 |
+| macOS | AVFAudio | 普通音频使用 `AVAudioPlayer`；MIDI 使用 `AVAudioEngine`、`AVAudioSequencer` 和系统 DLSSynth |
+| Linux（检测到 GStreamer） | GStreamer，失败时回退 miniaudio | 格式取决于已安装的 GStreamer 插件；MIDI 需要 MIDI 解码插件和 soundfont |
+| Linux（无 GStreamer 开发包） | 内置 miniaudio | 无额外编译依赖，支持 WAV、MP3 和 FLAC；不解码 MIDI |
 
-## 推荐落地顺序
+所有后端都实现 `OpenFile`、`Play`、`RepeatPlay`、`Pause`、`Stop`、`Seek`、
+`SetVolume`、`Close`、`GetPosition`、`GetLength` 和 `GetPlayStatus`。区间播放和
+区间循环统一使用毫秒；`Close` 保持幂等。
 
-1. 保持 `MUSIC` 的公开类布局和返回类型不变，在实现内部增加平台无关的私有播放状态。
-2. vendor 固定版本的 miniaudio，先实现 WAV、MP3、FLAC 的
-   `OpenFile/Play/Pause/Stop/Seek/SetVolume`，并增加生成式短音频 fixture。
-3. Linux CI 使用 miniaudio 的 null 后端验证解码、定位、循环、时长和状态机；有声卡
-   环境仅作为可选集成测试，避免 hosted runner 的设备差异造成不稳定。
-4. Ogg/Vorbis 可通过 miniaudio 自定义 decoder 接入；MIDI 建议作为可选的
-   FluidSynth 后端，需要显式 soundfont，不让它成为核心构建依赖。
-5. 后端成熟后再考虑 Windows 默认切换；在此之前 Windows 继续走 MCI，避免改变旧程序
-   的 codec、MIDI 和设备行为。
+## ABI 兼容
 
-这个拆分能先消除 Linux 的假成功，再用轻量且可测试的后端逐步补齐真实播放，而不破坏
-现有 Windows ABI。
+`MUSIC` 公共类仍然只有原来的 `m_DID` 和 `m_dwCallBack` 两个数据成员。非 Windows
+后端对象由 `music.cpp` 的内部注册表管理，因此没有改变类大小、字段偏移、公开函数
+签名或 Windows MCI 路径。两个公开头文件继续保持同一组声明。
+
+## Linux 构建选项
+
+`EGE_MUSIC_GSTREAMER` 接受三个值：
+
+- `AUTO`（默认）：有 `gstreamer-1.0` 开发包时编译 GStreamer，并保留 miniaudio
+  运行时回退；没有开发包时只编译 miniaudio。
+- `ON`：要求 GStreamer 开发包存在，否则 CMake 配置失败。
+- `OFF`：只编译 miniaudio，适合最小化或完全自包含的构建。
+
+例如：
+
+```sh
+cmake -S . -B build -DEGE_MUSIC_GSTREAMER=ON
+```
+
+Ubuntu 上可选的 GStreamer 支持通常需要 `libgstreamer1.0-dev`；
+`gstreamer1.0-plugins-base` 和 `gstreamer1.0-plugins-good` 提供常见音频格式。
+MIDI 还需要 `gstreamer1.0-plugins-bad` 中的 FluidSynth/WildMIDI 解码器和可用的
+soundfont。没有这些运行时插件时，普通音频仍可播放，MIDI 的 `OpenFile` 会明确失败。
+
+当两种 Linux 后端都编译时，可设置 `EGE_MUSIC_BACKEND=miniaudio` 强制使用回退
+后端，便于部署诊断和测试。
+
+## Linux 音频栈
+
+GStreamer 的自动音频输出会使用系统中可用的 PipeWire、PulseAudio 或 ALSA
+元素。miniaudio 会直接探测 PulseAudio、JACK 或 ALSA；在以 PipeWire 提供
+PulseAudio 兼容服务的桌面上也可正常工作。Linux 没有一个在所有发行版上都保证存在
+且同时负责解码、MIDI 合成和设备输出的系统 framework，因此采用“桌面集成优先、
+自包含回退”的两级方案。
+
+测试可设置 `EGE_MUSIC_AUDIO_BACKEND=null`，让 GStreamer 使用同步 `fakesink`、
+miniaudio 使用 null device。这样 CI 能验证真实解码、定位、状态和循环，而不依赖声卡。
+
+## miniaudio 版本
+
+仓库通过子模块固定 miniaudio `0.11.25`（MIT No Attribution / Unlicense 双许可）。
+克隆仓库时应初始化子模块：
+
+```sh
+git submodule update --init --recursive
+```

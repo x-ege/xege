@@ -235,6 +235,13 @@ add_test(NAME performance_diagnostics COMMAND performance_diagnostics_test)
 add_test(NAME public_headers COMMAND public_headers_test)
 add_test(NAME public_api_overloads COMMAND public_api_overload_test)
 add_test(NAME music_contract COMMAND music_contract_test)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND _EGE_MUSIC_HAS_GSTREAMER)
+    add_test(
+        NAME music_contract_miniaudio
+        COMMAND ${CMAKE_COMMAND} -E env EGE_MUSIC_BACKEND=miniaudio
+            $<TARGET_FILE:music_contract_test>
+    )
+endif()
 add_test(NAME control_contract COMMAND control_contract_test)
 add_test(NAME array_contract COMMAND array_contract_test)
 add_test(NAME camera_frame_copy COMMAND camera_frame_copy_test)
@@ -346,7 +353,14 @@ set_tests_properties(public_api_overloads PROPERTIES
 )
 set_tests_properties(music_contract PROPERTIES
     LABELS "correctness;music;api"
+    TIMEOUT 20
 )
+if(TEST music_contract_miniaudio)
+    set_tests_properties(music_contract_miniaudio PROPERTIES
+        LABELS "correctness;music;api;miniaudio"
+        TIMEOUT 20
+    )
+endif()
 set_tests_properties(control_contract PROPERTIES
     LABELS "correctness;control;api;window"
     TIMEOUT 20

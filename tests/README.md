@@ -10,7 +10,7 @@
 | `rendering_correctness` | 基础与增强图元、线型/端帽/连接、填充与渐变、viewport、路径、变换、文字与编码、图片混合/旋转、像素缓冲与存储转换、压缩、颜色工具、PNG/BMP 保存与重新加载 |
 | `public_headers` | 公共头文件、Win32 兼容类型及常量的可编译性 |
 | `public_api_overloads` | 让编译器逐一选择两个公共头中全部 386 个精确函数签名，防止同参数个数的类型重载被静态审计误判为覆盖 |
-| `music_contract` | 未打开对象的状态和错误返回；Unix 无播放后端时明确失败而不是假成功 |
+| `music_contract` | 未打开/缺失文件错误；Unix PCM WAV 的打开、时长、定位、区间播放、暂停、区间循环、音量、停止、窄/宽路径和幂等关闭；Linux GStreamer 与 miniaudio 回退分别运行 |
 | `control_contract` | 控件树生命周期、状态、键盘/鼠标传播、label/button/fps 绘制、PushTarget 与 sys_edit 平台契约 |
 | `array_contract` | 内部动态数组的复制、赋值、缩容、清空后再增长及所有权释放 |
 | `camera_frame_copy` | 不依赖设备的 BGRA stride/长度/溢出预检、逐行复制与目标缓冲 guard（所有平台） |
