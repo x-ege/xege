@@ -15,6 +15,11 @@ namespace {
 
 int failures = 0;
 
+void stage(const char* message)
+{
+    std::cerr << "control_contract: " << message << std::endl;
+}
+
 void expect(bool condition, const char* message)
 {
     if (!condition) {
@@ -107,6 +112,7 @@ int main()
         std::cerr << "FAIL: unable to create the hidden control test context\n";
         return EXIT_FAILURE;
     }
+    stage("graphics initialized");
 
     ProbeControl* detachedChild = NULL;
     {
@@ -120,8 +126,10 @@ int main()
                "destroying a control promotes surviving children to its parent");
     }
     delete detachedChild;
+    stage("detached-child promotion completed");
 
     {
+        stage("main control tree started");
         ProbeControl root;
         ProbeControl parent(ProbeControl::inherit_level_e, &root);
         ProbeControl child(ProbeControl::inherit_level_e, &parent);
@@ -245,13 +253,17 @@ int main()
         expect(ege::gettarget() == previousTarget,
                "PushTarget restores the previous image");
         ege::delimage(target);
+        stage("drawing checks completed");
 
         ege::sys_edit edit(ege::sys_edit::inherit_level_e, &root);
 #ifdef _WIN32
+        stage("creating sys_edit");
         expect(edit.create() == ege::grOk,
                "sys_edit creates a native Win32 control");
+        stage("destroying sys_edit");
         expect(edit.destroy() == 1,
                "sys_edit destroys its native Win32 control");
+        stage("sys_edit checks completed");
 #else
         expect(edit.create() == ege::grError,
                "sys_edit reports that no native Unix edit control exists");
@@ -259,9 +271,11 @@ int main()
                "destroy is harmless when no native edit control exists");
 #endif
     }
+    stage("main control tree destroyed");
 
     expect(shutdown_graphics_for_test(),
            "the control test window and UI thread shut down cleanly");
+    stage("graphics shutdown completed");
 
     if (failures != 0) {
         std::cerr << failures << " control contract assertion(s) failed\n";
