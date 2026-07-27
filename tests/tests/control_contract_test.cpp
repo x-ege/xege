@@ -204,14 +204,21 @@ int main()
         stage("label properties completed");
 
         CountingButton action(CountingButton::inherit_level_e, &root);
+        stage("button constructed");
         action.caption("run");
+        stage("button caption completed");
         action.font("SimSun");
         action.fontsize(13);
+        stage("button font completed");
         action.alpha(-1);
         action.bgcolor(ege::BLUE);
+        stage("button background completed");
         action.linecolor(ege::WHITE);
+        stage("button line color completed");
         action.shadowcolor(ege::BLACK);
+        stage("button shadow color completed");
         action.textcolor(ege::YELLOW);
+        stage("button text color completed");
         expect(std::strcmp(action.caption(), "run") == 0 &&
                    std::strcmp(action.font(), "SimSun") == 0 &&
                    action.fontsize() == 13 && action.alpha() == 0 &&
@@ -220,10 +227,13 @@ int main()
                    action.shadowcolor() == ege::BLACK &&
                    action.textcolor() == ege::YELLOW,
                "button properties and alpha clamping round-trip");
+        stage("button property assertions completed");
         action.onKeyDown(13, 0);
         action.onKeyUp(13, 0);
+        stage("button keyboard checks completed");
         action.onMouse(1, 1, ege::mouse_msg_down | ege::mouse_flag_left);
         action.onMouse(1, 1, ege::mouse_msg_up | ege::mouse_flag_left);
+        stage("button mouse checks completed");
         expect(action.clicks == 2,
                "button dispatches keyboard and mouse clicks");
         action.onLostFocus();
