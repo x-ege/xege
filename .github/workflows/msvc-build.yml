@@ -120,61 +120,9 @@ jobs:
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
 
-  # VS2015-2017 使用 windows-2019 runner（预装了 v140 和 v141 工具集）
-  vs2017-build:
-    name: MSVC 2017 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
-    strategy:
-      matrix:
-        build_type: ["Release", "Debug"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio environment
-        uses: microsoft/setup-msbuild@v1.1
-
-      - name: Configure CMake
-        run: |
-          mkdir build-vs2017
-          cd build-vs2017
-          cmake .. -T v141 -DEGE_BUILD_DEMO=ON # vs2017
-
-      - name: Build
-        env:
-          DO_TEST_RELEASE_LIBS: true
-        run: |
-          cd build-vs2017
-          cmake --build . --config ${{ matrix.build_type }} --parallel
-
-  vs2015-build:
-    name: MSVC 2015 Build (${{ matrix.build_type }})
-    runs-on: windows-2019
-    strategy:
-      matrix:
-        build_type: ["Release", "Debug"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Visual Studio environment
-        uses: microsoft/setup-msbuild@v1.1
-
-      - name: Configure CMake
-        run: |
-          mkdir build-vs2015
-          cd build-vs2015
-          cmake .. -T v140 # vs2015
-
-      - name: Build
-        env:
-          DO_TEST_RELEASE_LIBS: true
-        run: |
-          cd build-vs2015
-          cmake --build . --config ${{ matrix.build_type }} --parallel
-
-  # 注意：VS2010-VS2013 (v100-v120) 已从 CI 中移除
-  # 原因：Chocolatey 已移除这些旧版本的 build tools 包，且微软官方也不再提供独立安装程序
-  # 这些编译器版本已超过 10 年，现代 GitHub Actions runner 不再支持
+  # 注意：VS2015 (v140) / VS2017 (v141) / VS2010-VS2013 (v100-v120) 已从 CI 中移除
+  # 原因：
+  #   1. GitHub 已于 2025-06-30 退役 windows-2019 runner 镜像，而 v140/v141 工具集
+  #      原本依赖该镜像预装；改用 windows-latest 后需手动安装，脆弱且缓慢。
+  #   2. Chocolatey 已移除 v100-v120 的 build tools 包，微软官方也不再提供独立安装程序。
+  # 这些编译器版本已超过 8 年，库本身仍兼容，只是 CI 不再覆盖。
