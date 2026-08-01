@@ -82,8 +82,7 @@ When master branch is updated (not a tag push), a test release is automatically 
 
 **MSVC 库:**
 - VS2022 (toolset v143) - Windows latest
-- VS2019 (toolset v142) - Windows 2019
-- VS2017 (toolset v141) - Windows 2019
+- VS2019 (toolset v142) - Windows latest
 
 **MinGW Windows 库:**
 - MSYS2 最新版 (GCC 最新版) / MSYS2 Latest (GCC Latest Version)
@@ -127,7 +126,6 @@ ege-{version}/
 ├── lib/                     # 库文件 / Library files
 │   ├── vs2022/x64/         # Visual Studio 2022
 │   ├── vs2019/x64/         # Visual Studio 2019
-│   ├── vs2017/x64/         # Visual Studio 2017
 │   ├── mingw64/            # MinGW MSYS2
 │   ├── codeblocks/         # Code::Blocks
 │   ├── redpanda/           # CLion/小熊猫C++
