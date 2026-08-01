@@ -126,7 +126,6 @@ ege-{version}/
 ├── lib/                     # 库文件 / Library files
 │   ├── vs2022/x64/         # Visual Studio 2022
 │   ├── vs2019/x64/         # Visual Studio 2019
-│   ├── vs2017/x64/         # Visual Studio 2017
 │   ├── mingw64/            # MinGW MSYS2
 │   ├── codeblocks/         # Code::Blocks
 │   ├── redpanda/           # CLion/小熊猫C++
