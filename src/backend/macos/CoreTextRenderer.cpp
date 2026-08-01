@@ -77,13 +77,14 @@ CFStringRef createString(const void* string, bool wide)
 
 CTFontRef createFont(const std::string& face, int height, int weight, bool italic)
 {
+    const CGFloat size = static_cast<CGFloat>(std::max(1, std::abs(height)));
     ScopedCF<CFStringRef> fontName(CFStringCreateWithCString(kCFAllocatorDefault, face.c_str(), kCFStringEncodingUTF8));
-    if (!fontName) {
-        return nullptr;
-    }
-    CTFontRef base = CTFontCreateWithName(fontName.get(), static_cast<CGFloat>(std::max(1, std::abs(height))), nullptr);
+    CTFontRef base = fontName ? CTFontCreateWithName(fontName.get(), size, nullptr) : nullptr;
     if (base == nullptr) {
-        return nullptr;
+        base = CTFontCreateUIFontForLanguage(kCTFontUIFontSystem, size, nullptr);
+        if (base == nullptr) {
+            return nullptr;
+        }
     }
 
     CTFontSymbolicTraits traits = 0;
@@ -98,9 +99,11 @@ CTFontRef createFont(const std::string& face, int height, int weight, bool itali
     }
 
     CTFontRef styled = CTFontCreateCopyWithSymbolicTraits(base, 0.0, nullptr, traits, traits);
-    CFRelease(base);
-    return styled != nullptr ? styled :
-                               CTFontCreateWithName(fontName.get(), static_cast<CGFloat>(std::abs(height)), nullptr);
+    if (styled != nullptr) {
+        CFRelease(base);
+        return styled;
+    }
+    return base;
 }
 
 CGColorRef createColor(color_t color)

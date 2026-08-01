@@ -1,6 +1,7 @@
 #include "backend/macos/CoreGraphicsRenderTarget.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <iostream>
 
@@ -43,6 +44,15 @@ void testBufferResizeRopAndViewport() {
     CHECK(target.getPixelBuffer()[1 * 643 + 2] == 0xFFFFFFFFU);
     target.putPixel(5, 0, 0xFFABCDEFU);
     CHECK(std::find(target.getPixelBuffer(), target.getPixelBuffer() + 643 * 4, 0xFFABCDEFU) == target.getPixelBuffer() + 643 * 4);
+
+    target.clear(0xFF010203U);
+    target.setBkColor(0xFF556677U);
+    target.setViewport(-8, -7, -2, -1, true);
+    target.clearViewport();
+    CHECK(target.getPixelBuffer()[0] == 0xFF010203U);
+    target.setViewport(640, 2, 700, 9, true);
+    target.clearViewport();
+    CHECK(target.getPixelBuffer()[3 * 643 + 642] == 0xFF556677U);
 }
 
 void testTransferAlphaBlurAndPrimitives() {
@@ -114,6 +124,8 @@ void testUpdateRotateAndText() {
     target.measureText(L"Hello, 世界", &wideWidth, &wideHeight);
     CHECK(utf8Width > 20.0f && utf8Height > 10.0f);
     CHECK(std::abs(utf8Width - wideWidth) < 1.0f && std::abs(utf8Height - wideHeight) < 1.0f);
+    target.setFont(24, 0, "EGE Missing Font 0123456789", 0, 0, 400, false, false, false);
+    CHECK(target.getTextWidth("font fallback") > 10);
     target.setTextColor(0xFFFFFFFFU);
     target.drawText(4, 4, "Native UTF-8");
     target.drawText(4, 40, L"原生文字");

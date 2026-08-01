@@ -92,8 +92,14 @@ void testCopyAndRasterOps()
 
     ege::putimage(target.value, 3, 4, source.value, SRCCOPY);
     EGE_CHECK(ege::getpixel(4, 5, target.value) == kLine);
+    ege::putpixel(4, 5, kBlue, target.value);
     ege::putimage(target.value, 3, 4, source.value, SRCINVERT);
-    EGE_CHECK(ege::getpixel(4, 5, target.value) == (kLine ^ kLine));
+    EGE_CHECK(ege::getpixel(4, 5, target.value) == (kBlue ^ kLine));
+
+    EGE_CHECK(ege::putimage_rotate(target.value, nullptr, 0, 0, 0.5f, 0.5f, 0.0f)
+        == ege::grNullPointer);
+    EGE_CHECK(ege::putimage_rotatezoom(target.value, nullptr, 0, 0, 0.5f, 0.5f, 0.0f, 1.0f)
+        == ege::grNullPointer);
 
     ege::putimage(target.value, 0, 0, 8, 8, source.value, 0, 0, 4, 4, SRCCOPY);
     EGE_CHECK(ege::getpixel(2, 2, target.value) == kLine);

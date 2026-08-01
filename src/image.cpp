@@ -39,7 +39,6 @@ struct BITMAPFILEHEADER {
     WORD bfReserved2;
     DWORD bfOffBits;
 };
-#pragma pack(pop)
 
 struct BITMAPINFOHEADER {
     DWORD biSize;
@@ -77,6 +76,11 @@ struct BITMAPV4HEADER {
     DWORD bV4GammaGreen;
     DWORD bV4GammaBlue;
 };
+#pragma pack(pop)
+
+static_assert(sizeof(BITMAPFILEHEADER) == 14, "BITMAPFILEHEADER must be 14 bytes");
+static_assert(sizeof(BITMAPINFOHEADER) == 40, "BITMAPINFOHEADER must be 40 bytes");
+static_assert(sizeof(BITMAPV4HEADER) == 108, "BITMAPV4HEADER must be 108 bytes");
 #endif
 
 #ifndef _WIN32
@@ -683,6 +687,7 @@ int IMAGE::setStorageMode(image_storage_mode mode, bool preservePixels)
 #endif
 
     if (preservePixels) {
+        delete m_samplingTarget;
         m_samplingTarget = m_renderTarget;
     } else {
         delete m_renderTarget;
@@ -920,6 +925,19 @@ int IMAGE::resize_f(int width, int height)
         gentexture(false);
     }
 #endif
+    // Rebuild the native CPU surface before publishing the new dimensions.
+    // On failure, IMAGE must continue to describe the old, still-valid buffer.
+#ifdef EGE_BACKEND_COREGRAPHICS
+    if (m_renderTarget && (width != oldWindowSize.width || height != oldWindowSize.height)) {
+        backend::CoreGraphicsRenderTarget* target =
+            dynamic_cast<backend::CoreGraphicsRenderTarget*>(m_renderTarget);
+        if (!target || !target->resize(std::max(1, width), std::max(1, height), false)) {
+            return grAllocError;
+        }
+        m_pBuffer = reinterpret_cast<PDWORD>(target->getPixelBuffer());
+    }
+#endif
+
     m_width   = width;
     m_height  = height;
 
@@ -949,19 +967,6 @@ int IMAGE::resize_f(int width, int height)
     if (!m_enableclip && viewport == Bound(0, 0, oldWindowSize.width, oldWindowSize.height)) {
         viewport.set(0, 0, width, height);
     }
-
-    // Rebuild the native CPU surface when dimensions change.
-#ifdef EGE_BACKEND_COREGRAPHICS
-    if (m_renderTarget && (width != oldWindowSize.width || height != oldWindowSize.height)) {
-        backend::CoreGraphicsRenderTarget* target =
-            dynamic_cast<backend::CoreGraphicsRenderTarget*>(m_renderTarget);
-        if (target && target->resize(std::max(1, width), std::max(1, height), false)) {
-            m_pBuffer = reinterpret_cast<PDWORD>(target->getPixelBuffer());
-        } else {
-            return grAllocError;
-        }
-    }
-#endif
 
     setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
 
@@ -1047,7 +1052,10 @@ int IMAGE::getimage(PCIMAGE pSrcImg, int xSrc, int ySrc, int srcWidth, int srcHe
 {
     inittest(L"IMAGE::getimage");
     PCIMAGE img = CONVERT_IMAGE_CONST(pSrcImg);
-    this->resize_f(srcWidth, srcHeight);
+    if (this->resize_f(srcWidth, srcHeight) != grOk) {
+        CONVERT_IMAGE_END;
+        return grAllocError;
+    }
     const ClippedImageCopyRegion region = clipImageCopyRegion(
         xSrc + img->m_vpt.left, ySrc + img->m_vpt.top,
         srcWidth, srcHeight, img->m_width, img->m_height);
@@ -1168,9 +1176,14 @@ static void putimageRasterCpu(PIMAGE destination, PCIMAGE source,
     }
 
     // BitBlt permits overlapping source and destination rectangles. Snapshot
-    // the source so a self-copy has the same result as the Win32 backend.
-    std::vector<color_t> sourceSnapshot(
-        sourceBuffer, sourceBuffer + static_cast<size_t>(source->m_width) * source->m_height);
+    // only self-copies; ordinary blits can read the source buffer directly.
+    std::vector<color_t> sourceSnapshot;
+    const color_t* sourcePixels = sourceBuffer;
+    if (sourceBuffer == destinationBuffer) {
+        sourceSnapshot.assign(
+            sourceBuffer, sourceBuffer + static_cast<size_t>(source->m_width) * source->m_height);
+        sourcePixels = sourceSnapshot.data();
+    }
 
     const int destinationOriginX = xDest + destination->m_vpt.left;
     const int destinationOriginY = yDest + destination->m_vpt.top;
@@ -1193,7 +1206,7 @@ static void putimageRasterCpu(PIMAGE destination, PCIMAGE source,
             const int sourceX = xSrc + static_cast<int>((static_cast<int64_t>(dx) * widthSrc) / widthDest);
             if (sourceX < 0 || sourceX >= source->m_width) continue;
 
-            const color_t sourceColor = sourceSnapshot[sourceY * source->m_width + sourceX];
+            const color_t sourceColor = sourcePixels[sourceY * source->m_width + sourceX];
             color_t& destinationColor = destinationBuffer[destinationY * destination->m_width + destinationX];
             destinationColor = applyBitBltRasterOp(
                 rop, sourceColor, destinationColor,
@@ -3585,6 +3598,10 @@ int putimage_rotate(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest, fl
     PCIMAGE dc_src  = imgTexture;
 
     if (dc_dest) {
+        if (!dc_src) {
+            CONVERT_IMAGE_END;
+            return grNullPointer;
+        }
         // Native RenderTarget path
         RenderTarget* sourceTarget = dc_dest->m_renderTarget
             ? dc_src->getRenderTargetForSampling() : NULL;
@@ -3640,6 +3657,10 @@ int putimage_rotatezoom(PIMAGE imgDest, PCIMAGE imgTexture, int xDest, int yDest
     PIMAGE  dc_dest = CONVERT_IMAGE(imgDest);
     PCIMAGE dc_src  = imgTexture;
     if (dc_dest) {
+        if (!dc_src) {
+            CONVERT_IMAGE_END;
+            return grNullPointer;
+        }
         // Native RenderTarget path
         RenderTarget* sourceTarget = dc_dest->m_renderTarget
             ? dc_src->getRenderTargetForSampling() : NULL;

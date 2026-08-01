@@ -8,15 +8,19 @@ endif()
 
 file(REMOVE_RECURSE "${EGE_CONTRACT_BINARY_DIR}")
 
-set(_ege_configure_command
-    "${CMAKE_COMMAND}"
-    -S "${EGE_SOURCE_DIR}"
-    -B "${EGE_CONTRACT_BINARY_DIR}"
+set(_ege_common_configure_args
     -DEGE_BUILD_DEMO=OFF
     -DEGE_BUILD_TEST=OFF
     -DEGE_BUILD_TEMP=OFF
     -DEGE_ENABLE_CAMERA_CAPTURE=OFF
     -DEGE_ENABLE_OPENGL=OFF
+)
+
+set(_ege_configure_command
+    "${CMAKE_COMMAND}"
+    -S "${EGE_SOURCE_DIR}"
+    -B "${EGE_CONTRACT_BINARY_DIR}"
+    ${_ege_common_configure_args}
     -DEGE_DEFAULT_BACKEND=AUTO
 )
 if(DEFINED EGE_GENERATOR AND NOT EGE_GENERATOR STREQUAL "")
@@ -37,10 +41,10 @@ if(NOT _ege_configure_result EQUAL 0)
 endif()
 
 file(READ "${EGE_CONTRACT_BINARY_DIR}/CMakeCache.txt" _ege_cache)
-string(FIND "${_ege_cache}"
-    "EGE_RESOLVED_BACKEND:INTERNAL=${EGE_EXPECTED_BACKEND}"
-    _ege_backend_match)
-if(_ege_backend_match EQUAL -1)
+string(REGEX MATCH
+    "(^|\n)EGE_RESOLVED_BACKEND:INTERNAL=${EGE_EXPECTED_BACKEND}(\n|$)"
+    _ege_backend_match "${_ege_cache}")
+if(_ege_backend_match STREQUAL "")
     message(FATAL_ERROR
         "AUTO resolved to an unexpected backend. Expected "
         "${EGE_EXPECTED_BACKEND}.\n${_ege_cache}")
@@ -48,15 +52,19 @@ endif()
 
 set(_ege_invalid_binary_dir "${EGE_CONTRACT_BINARY_DIR}-invalid")
 file(REMOVE_RECURSE "${_ege_invalid_binary_dir}")
+set(_ege_invalid_configure_command
+    "${CMAKE_COMMAND}"
+    -S "${EGE_SOURCE_DIR}"
+    -B "${_ege_invalid_binary_dir}"
+    ${_ege_common_configure_args}
+    -DEGE_DEFAULT_BACKEND=NOT_A_BACKEND
+)
+if(DEFINED EGE_GENERATOR AND NOT EGE_GENERATOR STREQUAL "")
+    list(APPEND _ege_invalid_configure_command -G "${EGE_GENERATOR}")
+endif()
+
 execute_process(
-    COMMAND "${CMAKE_COMMAND}"
-        -S "${EGE_SOURCE_DIR}"
-        -B "${_ege_invalid_binary_dir}"
-        -DEGE_BUILD_DEMO=OFF
-        -DEGE_BUILD_TEST=OFF
-        -DEGE_BUILD_TEMP=OFF
-        -DEGE_ENABLE_CAMERA_CAPTURE=OFF
-        -DEGE_DEFAULT_BACKEND=NOT_A_BACKEND
+    COMMAND ${_ege_invalid_configure_command}
     RESULT_VARIABLE _ege_invalid_result
     OUTPUT_QUIET
     ERROR_QUIET

@@ -37,6 +37,30 @@ file build/native-coregraphics/demo/graph_5star
 `file` 的最后一行应包含 `Mach-O`，而不是 `PE32` 或 `.exe`。`COREGRAPHICS` 是 macOS
 的默认后端，但建议 CI 与验收脚本显式指定，避免缓存污染。
 
+默认 CTest 严格使用无头模式，不创建 `NSApplication` 或 `NSWindow`。公共 API 测试通过
+`EGE_HEADLESS=1` 初始化全局画布，将结果写入
+`build/native-coregraphics/test-artifacts/ege-api-headless.png`，再解码并逐像素验证。
+会显示真实窗口的 `native.mac_window_smoke` 和 `demo.*.launch` 不会注册到默认测试集；
+只有人工明确配置 `-DEGE_ENABLE_WINDOW_TESTS=ON` 时才启用。
+
+### VS Code 与 `tasks.sh`
+
+仓库自带的 VS Code 任务统一调用 `tasks.sh`。在 macOS 上，脚本会显式配置
+`EGE_DEFAULT_BACKEND=COREGRAPHICS` 和 `EGE_ENABLE_OPENGL=OFF`，并使用独立的
+`build/macos/Debug`、`build/macos/Release` 目录，避免复用旧 MinGW CMake cache。
+运行 demo 时传入的是无扩展名的 CMake target 名称，脚本直接启动 Mach-O 文件，
+不会查找 `.exe` 或调用 Wine。只有显式传入 Windows toolchain 时才进入交叉编译路径。
+
+可以先用下面的只读命令检查任务将使用的配置：
+
+```sh
+bash tasks.sh --debug --show-config
+```
+
+`utils/release.sh` 在 macOS 上生成的 AppleClang 静态库位于
+`Release/lib/macos-native`；历史 `Release/lib/macOS` 目录继续保留给 macOS
+主机上的 MinGW Windows 交叉编译包，二者不会混用。
+
 ### 逐像素 CPU buffer 语义
 
 macOS 后端以 CPU `PixelSurface` 作为图像像素的权威存储。`getbuffer()` 返回可直接

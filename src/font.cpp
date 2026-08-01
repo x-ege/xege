@@ -550,7 +550,11 @@ void settextjustify(int horiz, int vert, PIMAGE pimg)
         img->m_texttype.horiz = horiz;
         img->m_texttype.vert = vert;
         if (img->m_renderTarget) {
-            img->m_renderTarget->setTextJustify((TextHAlign)horiz, (TextVAlign)vert);
+            const TextHAlign horizontal = horiz == CENTER_TEXT ? TEXT_CENTER
+                : horiz == RIGHT_TEXT ? TEXT_RIGHT : TEXT_LEFT;
+            const TextVAlign vertical = vert == CENTER_TEXT ? TEXT_MIDDLE
+                : vert == BOTTOM_TEXT ? TEXT_BOTTOM : TEXT_TOP;
+            img->m_renderTarget->setTextJustify(horizontal, vertical);
         }
     }
     CONVERT_IMAGE_END;

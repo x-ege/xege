@@ -21,6 +21,7 @@ if(EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
     foreach(_ege_cached_option
             EGE_BUILD_DEMO
             EGE_BUILD_TEST
+            EGE_ENABLE_WINDOW_TESTS
             EGE_BUILD_TEMP
             EGE_DEFAULT_BACKEND
             EGE_ENABLE_OPENGL
@@ -31,6 +32,8 @@ endif()
 
 option(EGE_BUILD_DEMO "Build EGE demos" ${EGE_IS_ROOT_PROJECT})
 option(EGE_BUILD_TEST "Build EGE tests" ${EGE_IS_ROOT_PROJECT})
+option(EGE_ENABLE_WINDOW_TESTS
+    "Register tests that create visible native windows (never enabled by default)" OFF)
 option(EGE_BUILD_TEMP "Build EGE temporary programs" ${EGE_IS_ROOT_PROJECT})
 
 if(NOT DEFINED EGE_DISABLE_DEBUG_INFO)
@@ -312,6 +315,13 @@ if(EGE_BUILD_TEST)
                 -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
                 -DEGE_TOOLCHAIN_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/cmake/mingw-toolchain
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/mingw_toolchain_contract.cmake)
+        if(APPLE)
+            add_test(NAME cmake.macos_native_tasks_contract
+                COMMAND "${CMAKE_COMMAND}"
+                    -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                    -DEGE_TASKS_CONTRACT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/cmake/tasks-native-probe
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/macos_native_tasks_contract.cmake)
+        endif()
     endif()
 endif()
 

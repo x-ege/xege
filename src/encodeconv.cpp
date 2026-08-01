@@ -92,6 +92,9 @@ std::wstring decodeUtf8(const char* text)
                     (cursor[1] & 0xC0U) == 0x80U && (cursor[2] & 0xC0U) == 0x80U &&
                     (cursor[3] & 0xC0U) == 0x80U ? 4 : 1;
         }
+        if (length == 1 && *cursor >= 0x80U) {
+            codepoint = 0xFFFDU;
+        }
 
         if (sizeof(wchar_t) == 2 && codepoint > 0xFFFFU) {
             codepoint -= 0x10000U;

@@ -1,1 +1,3 @@
 *.txt
+!CMakeLists.txt
+!**/CMakeLists.txt

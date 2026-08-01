@@ -304,10 +304,10 @@ void CoreGraphicsRenderTarget::getViewport(int* left, int* top, int* right, int*
 
 void CoreGraphicsRenderTarget::clearViewport()
 {
-    const int left   = std::max(0, viewportLeft_);
-    const int top    = std::max(0, viewportTop_);
-    const int right  = std::min(getWidth(), viewportRight_);
-    const int bottom = std::min(getHeight(), viewportBottom_);
+    const int left   = std::clamp(viewportLeft_, 0, getWidth());
+    const int top    = std::clamp(viewportTop_, 0, getHeight());
+    const int right  = std::clamp(viewportRight_, left, getWidth());
+    const int bottom = std::clamp(viewportBottom_, top, getHeight());
     for (int y = top; y < bottom; ++y) {
         std::fill(surface_->row(static_cast<std::size_t>(y)) + left, surface_->row(static_cast<std::size_t>(y)) + right,
             backgroundColor_);

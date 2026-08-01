@@ -89,6 +89,14 @@ namespace ege
 // 静态分配，零初始化
 struct _graph_setting graph_setting;
 
+#if defined(EGE_BACKEND_COREGRAPHICS)
+static bool is_headless_mode()
+{
+    const char* value = getenv("EGE_HEADLESS");
+    return value != NULL && value[0] == '1' && value[1] == '\0';
+}
+#endif
+
 static initmode_flag   g_initoption    = INIT_DEFAULT;
 #ifdef _WIN32
 static DWORD g_windowstyle   = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
@@ -1186,20 +1194,23 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->init_sem.acquire();
     pg->init_sem.add_permit();
 #elif defined(EGE_BACKEND_COREGRAPHICS)
-    static NativeWindowEventSink nativeEventSink(pg);
-    pg->window = new backend::MacWindow();
-    WindowOptions windowOptions;
-    windowOptions.borderless = (g_initoption & INIT_NOBORDER) != 0;
-    windowOptions.topmost = (g_initoption & INIT_TOPMOST) != 0;
-    if (!pg->window->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
-        delete pg->window;
-        pg->window = NULL;
-        pg->hwnd = NULL;
-        pg->exit_window = 1;
-        pg->exit_flag = 1;
-        return;
+    pg->window = NULL;
+    pg->hwnd = NULL;
+    if (!is_headless_mode()) {
+        static NativeWindowEventSink nativeEventSink(pg);
+        pg->window = new backend::MacWindow();
+        WindowOptions windowOptions;
+        windowOptions.borderless = (g_initoption & INIT_NOBORDER) != 0;
+        windowOptions.topmost = (g_initoption & INIT_TOPMOST) != 0;
+        if (!pg->window->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
+            delete pg->window;
+            pg->window = NULL;
+            pg->exit_window = 1;
+            pg->exit_flag = 1;
+            return;
+        }
+        pg->hwnd = reinterpret_cast<HWND>(pg->window->getNativeHandle());
     }
-    pg->hwnd = reinterpret_cast<HWND>(pg->window->getNativeHandle());
     if (pg->dc == 0) {
         graph_init(pg);
     }

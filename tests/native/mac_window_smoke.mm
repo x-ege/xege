@@ -3,7 +3,9 @@
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
+#include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -59,6 +61,10 @@ int fail(const char* message)
 int main()
 {
     @autoreleasepool {
+        // The smoke window must be observable by WindowServer without taking
+        // keyboard focus away from the developer's current application.
+        setenv("EGE_MACOS_TEST_NO_ACTIVATE", "1", 1);
+
         if (![NSThread isMainThread]) {
             return fail("AppKit smoke must run on the process main thread");
         }
@@ -90,7 +96,29 @@ int main()
         if (nativeWindow == nil || ![nativeWindow.title isEqualToString:@"EGE native AppKit smoke"]) {
             return fail("native handle or UTF-8 title propagation is invalid");
         }
+        if (NSApp.active || nativeWindow.keyWindow) {
+            return fail("non-activating smoke window stole application focus");
+        }
 
+        // AppKit posts non-key events during ordinary window lifecycle work.
+        // Processing one must not ask it for key-only character properties.
+        NSEvent* applicationEvent = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
+                                                       location:NSZeroPoint
+                                                  modifierFlags:0
+                                                      timestamp:0
+                                                   windowNumber:nativeWindow.windowNumber
+                                                        context:nil
+                                                        subtype:0
+                                                          data1:0
+                                                          data2:0];
+        [NSApp postEvent:applicationEvent atStart:YES];
+        window.processEvents();
+
+        const int keyEventsBefore = sink.keyEvents;
+        const int textEventsBefore = sink.textEvents;
+        const int mouseMoveEventsBefore = sink.mouseMoveEvents;
+        const int mouseButtonEventsBefore = sink.mouseButtonEvents;
+        const int mouseWheelEventsBefore = sink.mouseWheelEvents;
         NSView* contentView = nativeWindow.contentView;
         NSEvent* keyDown = [NSEvent keyEventWithType:NSEventTypeKeyDown
                                             location:NSZeroPoint
@@ -156,8 +184,11 @@ int main()
         if (scrollCGEvent != nullptr) {
             CFRelease(scrollCGEvent);
         }
-        if (sink.keyEvents != 2 || sink.textEvents != 1 || sink.mouseMoveEvents != 1
-            || sink.mouseButtonEvents != 2 || sink.mouseWheelEvents != 1) {
+        if (sink.keyEvents - keyEventsBefore != 2
+            || sink.textEvents - textEventsBefore != 1
+            || sink.mouseMoveEvents - mouseMoveEventsBefore != 1
+            || sink.mouseButtonEvents - mouseButtonEventsBefore != 2
+            || sink.mouseWheelEvents - mouseWheelEventsBefore != 1) {
             return fail("keyboard, text, mouse, or wheel event forwarding is incomplete");
         }
 

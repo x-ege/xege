@@ -1,4 +1,5 @@
 #include "test_support.h"
+#include "encodeconv.h"
 
 #include <array>
 #include <cmath>
@@ -50,11 +51,22 @@ void testColorRandomAndCompressionApi()
     EGE_CHECK(decodedSize == payload.size() && decoded == payload);
 }
 
+void testInvalidUtf8Replacement()
+{
+    const char invalidContinuation[] = {
+        static_cast<char>(0xC2), 'A', '\0'};
+    const std::wstring decoded = ege::mb2w(invalidContinuation);
+    EGE_CHECK(decoded.size() == 2);
+    EGE_CHECK(static_cast<std::uint32_t>(decoded[0]) == 0xFFFDU);
+    EGE_CHECK(decoded[1] == L'A');
+}
+
 } // namespace
 
 int main()
 {
     testPublicTextApi();
     testColorRandomAndCompressionApi();
+    testInvalidUtf8Replacement();
     return ege_test::finish("EGE text/utility contract");
 }

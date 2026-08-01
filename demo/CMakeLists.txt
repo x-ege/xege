@@ -7,24 +7,11 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
 endif()
 
 if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
-  # 以预编译好的 ege 的库作为依赖
-  if(CMAKE_HOST_UNIX)
-    set(CMAKE_SYSTEM_NAME Windows)
-    set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
-
-    # cross compilers to use for C, C++ and RC
-    set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
-    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
-    set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
-
-    # modify default behavior of FIND_XXX() commands
-    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-    set(PKG_CONFIG_EXECUTABLE ${TOOLCHAIN_PREFIX}-pkg-config)
-  endif()
-
-  message(STATUS "Building demo with prebuilt libraries")
+  # Toolchain selection must happen before CMake enters this project. In
+  # particular, a macOS host uses its native AppleClang package by default;
+  # Windows cross-compilation requires an explicit toolchain file.
+  message(STATUS
+    "Building demos with the prebuilt library for ${CMAKE_HOST_SYSTEM_NAME}")
 endif()
 
 project(ege-demos)
@@ -73,16 +60,21 @@ macro(ege_add_executable_demo name source)
     PROPERTY EXCLUDE_FROM_ALL true)
   add_dependencies(demos ${name})
 
-  # A demo is accepted on macOS only after its own process creates an AppKit
-  # window.  The runner stops the child after the readiness observation, so
-  # interactive samples remain deterministic in CTest.
-  if(EGE_BUILD_TEST AND APPLE AND TARGET ege_native_demo_launch_smoke)
+  # Visible demo launches are manual opt-in tests. The default CTest suite is
+  # strictly headless and never starts an AppKit window.
+  if(EGE_BUILD_TEST AND EGE_ENABLE_WINDOW_TESTS
+      AND APPLE AND TARGET ege_native_demo_launch_smoke
+      AND NOT "${name}" MATCHES "^camera_")
     add_test(NAME demo.${name}.launch
       COMMAND $<TARGET_FILE:ege_native_demo_launch_smoke> $<TARGET_FILE:${name}>)
     set_tests_properties(demo.${name}.launch PROPERTIES
       RUN_SERIAL TRUE
       SKIP_RETURN_CODE 77
       TIMEOUT 8)
+  elseif(EGE_BUILD_TEST AND EGE_ENABLE_WINDOW_TESTS
+      AND APPLE AND "${name}" MATCHES "^camera_")
+    message(STATUS
+      "Keeping ${name} build-only in CTest to avoid camera access and permission UI")
   endif()
 endmacro()
 

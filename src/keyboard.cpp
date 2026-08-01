@@ -137,7 +137,7 @@ int getchEx(int flag)
 #ifdef _WIN32
         DWORD  dw = GetTickCount();
 #else
-        DWORD  dw = 0;
+        DWORD  dw = static_cast<DWORD>(get_highfeq_time_ls() * 1000.0);
 #endif
         do {
             key = kbhitEx(flag);

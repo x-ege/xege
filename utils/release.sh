@@ -7,15 +7,14 @@ EGE_DIR=$(pwd)
 git clean -ffdx build Release
 
 if [[ $(uname -s) == "Darwin" ]]; then
-    # macos/linux
+    # Native AppleClang/CoreGraphics package. Release/lib/macOS remains the
+    # legacy macOS-hosted MinGW package used by the cross-compile workflow.
     if ./tasks.sh --clean --release --load --target xege --build; then
-        mkdir -p Release/lib/macOS
-        # 新的目录结构: build/Release
-        cp -rf build/Release/*.a Release/lib/macOS 2>/dev/null ||
-            cp -rf build/*.a Release/lib/macOS
-        echo "Copy macOS libs done: $(pwd)/Release/lib/macOS"
+        mkdir -p Release/lib/macos-native
+        cp -f build/macos/Release/*.a Release/lib/macos-native
+        echo "Copy native macOS libs done: $(pwd)/Release/lib/macos-native"
 
-        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-macos"
+        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-demo-macos-native"
     else
         echo "Build macOS failed!" >&2
     fi

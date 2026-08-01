@@ -67,6 +67,7 @@ set(EGE_CCAP_SOURCES
 )
 
 set(EGE_CCAP_APPLE_SOURCES
+    3rdparty/ccap/src/ccap_file_reader_apple.mm
     3rdparty/ccap/src/ccap_imp_apple.mm
 )
 

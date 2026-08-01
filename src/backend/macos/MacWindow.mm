@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <limits>
 #include <string>
+
+#include <unistd.h>
 
 namespace
 {
@@ -46,6 +49,33 @@ NSString* stringFromUTF8(const char* value)
     return string != nil ? string : @"";
 }
 
+bool shouldAvoidApplicationActivation()
+{
+    const char* value = std::getenv("EGE_MACOS_TEST_NO_ACTIVATE");
+    return value != nullptr && std::strcmp(value, "1") == 0;
+}
+
+void notifyTestWindowReady()
+{
+    const char* value = std::getenv("EGE_MACOS_TEST_READY_FD");
+    if (value == nullptr) {
+        return;
+    }
+
+    char* end = nullptr;
+    const long descriptor = std::strtol(value, &end, 10);
+    unsetenv("EGE_MACOS_TEST_READY_FD");
+    if (end == value || *end != '\0' || descriptor < 0
+        || descriptor > std::numeric_limits<int>::max()) {
+        return;
+    }
+
+    const int fd = static_cast<int>(descriptor);
+    const char ready = '1';
+    (void)::write(fd, &ready, sizeof(ready));
+    (void)::close(fd);
+}
+
 std::uint32_t windowsVirtualKeyForEvent(NSEvent* event)
 {
     // Modifier keys are reported through flagsChanged and need hardware-key
@@ -61,6 +91,12 @@ std::uint32_t windowsVirtualKeyForEvent(NSEvent* event)
     case 0x36: return 0x5C; // right Command
     case 0x39: return 0x14; // Caps Lock
     default: break;
+    }
+
+    // flagsChanged events are valid for modifier keys above, but AppKit does
+    // not guarantee character access for other non-key event subtypes.
+    if (event.type != NSEventTypeKeyDown && event.type != NSEventTypeKeyUp) {
+        return 0;
     }
 
     NSString* characters = event.charactersIgnoringModifiers;
@@ -527,7 +563,9 @@ bool MacWindow::create(int width, int height, const char* title,
             static dispatch_once_t applicationOnce;
             dispatch_once(&applicationOnce, ^{
                 [NSApplication sharedApplication];
-                if (NSApp.activationPolicy == NSApplicationActivationPolicyProhibited) {
+                if (shouldAvoidApplicationActivation()) {
+                    [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+                } else if (NSApp.activationPolicy == NSApplicationActivationPolicyProhibited) {
                     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
                 }
                 if (!NSApp.running) {
@@ -579,7 +617,16 @@ void MacWindow::show()
     performOnMainThreadSync(^{
         @autoreleasepool {
             if (impl_->window != nil && !impl_->state->closed.load()) {
-                [impl_->window makeKeyAndOrderFront:nil];
+                if (shouldAvoidApplicationActivation()) {
+                    // Native GUI smoke tests still need a server-side window,
+                    // but must not make their process active or steal focus.
+                    // This API orders a window for an inactive application
+                    // without making it key or changing application focus.
+                    [impl_->window orderFrontRegardless];
+                    notifyTestWindowReady();
+                } else {
+                    [impl_->window makeKeyAndOrderFront:nil];
+                }
             }
         }
     });
@@ -695,10 +742,12 @@ void MacWindow::processEvents()
                                                untilDate:NSDate.distantPast
                                                   inMode:NSDefaultRunLoopMode
                                                  dequeue:YES]) != nil) {
-                NSString* characters = event.charactersIgnoringModifiers.lowercaseString;
-                const bool commandQuit = event.type == NSEventTypeKeyDown
-                    && (event.modifierFlags & NSEventModifierFlagCommand) != 0
-                    && [characters isEqualToString:@"q"];
+                bool commandQuit = false;
+                if (event.type == NSEventTypeKeyDown
+                    && (event.modifierFlags & NSEventModifierFlagCommand) != 0) {
+                    NSString* characters = event.charactersIgnoringModifiers.lowercaseString;
+                    commandQuit = [characters isEqualToString:@"q"];
+                }
                 if (commandQuit && impl_->window != nil
                     && (event.window == nil || event.window == impl_->window)) {
                     // Convert Command+Q into the same close request as the
