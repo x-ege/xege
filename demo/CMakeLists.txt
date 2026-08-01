@@ -72,23 +72,57 @@ macro(ege_add_executable_demo name source)
   set_property(TARGET ${name}
     PROPERTY EXCLUDE_FROM_ALL true)
   add_dependencies(demos ${name})
+
+  # A demo is accepted on macOS only after its own process creates an AppKit
+  # window.  The runner stops the child after the readiness observation, so
+  # interactive samples remain deterministic in CTest.
+  if(EGE_BUILD_TEST AND APPLE AND TARGET ege_native_demo_launch_smoke)
+    add_test(NAME demo.${name}.launch
+      COMMAND $<TARGET_FILE:ege_native_demo_launch_smoke> $<TARGET_FILE:${name}>)
+    set_tests_properties(demo.${name}.launch PROPERTIES
+      RUN_SERIAL TRUE
+      SKIP_RETURN_CODE 77
+      TIMEOUT 8)
+  endif()
 endmacro()
 
 foreach(DEMO_SRC ${DEMO_SRCS})
   get_filename_component(DEMO_NAME ${DEMO_SRC} NAME_WE)
+
+  # Camera demos require the optional ccap submodule and platform capture
+  # backend.  Keep ordinary drawing demos buildable in a shallow checkout.
+  if(DEMO_NAME MATCHES "^camera_" AND NOT EGE_ENABLE_CAMERA_CAPTURE)
+    message(STATUS "Skipping ${DEMO_NAME}: EGE camera capture is disabled")
+    continue()
+  endif()
+
+  # A Windows .scr screensaver that directly uses preview-parent and
+  # MessageBox APIs is not a portable EGE sample.
+  if(DEMO_NAME STREQUAL "graph_star" AND NOT WIN32)
+    message(STATUS "Skipping ${DEMO_NAME}: Windows screensaver demo")
+    continue()
+  endif()
+
   ege_add_executable_demo(${DEMO_NAME} ${DEMO_SRC})
+
+  if(DEMO_NAME MATCHES "^camera_")
+    target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
+    target_compile_definitions(${DEMO_NAME} PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
+  endif()
 endforeach()
 
-target_sources(graph_rotateimage PRIVATE egelogo.rc)
+if(WIN32)
+  target_sources(graph_rotateimage PRIVATE egelogo.rc)
+endif()
 
 if(NOT CMAKE_HOST_UNIX)
   # GMP demos are excluded on Unix hosts due to compatibility issues or specific requirements.
   # If the exclusion is intended for specific Unix-like environments, refine the condition below.
-  message(CHECK_START "Finding GMP Library")
+  message(STATUS "Finding GMP Library")
   find_library(gmp gmp)
 
   if(gmp)
-    message(CHECK_PASS "found")
+    message(STATUS "GMP Library found")
     file(
       GLOB GMP_DEMO_SRCS
       LIST_DIRECTORIES false
@@ -102,7 +136,7 @@ if(NOT CMAKE_HOST_UNIX)
       target_link_libraries(${DEMO_NAME} gmp)
     endforeach()
   else()
-    message(CHECK_PASS "not found")
+    message(STATUS "GMP Library not found")
   endif()
 endif()
 

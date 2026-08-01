@@ -405,6 +405,7 @@ public:
         using pointer           = MyElement*;
         using reference         = MyElement&;
 
+        MyIterator() : m_arrayPtr(nullptr), m_index(0) {}
         MyIterator(MyArray* arr, int idx) : m_arrayPtr(arr), m_index(idx) {}
 
         // 解引用操作

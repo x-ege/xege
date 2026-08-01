@@ -1,0 +1,64 @@
+name: macOS Native CoreGraphics Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-coregraphics-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-coregraphics:
+    name: AppleClang / CoreGraphics / Release
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Show native toolchain
+        run: |
+          sw_vers
+          cmake --version
+          xcrun clang++ --version
+
+      - name: Configure native CoreGraphics build
+        run: >-
+          cmake -S . -B build/native-coregraphics
+          -DCMAKE_BUILD_TYPE=Release
+          -DEGE_DEFAULT_BACKEND=COREGRAPHICS
+          -DEGE_ENABLE_OPENGL=OFF
+          -DEGE_ENABLE_CAMERA_CAPTURE=ON
+          -DEGE_BUILD_TEST=ON
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEMP=OFF
+
+      - name: Build library and native tests
+        run: cmake --build build/native-coregraphics --parallel 3
+
+      - name: Build all portable native demos
+        run: cmake --build build/native-coregraphics --target demos --parallel 3
+
+      - name: Run native test suite
+        run: ctest --test-dir build/native-coregraphics --output-on-failure
+
+      - name: Verify native Mach-O output
+        shell: bash
+        run: |
+          test -f build/native-coregraphics/libgraphics.a
+          test -x build/native-coregraphics/demo/graph_5star
+          test -x build/native-coregraphics/demo/camera_base
+          test -x build/native-coregraphics/demo/camera_wave
+          file build/native-coregraphics/libgraphics.a
+          demo_type="$(file build/native-coregraphics/demo/graph_5star)"
+          echo "$demo_type"
+          grep -q "Mach-O" <<<"$demo_type"

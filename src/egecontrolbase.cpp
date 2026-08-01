@@ -74,15 +74,36 @@ void egeControlBase::initok()
 
 egeControlBase::~egeControlBase()
 {
-    if (m_parent) {
-        m_parent->delchild(this);
-        egectlmap*& cmap = (egectlmap*&)m_childmap;
-        if (cmap) {
-            egectlmap::iterator it = cmap->begin(); // 以后要附加排序
-            for (; it != cmap->end(); ++it) {
-                m_parent->addchild(*it);
+    egeControlBase* oldParent = m_parent;
+    if (oldParent) {
+        oldParent->delchild(this);
+    }
+
+    egectlmap*& cmap = (egectlmap*&)m_childmap;
+    egectlvec*& cvec = (egectlvec*&)m_childzorder;
+    if (cmap) {
+        while (cmap->size() > 0) {
+            egeControlBase* child = *cmap->begin();
+            if (oldParent) {
+                oldParent->addchild(child);
+            } else {
+                delchild(child);
             }
         }
+        delete cmap;
+        cmap = NULL;
+    }
+    if (cvec) {
+        delete cvec;
+        cvec = NULL;
+    }
+
+    struct _graph_setting* pg = &graph_setting;
+    if (pg->egectrl_root == this) {
+        pg->egectrl_root = NULL;
+        pg->egectrl_focus = NULL;
+    } else if (pg->egectrl_focus == this) {
+        pg->egectrl_focus = NULL;
     }
 
     delimage(m_mainbuf);
@@ -338,7 +359,7 @@ void egeControlBase::keymsgup(unsigned key, int flag)
     {
         PushTarget _target;
         settarget(buf());
-        onKeyUp((int)key, flag);
+        ret = onKeyUp((int)key, flag);
     }
     if (ret == 0) {
         egectlmap*& cmap = (egectlmap*&)m_childmap;
@@ -361,7 +382,7 @@ void egeControlBase::keymsgchar(unsigned key, int flag)
     {
         PushTarget _target;
         settarget(buf());
-        onKeyChar((int)key, flag);
+        ret = onKeyChar((int)key, flag);
     }
     if (ret == 0) {
         egectlmap*& cmap = (egectlmap*&)m_childmap;

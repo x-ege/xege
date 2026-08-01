@@ -28,7 +28,18 @@ static int peekkey(_graph_setting* pg)
     while (pg->msgkey_queue->pop(msg)) {
         if (msg.message == WM_CHAR || msg.message == WM_KEYDOWN) {
             if (msg.message == WM_KEYDOWN) {
-                if (msg.wParam <= key_space || (msg.wParam >= key_0 && msg.wParam < key_f1) ||
+                // Printable keys are followed by WM_CHAR and kbhit() should
+                // report that translated character. Native text callbacks do
+                // not represent controls such as Escape, Enter or Backspace,
+                // so discarding every key below Space would lose those keys.
+                const bool waitsForTranslatedCharacter =
+#ifdef _WIN32
+                    pg->window == NULL && msg.wParam <= key_space;
+#else
+                    msg.wParam == key_space;
+#endif
+                if (waitsForTranslatedCharacter ||
+                    (msg.wParam >= key_0 && msg.wParam < key_f1) ||
                     (msg.wParam >= key_semicolon && msg.wParam <= key_quote))
                 {
                     continue;
@@ -76,9 +87,9 @@ static int peekallkey(_graph_setting* pg, int flag)
 int getflush()
 {
     struct _graph_setting* pg = &graph_setting;
-    EGEMSG                 msg;
     int                    lastkey = 0;
 
+    EGEMSG                 msg;
     if (!pg->msgkey_queue->empty()) {
         while (pg->msgkey_queue->pop(msg)) {
             if (msg.message == WM_CHAR) {
@@ -123,7 +134,11 @@ int getchEx(int flag)
     {
         int    key;
         EGEMSG msg;
+#ifdef _WIN32
         DWORD  dw = GetTickCount();
+#else
+        DWORD  dw = 0;
+#endif
         do {
             key = kbhitEx(flag);
             if (key < 0) {
@@ -201,10 +216,10 @@ key_msg getkey()
                 if (key & KEYMSG_FIRSTDOWN) {
                     msg.flags |= key_flag_first_down;
                 }
-                if (keystate(VK_CONTROL)) {
+                if (keystate(key_control)) {
                     msg.flags |= key_flag_ctrl;
                 }
-                if (keystate(VK_SHIFT)) {
+                if (keystate(key_shift)) {
                     msg.flags |= key_flag_shift;
                 }
                 return msg;

@@ -78,14 +78,17 @@
 #define __STDC_CONSTANT_MACROS
 #endif
 
-#include "ege/stdint.h"
-
 #if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
+#include "ege/stdint.h"
 #include <windef.h>
 #include <winuser.h>
 #include <wingdi.h>
-#else
+#elif defined(_WIN32)
+#include "ege/stdint.h"
 #include <windows.h>
+#else
+#include <stdint.h>
+#include "ege/win32_compat.h"
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1300)
@@ -1237,6 +1240,19 @@ class IMAGE;
 typedef IMAGE *PIMAGE;
 /// @brief Constant image object pointer type
 typedef const IMAGE *PCIMAGE;
+
+enum image_storage_mode
+{
+    IMAGE_STORAGE_GPU = 0,
+    IMAGE_STORAGE_CPU_BITMAP = 1
+};
+
+enum image_buffer_access
+{
+    IMAGE_BUFFER_READ = 0,
+    IMAGE_BUFFER_READ_WRITE = 1,
+    IMAGE_BUFFER_WRITE_DISCARD = 2
+};
 
 /**
  * @brief Set code page
@@ -4133,6 +4149,7 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * @note Returned pointer can directly manipulate pixel data, changes take effect immediately
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
+color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
 
 /**
  * @brief Get image pixel buffer pointer (read-only version)
@@ -4142,6 +4159,11 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg);
  * @note Returned pointer can only read pixel data, cannot modify
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
+
+int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
+                        const color_t* pixels, int pitchBytes = 0);
+image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
+int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief Resize image (fast version)

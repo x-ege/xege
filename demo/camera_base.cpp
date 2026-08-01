@@ -16,6 +16,7 @@
 
 #include <graphics.h>
 #include <ege/camera_capture.h>
+#include "camera_demo_screen.h"
 
 #include <memory>
 #include <vector>
@@ -101,11 +102,10 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
     int cameraShortEdge = (std::min)(cameraWidth, cameraHeight);
     float cameraRatio = (float)cameraWidth / cameraHeight;
 
-    // 获取屏幕可用区域（考虑任务栏）
-    RECT workArea;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
-    int screenAvailWidth = workArea.right - workArea.left;
-    int screenAvailHeight = workArea.bottom - workArea.top;
+    // 获取屏幕可用区域（Windows 考虑任务栏；macOS 使用主显示器范围）。
+    int screenAvailWidth = 0;
+    int screenAvailHeight = 0;
+    cameraDemoAvailableScreenSize(&screenAvailWidth, &screenAvailHeight);
     // 留一点边距，避免窗口贴边
     screenAvailWidth -= 20;
     screenAvailHeight -= 40;

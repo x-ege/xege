@@ -14,6 +14,7 @@ bool isPathExist(const wchar_t* path, PathType* pathType)
     bool exist = false;
     PathType type;
 
+#ifdef _WIN32
     DWORD attribute = GetFileAttributesW(path);
     if (attribute == INVALID_FILE_ATTRIBUTES) {
         type = (GetLastError() == ERROR_FILE_NOT_FOUND) ? PathType_NOTEXIST : PathType_NONE;
@@ -21,6 +22,10 @@ bool isPathExist(const wchar_t* path, PathType* pathType)
         type = (attribute & FILE_ATTRIBUTE_DIRECTORY) ? PathType_DIR : PathType_FILE;
         exist = true;
     }
+#else
+    type = PathType_NOTEXIST;
+    exist = false;
+#endif
 
     if (pathType != NULL) {
         *pathType = type;

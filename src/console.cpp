@@ -1,6 +1,8 @@
 #include "ege_head.h"
 
 #include <stdio.h>
+
+#ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #include <wincon.h>
@@ -144,18 +146,28 @@ bool clear_console()
 
 bool show_console()
 {
-    CHECK_CONSOLE_HANDLE(hConsoleWnd);
-    return ShowWindow(hConsoleWnd, SW_SHOW);
+    if (hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
+        return false;
+    }
+    ShowWindow(hConsoleWnd, SW_SHOW);
+    return true;
 }
 
 bool hide_console()
 {
-    CHECK_CONSOLE_HANDLE(hConsoleWnd);
-    return ShowWindow(hConsoleWnd, SW_HIDE);
+    if (hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
+        return false;
+    }
+    ShowWindow(hConsoleWnd, SW_HIDE);
+    return true;
 }
 
 bool close_console()
 {
+    if (hInput == NULL || hOutput == NULL ||
+        hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
+        return false;
+    }
     if (!FreeConsole()) {
         return false;
     }
@@ -189,3 +201,18 @@ int kbhit_console()
 }
 
 } // namespace ege
+#else
+#include <unistd.h>
+#include <fcntl.h>
+
+namespace ege
+{
+    bool init_console() { return true; }
+    bool clear_console() { return true; }
+    bool show_console() { return true; }
+    bool hide_console() { return true; }
+    bool close_console() { return true; }
+    int getch_console() { return getchar(); }
+    int kbhit_console() { return 0; }
+}
+#endif

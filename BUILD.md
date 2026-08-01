@@ -1,24 +1,55 @@
 # EGE 编译指南
 
-EGE 源码使用 CMake 构建编译系统，以支持各种编译器和 IDE。
+EGE 源码使用 CMake 构建。Windows 默认使用 GDI；macOS 现在可用
+AppleClang 直接生成 Mach-O 原生程序，默认绘制后端为 Core Graphics，窗口后端为
+AppKit。macOS 原生构建不需要 MinGW、Wine 或 OpenGL。
 
-EGE 的子模块已使用 git submodule 进行管理，在克隆源代码后运行 `git submodule update --init --recursive` 来同步源代码，或者
-直接执行 CMake 构建步骤，CMake 中已配置了自动同步子模块的指令。同步后的子模块被放置在 3rdparty 子目录下。当然，同步功能是由 [Git](https://git-scm.com/) 
-支持的，用户需要预先安装好 Git 。
+EGE 的可选子模块由 Git submodule 管理。CMake 配置阶段不会访问网络或修改
+源码目录。默认关闭 camera 时不需要拉取 `ccap`；如果需要 camera，请在配置前执行：
 
-请在 [cmake.org](https://cmake.org) 下载最新版 CMake，并在安装时选择将 CMake
-目录添加到 `PATH` 环境变量中。本指南默认在 CMD 或者 PowerShell 命令行下进行编译，
-但仍使用 `$` 作为提示符。如果您对 CMake 有足够的把握，亦可使用 CMake GUI
-进行配置和生成。
+```sh
+git submodule update --init --recursive 3rdparty/ccap
+```
 
-在 Linux 环境下编译需要安装 [mingw-w64](https://www.mingw-w64.org/) 工具链，
-`CMakeLists.txt`已经配置好了环境，在 Linux 下会自动改用 mingw-w64 工具链。
-Linux 环境下运行相关程序需要使用 [wine](https://www.winehq.org/) 模拟层，并在 wine
-配置中修改 `libgcc_s_seh-1.dll` 、 `libssp-0.dll` 、 `libstdc++-6.dll` 的
-函数库顶替配置，方便起见，可以添加 `-static` 配置编译，免去配置过程（`CMakeLists.txt`
-中在 Linux 环境下默认开启）。
+请安装 CMake 和目标平台的原生编译器。macOS 使用 Xcode Command Line Tools；Windows
+使用 MSVC 或 MinGW-w64。Linux 主机仍可通过显式 toolchain 交叉编译 Windows 版，但
+Linux 原生 Cairo 后端尚未实现，配置会 fail-fast，不会默认生成依赖 Wine 的 `.exe`。
 
-## 快速编译
+## macOS 原生 Core Graphics 构建
+
+安装 Xcode Command Line Tools 后，在仓库根目录执行：
+
+```sh
+cmake -S . -B build/native-coregraphics \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
+  -DEGE_ENABLE_OPENGL=OFF \
+  -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
+  -DEGE_BUILD_TEST=ON \
+  -DEGE_BUILD_DEMO=ON \
+  -DEGE_BUILD_TEMP=OFF
+cmake --build build/native-coregraphics --parallel
+cmake --build build/native-coregraphics --target graph_5star --parallel
+ctest --test-dir build/native-coregraphics --output-on-failure
+file build/native-coregraphics/demo/graph_5star
+```
+
+`file` 的最后一行应包含 `Mach-O`，而不是 `PE32` 或 `.exe`。`COREGRAPHICS` 是 macOS
+的默认后端，但建议 CI 与验收脚本显式指定，避免缓存污染。
+
+### 逐像素 CPU buffer 语义
+
+macOS 后端以 CPU `PixelSurface` 作为图像像素的权威存储。`getbuffer()` 返回可直接
+读写的、从上到下排列的连续像素：每行是 `width * sizeof(color_t)` 字节，在小端
+macOS 上数值表示为 `0xAARRGGBB`，内存字节顺序为预乘 Alpha 的 BGRA。Core Graphics
+直接绘制到同一块 CPU buffer，所以常规逐像素读写不发生 GPU readback 或 CPU/GPU
+双向同步。指针在对应 `IMAGE` 不重建、不缩放且不销毁期间有效。
+
+OpenGL 实验分支只作为 CMake 分层和后端接口的参考，不作为原生构建的默认依赖。
+`EGE_ENABLE_OPENGL` 默认为 `OFF`；本分支未携带 OpenGL 实现源码时，显式开启也会
+fail-fast。
+
+## Windows 快速编译
 
 windows端可以通过运行根目录下的`build_commands.bat`批处理脚本快速在windows下编译代码，
 此代码会尝试检查计算机中是否有配置好的MinGW、Visual Studio 2022等环境，并尝试编译，
@@ -38,7 +69,7 @@ windows端可以通过运行根目录下的`build_commands.bat`批处理脚本�
 
 详细信息请检查脚本具体内容。
 
-## 常见部分 Linux 发行版以及 MacOS 安装编译运行环境
+## 交叉编译 Windows 版的工具链
 
 ```sh
 # Ubuntu 16.04及以上发行版
@@ -47,7 +78,7 @@ sudo apt-get install mingw-w64 wine
 # Arch Linux
 sudo pacman -S mingw-w64 wine
 
-# MacOS
+# macOS（仅当需要交叉编译 Windows 版时）
 brew install mingw-w64 wine
 ```
 
@@ -309,9 +340,10 @@ int main(int argc, char const *argv[])
 
 执行前文所述编译步骤后在 `build/temp` 目录下就会生成可执行文件 `temp_test.exe`。
 
-## Linux 环境下编译例程
+## Linux 主机上交叉编译 Windows 例程
 
-在 Linux 系统下，编译依赖 EGE 的程序，同样要使用 `mingw-w64` 工具链中的 `g++`，并且根据
+本节说明的是在 Linux 主机上生成 Windows `.exe`，不是 Linux 原生构建。编译这类
+依赖 EGE 的程序需使用 `mingw-w64` 工具链中的 `g++`，并且根据
 环境可能需要添加额外的编译参数 `-D_FORTIFY_SOURCE=0`
 （参考链接 [undefined reference to `__memcpy_chk'](https://github.com/msys2/MINGW-packages/issues/5868)。
 为了简化单文件编译指令，EGE `utils` 目录下提供了`ege_g++.sh` 脚本，可按需使用。

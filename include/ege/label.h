@@ -2,6 +2,7 @@
 #define EGE_LABEL_H
 
 #include "egecontrolbase.h"
+#include <cstring>
 
 namespace ege
 {

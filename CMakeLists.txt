@@ -1,231 +1,223 @@
 cmake_minimum_required(VERSION 3.13)
 
-# 当 CMakeLists.txt 是顶层项目的 CMakeLists.txt 时，设置默认选项。
-if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(EGE_IS_ROOT_PROJECT ON)
+else()
+    set(EGE_IS_ROOT_PROJECT OFF)
 endif()
 
 if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.13)
-    cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 endif()
+cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 
-# Clear CMake cache
-option(EGE_CLEAR_OPTIONS_CACHE "Clear caches before setting options" OFF)
+# Cross-compilers belong in a toolchain file and must be selected before this
+# project() call.  In particular, a Unix host no longer implies a Windows
+# target; CMAKE_SYSTEM_NAME always describes the actual target platform.
+project(XEGE LANGUAGES C CXX)
 
+option(EGE_CLEAR_OPTIONS_CACHE "Clear XEGE option caches before configuring" OFF)
 if(EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
-    unset(EGE_BUILD_DEMO CACHE)
-    unset(EGE_BUILD_TEST CACHE)
-    unset(EGE_BUILD_TEMP CACHE)
+    foreach(_ege_cached_option
+            EGE_BUILD_DEMO
+            EGE_BUILD_TEST
+            EGE_BUILD_TEMP
+            EGE_DEFAULT_BACKEND
+            EGE_ENABLE_OPENGL
+            EGE_ENABLE_CAMERA_CAPTURE)
+        unset(${_ege_cached_option} CACHE)
+    endforeach()
 endif()
 
-# Options
-option(EGE_BUILD_DEMO "Build ege demos" ${EGE_IS_ROOT_PROJECT})
-option(EGE_BUILD_TEST "Build ege tests" ${EGE_IS_ROOT_PROJECT})
-option(EGE_BUILD_TEMP "Build ege temp" ${EGE_IS_ROOT_PROJECT})
+option(EGE_BUILD_DEMO "Build EGE demos" ${EGE_IS_ROOT_PROJECT})
+option(EGE_BUILD_TEST "Build EGE tests" ${EGE_IS_ROOT_PROJECT})
+option(EGE_BUILD_TEMP "Build EGE temporary programs" ${EGE_IS_ROOT_PROJECT})
 
-# EGE_DISABLE_DEBUG_INFO 选项：禁用调试信息，避免 LNK4099 警告
-# 优先使用 CMake 参数，其次检查环境变量，默认 OFF
 if(NOT DEFINED EGE_DISABLE_DEBUG_INFO)
-    # CMake 参数未定义，检查环境变量
-    if(DEFINED ENV{EGE_DISABLE_DEBUG_INFO})
-        set(_env_value "$ENV{EGE_DISABLE_DEBUG_INFO}")
-        # 检查环境变量是否为真值 (1, true, TRUE, on, ON, yes, YES)
-        if(_env_value MATCHES "^(1|[Tt][Rr][Uu][Ee]|[Oo][Nn]|[Yy][Ee][Ss])$")
-            set(EGE_DISABLE_DEBUG_INFO ON CACHE BOOL "Disable debug info to avoid LNK4099 warnings")
-        else()
-            set(EGE_DISABLE_DEBUG_INFO OFF CACHE BOOL "Disable debug info to avoid LNK4099 warnings")
-        endif()
-        unset(_env_value)
+    if(DEFINED ENV{EGE_DISABLE_DEBUG_INFO}
+            AND "$ENV{EGE_DISABLE_DEBUG_INFO}" MATCHES
+                "^(1|[Tt][Rr][Uu][Ee]|[Oo][Nn]|[Yy][Ee][Ss])$")
+        set(_ege_disable_debug_info_default ON)
     else()
-        set(EGE_DISABLE_DEBUG_INFO OFF CACHE BOOL "Disable debug info to avoid LNK4099 warnings")
+        set(_ege_disable_debug_info_default OFF)
     endif()
+    set(EGE_DISABLE_DEBUG_INFO ${_ege_disable_debug_info_default} CACHE BOOL
+        "Disable debug information to avoid MSVC LNK4099 warnings")
 endif()
 
-message(STATUS "EGE_IS_ROOT_PROJECT: ${EGE_IS_ROOT_PROJECT}")
-message(STATUS "EGE_CLEAR_OPTIONS_CACHE: ${EGE_CLEAR_OPTIONS_CACHE}")
-message(STATUS "EGE_BUILD_DEMO:  ${EGE_BUILD_DEMO}")
-message(STATUS "EGE_BUILD_TEST:  ${EGE_BUILD_TEST}")
-message(STATUS "EGE_BUILD_TEMP:  ${EGE_BUILD_TEMP}")
-message(STATUS "EGE_DISABLE_DEBUG_INFO: ${EGE_DISABLE_DEBUG_INFO}")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(EgeBackends)
+include(EgeSources)
 
-if(CMAKE_HOST_UNIX)
-    set(CMAKE_SYSTEM_NAME Windows)
-    set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
-
-    # cross compilers to use for C, C++ and Fortran
-    set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
-    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
-    set(CMAKE_Fortran_COMPILER ${TOOLCHAIN_PREFIX}-gfortran)
-    set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
-
-    # target environment on the build host system
-    set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
-
-    # modify default behavior of FIND_XXX() commands
-    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-    set(PKG_CONFIG_EXECUTABLE ${TOOLCHAIN_PREFIX}-pkg-config)
-
-    # EGE 交叉编译的时候, 实际上是 WINE 环境, 这里标记一下, 一些代码需要额外处理.
-    set(EGE_NON_WINDOWS ON CACHE BOOL "EGE is not compiled on Windows" FORCE)
+# project() creates an empty CMAKE_BUILD_TYPE cache entry for single-config
+# generators.  Multi-config generators intentionally keep it empty.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        Debug Release RelWithDebInfo MinSizeRel)
 endif()
 
-# 检查并启用 ccache（当 EGE_IS_ROOT_PROJECT 为 ON 且不是 Visual Studio generator 时）
+# ccache is a developer convenience, never a target-platform decision.
 if(EGE_IS_ROOT_PROJECT AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-    find_program(CCACHE_FOUND ccache)
-
-    if(CCACHE_FOUND)
-        set(CMAKE_C_COMPILER_LAUNCHER ccache)
-        set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
-        message(STATUS "ccache found and enabled")
-    else()
-        message(STATUS "ccache not found")
+    find_program(EGE_CCACHE_PROGRAM ccache)
+    if(EGE_CCACHE_PROGRAM)
+        execute_process(
+            COMMAND "${EGE_CCACHE_PROGRAM}" --version
+            RESULT_VARIABLE _ege_ccache_result
+            OUTPUT_QUIET
+            ERROR_QUIET
+        )
+        if(_ege_ccache_result EQUAL 0)
+            set(CMAKE_C_COMPILER_LAUNCHER "${EGE_CCACHE_PROGRAM}")
+            set(CMAKE_CXX_COMPILER_LAUNCHER "${EGE_CCACHE_PROGRAM}")
+        else()
+            message(WARNING
+                "ccache was found at ${EGE_CCACHE_PROGRAM}, but it cannot run; "
+                "building without a compiler launcher")
+            unset(CMAKE_C_COMPILER_LAUNCHER)
+            unset(CMAKE_CXX_COMPILER_LAUNCHER)
+        endif()
     endif()
 endif()
 
-project(XEGE)
-
-if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT MSVC)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build (defaulted by EGE when not provided).")
-    message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
-elseif(NOT MSVC)
-    message(STATUS "CMAKE_BUILD_TYPE is set to ${CMAKE_BUILD_TYPE}")
-endif()
-
-# 检查编译器是否支持 C++17, 支持的话， 启用相机模块.
 include(CheckCXXSourceCompiles)
-
 if(MSVC)
     set(CMAKE_REQUIRED_FLAGS "/std:c++17")
 else()
     set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 endif()
-
-check_cxx_source_compiles("
-    #include <optional>
-    int main() { std::optional<int> o; return 0; }
-" COMPILER_SUPPORTS_CXX17)
+check_cxx_source_compiles("#include <optional>
+int main() { std::optional<int> value; return value.has_value(); }"
+    COMPILER_SUPPORTS_CXX17)
 unset(CMAKE_REQUIRED_FLAGS)
 
 if(COMPILER_SUPPORTS_CXX17)
-    option(EGE_ENABLE_CPP17 "Enable C++ 17" ON)
-
-    set(EGE_ENABLE_CAMERA_CAPTURE_DEFAULT ON)
-    option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ${EGE_ENABLE_CAMERA_CAPTURE_DEFAULT})
-    message(STATUS "EGE_ENABLE_CAMERA_CAPTURE: ${EGE_ENABLE_CAMERA_CAPTURE}")
+    option(EGE_ENABLE_CPP17 "Enable C++17 features" ON)
 else()
-    set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++ 17" FORCE)
-    set(EGE_ENABLE_CAMERA_CAPTURE OFF CACHE BOOL "Enable camera capture" FORCE)
+    set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++17 features" FORCE)
 endif()
 
-message(STATUS "EGE enable C++ 17: ${EGE_ENABLE_CPP17}")
+# CMake configuration must never mutate the source checkout or access the
+# network.  A recursive clone keeps camera support enabled by default; a clone
+# without ccap remains configurable and prints the exact recovery command.
+set(_ege_ccap_ready OFF)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ccap/include/ccap.h"
+        AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ccap/src/ccap_core.cpp")
+    set(_ege_ccap_ready ON)
+endif()
+
+if(COMPILER_SUPPORTS_CXX17 AND _ege_ccap_ready)
+    set(_ege_camera_default ON)
+else()
+    set(_ege_camera_default OFF)
+endif()
+option(EGE_ENABLE_CAMERA_CAPTURE "Enable camera capture" ${_ege_camera_default})
+
+if(EGE_ENABLE_CAMERA_CAPTURE AND NOT COMPILER_SUPPORTS_CXX17)
+    message(FATAL_ERROR "EGE camera capture requires a C++17 compiler.")
+elseif(EGE_ENABLE_CAMERA_CAPTURE AND NOT _ege_ccap_ready)
+    message(FATAL_ERROR
+        "EGE_ENABLE_CAMERA_CAPTURE=ON requires the ccap submodule. "
+        "Run 'git submodule update --init --recursive 3rdparty/ccap' before "
+        "configuring; CMake will not update submodules automatically.")
+elseif(NOT _ege_ccap_ready)
+    message(STATUS
+        "ccap submodule is absent; camera capture is disabled. Run "
+        "'git submodule update --init --recursive 3rdparty/ccap' to enable it.")
+endif()
+
+add_library(xege STATIC ${EGE_FRONTEND_SOURCES})
+target_include_directories(xege
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
 
 if(EGE_ENABLE_CPP17)
-    # 将编译标准设置为 C++17, 仓库对外标准保持不变, 未引入额外的依赖.
-    set(CMAKE_CXX_STANDARD 17)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-
-file(GLOB_RECURSE EGE_CPP_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-add_library(xege STATIC ${EGE_CPP_SRC})
-
-target_include_directories(xege PUBLIC include)
-
-# 自动检查并拉取缺失的子模块
-if(EXISTS "${PROJECT_SOURCE_DIR}/.gitmodules")
-    message(STATUS "Submodule checking...")
-    file(READ "${PROJECT_SOURCE_DIR}/.gitmodules" GITMODULES_CONTENT)
-    string(REGEX MATCHALL "path[ \t]*=[ \t]*([^\n\r]+)" SUBMODULE_PATHS "${GITMODULES_CONTENT}")
-    find_package(Git QUIET)
-
-    set(SUBMODULE_UNABLE_TO_UPDATE OFF)
-
-    foreach(SUBMODULE_LINE ${SUBMODULE_PATHS})
-        string(REGEX REPLACE "path *= *" "" SUBMODULE_PATH ${SUBMODULE_LINE})
-        string(STRIP "${SUBMODULE_PATH}" SUBMODULE_PATH)
-        set(SUBMODULE_DIR "${PROJECT_SOURCE_DIR}/${SUBMODULE_PATH}")
-
-        if(NOT EXISTS "${SUBMODULE_DIR}/.git")
-            message(STATUS "Submodule '${SUBMODULE_PATH}' not found, updating...")
-
-            if (Git_FOUND)
-                execute_process(
-                    COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive ${SUBMODULE_PATH}
-                    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-                    RESULT_VARIABLE result_submodule
-                    TIMEOUT 120
-                )
-                if(NOT result_submodule EQUAL 0)
-                    set(SUBMODULE_UNABLE_TO_UPDATE ON)
-                    message(WARNING "Failed to update submodule: ${SUBMODULE_PATH}")
-                endif()
-            else()
-                set(SUBMODULE_UNABLE_TO_UPDATE ON)
-                message(WARNING "Git is not installed, unable to update submodule: ${SUBMODULE_PATH};")
-            endif()
-        else()
-            message(STATUS "Submodule '${SUBMODULE_PATH}' already exists.")
-        endif()
-
-    endforeach()
-
-    # 检查到有未拉取的子模块但无法更新，通知用户自行拉取
-    if (SUBMODULE_UNABLE_TO_UPDATE)
-        message(WARNING "Unable to update submodule, please manually execute: git submodule update --init --recursive")
-    endif()
-
-endif()
-
-# 将3rdparty 添加到包含目录
-if(EXISTS "${PROJECT_SOURCE_DIR}/.gitmodules")
-    target_include_directories(xege PRIVATE 3rdparty)
-endif()
-
-if(EGE_ENABLE_CPP17)
-    # 启用 C++17 特性
     target_compile_features(xege PRIVATE cxx_std_17)
+    set_target_properties(xege PROPERTIES CXX_EXTENSIONS OFF)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
 endif()
 
 if(EGE_ENABLE_CAMERA_CAPTURE)
     include(CheckCXXCompilerFlag)
-
-    # 检查是否支持AVX2
     if(MSVC)
         check_cxx_compiler_flag("/arch:AVX2" CCAP_SUPPORTS_AVX2)
     else()
         check_cxx_compiler_flag("-mavx2" CCAP_SUPPORTS_AVX2)
     endif()
 
-    if(CCAP_SUPPORTS_AVX2)
-        set(CCAP_CONVERT_AVX2_SRC ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/ccap_convert_avx2.cpp)
+    target_include_directories(xege PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ccap/include")
+    target_sources(xege PRIVATE ${EGE_CCAP_SOURCES})
+    target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
 
+    set(_ege_ccap_avx2_source
+        "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ccap/src/ccap_convert_avx2.cpp")
+    if(CCAP_SUPPORTS_AVX2)
         if(MSVC)
-            set_source_files_properties(${CCAP_CONVERT_AVX2_SRC} PROPERTIES COMPILE_OPTIONS "/arch:AVX2")
+            set_source_files_properties(${_ege_ccap_avx2_source}
+                PROPERTIES COMPILE_OPTIONS "/arch:AVX2")
         else()
-            # GCC/Clang/MinGW need these options to enable AVX2
-            set_source_files_properties(${CCAP_CONVERT_AVX2_SRC} PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
+            set_source_files_properties(${_ege_ccap_avx2_source}
+                PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
         endif()
     else()
         target_compile_definitions(xege PRIVATE ENABLE_AVX2_IMP=0)
     endif()
 
-    # 启用相机相关功能
-    # 不用 submodule, 直接引入源码, 对齐 ege 的编译条件
-    target_include_directories(xege PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/include)
-    file(GLOB CCAP_SOURCE ${PROJECT_SOURCE_DIR}/3rdparty/ccap/src/*.cpp)
-    target_sources(xege PRIVATE ${CCAP_SOURCE})
-    target_compile_definitions(xege PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
-else()
-    message(WARNING "Camera capture is disabled because your compiler does not support C++17.")
+    if(APPLE)
+        enable_language(OBJCXX)
+        target_sources(xege PRIVATE ${EGE_CCAP_APPLE_SOURCES})
+        set_source_files_properties(${EGE_CCAP_APPLE_SOURCES}
+            PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+        _ege_find_required_framework(EGE_FOUNDATION_FRAMEWORK Foundation)
+        _ege_find_required_framework(EGE_AVFOUNDATION_FRAMEWORK AVFoundation)
+        _ege_find_required_framework(EGE_COREVIDEO_FRAMEWORK CoreVideo)
+        _ege_find_required_framework(EGE_COREMEDIA_FRAMEWORK CoreMedia)
+        _ege_find_required_framework(EGE_ACCELERATE_FRAMEWORK Accelerate)
+        target_link_libraries(xege PRIVATE
+            "${EGE_FOUNDATION_FRAMEWORK}"
+            "${EGE_AVFOUNDATION_FRAMEWORK}"
+            "${EGE_COREVIDEO_FRAMEWORK}"
+            "${EGE_COREMEDIA_FRAMEWORK}"
+            "${EGE_ACCELERATE_FRAMEWORK}"
+        )
+        target_compile_definitions(xege PRIVATE CCAP_ENABLE_FILE_PLAYBACK=1)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_package(Threads REQUIRED)
+        target_link_libraries(xege PRIVATE Threads::Threads)
+    elseif(WIN32)
+        target_link_libraries(xege PRIVATE
+            mf mfplat mfreadwrite mfuuid shlwapi propsys)
+        target_compile_definitions(xege PRIVATE CCAP_ENABLE_FILE_PLAYBACK=1)
+    endif()
 endif()
 
-# 设置库文件名
-# MSVC 下 Debug 版本使用 graphicsd.lib，Release 版本使用 graphics.lib
-# MinGW 不区分 Debug/Release，统一使用 graphics
+if(APPLE)
+    set(_ege_macos_music_source
+        "${CMAKE_CURRENT_SOURCE_DIR}/${EGE_APPLE_MUSIC_SOURCES}")
+    if(NOT EXISTS "${_ege_macos_music_source}")
+        message(FATAL_ERROR
+            "The macOS MUSIC backend is missing: ${_ege_macos_music_source}")
+    endif()
+    enable_language(OBJCXX)
+    target_sources(xege PRIVATE "${_ege_macos_music_source}")
+    set_source_files_properties("${_ege_macos_music_source}"
+        PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    _ege_find_required_framework(EGE_FOUNDATION_FRAMEWORK Foundation)
+    _ege_find_required_framework(EGE_AVFAUDIO_FRAMEWORK AVFAudio)
+    _ege_find_required_framework(EGE_AUDIOTOOLBOX_FRAMEWORK AudioToolbox)
+    target_link_libraries(xege PRIVATE
+        "${EGE_FOUNDATION_FRAMEWORK}"
+        "${EGE_AVFAUDIO_FRAMEWORK}"
+        "${EGE_AUDIOTOOLBOX_FRAMEWORK}")
+endif()
+
+ege_configure_backend(xege)
+
 if(MSVC)
     set_target_properties(xege PROPERTIES
         OUTPUT_NAME_DEBUG graphicsd
@@ -234,63 +226,41 @@ if(MSVC)
         OUTPUT_NAME_MINSIZEREL graphics
     )
 else()
-    set_property(TARGET xege PROPERTY OUTPUT_NAME graphics)
+    set_target_properties(xege PROPERTIES OUTPUT_NAME graphics)
 endif()
 
-if(EGE_NON_WINDOWS)
-    target_compile_definitions(xege PUBLIC EGE_NON_WINDOWS=1)
-endif()
-
-target_compile_definitions(xege PUBLIC
-    $<$<NOT:$<CONFIG:Debug>>:NDEBUG=1>
-    $<$<CONFIG:Debug>:DEBUG=1>
-    $<$<CONFIG:Release>:NDEBUG=1>
-    $<$<CONFIG:RelWithDebInfo>:NDEBUG=1>
-    $<$<CONFIG:MinSizeRel>:NDEBUG=1>
+target_compile_definitions(xege
+    PUBLIC
+        $<$<CONFIG:Debug>:DEBUG=1>
+        $<$<NOT:$<CONFIG:Debug>>:NDEBUG=1>
+    PRIVATE
+        EGE_GRAPH_LIB_BUILD=1
 )
 
-target_compile_definitions(xege PRIVATE EGE_GRAPH_LIB_BUILD=1)
-
 if(MSVC)
-    message(STATUS "MSVC target: MSVC ${MSVC_VERSION}")
-
-    # 禁用调试信息，避免使用者链接时产生 LNK4099 警告
-    # 移除编译器的调试信息选项，这样 .obj 中不会记录 .pdb 路径
     if(EGE_DISABLE_DEBUG_INFO)
-        # 清除 CMake 默认添加的调试信息选项 (/Zi 和 /ZI)
-        # /Zi - 生成独立的 PDB 文件
-        # /ZI - 生成支持"编辑并继续"的 PDB 文件
         foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-            string(REPLACE "/Zi" "" CMAKE_C_FLAGS_${_config} "${CMAKE_C_FLAGS_${_config}}")
-            string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_${_config} "${CMAKE_CXX_FLAGS_${_config}}")
-            string(REPLACE "/ZI" "" CMAKE_C_FLAGS_${_config} "${CMAKE_C_FLAGS_${_config}}")
-            string(REPLACE "/ZI" "" CMAKE_CXX_FLAGS_${_config} "${CMAKE_CXX_FLAGS_${_config}}")
+            foreach(_language C CXX)
+                string(REPLACE "/Zi" ""
+                    CMAKE_${_language}_FLAGS_${_config}
+                    "${CMAKE_${_language}_FLAGS_${_config}}")
+                string(REPLACE "/ZI" ""
+                    CMAKE_${_language}_FLAGS_${_config}
+                    "${CMAKE_${_language}_FLAGS_${_config}}")
+            endforeach()
         endforeach()
     endif()
 
-    # MSVC 2015 (v140) 及以上版本支持 /utf-8 选项
-    # MSVC 2010 (v100) 到 MSVC 2013 (v120) 不支持 /utf-8
-    if(MSVC_VERSION GREATER_EQUAL 1900) # MSVC 2015 及以上
-        target_compile_options(xege PRIVATE
-            /utf-8
-            /MP
-            /Zl)
-    else() # MSVC 2010-2013
-        # 对于老版本 MSVC，脚本单独处理源码文件(加BOM)
-        target_compile_options(xege PRIVATE
-            /MP
-            /Zl)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+        target_compile_options(xege PRIVATE /utf-8 /MP /Zl)
+    else()
+        target_compile_options(xege PRIVATE /MP /Zl)
     endif()
-
     target_compile_options(xege PUBLIC
         /DNOMINMAX=1
         /D_CRT_SECURE_NO_WARNINGS=1
         /Zc:__cplusplus
     )
-
-    # EGE 对外仅发布 Release 版本
-    # 对外会保障内存分配的匹配性.
-    # 这些选项仅在编译 ege 内部生效
     target_compile_definitions(xege PRIVATE
         _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH=1
         _ALLOW_RUNTIME_LIBRARY_MISMATCH=1
@@ -298,56 +268,58 @@ if(MSVC)
         _CRT_SECURE_NO_WARNINGS=1
         _CRT_SECURE_NO_DEPRECATE=1
     )
-
     if(MSVC_VERSION EQUAL 1200)
-        # VC6 默认编译单线程版本（/ML(d)），无法找到 `_imp__xxx` 的定义
-        # 而 CMake 生成的则使用 /MD，在此覆盖设置。
-        # 编译时会有 D4025 警告，不用在意。
-        target_compile_options(xege
-            PRIVATE $<$<CONFIG:Debug>:/MLd> $<$<CONFIG:Release>:/ML>
-        )
+        target_compile_options(xege PRIVATE
+            $<$<CONFIG:Debug>:/MLd>
+            $<$<CONFIG:Release>:/ML>)
     endif()
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    message(STATUS "GNU target: GCC ${CMAKE_C_COMPILER_VERSION}")
-
-    if (DEFINED EGE_CRT_COMPAT_DEVCPP)
-        message(STATUS "Using Dev-C++ compatibility mode.")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND DEFINED EGE_CRT_COMPAT_DEVCPP)
         target_compile_definitions(xege PRIVATE
             _GLIBCXX_USE_CXX11_ABI=0
-            EGE_CRT_COMPAT_DEVCPP=1
-        )
+            EGE_CRT_COMPAT_DEVCPP=1)
     endif()
-
-    if(CMAKE_HOST_UNIX)
+    if(UNIX OR MINGW)
         target_compile_definitions(xege PRIVATE _FORTIFY_SOURCE=0)
     endif()
 else()
-    if(CMAKE_CXX_COMPILER_ID)
-        message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
-    else()
-        message(FATAL_ERROR "Unsupported compiler: ${CMAKE_C_COMPILER}")
-    endif()
+    message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
-target_link_libraries(xege INTERFACE
-    gdiplus
-    gdi32
-)
+# enable_testing() has directory scope: it must run here so tests registered by
+# subdirectories are visible from the top-level build directory.
+if(EGE_BUILD_TEST)
+    enable_testing()
+    # The historical putimage suite links Win32 libraries directly.  Keep it
+    # intact for GDI regression coverage, while native platform tests live in
+    # tests/native and carry no Windows linkage.
+    if(WIN32 AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+        add_subdirectory(tests)
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/native/CMakeLists.txt")
+        add_subdirectory(tests/native)
+    endif()
+    if(EGE_IS_ROOT_PROJECT)
+        add_test(NAME cmake.backend_default_contract
+            COMMAND "${CMAKE_COMMAND}"
+                -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                -DEGE_CONTRACT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/cmake/backend-default
+                -DEGE_EXPECTED_BACKEND=${EGE_RESOLVED_BACKEND}
+                -DEGE_GENERATOR=${CMAKE_GENERATOR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/backend_contract.cmake)
+        add_test(NAME cmake.mingw_toolchain_contract
+            COMMAND "${CMAKE_COMMAND}"
+                -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                -DEGE_TOOLCHAIN_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/cmake/mingw-toolchain
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/mingw_toolchain_contract.cmake)
+    endif()
+endif()
 
 if(EGE_BUILD_DEMO)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/demo/CMakeLists.txt")
-        message(STATUS "Building EGE demo")
         add_subdirectory(demo)
     else()
-        message("EGE demo not found, skipping")
-    endif()
-endif()
-
-if(EGE_BUILD_TEST)
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
-        add_subdirectory(tests)
-    else()
-        message("EGE test not found, skipping")
+        message(STATUS "EGE demo sources are absent; skipping demos")
     endif()
 endif()
 
@@ -355,6 +327,17 @@ if(EGE_BUILD_TEMP)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/temp/CMakeLists.txt")
         add_subdirectory(temp)
     else()
-        message("EGE temp not found, skipping")
+        message(STATUS "EGE temporary sources are absent; skipping")
     endif()
+endif()
+
+message(STATUS "XEGE configuration")
+message(STATUS "  Target platform: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "  Default backend: ${EGE_RESOLVED_BACKEND}")
+message(STATUS "  Optional OpenGL: ${EGE_ENABLE_OPENGL}")
+message(STATUS "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+if(CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "  Build configurations: ${CMAKE_CONFIGURATION_TYPES}")
+else()
+    message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")
 endif()
