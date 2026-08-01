@@ -22,6 +22,7 @@ constexpr int   kWidth       = 640;
 constexpr int   kHeight      = 480;
 constexpr int   kTracks      = 12;
 constexpr int   kTubeRows    = 24;
+constexpr int   kStageCount  = 8;
 constexpr float kPi          = 3.14159265358979323846f;
 constexpr float kTrackAngle  = 2.0f * kPi / kTracks;
 const     float kTileSize    = 2.0f * std::sin(kPi / kTracks);
@@ -32,6 +33,15 @@ const     float kFogNear     = kFarPlane * 0.25f;
 constexpr float kCameraY     = -0.5f;
 constexpr float kPlayerAngle = -kPi * 0.5f;
 const     float kFocalLength = (kHeight * 0.5f) / std::tan(75.0f * kPi / 360.0f);
+// The browser game advances 0.14 world units per 60 Hz frame and adds
+// 0.02 units per frame after each complete eight-stage level.
+constexpr float kReferenceFps   = 60.0f;
+constexpr float kBaseSpeed      = 0.14f * kReferenceFps;
+constexpr float kLevelSpeedStep = 0.02f * kReferenceFps;
+constexpr float kStageDuration  = 30.0f;
+constexpr float kTubeStart      = 0.42f;
+constexpr float kKeyboardTurnSpeed = kTrackAngle * 8.0f;
+constexpr float kMouseDragSensitivity = kTrackAngle / 56.0f;
 
 struct Vec3 {
     float x;
@@ -405,8 +415,9 @@ float wrapAngle(float angle)
 
 class Game {
 public:
-    Game()
-        : random(0x58454745u)
+    explicit Game(bool collisionsEnabled = true)
+        : random(0x58454745u),
+          collisionsEnabled(collisionsEnabled)
     {
         reset();
     }
@@ -416,12 +427,15 @@ public:
         obstacles.clear();
         elapsed         = 0.0f;
         score           = 0.0f;
+        forwardDistance = 0.0;
         rotation        = 0.0f;
         angularVelocity = 0.0f;
-        spawnTimer      = 0.35f;
+        currentSpeed    = kBaseSpeed;
+        spawnDistance   = 6.0 * kTileSize;
         invincible      = 0.0f;
         lives           = 3;
         stage           = 0;
+        level           = 0;
         paused          = false;
         gameOver        = false;
     }
@@ -431,27 +445,33 @@ public:
         if (!gameOver) paused = !paused;
     }
 
-    void update(float deltaTime, bool turnLeft, bool turnRight)
+    void update(float deltaTime, bool turnLeft, bool turnRight, float dragRotation = 0.0f)
     {
         if (paused || gameOver) {
             return;
         }
 
         elapsed += deltaTime;
-        stage = static_cast<int>(elapsed / 18.0f) % 8;
-        const float speed = 2.55f + 0.16f * static_cast<int>(elapsed / 18.0f);
-        score += speed * deltaTime * 10.0f;
+        const int stageProgress = static_cast<int>(elapsed / kStageDuration);
+        stage = stageProgress % kStageCount;
+        level = stageProgress / kStageCount;
+        currentSpeed = kBaseSpeed + kLevelSpeedStep * level;
+        const float frameDistance = currentSpeed * deltaTime;
+        forwardDistance += frameDistance;
+        score += kReferenceFps * deltaTime;
         invincible = std::max(0.0f, invincible - deltaTime);
 
-        const float targetVelocity = (turnRight ? 1.9f : 0.0f) - (turnLeft ? 1.9f : 0.0f);
-        angularVelocity += (targetVelocity - angularVelocity) * std::min(1.0f, deltaTime * 8.0f);
+        const float steering = (turnRight ? 1.0f : 0.0f) - (turnLeft ? 1.0f : 0.0f);
+        const float targetVelocity = steering * kKeyboardTurnSpeed;
+        angularVelocity +=
+            (targetVelocity - angularVelocity) * std::min(1.0f, deltaTime * 18.0f);
         if (!turnLeft && !turnRight) {
             angularVelocity *= std::pow(0.12f, deltaTime);
         }
-        rotation = wrapAngle(rotation + angularVelocity * deltaTime);
+        rotation = wrapAngle(rotation + angularVelocity * deltaTime + dragRotation);
 
         for (Obstacle& obstacle : obstacles) {
-            obstacle.z -= speed * obstacle.speedScale * deltaTime;
+            obstacle.z -= frameDistance * obstacle.speedScale;
         }
 
         checkCollisions();
@@ -459,11 +479,18 @@ public:
                             [](const Obstacle& obstacle) { return obstacle.z < 0.22f; }),
             obstacles.end());
 
-        spawnTimer -= deltaTime;
-        if (spawnTimer <= 0.0f) {
+        spawnDistance -= frameDistance;
+        while (spawnDistance <= 0.0) {
             spawnPattern();
         }
     }
+
+    float speed() const { return currentSpeed; }
+    double distance() const { return forwardDistance; }
+    float rotationAngle() const { return rotation; }
+    int currentStage() const { return stage; }
+    int currentLevel() const { return level; }
+    std::size_t obstacleCount() const { return obstacles.size(); }
 
     void render(Surface& surface) const
     {
@@ -517,33 +544,27 @@ private:
         switch (stage) {
         case 0:
             spawnOne(track, random.range(3));
-            spawnTimer = 0.82f;
             break;
         case 1:
             spawnOne(track, 6, 0.76f, 0.72f, 0.82f, 1.28f);
-            spawnTimer = 0.92f;
             break;
         case 2:
             spawnOne(track, 3 + random.range(3), 0.82f, 1.18f, 0.92f);
-            spawnTimer = 1.15f;
             break;
         case 3:
             spawnOne(track, 8, 0.82f, 1.75f, 0.88f);
-            spawnTimer = 1.25f;
             break;
         case 4:
             spawnOne(track, random.range(3));
             if (random.range(4) == 0) {
                 spawnOne((track + 3 + random.range(4)) % kTracks, 11, 0.78f, 1.55f, 0.86f);
             }
-            spawnTimer = 0.74f;
             break;
         case 5: {
             const int count = 4 + 2 * random.range(3);
             for (int i = 0; i < count; ++i) {
                 spawnOne((track + i) % kTracks, 12);
             }
-            spawnTimer = 1.55f;
             break;
         }
         case 6:
@@ -552,19 +573,28 @@ private:
                 spawnOne((track + 1) % kTracks, 12, 0.75f, 0.75f, 0.82f, 1.0f, 0.32f);
                 spawnOne((track + 2) % kTracks, 12, 0.75f, 0.75f, 0.82f, 1.0f, 0.64f);
             }
-            spawnTimer = 0.64f;
             break;
         default:
             spawnOne(track, 9, 2.65f, 1.7f, 0.9f);
             spawnOne((track + 5 + random.range(3)) % kTracks, 7, 0.76f, 0.76f, 0.82f, 1.2f, 0.5f);
-            spawnTimer = 1.42f;
             break;
         }
+
+        float spacingInTiles = 6.0f;
+        switch (stage) {
+        case 2: spacingInTiles = 8.0f + 2.0f * level; break;
+        case 3:
+        case 7: spacingInTiles = 10.0f; break;
+        case 4: spacingInTiles = 6.0f + 2.0f * level; break;
+        case 6: spacingInTiles = 6.0f + 3.0f * level; break;
+        default: break;
+        }
+        spawnDistance += spacingInTiles * kTileSize;
     }
 
     void checkCollisions()
     {
-        if (invincible > 0.0f) {
+        if (!collisionsEnabled || invincible > 0.0f) {
             return;
         }
 
@@ -603,16 +633,31 @@ private:
     {
         const bool brightStage = (stage % 2) == 0;
         const float brightness = brightStage ? 1.0f : 0.34f;
+        const double tilePosition = forwardDistance / kTileSize;
+        const long long passedTiles = static_cast<long long>(std::floor(tilePosition));
+        const float tubeOffset = static_cast<float>(
+            forwardDistance - static_cast<double>(passedTiles) * kTileSize);
+        const float firstRowZ = kTubeStart - tubeOffset;
+        const float clippedNear = kNearPlane + 0.001f;
 
-        for (int row = 0; row < kTubeRows; ++row) {
-            const float z0 = 0.42f + row * kTileSize;
-            const float z1 = z0 + kTileSize;
+        // Start one row behind the near plane. That extra row replaces the one
+        // that just passed the player and keeps the tunnel continuous when the
+        // offset wraps at a tile boundary.
+        for (int row = -1; row < kTubeRows; ++row) {
+            const float rawZ0 = firstRowZ + row * kTileSize;
+            const float rawZ1 = rawZ0 + kTileSize;
+            if (rawZ1 <= clippedNear) {
+                continue;
+            }
+            const float z0 = std::max(rawZ0, clippedNear);
+            const float z1 = rawZ1;
             for (int track = 0; track < kTracks; ++track) {
                 const Vec3 p00 = tubePoint(track, z0);
                 const Vec3 p10 = tubePoint(track + 1, z0);
                 const Vec3 p11 = tubePoint(track + 1, z1);
                 const Vec3 p01 = tubePoint(track, z1);
-                const float checker = ((track + row) & 1) ? 0.93f : 1.0f;
+                const bool alternate = ((track + row + passedTiles) & 1LL) != 0;
+                const float checker = alternate ? 0.93f : 1.0f;
                 const Color tile = scaleColor({224, 234, 244}, brightness * checker);
                 rasterTriangle(surface, p00, p10, p11, tile);
                 rasterTriangle(surface, p00, p11, p01, tile);
@@ -620,15 +665,23 @@ private:
         }
 
         const Color grid = brightStage ? Color {25, 42, 58} : Color {4, 8, 13};
-        for (int row = 0; row <= kTubeRows; ++row) {
-            const float z = 0.42f + row * kTileSize;
+        for (int row = -1; row <= kTubeRows; ++row) {
+            const float z = firstRowZ + row * kTileSize;
+            if (z <= clippedNear) {
+                continue;
+            }
             for (int track = 0; track < kTracks; ++track) {
                 rasterLine(surface, tubePoint(track, z), tubePoint(track + 1, z), grid);
             }
         }
-        for (int row = 0; row < kTubeRows; ++row) {
-            const float z0 = 0.42f + row * kTileSize;
-            const float z1 = z0 + kTileSize;
+        for (int row = -1; row < kTubeRows; ++row) {
+            const float rawZ0 = firstRowZ + row * kTileSize;
+            const float rawZ1 = rawZ0 + kTileSize;
+            if (rawZ1 <= clippedNear) {
+                continue;
+            }
+            const float z0 = std::max(rawZ0, clippedNear);
+            const float z1 = rawZ1;
             for (int track = 0; track < kTracks; ++track) {
                 rasterLine(surface, tubePoint(track, z0), tubePoint(track, z1), grid);
             }
@@ -717,22 +770,29 @@ private:
         drawText(surface, kWidth - statusWidth - 18, 24, status, 2, {255, 225, 70});
 
         surface.fillRect(0, kHeight - 31, kWidth, 31, {2, 5, 11}, 0.72f);
-        drawText(surface, 88, kHeight - 22, "[A/D] STEER   [P] PAUSE   [R] RESTART", 1,
+        const std::string controls =
+            "[A/D] OR DRAG TO STEER   [P] PAUSE   [R] RESTART";
+        const int controlsWidth = static_cast<int>(controls.size()) * 6;
+        drawText(surface, (kWidth - controlsWidth) / 2, kHeight - 22, controls, 1,
             {190, 220, 240}, false);
     }
 
     Random                random;
     std::vector<Obstacle> obstacles;
-    float                 elapsed {0.0f};
+    double                elapsed {0.0};
     float                 score {0.0f};
+    double                forwardDistance {0.0};
     float                 rotation {0.0f};
     float                 angularVelocity {0.0f};
-    float                 spawnTimer {0.0f};
+    float                 currentSpeed {kBaseSpeed};
+    double                spawnDistance {0.0};
     float                 invincible {0.0f};
     int                   lives {3};
     int                   stage {0};
+    int                   level {0};
     bool                  paused {false};
     bool                  gameOver {false};
+    bool                  collisionsEnabled {true};
 };
 
 bool savePpm(const Surface& surface, const std::string& path)
@@ -761,12 +821,119 @@ bool savePpm(const Surface& surface, const std::string& path)
 #include <cstdlib>
 #include <iostream>
 
+namespace {
+
+bool nearlyEqual(double actual, double expected, double tolerance)
+{
+    return std::abs(actual - expected) <= tolerance;
+}
+
+std::size_t changedPlayfieldPixels(
+    const cube_runner::Surface& first, const cube_runner::Surface& second)
+{
+    std::size_t changed = 0;
+    for (int y = 90; y < cube_runner::kHeight - 32; ++y) {
+        for (int x = 0; x < cube_runner::kWidth; ++x) {
+            const std::size_t index = static_cast<std::size_t>(y) * cube_runner::kWidth + x;
+            if (first.pixels[index] != second.pixels[index]) {
+                ++changed;
+            }
+        }
+    }
+    return changed;
+}
+
+bool runSelfTest()
+{
+    constexpr float deltaTime = 1.0f / cube_runner::kReferenceFps;
+    bool passed = true;
+    auto require = [&](bool condition, const char* message) {
+        if (!condition) {
+            std::cerr << "SELF-TEST FAILED: " << message << '\n';
+            passed = false;
+        }
+    };
+
+    cube_runner::Game movementGame(false);
+    cube_runner::Surface before;
+    cube_runner::Surface after;
+    movementGame.render(before);
+    movementGame.update(deltaTime, false, false);
+    movementGame.render(after);
+
+    require(nearlyEqual(movementGame.speed(), cube_runner::kBaseSpeed, 0.0001),
+        "initial speed does not match the browser game");
+    require(nearlyEqual(movementGame.distance(), 0.14, 0.0001),
+        "one frame does not advance by 0.14 world units");
+    require(changedPlayfieldPixels(before, after) > 500,
+        "the tunnel playfield did not visibly move after one frame");
+
+    for (int frame = 1; frame < static_cast<int>(cube_runner::kReferenceFps); ++frame) {
+        movementGame.update(deltaTime, false, false);
+    }
+    require(nearlyEqual(movementGame.distance(), cube_runner::kBaseSpeed, 0.001),
+        "one second of simulation did not cover the expected distance");
+    require(movementGame.obstacleCount() > 0,
+        "distance-based spawning did not create an obstacle");
+
+    cube_runner::Game keyboardGame(false);
+    for (int frame = 0; frame < 30; ++frame) {
+        keyboardGame.update(deltaTime, false, true);
+    }
+    require(keyboardGame.rotationAngle() > cube_runner::kTrackAngle * 2.0f,
+        "holding a turn key does not rotate the tunnel responsively");
+
+    cube_runner::Game dragGame(false);
+    dragGame.update(deltaTime, false, false, cube_runner::kTrackAngle);
+    require(nearlyEqual(dragGame.rotationAngle(), cube_runner::kTrackAngle, 0.0001),
+        "mouse drag rotation was not applied directly");
+
+    const double distanceBeforePause = movementGame.distance();
+    movementGame.togglePause();
+    movementGame.update(1.0f, false, false);
+    require(nearlyEqual(movementGame.distance(), distanceBeforePause, 0.000001),
+        "pausing did not stop forward movement");
+
+    cube_runner::Game stageGame(false);
+    const int framesPerStage = static_cast<int>(
+        cube_runner::kStageDuration * cube_runner::kReferenceFps) + 1;
+    for (int frame = 0; frame < framesPerStage; ++frame) {
+        stageGame.update(deltaTime, false, false);
+    }
+    require(stageGame.currentStage() == 1 && stageGame.currentLevel() == 0,
+        "the first stage did not last about 30 seconds");
+
+    cube_runner::Game levelGame(false);
+    const int framesPerLevel = static_cast<int>(cube_runner::kStageDuration
+        * cube_runner::kStageCount * cube_runner::kReferenceFps) + 1;
+    for (int frame = 0; frame < framesPerLevel; ++frame) {
+        levelGame.update(deltaTime, false, false);
+    }
+    require(levelGame.currentStage() == 0 && levelGame.currentLevel() == 1,
+        "eight stages did not advance to the next level");
+    require(nearlyEqual(levelGame.speed(),
+                cube_runner::kBaseSpeed + cube_runner::kLevelSpeedStep, 0.0001),
+        "level speed increase does not match the browser game");
+
+    if (passed) {
+        std::cout << "Cube Runner self-test passed: speed, tunnel motion, spawning, pause, "
+                     "stages, and level progression\n";
+    }
+    return passed;
+}
+
+} // namespace
+
 int main(int argc, char** argv)
 {
+    if (argc > 1 && std::string(argv[1]) == "--self-test") {
+        return runSelfTest() ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
+
     const std::string outputPath = argc > 1 ? argv[1] : "cube_runner.ppm";
     const int frameCount = argc > 2 ? std::max(1, std::atoi(argv[2])) : 360;
 
-    cube_runner::Game game;
+    cube_runner::Game game(false);
     for (int frame = 0; frame < frameCount; ++frame) {
         const bool turnLeft  = (frame > 160 && frame < 205);
         const bool turnRight = (frame > 275 && frame < 330);
@@ -799,6 +966,8 @@ int main()
     PIMAGE frameImage = newimage(kWidth, kHeight);
     Surface surface;
     Game game;
+    bool dragging = false;
+    int lastMouseX = 0;
 
     for (; is_run(); delay_fps(60)) {
         if (keypress(key_esc)) {
@@ -811,9 +980,26 @@ int main()
             game.reset();
         }
 
+        float dragRotation = 0.0f;
+        while (mousemsg()) {
+            const mouse_msg message = getmouse();
+            if (message.is_down() && message.is_left()) {
+                dragging = true;
+                lastMouseX = message.x;
+            } else if (message.is_up() && message.is_left()) {
+                dragging = false;
+            } else if (message.is_move() && dragging) {
+                dragRotation += (message.x - lastMouseX) * kMouseDragSensitivity;
+                lastMouseX = message.x;
+            }
+        }
+        if (dragging && !keystate(key_mouse_l)) {
+            dragging = false;
+        }
+
         const bool turnLeft  = keystate(key_left) || keystate(key_A);
         const bool turnRight = keystate(key_right) || keystate(key_D);
-        game.update(1.0f / 60.0f, turnLeft, turnRight);
+        game.update(1.0f / 60.0f, turnLeft, turnRight, dragRotation);
         game.render(surface);
 
         color_t* destination = getbuffer(frameImage);
