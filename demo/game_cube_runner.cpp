@@ -24,14 +24,14 @@ constexpr int   kTracks      = 12;
 constexpr int   kTubeRows    = 24;
 constexpr float kPi          = 3.14159265358979323846f;
 constexpr float kTrackAngle  = 2.0f * kPi / kTracks;
-constexpr float kTileSize    = 2.0f * std::sin(kPi / kTracks);
+const     float kTileSize    = 2.0f * std::sin(kPi / kTracks);
 constexpr float kTubeRadius  = 1.0f;
 constexpr float kNearPlane   = 0.18f;
-constexpr float kFarPlane    = kTileSize * kTubeRows;
-constexpr float kFogNear     = kFarPlane * 0.25f;
+const     float kFarPlane    = kTileSize * kTubeRows;
+const     float kFogNear     = kFarPlane * 0.25f;
 constexpr float kCameraY     = -0.5f;
 constexpr float kPlayerAngle = -kPi * 0.5f;
-constexpr float kFocalLength = (kHeight * 0.5f) / std::tan(75.0f * kPi / 360.0f);
+const     float kFocalLength = (kHeight * 0.5f) / std::tan(75.0f * kPi / 360.0f);
 
 struct Vec3 {
     float x;
