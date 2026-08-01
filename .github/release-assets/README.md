@@ -41,7 +41,6 @@ ege-25.11/
 ├── lib/                    # 静态库
 │   ├── vs2022/x64/         # Visual Studio 2022 静态库
 │   ├── vs2019/x64/         # Visual Studio 2019 静态库
-│   ├── vs2017/x64/         # Visual Studio 2017 静态库
 │   ├── mingw64/            # MinGW-w64 (MSYS2) 静态库
 │   ├── codeblocks/         # Code::Blocks 25.03 静态库
 │   ├── redpanda/           # CLion/小熊猫C++ 静态库

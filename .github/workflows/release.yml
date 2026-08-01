@@ -546,7 +546,7 @@ jobs:
           
           # MSVC libraries - now with Debug/Release and x86/x64
           # Artifacts are named: libs-VS2022-x64-Release, libs-VS2022-x64-Debug, etc.
-          for vsname in VS2022 VS2019 VS2017; do
+          for vsname in VS2022 VS2019; do
             vsdir=$(echo "$vsname" | tr '[:upper:]' '[:lower:]')
             
             for arch in x64 x86; do
@@ -667,7 +667,7 @@ jobs:
             - **doc/** - 文档
             - **include/** - 头文件
             - **lib/** - 静态库文件
-              - vs2022/vs2019/vs2017 - Visual Studio 静态库 (x86/x64, Debug/Release)
+              - vs2022/vs2019 - Visual Studio 静态库 (x86/x64, Debug/Release)
               - mingw64 - MinGW-w64 (MSYS2) 静态库 (x64)
               - codeblocks - Code::Blocks 25.03 静态库 (x64)
               - redpanda - CLion/小熊猫C++ (RedPanda C++) 静态库 (x64)
