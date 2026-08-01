@@ -7,6 +7,9 @@ on:
     # 所有分支的 PR 都触发
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   vs2026-build:
     name: MSVC 2026 Build (${{ matrix.build_type }})

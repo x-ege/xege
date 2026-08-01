@@ -82,8 +82,7 @@ When master branch is updated (not a tag push), a test release is automatically 
 
 **MSVC 库:**
 - VS2022 (toolset v143) - Windows latest
-- VS2019 (toolset v142) - Windows 2019
-- VS2017 (toolset v141) - Windows 2019
+- VS2019 (toolset v142) - Windows latest
 
 **MinGW Windows 库:**
 - MSYS2 最新版 (GCC 最新版) / MSYS2 Latest (GCC Latest Version)
