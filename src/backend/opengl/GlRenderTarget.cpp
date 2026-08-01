@@ -1883,10 +1883,20 @@ void GlRenderTarget::clear(color_t color) {
     submitBatch();
     bindForDrawing();
 
+    // cleardevice clears the complete target in the legacy GDI backend.
+    // bindForDrawing applies the active EGE viewport through GL scissoring,
+    // so temporarily disable it for the full-target clear.
+    const GLboolean scissorWasEnabled = glIsEnabled(GL_SCISSOR_TEST);
+    glDisable(GL_SCISSOR_TEST);
+
     float r, g, b, a;
     color_t_to_rgba(color, r, g, b, a);
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if (scissorWasEnabled) {
+        glEnable(GL_SCISSOR_TEST);
+    }
 
     markGpuDirtyFull();
 }

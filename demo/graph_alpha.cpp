@@ -49,6 +49,7 @@ int main()
 	// Save screenshot
 	PIMAGE screenshot = newimage(getwidth(), getheight());
 	getimage(screenshot, 0, 0, getwidth(), getheight());
+	ege_setalpha(0xFF, screenshot);
 	saveimage(screenshot, "graph_alpha_frame10.png");
 	delimage(screenshot);
 	printf("Screenshot saved: graph_alpha_frame10.png\n");

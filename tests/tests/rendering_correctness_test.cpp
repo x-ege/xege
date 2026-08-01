@@ -267,6 +267,17 @@ void testClearAndPixels()
     expectPixel(image, 3, 4, ege::RED, "putpixel writes the requested coordinate");
     expectPixel(image, 3, 5, ege::BLUE, "putpixel does not modify the vertically mirrored coordinate");
 
+    resetImage(image, ege::BLACK);
+    ege::putpixel(1, 1, ege::RED, image);
+    ege::setviewport(4, 3, 10, 8, true, image);
+    ege::setbkcolor(ege::BLUE, image);
+    ege::cleardevice(image);
+    ege::setviewport(0, 0, 12, 10, false, image);
+    expectPixel(image, 1, 1, ege::BLUE,
+                "cleardevice clears the complete target outside the active viewport");
+    expectPixel(image, 5, 4, ege::BLUE,
+                "cleardevice clears pixels inside the active viewport");
+
     ege::delimage(image);
 }
 

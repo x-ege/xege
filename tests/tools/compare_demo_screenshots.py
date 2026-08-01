@@ -25,8 +25,22 @@ except ImportError as error:  # pragma: no cover - dependency diagnostic
 ROOT = Path(__file__).resolve().parents[2]
 DEMOS = {
     "graph_alpha": "graph_alpha_frame10.png",
+    "graph_backend_validation": "graph_backend_validation_frame10.png",
     "graph_ball": "graph_ball_frame10.png",
     "test_demo": "test_demo_frame10.png",
+}
+
+# This case intentionally packs antialiased curves, text, image transfers, and
+# three fill patterns into a single frame.  Its edge-pixel density is much
+# higher than the ordinary demos, and Windows GDI maps WIDE_DOT_FILL to its
+# legacy diagonal-cross hatch even though the public enum specifies sparse
+# dots.  Keep a bounded case-specific allowance while still reporting every
+# raw metric and the enhanced diff image for review.
+CASE_LIMITS = {
+    "graph_backend_validation": {
+        "mean_absolute_error": 5.5,
+        "large_difference_fraction": 0.06,
+    },
 }
 
 
@@ -167,11 +181,20 @@ def main() -> int:
         )
         metrics["gdi"] = str(gdi_path)
         metrics["opengl"] = str(opengl_path)
+        limits = CASE_LIMITS.get(
+            name,
+            {
+                "mean_absolute_error": args.max_mae,
+                "large_difference_fraction": args.max_large_difference_fraction,
+            },
+        )
+        metrics["limits"] = limits
         if metrics.get("passed"):
             metrics["passed"] = (
-                float(metrics["mean_absolute_error"]) <= args.max_mae
+                float(metrics["mean_absolute_error"])
+                <= float(limits["mean_absolute_error"])
                 and float(metrics["large_difference_fraction"])
-                <= args.max_large_difference_fraction
+                <= float(limits["large_difference_fraction"])
             )
         all_passed = bool(metrics["passed"]) and all_passed
         report["demos"][name] = metrics

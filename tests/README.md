@@ -145,7 +145,7 @@ bash -l tasks.sh --opengl --release --build-dir build/demo-visual-opengl \
 选择 GDI 或 OpenGL，不改变库的默认行为。截图抽样至少覆盖基础图元、文字/CJK、
 alpha、旋转透明、viewport、分页以及一个复杂动画；动画应固定同一帧或同一状态再比较。
 
-三个会自行保存固定第 10 帧并退出的 demo 可直接做可重复像素对比（需要 Pillow）：
+四个会自行保存固定第 10 帧并退出的 demo 可直接做可重复像素对比（需要 Pillow）：
 
 ```bash
 python tests/tools/compare_demo_screenshots.py \
@@ -154,7 +154,11 @@ python tests/tools/compare_demo_screenshots.py \
 ```
 
 脚本检查尺寸、平均绝对误差和大差异像素比例，并在
-`build/visual-results/current` 输出两后端截图、增强差异图与 JSON 报告。其余交互式 demo
+`build/visual-results/current` 输出两后端截图、增强差异图与 JSON 报告。截图在保存前会把最终
+帧设为不透明，避免 PNG 编码把屏幕缓冲中的混合 alpha 再次反预乘而改变可见 RGB。
+`graph_backend_validation` 使用固定像素源集中覆盖图元、线型、填充、viewport、PRGB/颜色键
+传输、旋转、缩放和文字；由于边缘密度更高，且旧 GDI 会把公开定义为稀疏点的
+`WIDE_DOT_FILL` 映射成斜交叉网格，该用例使用脚本中单独记录的有界阈值。其余交互式 demo
 仍通过窗口自动化做启动和画面抽查；固定帧比较不应被视作所有交互状态的替代品。
 
 只运行功能回归、跳过耗时性能基准：

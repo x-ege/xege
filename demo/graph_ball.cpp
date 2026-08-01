@@ -174,6 +174,7 @@ int main() {
 		if (frameCount == 10) {
 			PIMAGE img = newimage(getwidth(), getheight());
 			getimage(img, 0, 0, getwidth(), getheight());
+			ege_setalpha(0xFF, img);
 			saveimage(img, "graph_ball_frame10.png");
 			delimage(img);
 			printf("Screenshot saved: graph_ball_frame10.png\n");

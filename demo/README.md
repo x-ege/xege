@@ -10,3 +10,6 @@
 目录规则:
 
 - `compile-tests/` 目录下存放用于编译测试的一些文件, 仅用于验证编译，不具备演示功能
+
+`graph_backend_validation.cpp` 是确定性的 GDI/OpenGL 固定帧对比用例。它不读取外部资源或
+随机数，运行到第 10 帧后保存截图并自动退出；完整构建与比较方法见 `tests/README.md`。
