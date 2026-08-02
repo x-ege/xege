@@ -192,56 +192,36 @@ jobs:
             cmake_arch: Win32
           
           # VS2019 - x64 and x86, Debug and Release
+          # 注意: v142 工具集在 windows-latest (VS2022) 上已预装，无需 windows-2019 镜像
+          # (windows-2019 已于 2025-06-30 被 GitHub 退役)
           - name: VS2019
-            os: windows-2019
+            os: windows-latest
             toolset: v142
             arch: x64
             config: Release
             cmake_arch: x64
           - name: VS2019
-            os: windows-2019
+            os: windows-latest
             toolset: v142
             arch: x64
             config: Debug
             cmake_arch: x64
           - name: VS2019
-            os: windows-2019
+            os: windows-latest
             toolset: v142
             arch: x86
             config: Release
             cmake_arch: Win32
           - name: VS2019
-            os: windows-2019
+            os: windows-latest
             toolset: v142
             arch: x86
             config: Debug
             cmake_arch: Win32
-          
-          # VS2017 - x64 and x86, Debug and Release
-          - name: VS2017
-            os: windows-2019
-            toolset: v141
-            arch: x64
-            config: Release
-            cmake_arch: x64
-          - name: VS2017
-            os: windows-2019
-            toolset: v141
-            arch: x64
-            config: Debug
-            cmake_arch: x64
-          - name: VS2017
-            os: windows-2019
-            toolset: v141
-            arch: x86
-            config: Release
-            cmake_arch: Win32
-          - name: VS2017
-            os: windows-2019
-            toolset: v141
-            arch: x86
-            config: Debug
-            cmake_arch: Win32
+
+          # 注意：VS2017 (v141) / VS2015 (v140) 已从 release matrix 中移除
+          # 原因：windows-2019 runner 镜像已于 2025-06-30 被 GitHub 退役，
+          # 而 v141/v140 工具集在 windows-latest 上未预装、手动安装脆弱且缓慢。
     
     runs-on: ${{ matrix.os }}
     
@@ -566,7 +546,7 @@ jobs:
           
           # MSVC libraries - now with Debug/Release and x86/x64
           # Artifacts are named: libs-VS2022-x64-Release, libs-VS2022-x64-Debug, etc.
-          for vsname in VS2022 VS2019 VS2017; do
+          for vsname in VS2022 VS2019; do
             vsdir=$(echo "$vsname" | tr '[:upper:]' '[:lower:]')
             
             for arch in x64 x86; do
@@ -687,7 +667,7 @@ jobs:
             - **doc/** - 文档
             - **include/** - 头文件
             - **lib/** - 静态库文件
-              - vs2022/vs2019/vs2017 - Visual Studio 静态库 (x86/x64, Debug/Release)
+              - vs2022/vs2019 - Visual Studio 静态库 (x86/x64, Debug/Release)
               - mingw64 - MinGW-w64 (MSYS2) 静态库 (x64)
               - codeblocks - Code::Blocks 25.03 静态库 (x64)
               - redpanda - CLion/小熊猫C++ (RedPanda C++) 静态库 (x64)
