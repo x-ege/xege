@@ -28,6 +28,14 @@
 
 #include "ege.h"
 #include "ege/types.h"
+#include "backend/interface/Window.h"
+
+// EGE_GDIPLUS also gates the historical enhanced public API. Keep those
+// declarations visible to native callers, but never compile GDI+ internals on
+// a non-Windows target; Core Graphics implements the same API surface there.
+#ifndef _WIN32
+#undef EGE_GDIPLUS
+#endif
 
 #define EGE_TOSTR_(x) #x
 #define EGE_TOSTR(x)  EGE_TOSTR_(x)
@@ -90,11 +98,15 @@
 #   if defined(NOMINMAX) && defined(_MSC_VER)
 #       define max(a, b) (((a) > (b)) ? (a) : (b))
 #       define min(a, b) (((a) < (b)) ? (a) : (b))
-#       include <gdiplus.h>
+#       ifdef _WIN32
+#           include <gdiplus.h>
+#       endif
 #       undef max
 #       undef min
 #   else
-#       include <gdiplus.h>
+#       ifdef _WIN32
+#           include <gdiplus.h>
+#       endif
 #   endif
 #endif
 
@@ -200,6 +212,7 @@ struct _graph_setting
     std::wstring window_caption;
     HICON        window_hicon;
     color_t      window_initial_color;
+    Window*      window = nullptr; // Native window interface; null for the legacy Win32 path.
     int          exit_flag;
     int          exit_window;
     int          update_mark_count; // 更新标记

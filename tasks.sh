@@ -29,6 +29,31 @@ function isWindows() {
     fi
 }
 
+function isMacOS() {
+    [[ "$(uname -s)" == "Darwin" ]]
+}
+
+# A macOS host builds a native Mach-O target unless the caller explicitly
+# supplies a cross-compilation toolchain/system. Keep this decision independent
+# from the presence of mingw-w64 or Wine on the developer machine.
+function isNativeMacOS() {
+    local config_str="${CMAKE_CONFIG_DEFINE[*]}"
+    isMacOS &&
+        [[ "$config_str" != *"CMAKE_TOOLCHAIN_FILE"* ]] &&
+        [[ "$config_str" != *"CMAKE_SYSTEM_NAME=Windows"* ]]
+}
+
+function hasCMakeDefinition() {
+    local definition="$1"
+    local argument
+    for argument in "${CMAKE_CONFIG_DEFINE[@]}"; do
+        if [[ "$argument" == "-D${definition}="* ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 if isWsl && isWindows; then
     # Switch to Git Bash when running in WSL and in a Windows directory
     echo "Detected WSL environment in Windows directory, switching to Git Bash..."
@@ -87,7 +112,7 @@ function isMinGW() {
 # MSVC: build/ (CMake 自动处理 Debug/Release 子目录)
 # MinGW/其他: build/Debug 或 build/Release
 function getBuildDir() {
-    local base_dir="$PROJECT_DIR/build"
+    local base_dir="${EGE_BUILD_ROOT:-$PROJECT_DIR/build}"
 
     # 如果用户已经通过 --build-dir 指定了目录，使用用户指定的
     if [[ -n "$USER_SPECIFIED_BUILD_DIR" ]]; then
@@ -98,6 +123,13 @@ function getBuildDir() {
     # MSVC 使用单一 build 目录（CMake 会自动创建 Debug/Release 子目录）
     if isMSVC; then
         echo "$base_dir"
+        return
+    fi
+
+    # Never reuse a historical MinGW/Windows CMake cache for native macOS.
+    # The platform component also makes the output type obvious in VS Code.
+    if isNativeMacOS; then
+        echo "$base_dir/macos/$CMAKE_BUILD_TYPE"
         return
     fi
 
@@ -141,23 +173,10 @@ function loadCMakeProject() {
     local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
 
-    # 确定源代码路径（相对于 build 目录）
-    local source_path
-    if [[ -z "$EGE_SOURCE_PATH" ]]; then
-        # 计算从 CMAKE_BUILD_DIR 到 PROJECT_DIR 的相对路径
-        # 如果是 build/Debug 或 build/Release，则需要 ../..
-        # 如果是 build，则需要 ..
-        if [[ "$CMAKE_BUILD_DIR" == "$PROJECT_DIR/build" ]]; then
-            source_path=".."
-        elif [[ "$CMAKE_BUILD_DIR" == "$PROJECT_DIR/build/"* ]]; then
-            source_path="../.."
-        else
-            # 用户自定义路径，使用绝对路径
-            source_path="$PROJECT_DIR"
-        fi
-    else
-        source_path="$EGE_SOURCE_PATH"
-    fi
+    # Always pass an absolute source path. Build directories are intentionally
+    # platform-specific (for example build/macos/Debug), so deriving the source
+    # with a fixed number of '..' components is both fragile and unnecessary.
+    local source_path="${EGE_SOURCE_PATH:-$PROJECT_DIR}"
     cmake_args+=("$source_path")
 
     set -x
@@ -226,6 +245,7 @@ DO_LOAD=false
 DO_RELOAD=false
 DO_CLEAN=false
 DO_BUILD=false
+DO_SHOW_CONFIG=false
 RUN_EXECUTABLE=""
 
 # 第一遍：解析所有参数并设置配置
@@ -249,6 +269,10 @@ while [[ $# -gt 0 ]]; do
     --build)
         export DO_BUILD=true
         shift # past argument
+        ;;
+    --show-config)
+        export DO_SHOW_CONFIG=true
+        shift
         ;;
     --test-release-libs)
         echo "使用 ege 预编译包来编译所有 Demo..."
@@ -347,10 +371,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# CMake AUTO already resolves to CoreGraphics on Darwin. Make the VS Code/script
+# contract explicit as well, so an installed MinGW compiler cannot influence a
+# normal macOS invocation and OpenGL remains opt-in.
+if isNativeMacOS; then
+    if ! hasCMakeDefinition "EGE_DEFAULT_BACKEND"; then
+        CMAKE_CONFIG_DEFINE+=("-DEGE_DEFAULT_BACKEND=COREGRAPHICS")
+    fi
+    if ! hasCMakeDefinition "EGE_ENABLE_OPENGL"; then
+        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_OPENGL=OFF")
+    fi
+    if ! hasCMakeDefinition "EGE_ENABLE_WINDOW_TESTS"; then
+        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_WINDOW_TESTS=OFF")
+    fi
+fi
+
 # 参数解析完成后，初始化 CMAKE_BUILD_DIR
 CMAKE_BUILD_DIR="$(getBuildDir)"
 export CMAKE_BUILD_DIR
 echo "Build directory: $CMAKE_BUILD_DIR (BUILD_TYPE: $CMAKE_BUILD_TYPE)"
+if isNativeMacOS; then
+    echo "macOS native build: AppleClang/CoreGraphics (headless tests by default)"
+fi
+
+if [[ "$DO_SHOW_CONFIG" == true ]]; then
+    printf 'CMake configure arguments:'
+    printf ' %q' "${CMAKE_CONFIG_DEFINE[@]}"
+    printf '\n'
+fi
 
 # 第二遍：按正确顺序执行操作
 
@@ -432,13 +480,20 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
     exe_path=""
     if isMSVC; then
         # MSVC: demo/<BuildType>/xxx.exe
+        [[ "$RUN_EXECUTABLE" == *.exe ]] || RUN_EXECUTABLE="${RUN_EXECUTABLE}.exe"
         exe_path="$CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
     else
-        # MinGW/其他: demo/xxx.exe (因为已经在 build/Debug 或 build/Release 目录下了)
+        if isNativeMacOS; then
+            # Native CMake targets are extensionless Mach-O executables.
+            RUN_EXECUTABLE="${RUN_EXECUTABLE%.exe}"
+        elif [[ "$RUN_EXECUTABLE" != *.exe ]] && ! isWindows; then
+            # Non-native Unix invocations historically cross-compile Windows.
+            RUN_EXECUTABLE="${RUN_EXECUTABLE}.exe"
+        fi
         exe_path="$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
     fi
 
-    if isWindows; then
+    if isWindows || isNativeMacOS; then
         echo "run $exe_path"
         "$exe_path"
     else

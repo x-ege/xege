@@ -66,18 +66,15 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           DO_TEST_RELEASE_LIBS: true
         run: |
-          # Clean previous builds
-          rm -rf build-mingw-ubuntu
-
-          # Configure CMake for cross-compilation
-          mkdir -p build-mingw-ubuntu
-          cd build-mingw-ubuntu
-
-          # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
-          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DEGE_BUILD_DEMO=ON
+          # Configure CMake with an explicit Windows target. Host detection is
+          # not sufficient: without this toolchain AUTO selects the Linux backend.
+          cmake -S . -B build-mingw-ubuntu \
+            -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake \
+            -DEGE_BUILD_DEMO=ON
 
           # Build the project
-          cmake --build . --parallel $(nproc)
+          cmake --build build-mingw-ubuntu --parallel $(nproc)
 
       - name: Package MinGW Ubuntu artifacts
         env:
@@ -154,18 +151,14 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           DO_TEST_RELEASE_LIBS: true
         run: |
-          # Clean previous builds
-          rm -rf build-mingw-macos
-
-          # Configure CMake for cross-compilation
-          mkdir -p build-mingw-macos
-          cd build-mingw-macos
-
-          # CMakeLists.txt will automatically detect CMAKE_HOST_UNIX and configure cross-compilation
-          cmake .. -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DEGE_BUILD_DEMO=ON
+          # Use the same explicit Windows target contract on macOS.
+          cmake -S . -B build-mingw-macos \
+            -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake \
+            -DEGE_BUILD_DEMO=ON
 
           # Build the project
-          cmake --build . --parallel $(sysctl -n hw.ncpu)
+          cmake --build build-mingw-macos --parallel $(sysctl -n hw.ncpu)
 
       - name: Package macOS cross-compiled artifacts
         env:

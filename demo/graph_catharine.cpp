@@ -1,6 +1,7 @@
 // 烟花特效演示
 
 #include <graphics.h>
+#include <cstdlib>
 #include <time.h>
 #include <math.h>
 
@@ -104,4 +105,3 @@ int main()
      closegraph();
      return 0;
 }
-

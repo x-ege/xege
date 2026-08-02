@@ -10,6 +10,7 @@
 #include "egecontrolbase.h"
 
 #include <algorithm>
+#include <cstring>
 
 #ifdef DEBUG
 #include "ege/label.h"

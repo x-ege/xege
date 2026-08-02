@@ -1,5 +1,6 @@
 // 超简易90行贪吃蛇
 #include <graphics.h>
+#include <cstring>
 #include <stdlib.h>
 
 #define MAP_W 40
@@ -88,4 +89,3 @@ int main( void ) {
     gameScene();
     return 0;
 }
-

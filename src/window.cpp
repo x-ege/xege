@@ -22,10 +22,20 @@ void setcaption(const char* caption)
 void setcaption(const wchar_t* caption)
 {
     struct _graph_setting* pg = &graph_setting;
-    if (pg->init_sem.acquirable()) {
+#ifdef _WIN32
+    if (pg->window != NULL) {
+        const std::string utf8Caption = w2utf8(caption);
+        pg->window->setTitle(utf8Caption.c_str());
+    } else if (pg->init_sem.acquirable()) {
         ::SetWindowTextW(getHWnd(), caption);
         ::UpdateWindow(getHWnd()); // for vc6
     }
+#else
+    if (pg->window != NULL) {
+        const std::string utf8Caption = w2utf8(caption);
+        pg->window->setTitle(utf8Caption.c_str());
+    }
+#endif
 
     pg->window_caption = caption;
 }
@@ -33,6 +43,7 @@ void setcaption(const wchar_t* caption)
 void seticon(int icon_id)
 {
     struct _graph_setting* pg = &graph_setting;
+#ifdef _WIN32
     HICON hIcon = NULL;
     HINSTANCE instance = GetModuleHandle(NULL);
 
@@ -43,7 +54,7 @@ void seticon(int icon_id)
     }
     if (hIcon) {
         pg->window_hicon = hIcon;
-        if (pg->init_sem.acquirable()) {
+        if (pg->window == NULL && pg->init_sem.acquirable()) {
 #ifdef _WIN64
             ::SetClassLongPtrW(getHWnd(), GCLP_HICON, (LONG_PTR)hIcon);
 #else
@@ -51,6 +62,7 @@ void seticon(int icon_id)
 #endif
         }
     }
+#endif
 }
 
 void showwindow()
@@ -78,9 +90,19 @@ void showwindow()
         cleardevice();
     }
 
-    ShowWindow(pg->hwnd, SW_SHOWNORMAL);
-    BringWindowToTop(pg->hwnd);
-    SetForegroundWindow(pg->hwnd);
+#ifdef _WIN32
+    if (pg->window != NULL) {
+        pg->window->show();
+    } else {
+        ShowWindow(pg->hwnd, SW_SHOWNORMAL);
+        BringWindowToTop(pg->hwnd);
+        SetForegroundWindow(pg->hwnd);
+    }
+#else
+    if (pg->window != NULL) {
+        pg->window->show();
+    }
+#endif
 
     if (showLogo) {
         bool isRenderManual = pg->lock_window;
@@ -104,12 +126,36 @@ void showwindow()
 void hidewindow()
 {
     struct _graph_setting* pg = &graph_setting;
-    ShowWindow(pg->hwnd, SW_HIDE);
+#ifdef _WIN32
+    if (pg->window != NULL) {
+        pg->window->hide();
+    } else {
+        ShowWindow(pg->hwnd, SW_HIDE);
+    }
+#else
+    if (pg->window != NULL) {
+        pg->window->hide();
+    }
+#endif
 }
 
 void movewindow(int x, int y, bool redraw)
 {
-    ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);
+#ifdef _WIN32
+    _graph_setting* pg = &graph_setting;
+    if (pg->window != NULL) {
+        (void)redraw;
+        pg->window->setPosition(x, y);
+    } else {
+        ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);
+    }
+#else
+    (void)redraw;
+    _graph_setting* pg = &graph_setting;
+    if (pg->window != NULL) {
+        pg->window->setPosition(x, y);
+    }
+#endif
 }
 
 void flushwindow()
@@ -129,6 +175,7 @@ HWND getParentWindow()
 
 void getParentSize(int* width, int* height)
 {
+#ifdef _WIN32
     RECT rect;
     if (g_attach_hwnd) {
         GetClientRect(g_attach_hwnd, &rect);
@@ -138,6 +185,29 @@ void getParentSize(int* width, int* height)
 
     *width  = rect.right - rect.left;
     *height = rect.bottom - rect.top;
+#else
+    *width = 640;
+    *height = 480;
+#endif
+}
+
+void resize_window_surface(int width, int height)
+{
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    _graph_setting* pg = &graph_setting;
+    setmode(TRUECOLORSIZE, width | (height << 16));
+    for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
+        if (pg->img_page[i] != NULL &&
+            (pg->img_page[i]->getwidth() != width || pg->img_page[i]->getheight() != height)) {
+            resize(pg->img_page[i], width, height);
+        }
+    }
+
+    pg->base_w = width;
+    pg->base_h = height;
 }
 
 void EGEAPI resizewindow(int width, int height)
@@ -152,22 +222,12 @@ void EGEAPI resizewindow(int width, int height)
         height = parentH;
     }
 
-    if ((width == getwidth() && height == getheight())) {
-        return;
-    }
-
-    setmode(TRUECOLORSIZE, width | (height << 16));
     _graph_setting* pg = &graph_setting;
+    resize_window_surface(width, height);
 
-    for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
-        if (pg->img_page[i] != NULL) {
-            resize(pg->img_page[i], width, height);
-        }
+    if (pg->window != NULL) {
+        pg->window->setSize(width, height);
     }
-
-    /* 修改窗口宽高参数 */
-    pg->base_w = width;
-    pg->base_h = height;
 }
 
 int attachHWND(HWND hWnd)
@@ -179,14 +239,17 @@ int attachHWND(HWND hWnd)
 HWND createWindow(HWND parentWindow, const wchar_t* caption, DWORD style, DWORD exstyle, POINT pos, SIZE size)
 {
     HWND window = NULL;
+#ifdef _WIN32
     window = CreateWindowExW(exstyle, EGE_WNDCLSNAME_W, caption, style & ~WS_VISIBLE,
             pos.x, pos.y, size.cx,size.cy, parentWindow, NULL, getHInstance(), NULL);
+#endif
 
     return window;
 }
 
 ATOM register_classW(struct _graph_setting* pg, HINSTANCE hInstance)
 {
+#ifdef _WIN32
     WNDCLASSEXW wcex = {0};
 
     wcex.cbSize = sizeof(wcex);
@@ -202,6 +265,9 @@ ATOM register_classW(struct _graph_setting* pg, HINSTANCE hInstance)
     wcex.lpszClassName = EGE_WNDCLSNAME_W;
 
     return RegisterClassExW(&wcex);
+#else
+    return 0;
+#endif
 }
 
 } // namespace ege

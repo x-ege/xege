@@ -7,24 +7,11 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
 endif()
 
 if(EGE_DEMO_IS_ROOT_PROJECT AND EGE_BUILD_DEMO_WITH_PREBUILT_LIBS)
-  # 以预编译好的 ege 的库作为依赖
-  if(CMAKE_HOST_UNIX)
-    set(CMAKE_SYSTEM_NAME Windows)
-    set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
-
-    # cross compilers to use for C, C++ and RC
-    set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
-    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
-    set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
-
-    # modify default behavior of FIND_XXX() commands
-    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-    set(PKG_CONFIG_EXECUTABLE ${TOOLCHAIN_PREFIX}-pkg-config)
-  endif()
-
-  message(STATUS "Building demo with prebuilt libraries")
+  # Toolchain selection must happen before CMake enters this project. In
+  # particular, a macOS host uses its native AppleClang package by default;
+  # Windows cross-compilation requires an explicit toolchain file.
+  message(STATUS
+    "Building demos with the prebuilt library for ${CMAKE_HOST_SYSTEM_NAME}")
 endif()
 
 project(ege-demos)
@@ -72,23 +59,62 @@ macro(ege_add_executable_demo name source)
   set_property(TARGET ${name}
     PROPERTY EXCLUDE_FROM_ALL true)
   add_dependencies(demos ${name})
+
+  # Visible demo launches are manual opt-in tests. The default CTest suite is
+  # strictly headless and never starts an AppKit window.
+  if(EGE_BUILD_TEST AND EGE_ENABLE_WINDOW_TESTS
+      AND APPLE AND TARGET ege_native_demo_launch_smoke
+      AND NOT "${name}" MATCHES "^camera_")
+    add_test(NAME demo.${name}.launch
+      COMMAND $<TARGET_FILE:ege_native_demo_launch_smoke> $<TARGET_FILE:${name}>)
+    set_tests_properties(demo.${name}.launch PROPERTIES
+      RUN_SERIAL TRUE
+      SKIP_RETURN_CODE 77
+      TIMEOUT 8)
+  elseif(EGE_BUILD_TEST AND EGE_ENABLE_WINDOW_TESTS
+      AND APPLE AND "${name}" MATCHES "^camera_")
+    message(STATUS
+      "Keeping ${name} build-only in CTest to avoid camera access and permission UI")
+  endif()
 endmacro()
 
 foreach(DEMO_SRC ${DEMO_SRCS})
   get_filename_component(DEMO_NAME ${DEMO_SRC} NAME_WE)
+
+  # Camera demos require the optional ccap submodule and platform capture
+  # backend.  Keep ordinary drawing demos buildable in a shallow checkout.
+  if(DEMO_NAME MATCHES "^camera_" AND NOT EGE_ENABLE_CAMERA_CAPTURE)
+    message(STATUS "Skipping ${DEMO_NAME}: EGE camera capture is disabled")
+    continue()
+  endif()
+
+  # A Windows .scr screensaver that directly uses preview-parent and
+  # MessageBox APIs is not a portable EGE sample.
+  if(DEMO_NAME STREQUAL "graph_star" AND NOT WIN32)
+    message(STATUS "Skipping ${DEMO_NAME}: Windows screensaver demo")
+    continue()
+  endif()
+
   ege_add_executable_demo(${DEMO_NAME} ${DEMO_SRC})
+
+  if(DEMO_NAME MATCHES "^camera_")
+    target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
+    target_compile_definitions(${DEMO_NAME} PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
+  endif()
 endforeach()
 
-target_sources(graph_rotateimage PRIVATE egelogo.rc)
+if(WIN32)
+  target_sources(graph_rotateimage PRIVATE egelogo.rc)
+endif()
 
 if(NOT CMAKE_HOST_UNIX)
   # GMP demos are excluded on Unix hosts due to compatibility issues or specific requirements.
   # If the exclusion is intended for specific Unix-like environments, refine the condition below.
-  message(CHECK_START "Finding GMP Library")
+  message(STATUS "Finding GMP Library")
   find_library(gmp gmp)
 
   if(gmp)
-    message(CHECK_PASS "found")
+    message(STATUS "GMP Library found")
     file(
       GLOB GMP_DEMO_SRCS
       LIST_DIRECTORIES false
@@ -102,7 +128,7 @@ if(NOT CMAKE_HOST_UNIX)
       target_link_libraries(${DEMO_NAME} gmp)
     endforeach()
   else()
-    message(CHECK_PASS "not found")
+    message(STATUS "GMP Library not found")
   endif()
 endif()
 

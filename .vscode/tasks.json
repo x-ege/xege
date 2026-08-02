@@ -140,7 +140,7 @@
             "label": "Run Demo - XEGE Test (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "test_main", "--build", "--run", "test_main.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "test_main", "--build", "--run", "test_main"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -149,7 +149,7 @@
             "label": "Run Demo - Gomoku (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "game_gomoku", "--build", "--run", "game_gomoku.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "game_gomoku", "--build", "--run", "game_gomoku"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -158,7 +158,7 @@
             "label": "Run Demo - SortVisualization (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_sort_visualization", "--build", "--run", "graph_sort_visualization.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_sort_visualization", "--build", "--run", "graph_sort_visualization"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -167,7 +167,7 @@
             "label": "Run Demo - FunctionVisualization (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_function_visualization", "--build", "--run", "graph_function_visualization.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_function_visualization", "--build", "--run", "graph_function_visualization"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": ["$msCompile", "$gcc"]
@@ -176,7 +176,7 @@
             "label": "Run Demo - Camera Base (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "camera_base", "--build", "--run", "camera_base.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "camera_base", "--build", "--run", "camera_base"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": ["$msCompile", "$gcc"]
@@ -185,7 +185,7 @@
             "label": "Run Demo - Camera Wave (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "camera_wave", "--build", "--run", "camera_wave.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "camera_wave", "--build", "--run", "camera_wave"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": ["$msCompile", "$gcc"]
@@ -194,7 +194,7 @@
             "label": "Run Demo - KMeans Visualization (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_kmeans", "--build", "--run", "graph_kmeans.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_kmeans", "--build", "--run", "graph_kmeans"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -203,7 +203,7 @@
             "label": "Run Demo - A* Pathfinding (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_astar_pathfinding", "--build", "--run", "graph_astar_pathfinding.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_astar_pathfinding", "--build", "--run", "graph_astar_pathfinding"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -212,7 +212,7 @@
             "label": "Run Demo - Boids Simulation (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_boids", "--build", "--run", "graph_boids.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_boids", "--build", "--run", "graph_boids"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -221,7 +221,7 @@
             "label": "Run Demo - XEGE Test (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "test_main", "--build", "--run", "test_main.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "test_main", "--build", "--run", "test_main"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -230,7 +230,7 @@
             "label": "Run Demo - Gomoku (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "game_gomoku", "--build", "--run", "game_gomoku.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "game_gomoku", "--build", "--run", "game_gomoku"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -239,7 +239,7 @@
             "label": "Run Demo - SortVisualization (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "graph_sort_visualization", "--build", "--run", "graph_sort_visualization.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_sort_visualization", "--build", "--run", "graph_sort_visualization"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -248,7 +248,7 @@
             "label": "Run Demo - FunctionVisualization (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "graph_function_visualization", "--build", "--run", "graph_function_visualization.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_function_visualization", "--build", "--run", "graph_function_visualization"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": ["$msCompile", "$gcc"]
@@ -257,7 +257,7 @@
             "label": "Run Demo - Camera Base (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "camera_base", "--build", "--run", "camera_base.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "camera_base", "--build", "--run", "camera_base"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": ["$msCompile", "$gcc"]
@@ -266,7 +266,7 @@
             "label": "Run Demo - Camera Wave (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "camera_wave", "--build", "--run", "camera_wave.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "camera_wave", "--build", "--run", "camera_wave"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": ["$msCompile", "$gcc"]
@@ -275,7 +275,7 @@
             "label": "Run Demo - KMeans Visualization (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "graph_kmeans", "--build", "--run", "graph_kmeans.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_kmeans", "--build", "--run", "graph_kmeans"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -284,7 +284,7 @@
             "label": "Run Demo - A* Pathfinding (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "graph_astar_pathfinding", "--build", "--run", "graph_astar_pathfinding.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_astar_pathfinding", "--build", "--run", "graph_astar_pathfinding"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -293,7 +293,7 @@
             "label": "Run Demo - Boids Simulation (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "graph_boids", "--build", "--run", "graph_boids.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_boids", "--build", "--run", "graph_boids"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -302,7 +302,7 @@
             "label": "Run Demo - Game of Life (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_game_of_life", "--build", "--run", "graph_game_of_life.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_game_of_life", "--build", "--run", "graph_game_of_life"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -311,7 +311,7 @@
             "label": "Run Demo - Game of Life (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "graph_game_of_life", "--build", "--run", "graph_game_of_life.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_game_of_life", "--build", "--run", "graph_game_of_life"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -320,7 +320,7 @@
             "label": "Run Demo - Test Demo (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "test_demo", "--build", "--run", "test_demo.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "test_demo", "--build", "--run", "test_demo"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -329,7 +329,7 @@
             "label": "Run Demo - Test Demo (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "test_demo", "--build", "--run", "test_demo.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "test_demo", "--build", "--run", "test_demo"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -338,7 +338,7 @@
             "label": "Run Demo - Light Pollution (Debug)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_light_pollution", "--build", "--run", "graph_light_pollution.exe"],
+            "args": ["-l", "tasks.sh", "--debug", "--target", "graph_light_pollution", "--build", "--run", "graph_light_pollution"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
@@ -347,7 +347,7 @@
             "label": "Run Demo - Light Pollution (Release)",
             "type": "shell",
             "command": "bash",
-            "args": ["-l", "tasks.sh", "--release", "--target", "graph_light_pollution", "--build", "--run", "graph_light_pollution.exe"],
+            "args": ["-l", "tasks.sh", "--release", "--target", "graph_light_pollution", "--build", "--run", "graph_light_pollution"],
             "options": {"cwd": "${workspaceFolder}"},
             "group": "build",
             "problemMatcher": "$gcc"
