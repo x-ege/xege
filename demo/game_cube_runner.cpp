@@ -3,20 +3,15 @@
 // Inspired by https://www.game5.com.de/cuberunner/index.html. The geometry,
 // rasterizer, HUD, and game logic below are original and use no external assets.
 
-#ifndef CUBE_RUNNER_HEADLESS
 #include <graphics.h>
-#endif
 
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cmath>
 #include <condition_variable>
 #include <cstdint>
 #include <cstdlib>
-#include <fstream>
 #include <functional>
-#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <mutex>
@@ -31,9 +26,7 @@
 
 // 文本本地化宏定义
 // 与其它 demo 一致: MSVC 编译器使用中文文案, 其它编译器使用英文文案.
-// 无头模式 (CUBE_RUNNER_HEADLESS) 始终使用英文, 因为内置位图字体仅支持 ASCII,
-// 且无头模式不依赖 EGE 字体系统.
-#if defined(_MSC_VER) && !defined(CUBE_RUNNER_HEADLESS)
+#ifdef _MSC_VER
 // MSVC 编译器使用中文文案
 #define TEXT_WINDOW_TITLE   "XEGE - 立方体跑酷"
 #define TEXT_HUD_TITLE      "立方体跑酷"
@@ -48,7 +41,7 @@
 #define TEXT_ACTION_RESUME  "[P] 继续"
 #define TEXT_FONT_NAME      "宋体"
 #else
-// 非MSVC编译器 (或无头模式) 使用英文文案
+// 非MSVC编译器使用英文文案
 #define TEXT_WINDOW_TITLE   "XEGE - Cube Runner"
 #define TEXT_HUD_TITLE      "CUBE RUNNER"
 #define TEXT_SCORE          "SCORE "
@@ -301,10 +294,13 @@ std::uint32_t packColor(Color color)
 
 class Surface {
 public:
-    explicit Surface(int width = kDefaultWidth, int height = kDefaultHeight)
+    // Borrows an externally-owned color buffer (typically the EGE PIMAGE buffer
+    // returned by getbuffer(); color_t is uint32_t and packColor already emits
+    // 0xAARRGGBB, so no conversion is needed). The z-buffer remains owned.
+    Surface(int width, int height, std::uint32_t* pixels)
         : width(width),
           height(height),
-          pixels(static_cast<std::size_t>(width) * height),
+          pixels(pixels),
           depth(static_cast<std::size_t>(width) * height)
     {
     }
@@ -315,7 +311,7 @@ public:
         const int bottom = std::clamp(gRenderBandBottom, top, height);
         const std::size_t first = static_cast<std::size_t>(top) * width;
         const std::size_t last = static_cast<std::size_t>(bottom) * width;
-        std::fill(pixels.begin() + first, pixels.begin() + last, packColor(color));
+        std::fill(pixels + first, pixels + last, packColor(color));
         std::fill(depth.begin() + first, depth.begin() + last,
             std::numeric_limits<float>::infinity());
     }
@@ -351,10 +347,10 @@ public:
         }
     }
 
-    int                        width;
-    int                        height;
-    std::vector<std::uint32_t> pixels;
-    std::vector<float>         depth;
+    int                width;
+    int                height;
+    std::uint32_t*     pixels;
+    std::vector<float> depth;
 };
 
 struct Projected {
@@ -530,136 +526,31 @@ Vec3 curveCenter(float z)
     return {0.0f, -(distance * distance) / 20.0f, z};
 }
 
-std::array<std::uint8_t, 7> glyph(char character)
+// HUD text helpers wrapping EGE's native font API, so the HUD can render CJK
+// (宋体 under MSVC) as well as ASCII. The font height tracks the old 5x7 bitmap
+// font's row count to preserve the original HUD layout.
+int textFontHeight(int scale)
 {
-    switch (character) {
-    case 'A': return {14, 17, 17, 31, 17, 17, 17};
-    case 'B': return {30, 17, 17, 30, 17, 17, 30};
-    case 'C': return {14, 17, 16, 16, 16, 17, 14};
-    case 'D': return {30, 17, 17, 17, 17, 17, 30};
-    case 'E': return {31, 16, 16, 30, 16, 16, 31};
-    case 'F': return {31, 16, 16, 30, 16, 16, 16};
-    case 'G': return {14, 17, 16, 23, 17, 17, 15};
-    case 'H': return {17, 17, 17, 31, 17, 17, 17};
-    case 'I': return {14, 4, 4, 4, 4, 4, 14};
-    case 'J': return {1, 1, 1, 1, 17, 17, 14};
-    case 'K': return {17, 18, 20, 24, 20, 18, 17};
-    case 'L': return {16, 16, 16, 16, 16, 16, 31};
-    case 'M': return {17, 27, 21, 21, 17, 17, 17};
-    case 'N': return {17, 25, 21, 19, 17, 17, 17};
-    case 'O': return {14, 17, 17, 17, 17, 17, 14};
-    case 'P': return {30, 17, 17, 30, 16, 16, 16};
-    case 'Q': return {14, 17, 17, 17, 21, 18, 13};
-    case 'R': return {30, 17, 17, 30, 20, 18, 17};
-    case 'S': return {15, 16, 16, 14, 1, 1, 30};
-    case 'T': return {31, 4, 4, 4, 4, 4, 4};
-    case 'U': return {17, 17, 17, 17, 17, 17, 14};
-    case 'V': return {17, 17, 17, 17, 17, 10, 4};
-    case 'W': return {17, 17, 17, 21, 21, 21, 10};
-    case 'X': return {17, 17, 10, 4, 10, 17, 17};
-    case 'Y': return {17, 17, 10, 4, 4, 4, 4};
-    case 'Z': return {31, 1, 2, 4, 8, 16, 31};
-    case '0': return {14, 17, 19, 21, 25, 17, 14};
-    case '1': return {4, 12, 4, 4, 4, 4, 14};
-    case '2': return {14, 17, 1, 2, 4, 8, 31};
-    case '3': return {30, 1, 1, 14, 1, 1, 30};
-    case '4': return {2, 6, 10, 18, 31, 2, 2};
-    case '5': return {31, 16, 16, 30, 1, 1, 30};
-    case '6': return {14, 16, 16, 30, 17, 17, 14};
-    case '7': return {31, 1, 2, 4, 8, 8, 8};
-    case '8': return {14, 17, 17, 14, 17, 17, 14};
-    case '9': return {14, 17, 17, 15, 1, 1, 14};
-    case '-': return {0, 0, 0, 31, 0, 0, 0};
-    case '/': return {1, 1, 2, 4, 8, 16, 16};
-    case '[': return {14, 8, 8, 8, 8, 8, 14};
-    case ']': return {14, 2, 2, 2, 2, 2, 14};
-    case ':': return {0, 4, 4, 0, 4, 4, 0};
-    default:  return {0, 0, 0, 0, 0, 0, 0};
-    }
+    return std::max(7, 7 * scale);
 }
 
-void drawText(Surface& surface, int x, int y, const std::string& text, int scale, Color color,
-    bool shadow = true)
+void drawTextLine(int x, int y, const std::string& text, int scale, Color color, bool shadow = true)
 {
-    auto drawGlyph = [&](int glyphX, int glyphY, char character, Color glyphColor) {
-        const auto rows = glyph(character);
-        for (int row = 0; row < 7; ++row) {
-            for (int column = 0; column < 5; ++column) {
-                if ((rows[row] & (1u << (4 - column))) != 0) {
-                    surface.fillRect(
-                        glyphX + column * scale, glyphY + row * scale, scale, scale, glyphColor);
-                }
-            }
-        }
-    };
-
-    int cursor = x;
-    for (char character : text) {
-        if (shadow) {
-            drawGlyph(cursor + scale, y + scale, character, {0, 0, 0});
-        }
-        drawGlyph(cursor, y, character, color);
-        cursor += 6 * scale;
+    setfont(textFontHeight(scale), 0, TEXT_FONT_NAME);
+    setbkmode(TRANSPARENT);
+    if (shadow) {
+        setcolor(EGERGB(0, 0, 0));
+        outtextxy(x + scale, y + scale, text.c_str());
     }
+    setcolor(EGERGB(color.r, color.g, color.b));
+    outtextxy(x, y, text.c_str());
 }
 
-// The HUD text is rendered through a small canvas abstraction so the same
-// layout code can drive either the software bitmap font (headless builds, which
-// have no EGE font system) or EGE's native fonts (windowed builds, which need
-// CJK support). Both backends implement draw() and width() with matching
-// signatures; the Game class instantiates them via templates.
-
-// Bitmap font backend: renders into a software Surface using the 5x7 glyphs
-// above. Always available, used by the headless self-test / benchmark / PPM
-// paths so their output stays deterministic and free of system-font coupling.
-class BitmapTextCanvas {
-public:
-    explicit BitmapTextCanvas(Surface& surface) : surface(surface) {}
-
-    void draw(int x, int y, const std::string& text, int scale, Color color, bool shadow = true) const
-    {
-        drawText(surface, x, y, text, scale, color, shadow);
-    }
-
-    int width(const std::string& text, int scale) const
-    {
-        return static_cast<int>(text.size()) * 6 * scale;
-    }
-
-private:
-    Surface& surface;
-};
-
-#ifndef CUBE_RUNNER_HEADLESS
-// EGE native font backend: renders with the window's font system so the HUD can
-// display CJK glyphs. Used by the windowed build only. Font height tracks the
-// bitmap font's 7-pixel glyph rows so the HUD layout is preserved.
-class EgeTextCanvas {
-public:
-    EgeTextCanvas() = default;
-
-    void draw(int x, int y, const std::string& text, int scale, Color color, bool shadow = true) const
-    {
-        setfont(fontHeight(scale), 0, TEXT_FONT_NAME);
-        setbkmode(TRANSPARENT);
-        if (shadow) {
-            setcolor(EGERGB(0, 0, 0));
-            outtextxy(x + scale, y + scale, text.c_str());
-        }
-        setcolor(EGERGB(color.r, color.g, color.b));
-        outtextxy(x, y, text.c_str());
-    }
-
-    int width(const std::string& text, int scale) const
-    {
-        setfont(fontHeight(scale), 0, TEXT_FONT_NAME);
-        return textwidth(text.c_str());
-    }
-
-private:
-    static int fontHeight(int scale) { return std::max(7, 7 * scale); }
-};
-#endif // CUBE_RUNNER_HEADLESS
+int textLineWidth(const std::string& text, int scale)
+{
+    setfont(textFontHeight(scale), 0, TEXT_FONT_NAME);
+    return textwidth(text.c_str());
+}
 
 class Random {
 public:
@@ -796,7 +687,7 @@ public:
     bool isGameOver() const { return gameOver; }
     std::size_t obstacleCount() const { return obstacles.size(); }
 
-    void render(Surface& surface, float framesPerSecond = 0.0f) const
+    void render(Surface& surface) const
     {
         RenderExecutor& executor = renderExecutor();
         const int threadCount = executor.threadCount();
@@ -804,22 +695,18 @@ public:
             const int top = surface.height * threadIndex / threadCount;
             const int bottom = surface.height * (threadIndex + 1) / threadCount;
             RenderBandScope band(top, bottom);
-            renderBand(surface, framesPerSecond);
+            renderBand(surface);
         });
     }
 
-    // Draws the HUD and overlay text. Windowed builds pass an EgeTextCanvas (EGE
-    // native fonts, supports CJK); headless builds render text inside renderBand
-    // with the bitmap font instead, so they do not call this method.
-    template <typename Canvas>
-    void drawText(Canvas& canvas, const Surface& surface, float framesPerSecond) const
-    {
-        drawHudText(canvas, surface, framesPerSecond);
-        drawOverlayText(canvas, surface);
-    }
+    // Draws the HUD and overlay text with EGE's native fonts (so the HUD can
+    // show CJK under MSVC). Called by the windowed main after the frame is
+    // blitted; the text lands on the device backbuffer on top of the image.
+    void drawHud(const Surface& surface, float framesPerSecond) const;
+    void drawOverlay(const Surface& surface) const;
 
 private:
-    void renderBand(Surface& surface, float framesPerSecond) const
+    void renderBand(Surface& surface) const
     {
         surface.clear({2, 4, 10});
         drawTube(surface);
@@ -840,17 +727,6 @@ private:
         if (paused || gameOver) {
             surface.fillRect(0, 0, surface.width, surface.height, {0, 0, 0}, 0.62f);
         }
-
-#ifdef CUBE_RUNNER_HEADLESS
-        // Headless builds render text directly into the surface with the built-in
-        // bitmap font. Windowed builds defer text to drawText() so the HUD can use
-        // EGE's native fonts (and CJK glyphs) after the frame is blitted.
-        BitmapTextCanvas canvas(surface);
-        drawHudText(canvas, surface, framesPerSecond);
-        drawOverlayText(canvas, surface);
-#else
-        (void)framesPerSecond;
-#endif
     }
 
     static int hudScale(const Surface& surface)
@@ -1108,57 +984,6 @@ private:
             {2, 5, 11}, 0.72f);
     }
 
-    template <typename Canvas>
-    void drawHudText(Canvas& canvas, const Surface& surface, float framesPerSecond) const
-    {
-        const int uiScale = hudScale(surface);
-        const int textScale = 2 * uiScale;
-        canvas.draw(26 * uiScale, 24 * uiScale, TEXT_HUD_TITLE, textScale, {115, 235, 255});
-        canvas.draw(26 * uiScale, 48 * uiScale,
-            std::string(TEXT_SCORE) + std::to_string(static_cast<int>(score)), textScale,
-            {245, 248, 255});
-
-        const std::string status = std::string(TEXT_LIVES) + std::to_string(lives)
-            + "   " + TEXT_STAGE + std::to_string(stage + 1);
-        const int statusWidth = canvas.width(status, textScale);
-        canvas.draw(surface.width - statusWidth - 18 * uiScale, 24 * uiScale,
-            status, textScale, {255, 225, 70});
-
-        const std::string fps = std::string(TEXT_FPS)
-            + std::to_string(std::max(0, static_cast<int>(framesPerSecond + 0.5f)));
-        const int fpsWidth = canvas.width(fps, textScale);
-        canvas.draw(surface.width - fpsWidth - 18 * uiScale, 48 * uiScale,
-            fps, textScale, {115, 235, 255});
-
-        const int controlsScale = uiScale;
-        const int controlsWidth = canvas.width(TEXT_CONTROLS, controlsScale);
-        canvas.draw((surface.width - controlsWidth) / 2,
-            surface.height - 22 * uiScale, TEXT_CONTROLS, controlsScale,
-            {190, 220, 240}, false);
-    }
-
-    template <typename Canvas>
-    void drawOverlayText(Canvas& canvas, const Surface& surface) const
-    {
-        if (!paused && !gameOver) {
-            return;
-        }
-
-        const std::string message = gameOver ? TEXT_GAME_OVER : TEXT_PAUSED;
-        const int uiScale = hudScale(surface);
-        const int scale = 5 * uiScale;
-        const int messageWidth = canvas.width(message, scale);
-        const int messageY = static_cast<int>(surface.height * 0.40f);
-        canvas.draw((surface.width - messageWidth) / 2, messageY, message, scale,
-            gameOver ? Color {255, 80, 70} : Color {255, 220, 70});
-
-        const std::string action = gameOver ? TEXT_ACTION_RESTART : TEXT_ACTION_RESUME;
-        const int actionScale = 2 * uiScale;
-        const int actionWidth = canvas.width(action, actionScale);
-        canvas.draw((surface.width - actionWidth) / 2, messageY + 52 * uiScale,
-            action, actionScale, {220, 235, 255});
-    }
-
     Random                random;
     std::vector<Obstacle> obstacles;
     double                elapsed {0.0};
@@ -1177,23 +1002,53 @@ private:
     bool                  collisionsEnabled {true};
 };
 
-bool savePpm(const Surface& surface, const std::string& path)
+void Game::drawHud(const Surface& surface, float framesPerSecond) const
 {
-    std::ofstream file(path, std::ios::binary);
-    if (!file) {
-        return false;
+    const int uiScale = hudScale(surface);
+    const int textScale = 2 * uiScale;
+    drawTextLine(26 * uiScale, 24 * uiScale, TEXT_HUD_TITLE, textScale, {115, 235, 255});
+    drawTextLine(26 * uiScale, 48 * uiScale,
+        std::string(TEXT_SCORE) + std::to_string(static_cast<int>(score)), textScale,
+        {245, 248, 255});
+
+    const std::string status = std::string(TEXT_LIVES) + std::to_string(lives)
+        + "   " + TEXT_STAGE + std::to_string(stage + 1);
+    const int statusWidth = textLineWidth(status, textScale);
+    drawTextLine(surface.width - statusWidth - 18 * uiScale, 24 * uiScale,
+        status, textScale, {255, 225, 70});
+
+    const std::string fps = std::string(TEXT_FPS)
+        + std::to_string(std::max(0, static_cast<int>(framesPerSecond + 0.5f)));
+    const int fpsWidth = textLineWidth(fps, textScale);
+    drawTextLine(surface.width - fpsWidth - 18 * uiScale, 48 * uiScale,
+        fps, textScale, {115, 235, 255});
+
+    const int controlsScale = uiScale;
+    const int controlsWidth = textLineWidth(TEXT_CONTROLS, controlsScale);
+    drawTextLine((surface.width - controlsWidth) / 2,
+        surface.height - 22 * uiScale, TEXT_CONTROLS, controlsScale,
+        {190, 220, 240}, false);
+}
+
+void Game::drawOverlay(const Surface& surface) const
+{
+    if (!paused && !gameOver) {
+        return;
     }
 
-    file << "P6\n" << surface.width << ' ' << surface.height << "\n255\n";
-    for (std::uint32_t pixel : surface.pixels) {
-        const std::array<char, 3> rgb {{
-            static_cast<char>((pixel >> 16) & 0xff),
-            static_cast<char>((pixel >> 8) & 0xff),
-            static_cast<char>(pixel & 0xff),
-        }};
-        file.write(rgb.data(), rgb.size());
-    }
-    return static_cast<bool>(file);
+    const std::string message = gameOver ? TEXT_GAME_OVER : TEXT_PAUSED;
+    const int uiScale = hudScale(surface);
+    const int scale = 5 * uiScale;
+    const int messageWidth = textLineWidth(message, scale);
+    const int messageY = static_cast<int>(surface.height * 0.40f);
+    drawTextLine((surface.width - messageWidth) / 2, messageY, message, scale,
+        gameOver ? Color {255, 80, 70} : Color {255, 220, 70});
+
+    const std::string action = gameOver ? TEXT_ACTION_RESTART : TEXT_ACTION_RESUME;
+    const int actionScale = 2 * uiScale;
+    const int actionWidth = textLineWidth(action, actionScale);
+    drawTextLine((surface.width - actionWidth) / 2, messageY + 52 * uiScale,
+        action, actionScale, {220, 235, 255});
 }
 
 bool parseResolution(const std::string& text, int& width, int& height)
@@ -1222,272 +1077,6 @@ bool parseResolution(const std::string& text, int& width, int& height)
 }
 
 } // namespace cube_runner
-
-#ifdef CUBE_RUNNER_HEADLESS
-
-namespace {
-
-bool nearlyEqual(double actual, double expected, double tolerance)
-{
-    return std::abs(actual - expected) <= tolerance;
-}
-
-std::size_t changedPlayfieldPixels(
-    const cube_runner::Surface& first, const cube_runner::Surface& second)
-{
-    std::size_t changed = 0;
-    const int top = first.height * 90 / 480;
-    const int bottom = first.height - first.height * 32 / 480;
-    for (int y = top; y < bottom; ++y) {
-        for (int x = 0; x < first.width; ++x) {
-            const std::size_t index = static_cast<std::size_t>(y) * first.width + x;
-            if (first.pixels[index] != second.pixels[index]) {
-                ++changed;
-            }
-        }
-    }
-    return changed;
-}
-
-bool runSelfTest()
-{
-    constexpr float deltaTime = 1.0f / cube_runner::kReferenceFps;
-    bool passed = true;
-    auto require = [&](bool condition, const char* message) {
-        if (!condition) {
-            std::cerr << "SELF-TEST FAILED: " << message << '\n';
-            passed = false;
-        }
-    };
-
-    cube_runner::Game movementGame(false);
-    cube_runner::Surface before;
-    cube_runner::Surface after;
-    movementGame.render(before);
-    movementGame.update(deltaTime, false, false);
-    movementGame.render(after);
-
-    require(nearlyEqual(movementGame.speed(), cube_runner::kBaseSpeed, 0.0001),
-        "initial speed does not match the browser game");
-    require(nearlyEqual(movementGame.distance(), 0.14, 0.0001),
-        "one frame does not advance by 0.14 world units");
-    require(changedPlayfieldPixels(before, after) > 500,
-        "the tunnel playfield did not visibly move after one frame");
-
-    cube_runner::Surface lineSurface(640, 480);
-    lineSurface.clear({255, 255, 255});
-    cube_runner::rasterLine(lineSurface, {-0.5f, 0.0f, 2.0f}, {0.5f, 0.25f, 2.0f},
-        {0, 0, 0});
-    const std::size_t blendedLinePixels = static_cast<std::size_t>(std::count_if(
-        lineSurface.pixels.begin(), lineSurface.pixels.end(), [](std::uint32_t pixel) {
-            const std::uint32_t rgb = pixel & 0x00ffffffu;
-            return rgb != 0x00ffffffu && rgb != 0u;
-        }));
-    require(blendedLinePixels > 0,
-        "line rasterization did not produce antialiased edge coverage");
-
-    cube_runner::Surface fpsZero(800, 600);
-    cube_runner::Surface fpsSixty(800, 600);
-    movementGame.render(fpsZero, 0.0f);
-    movementGame.render(fpsSixty, 60.0f);
-    require(fpsZero.pixels != fpsSixty.pixels,
-        "the FPS value was not drawn into the HUD");
-
-    int parsedWidth = 0;
-    int parsedHeight = 0;
-    require(cube_runner::parseResolution("1280x720", parsedWidth, parsedHeight)
-            && parsedWidth == 1280 && parsedHeight == 720,
-        "a valid runtime resolution was rejected");
-    require(!cube_runner::parseResolution("1280-by-720", parsedWidth, parsedHeight),
-        "an invalid runtime resolution was accepted");
-    require(cube_runner::renderThreadCount() >= 1
-            && cube_runner::renderThreadCount() <= 4
-            && cube_runner::renderThreadCount() <= CUBE_RUNNER_MAX_RENDER_THREADS,
-        "the render worker count is outside the configured limit");
-
-    cube_runner::KeyPressLatch keyLatch;
-    require(keyLatch.update(false, 1),
-        "a short key press between frames was lost");
-    require(!keyLatch.update(false, 0),
-        "a consumed short key press was repeated");
-    require(keyLatch.update(true, 0) && !keyLatch.update(true, 0),
-        "a held key did not generate exactly one down edge");
-    require(!keyLatch.update(false, 0) && keyLatch.update(true, 0),
-        "a released key could not be pressed again");
-
-    for (int frame = 1; frame < static_cast<int>(cube_runner::kReferenceFps); ++frame) {
-        movementGame.update(deltaTime, false, false);
-    }
-    require(nearlyEqual(movementGame.distance(), cube_runner::kBaseSpeed, 0.001),
-        "one second of simulation did not cover the expected distance");
-    require(movementGame.obstacleCount() > 0,
-        "distance-based spawning did not create an obstacle");
-
-    cube_runner::Game keyboardGame(false);
-    for (int frame = 0; frame < 30; ++frame) {
-        keyboardGame.update(deltaTime, false, true);
-    }
-    require(keyboardGame.rotationAngle() > cube_runner::kTrackAngle * 2.0f,
-        "holding a turn key does not rotate the tunnel responsively");
-
-    cube_runner::Game dragGame(false);
-    dragGame.update(deltaTime, false, false, cube_runner::kTrackAngle);
-    require(nearlyEqual(dragGame.rotationAngle(), cube_runner::kTrackAngle, 0.0001),
-        "mouse drag rotation was not applied directly");
-
-    const double distanceBeforePause = movementGame.distance();
-    movementGame.togglePause();
-    movementGame.update(1.0f, false, false);
-    require(nearlyEqual(movementGame.distance(), distanceBeforePause, 0.000001),
-        "pausing did not stop forward movement");
-
-    cube_runner::Game resetGame(false);
-    for (int frame = 0; frame < 120; ++frame) {
-        resetGame.update(deltaTime, false, false);
-    }
-    resetGame.reset();
-    require(!resetGame.isGameOver() && resetGame.livesRemaining() == 3
-            && nearlyEqual(resetGame.distance(), 0.0, 0.000001)
-            && resetGame.obstacleCount() == 0,
-        "reset did not restore a fresh playable game");
-
-    cube_runner::Game gameOverResetGame;
-    for (int frame = 0; frame < 18000 && !gameOverResetGame.isGameOver(); ++frame) {
-        gameOverResetGame.update(deltaTime, false, false);
-    }
-    require(gameOverResetGame.isGameOver(),
-        "the deterministic collision scenario did not reach game over");
-    gameOverResetGame.reset();
-    require(!gameOverResetGame.isGameOver() && gameOverResetGame.livesRemaining() == 3,
-        "reset did not recover from game over");
-
-    cube_runner::Game stageGame(false);
-    const int framesPerStage = static_cast<int>(
-        cube_runner::kStageDuration * cube_runner::kReferenceFps) + 1;
-    for (int frame = 0; frame < framesPerStage; ++frame) {
-        stageGame.update(deltaTime, false, false);
-    }
-    require(stageGame.currentStage() == 1 && stageGame.currentLevel() == 0,
-        "the first stage did not last about 30 seconds");
-
-    cube_runner::Game levelGame(false);
-    const int framesPerLevel = static_cast<int>(cube_runner::kStageDuration
-        * cube_runner::kStageCount * cube_runner::kReferenceFps) + 1;
-    for (int frame = 0; frame < framesPerLevel; ++frame) {
-        levelGame.update(deltaTime, false, false);
-    }
-    require(levelGame.currentStage() == 0 && levelGame.currentLevel() == 1,
-        "eight stages did not advance to the next level");
-    require(nearlyEqual(levelGame.speed(),
-                cube_runner::kBaseSpeed + cube_runner::kLevelSpeedStep, 0.0001),
-        "level speed increase does not match the browser game");
-
-    if (passed) {
-        std::cout << "Cube Runner self-test passed: motion, controls, antialiased lines, "
-                     "FPS HUD, runtime resolution, spawning, and progression\n";
-    }
-    return passed;
-}
-
-int runBenchmark(int width, int height, int frameCount)
-{
-    constexpr float deltaTime = 1.0f / cube_runner::kReferenceFps;
-    cube_runner::Game game(false);
-    cube_runner::Surface surface(width, height);
-
-    for (int frame = 0; frame < 30; ++frame) {
-        game.update(deltaTime, false, false);
-        game.render(surface);
-    }
-
-    const auto start = std::chrono::steady_clock::now();
-    for (int frame = 0; frame < frameCount; ++frame) {
-        const bool turnLeft = (frame % 240) >= 60 && (frame % 240) < 105;
-        const bool turnRight = (frame % 240) >= 155 && (frame % 240) < 210;
-        game.update(deltaTime, turnLeft, turnRight);
-        game.render(surface);
-    }
-    const auto finish = std::chrono::steady_clock::now();
-    const double seconds = std::chrono::duration<double>(finish - start).count();
-    const double framesPerSecond = frameCount / seconds;
-    const double millisecondsPerFrame = seconds * 1000.0 / frameCount;
-
-    std::uint64_t checksum = 0;
-    for (std::size_t index = 0; index < surface.pixels.size(); index += 997) {
-        checksum = checksum * 131u + surface.pixels[index];
-    }
-
-    std::cout << "BENCHMARK " << width << 'x' << height
-              << " frames=" << frameCount
-              << " threads=" << cube_runner::renderThreadCount()
-              << std::fixed << std::setprecision(2)
-              << " fps=" << framesPerSecond
-              << " ms/frame=" << millisecondsPerFrame
-              << " checksum=" << checksum << '\n';
-    return EXIT_SUCCESS;
-}
-
-} // namespace
-
-int main(int argc, char** argv)
-{
-    if (argc > 1 && std::string(argv[1]) == "--self-test") {
-        return runSelfTest() ? EXIT_SUCCESS : EXIT_FAILURE;
-    }
-    if (argc > 1 && std::string(argv[1]) == "--benchmark") {
-        int width = cube_runner::kDefaultWidth;
-        int height = cube_runner::kDefaultHeight;
-        if (argc < 3 || !cube_runner::parseResolution(argv[2], width, height)) {
-            std::cerr << "Usage: --benchmark WIDTHxHEIGHT [frames]\n";
-            return EXIT_FAILURE;
-        }
-        const int frameCount = argc > 3 ? std::max(1, std::atoi(argv[3])) : 240;
-        return runBenchmark(width, height, frameCount);
-    }
-
-    int width = cube_runner::kDefaultWidth;
-    int height = cube_runner::kDefaultHeight;
-    int argumentOffset = 0;
-    if (argc > 1 && std::string(argv[1]) == "--render") {
-        if (argc < 3 || !cube_runner::parseResolution(argv[2], width, height)) {
-            std::cerr << "Usage: --render WIDTHxHEIGHT [output.ppm] [frames]\n";
-            return EXIT_FAILURE;
-        }
-        argumentOffset = 2;
-    } else if (argc > 1 && argv[1][0] == '-') {
-        // Reject unknown options instead of silently treating them as the output
-        // filename, mirroring the interactive main's argument validation.
-        std::cerr << "Unknown argument: " << argv[1] << '\n';
-        std::cerr << "Usage: --self-test | --benchmark WIDTHxHEIGHT [frames]"
-                     " | --render WIDTHxHEIGHT [output.ppm] [frames] | [output.ppm]\n";
-        return EXIT_FAILURE;
-    }
-
-    const std::string outputPath = argc > argumentOffset + 1
-        ? argv[argumentOffset + 1] : "cube_runner.ppm";
-    const int frameCount = argc > argumentOffset + 2
-        ? std::max(1, std::atoi(argv[argumentOffset + 2])) : 360;
-
-    cube_runner::Game game(false);
-    for (int frame = 0; frame < frameCount; ++frame) {
-        const bool turnLeft  = (frame > 160 && frame < 205);
-        const bool turnRight = (frame > 275 && frame < 330);
-        game.update(1.0f / 60.0f, turnLeft, turnRight);
-    }
-
-    cube_runner::Surface surface(width, height);
-    game.render(surface);
-    if (!cube_runner::savePpm(surface, outputPath)) {
-        std::cerr << "Failed to save " << outputPath << '\n';
-        return 1;
-    }
-
-    std::cout << "Saved " << outputPath << " (" << surface.width << 'x'
-              << surface.height << ")\n";
-    return 0;
-}
-
-#else
 
 int main(int argc, char** argv)
 {
@@ -1534,9 +1123,8 @@ int main(int argc, char** argv)
         closeWindow();
         return EXIT_FAILURE;
     }
-    Surface surface(width, height);
+    Surface surface(width, height, getbuffer(frameImage));
     Game game;
-    EgeTextCanvas textCanvas;
     bool dragging = false;
     int lastMouseX = 0;
     int renderedFrames = 0;
@@ -1577,12 +1165,12 @@ int main(int argc, char** argv)
         const bool turnRight = keystate(key_right) || keystate(key_D);
         const float framesPerSecond = getfps();
         game.update(1.0f / 60.0f, turnLeft, turnRight, dragRotation);
-        game.render(surface, framesPerSecond);
-
-        color_t* destination = getbuffer(frameImage);
-        std::copy(surface.pixels.begin(), surface.pixels.end(), destination);
+        // render() writes directly into frameImage's buffer (Surface borrows it),
+        // so there is no per-frame copy before the blit.
+        game.render(surface);
         putimage(0, 0, frameImage);
-        game.drawText(textCanvas, surface, framesPerSecond);
+        game.drawHud(surface, framesPerSecond);
+        game.drawOverlay(surface);
         ++renderedFrames;
         if (exitAfterFrames > 0 && renderedFrames >= exitAfterFrames) {
             break;
@@ -1595,4 +1183,3 @@ int main(int argc, char** argv)
     return 0;
 }
 
-#endif
