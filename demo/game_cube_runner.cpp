@@ -29,6 +29,40 @@
 #define CUBE_RUNNER_MAX_RENDER_THREADS 4
 #endif
 
+// 文本本地化宏定义
+// 与其它 demo 一致: MSVC 编译器使用中文文案, 其它编译器使用英文文案.
+// 无头模式 (CUBE_RUNNER_HEADLESS) 始终使用英文, 因为内置位图字体仅支持 ASCII,
+// 且无头模式不依赖 EGE 字体系统.
+#if defined(_MSC_VER) && !defined(CUBE_RUNNER_HEADLESS)
+// MSVC 编译器使用中文文案
+#define TEXT_WINDOW_TITLE   "XEGE - 立方体跑酷"
+#define TEXT_HUD_TITLE      "立方体跑酷"
+#define TEXT_SCORE          "得分 "
+#define TEXT_LIVES          "生命 "
+#define TEXT_STAGE          "关卡 "
+#define TEXT_FPS            "帧率 "
+#define TEXT_CONTROLS       "[A/D] 或拖动转向   [P] 暂停   [R] 重新开始"
+#define TEXT_GAME_OVER      "游戏结束"
+#define TEXT_PAUSED         "已暂停"
+#define TEXT_ACTION_RESTART "[R] 重新开始"
+#define TEXT_ACTION_RESUME  "[P] 继续"
+#define TEXT_FONT_NAME      "宋体"
+#else
+// 非MSVC编译器 (或无头模式) 使用英文文案
+#define TEXT_WINDOW_TITLE   "XEGE - Cube Runner"
+#define TEXT_HUD_TITLE      "CUBE RUNNER"
+#define TEXT_SCORE          "SCORE "
+#define TEXT_LIVES          "LIVES "
+#define TEXT_STAGE          "STAGE "
+#define TEXT_FPS            "FPS "
+#define TEXT_CONTROLS       "[A/D] OR DRAG TO STEER   [P] PAUSE   [R] RESTART"
+#define TEXT_GAME_OVER      "GAME OVER"
+#define TEXT_PAUSED         "PAUSED"
+#define TEXT_ACTION_RESTART "[R] RESTART"
+#define TEXT_ACTION_RESUME  "[P] RESUME"
+#define TEXT_FONT_NAME      "Arial"
+#endif
+
 namespace cube_runner {
 
 constexpr int   kDefaultWidth        = 1280;
@@ -569,6 +603,64 @@ void drawText(Surface& surface, int x, int y, const std::string& text, int scale
     }
 }
 
+// The HUD text is rendered through a small canvas abstraction so the same
+// layout code can drive either the software bitmap font (headless builds, which
+// have no EGE font system) or EGE's native fonts (windowed builds, which need
+// CJK support). Both backends implement draw() and width() with matching
+// signatures; the Game class instantiates them via templates.
+
+// Bitmap font backend: renders into a software Surface using the 5x7 glyphs
+// above. Always available, used by the headless self-test / benchmark / PPM
+// paths so their output stays deterministic and free of system-font coupling.
+class BitmapTextCanvas {
+public:
+    explicit BitmapTextCanvas(Surface& surface) : surface(surface) {}
+
+    void draw(int x, int y, const std::string& text, int scale, Color color, bool shadow = true) const
+    {
+        drawText(surface, x, y, text, scale, color, shadow);
+    }
+
+    int width(const std::string& text, int scale) const
+    {
+        return static_cast<int>(text.size()) * 6 * scale;
+    }
+
+private:
+    Surface& surface;
+};
+
+#ifndef CUBE_RUNNER_HEADLESS
+// EGE native font backend: renders with the window's font system so the HUD can
+// display CJK glyphs. Used by the windowed build only. Font height tracks the
+// bitmap font's 7-pixel glyph rows so the HUD layout is preserved.
+class EgeTextCanvas {
+public:
+    EgeTextCanvas() = default;
+
+    void draw(int x, int y, const std::string& text, int scale, Color color, bool shadow = true) const
+    {
+        setfont(fontHeight(scale), 0, TEXT_FONT_NAME);
+        setbkmode(TRANSPARENT);
+        if (shadow) {
+            setcolor(EGERGB(0, 0, 0));
+            outtextxy(x + scale, y + scale, text.c_str());
+        }
+        setcolor(EGERGB(color.r, color.g, color.b));
+        outtextxy(x, y, text.c_str());
+    }
+
+    int width(const std::string& text, int scale) const
+    {
+        setfont(fontHeight(scale), 0, TEXT_FONT_NAME);
+        return textwidth(text.c_str());
+    }
+
+private:
+    static int fontHeight(int scale) { return std::max(7, 7 * scale); }
+};
+#endif // CUBE_RUNNER_HEADLESS
+
 class Random {
 public:
     explicit Random(std::uint32_t seed)
@@ -716,6 +808,16 @@ public:
         });
     }
 
+    // Draws the HUD and overlay text. Windowed builds pass an EgeTextCanvas (EGE
+    // native fonts, supports CJK); headless builds render text inside renderBand
+    // with the bitmap font instead, so they do not call this method.
+    template <typename Canvas>
+    void drawText(Canvas& canvas, const Surface& surface, float framesPerSecond) const
+    {
+        drawHudText(canvas, surface, framesPerSecond);
+        drawOverlayText(canvas, surface);
+    }
+
 private:
     void renderBand(Surface& surface, float framesPerSecond) const
     {
@@ -729,7 +831,7 @@ private:
         if (invincible <= 0.0f || (static_cast<int>(invincible * 12.0f) & 1) == 0) {
             drawPlayer(surface);
         }
-        drawHud(surface, framesPerSecond);
+        drawHudBackground(surface);
 
         if (invincible > 0.8f) {
             surface.fillRect(0, 0, surface.width, surface.height, {255, 215, 30}, 0.16f);
@@ -737,19 +839,18 @@ private:
 
         if (paused || gameOver) {
             surface.fillRect(0, 0, surface.width, surface.height, {0, 0, 0}, 0.62f);
-            const std::string message = gameOver ? "GAME OVER" : "PAUSED";
-            const int uiScale = hudScale(surface);
-            const int scale = 5 * uiScale;
-            const int textWidth = static_cast<int>(message.size()) * 6 * scale;
-            const int messageY = static_cast<int>(surface.height * 0.40f);
-            drawText(surface, (surface.width - textWidth) / 2, messageY, message, scale,
-                gameOver ? Color {255, 80, 70} : Color {255, 220, 70});
-            const std::string action = gameOver ? "[R] RESTART" : "[P] RESUME";
-            const int actionScale = 2 * uiScale;
-            const int actionWidth = static_cast<int>(action.size()) * 6 * actionScale;
-            drawText(surface, (surface.width - actionWidth) / 2,
-                messageY + 52 * uiScale, action, actionScale, {220, 235, 255});
         }
+
+#ifdef CUBE_RUNNER_HEADLESS
+        // Headless builds render text directly into the surface with the built-in
+        // bitmap font. Windowed builds defer text to drawText() so the HUD can use
+        // EGE's native fonts (and CJK glyphs) after the frame is blitted.
+        BitmapTextCanvas canvas(surface);
+        drawHudText(canvas, surface, framesPerSecond);
+        drawOverlayText(canvas, surface);
+#else
+        (void)framesPerSecond;
+#endif
     }
 
     static int hudScale(const Surface& surface)
@@ -840,9 +941,12 @@ private:
                 continue;
             }
 
-            const float angle = kPlayerAngle + obstacle.track * kTrackAngle + rotation;
+            // The player sits at a fixed kPlayerAngle, so only the obstacle's
+            // track offset and the current rotation determine the relative angle.
+            // (kPlayerAngle previously added and subtracted here cancelled out.)
+            const float relativeAngle = obstacle.track * kTrackAngle + rotation;
             const float angularExtent = (obstacle.tangentSize / (2.0f * 0.72f)) + 0.12f;
-            if (std::abs(wrapAngle(angle - kPlayerAngle)) < angularExtent) {
+            if (std::abs(wrapAngle(relativeAngle)) < angularExtent) {
                 obstacle.z = 0.15f;
                 invincible = 1.25f;
                 --lives;
@@ -993,40 +1097,66 @@ private:
             {255, 226, 35}, 0.94f);
     }
 
-    void drawHud(Surface& surface, float framesPerSecond) const
+    void drawHudBackground(Surface& surface) const
     {
         const int uiScale = hudScale(surface);
-        const int textScale = 2 * uiScale;
         surface.fillRect(14 * uiScale, 14 * uiScale, 214 * uiScale, 62 * uiScale,
             {3, 8, 16}, 0.72f);
         surface.fillRect(14 * uiScale, 14 * uiScale, 214 * uiScale, 2 * uiScale,
             {70, 225, 255}, 0.88f);
-        drawText(surface, 26 * uiScale, 24 * uiScale, "CUBE RUNNER", textScale,
-            {115, 235, 255});
-        drawText(surface, 26 * uiScale, 48 * uiScale,
-            "SCORE " + std::to_string(static_cast<int>(score)), textScale,
-            {245, 248, 255});
-
-        const std::string status =
-            "LIVES " + std::to_string(lives) + "   STAGE " + std::to_string(stage + 1);
-        const int statusWidth = static_cast<int>(status.size()) * 6 * textScale;
-        drawText(surface, surface.width - statusWidth - 18 * uiScale, 24 * uiScale,
-            status, textScale, {255, 225, 70});
-
-        const std::string fps =
-            "FPS " + std::to_string(std::max(0, static_cast<int>(framesPerSecond + 0.5f)));
-        const int fpsWidth = static_cast<int>(fps.size()) * 6 * textScale;
-        drawText(surface, surface.width - fpsWidth - 18 * uiScale, 48 * uiScale,
-            fps, textScale, {115, 235, 255});
-
         surface.fillRect(0, surface.height - 31 * uiScale, surface.width, 31 * uiScale,
             {2, 5, 11}, 0.72f);
-        const std::string controls =
-            "[A/D] OR DRAG TO STEER   [P] PAUSE   [R] RESTART";
-        const int controlsWidth = static_cast<int>(controls.size()) * 6 * uiScale;
-        drawText(surface, (surface.width - controlsWidth) / 2,
-            surface.height - 22 * uiScale, controls, uiScale,
+    }
+
+    template <typename Canvas>
+    void drawHudText(Canvas& canvas, const Surface& surface, float framesPerSecond) const
+    {
+        const int uiScale = hudScale(surface);
+        const int textScale = 2 * uiScale;
+        canvas.draw(26 * uiScale, 24 * uiScale, TEXT_HUD_TITLE, textScale, {115, 235, 255});
+        canvas.draw(26 * uiScale, 48 * uiScale,
+            std::string(TEXT_SCORE) + std::to_string(static_cast<int>(score)), textScale,
+            {245, 248, 255});
+
+        const std::string status = std::string(TEXT_LIVES) + std::to_string(lives)
+            + "   " + TEXT_STAGE + std::to_string(stage + 1);
+        const int statusWidth = canvas.width(status, textScale);
+        canvas.draw(surface.width - statusWidth - 18 * uiScale, 24 * uiScale,
+            status, textScale, {255, 225, 70});
+
+        const std::string fps = std::string(TEXT_FPS)
+            + std::to_string(std::max(0, static_cast<int>(framesPerSecond + 0.5f)));
+        const int fpsWidth = canvas.width(fps, textScale);
+        canvas.draw(surface.width - fpsWidth - 18 * uiScale, 48 * uiScale,
+            fps, textScale, {115, 235, 255});
+
+        const int controlsScale = uiScale;
+        const int controlsWidth = canvas.width(TEXT_CONTROLS, controlsScale);
+        canvas.draw((surface.width - controlsWidth) / 2,
+            surface.height - 22 * uiScale, TEXT_CONTROLS, controlsScale,
             {190, 220, 240}, false);
+    }
+
+    template <typename Canvas>
+    void drawOverlayText(Canvas& canvas, const Surface& surface) const
+    {
+        if (!paused && !gameOver) {
+            return;
+        }
+
+        const std::string message = gameOver ? TEXT_GAME_OVER : TEXT_PAUSED;
+        const int uiScale = hudScale(surface);
+        const int scale = 5 * uiScale;
+        const int messageWidth = canvas.width(message, scale);
+        const int messageY = static_cast<int>(surface.height * 0.40f);
+        canvas.draw((surface.width - messageWidth) / 2, messageY, message, scale,
+            gameOver ? Color {255, 80, 70} : Color {255, 220, 70});
+
+        const std::string action = gameOver ? TEXT_ACTION_RESTART : TEXT_ACTION_RESUME;
+        const int actionScale = 2 * uiScale;
+        const int actionWidth = canvas.width(action, actionScale);
+        canvas.draw((surface.width - actionWidth) / 2, messageY + 52 * uiScale,
+            action, actionScale, {220, 235, 255});
     }
 
     Random                random;
@@ -1324,6 +1454,13 @@ int main(int argc, char** argv)
             return EXIT_FAILURE;
         }
         argumentOffset = 2;
+    } else if (argc > 1 && argv[1][0] == '-') {
+        // Reject unknown options instead of silently treating them as the output
+        // filename, mirroring the interactive main's argument validation.
+        std::cerr << "Unknown argument: " << argv[1] << '\n';
+        std::cerr << "Usage: --self-test | --benchmark WIDTHxHEIGHT [frames]"
+                     " | --render WIDTHxHEIGHT [output.ppm] [frames] | [output.ppm]\n";
+        return EXIT_FAILURE;
     }
 
     const std::string outputPath = argc > argumentOffset + 1
@@ -1380,7 +1517,7 @@ int main(int argc, char** argv)
     }
 
     initgraph(width, height, INIT_ANIMATION);
-    setcaption("XEGE - Cube Runner");
+    setcaption(TEXT_WINDOW_TITLE);
     setrendermode(RENDER_MANUAL);
 
     auto closeWindow = [] {
@@ -1399,6 +1536,7 @@ int main(int argc, char** argv)
     }
     Surface surface(width, height);
     Game game;
+    EgeTextCanvas textCanvas;
     bool dragging = false;
     int lastMouseX = 0;
     int renderedFrames = 0;
@@ -1437,12 +1575,14 @@ int main(int argc, char** argv)
 
         const bool turnLeft  = keystate(key_left) || keystate(key_A);
         const bool turnRight = keystate(key_right) || keystate(key_D);
+        const float framesPerSecond = getfps();
         game.update(1.0f / 60.0f, turnLeft, turnRight, dragRotation);
-        game.render(surface, getfps());
+        game.render(surface, framesPerSecond);
 
         color_t* destination = getbuffer(frameImage);
         std::copy(surface.pixels.begin(), surface.pixels.end(), destination);
         putimage(0, 0, frameImage);
+        game.drawText(textCanvas, surface, framesPerSecond);
         ++renderedFrames;
         if (exitAfterFrames > 0 && renderedFrames >= exitAfterFrames) {
             break;
