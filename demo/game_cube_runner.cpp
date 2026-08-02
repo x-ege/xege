@@ -9,39 +9,198 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
+#include <condition_variable>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
+#include <functional>
+#include <iomanip>
+#include <iostream>
 #include <limits>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
+
+// Total render threads, including the main thread. Set to 1 to disable parallel rendering.
+#ifndef CUBE_RUNNER_MAX_RENDER_THREADS
+#define CUBE_RUNNER_MAX_RENDER_THREADS 4
+#endif
 
 namespace cube_runner {
 
-constexpr int   kWidth       = 640;
-constexpr int   kHeight      = 480;
-constexpr int   kTracks      = 12;
-constexpr int   kTubeRows    = 24;
-constexpr int   kStageCount  = 8;
-constexpr float kPi          = 3.14159265358979323846f;
-constexpr float kTrackAngle  = 2.0f * kPi / kTracks;
-const     float kTileSize    = 2.0f * std::sin(kPi / kTracks);
-constexpr float kTubeRadius  = 1.0f;
-constexpr float kNearPlane   = 0.18f;
-const     float kFarPlane    = kTileSize * kTubeRows;
-const     float kFogNear     = kFarPlane * 0.25f;
-constexpr float kCameraY     = -0.5f;
-constexpr float kPlayerAngle = -kPi * 0.5f;
-const     float kFocalLength = (kHeight * 0.5f) / std::tan(75.0f * kPi / 360.0f);
+constexpr int   kDefaultWidth        = 1280;
+constexpr int   kDefaultHeight       = 720;
+constexpr int   kTracks              = 12;
+constexpr int   kTubeRows            = 24;
+constexpr int   kStageCount          = 8;
+constexpr float kPi                  = 3.14159265358979323846f;
+constexpr float kTrackAngle          = 2.0f * kPi / kTracks;
+const     float kTileSize            = 2.0f * std::sin(kPi / kTracks);
+constexpr float kTubeRadius          = 1.0f;
+constexpr float kNearPlane           = 0.18f;
+const     float kFarPlane            = kTileSize * kTubeRows;
+const     float kFogNear             = kFarPlane * 0.25f;
+constexpr float kCameraY             = -0.5f;
+constexpr float kPlayerAngle         = -kPi * 0.5f;
+constexpr float kVerticalFieldOfView = 75.0f;
 // The browser game advances 0.14 world units per 60 Hz frame and adds
 // 0.02 units per frame after each complete eight-stage level.
-constexpr float kReferenceFps   = 60.0f;
-constexpr float kBaseSpeed      = 0.14f * kReferenceFps;
-constexpr float kLevelSpeedStep = 0.02f * kReferenceFps;
-constexpr float kStageDuration  = 30.0f;
-constexpr float kTubeStart      = 0.42f;
-constexpr float kKeyboardTurnSpeed = kTrackAngle * 8.0f;
+constexpr float kReferenceFps         = 60.0f;
+constexpr float kBaseSpeed            = 0.14f * kReferenceFps;
+constexpr float kLevelSpeedStep       = 0.02f * kReferenceFps;
+constexpr float kStageDuration        = 30.0f;
+constexpr float kTubeStart            = 0.42f;
+constexpr float kKeyboardTurnSpeed    = kTrackAngle * 8.0f;
 constexpr float kMouseDragSensitivity = kTrackAngle / 56.0f;
+
+static_assert(CUBE_RUNNER_MAX_RENDER_THREADS >= 1,
+    "CUBE_RUNNER_MAX_RENDER_THREADS must be at least one");
+
+thread_local int gRenderBandTop = 0;
+thread_local int gRenderBandBottom = std::numeric_limits<int>::max();
+
+class RenderBandScope {
+public:
+    RenderBandScope(int top, int bottom)
+        : previousTop(gRenderBandTop),
+          previousBottom(gRenderBandBottom)
+    {
+        gRenderBandTop = top;
+        gRenderBandBottom = bottom;
+    }
+
+    ~RenderBandScope()
+    {
+        gRenderBandTop = previousTop;
+        gRenderBandBottom = previousBottom;
+    }
+
+private:
+    int previousTop;
+    int previousBottom;
+};
+
+int chooseRenderThreadCount()
+{
+    const unsigned int hardwareThreads = std::thread::hardware_concurrency();
+    const int automaticCount = hardwareThreads == 0
+        ? 2 : (hardwareThreads >= 8 ? 4 : (hardwareThreads > 2 ? 2 : 1));
+    return std::max(1, std::min({automaticCount, CUBE_RUNNER_MAX_RENDER_THREADS, 4}));
+}
+
+class KeyPressLatch {
+public:
+    bool update(bool down, int pressCount)
+    {
+        const bool pressed = pressCount > 0 || (down && !wasDown);
+        wasDown = down;
+        return pressed;
+    }
+
+private:
+    bool wasDown {false};
+};
+
+class RenderExecutor {
+public:
+    RenderExecutor()
+        : totalThreads(chooseRenderThreadCount())
+    {
+        for (int workerIndex = 1; workerIndex < totalThreads; ++workerIndex) {
+            workers.emplace_back(&RenderExecutor::workerLoop, this, workerIndex);
+        }
+    }
+
+    ~RenderExecutor()
+    {
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            stopping = true;
+            ++generation;
+        }
+        workReady.notify_all();
+        for (std::thread& worker : workers) {
+            worker.join();
+        }
+    }
+
+    int threadCount() const { return totalThreads; }
+
+    void execute(const std::function<void(int)>& task)
+    {
+        if (totalThreads == 1) {
+            task(0);
+            return;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            frameTask = task;
+            remainingWorkers = totalThreads - 1;
+            ++generation;
+        }
+        workReady.notify_all();
+        task(0);
+
+        std::unique_lock<std::mutex> lock(mutex);
+        frameFinished.wait(lock, [&] { return remainingWorkers == 0; });
+        frameTask = nullptr;
+    }
+
+private:
+    void workerLoop(int workerIndex)
+    {
+        std::size_t completedGeneration = 0;
+        for (;;) {
+            std::function<void(int)> task;
+            {
+                std::unique_lock<std::mutex> lock(mutex);
+                workReady.wait(lock, [&] {
+                    return stopping || generation != completedGeneration;
+                });
+                if (stopping) {
+                    return;
+                }
+                completedGeneration = generation;
+                task = frameTask;
+            }
+
+            task(workerIndex);
+
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                --remainingWorkers;
+                if (remainingWorkers == 0) {
+                    frameFinished.notify_one();
+                }
+            }
+        }
+    }
+
+    const int                     totalThreads;
+    std::vector<std::thread>      workers;
+    std::mutex                    mutex;
+    std::condition_variable       workReady;
+    std::condition_variable       frameFinished;
+    std::function<void(int)>      frameTask;
+    std::size_t                   generation {0};
+    int                           remainingWorkers {0};
+    bool                          stopping {false};
+};
+
+RenderExecutor& renderExecutor()
+{
+    static RenderExecutor executor;
+    return executor;
+}
+
+int renderThreadCount()
+{
+    return renderExecutor().threadCount();
+}
 
 struct Vec3 {
     float x;
@@ -108,25 +267,33 @@ std::uint32_t packColor(Color color)
 
 class Surface {
 public:
-    Surface()
-        : pixels(kWidth * kHeight),
-          depth(kWidth * kHeight)
+    explicit Surface(int width = kDefaultWidth, int height = kDefaultHeight)
+        : width(width),
+          height(height),
+          pixels(static_cast<std::size_t>(width) * height),
+          depth(static_cast<std::size_t>(width) * height)
     {
     }
 
     void clear(Color color)
     {
-        std::fill(pixels.begin(), pixels.end(), packColor(color));
-        std::fill(depth.begin(), depth.end(), std::numeric_limits<float>::infinity());
+        const int top = std::clamp(gRenderBandTop, 0, height);
+        const int bottom = std::clamp(gRenderBandBottom, top, height);
+        const std::size_t first = static_cast<std::size_t>(top) * width;
+        const std::size_t last = static_cast<std::size_t>(bottom) * width;
+        std::fill(pixels.begin() + first, pixels.begin() + last, packColor(color));
+        std::fill(depth.begin() + first, depth.begin() + last,
+            std::numeric_limits<float>::infinity());
     }
 
     void blendPixel(int x, int y, Color color, float alpha)
     {
-        if (x < 0 || x >= kWidth || y < 0 || y >= kHeight) {
+        if (x < 0 || x >= width || y < 0 || y >= height
+            || y < gRenderBandTop || y >= gRenderBandBottom) {
             return;
         }
 
-        const std::size_t index = static_cast<std::size_t>(y) * kWidth + x;
+        const std::size_t index = static_cast<std::size_t>(y) * width + x;
         const std::uint32_t old = pixels[index];
         const Color background {
             static_cast<int>((old >> 16) & 0xff),
@@ -136,12 +303,12 @@ public:
         pixels[index] = packColor(mixColor(background, color, alpha));
     }
 
-    void fillRect(int x, int y, int width, int height, Color color, float alpha = 1.0f)
+    void fillRect(int x, int y, int rectWidth, int rectHeight, Color color, float alpha = 1.0f)
     {
         const int left   = std::max(0, x);
-        const int top    = std::max(0, y);
-        const int right  = std::min(kWidth, x + width);
-        const int bottom = std::min(kHeight, y + height);
+        const int top    = std::max({0, y, gRenderBandTop});
+        const int right  = std::min(width, x + rectWidth);
+        const int bottom = std::min({height, y + rectHeight, gRenderBandBottom});
 
         for (int py = top; py < bottom; ++py) {
             for (int px = left; px < right; ++px) {
@@ -150,6 +317,8 @@ public:
         }
     }
 
+    int                        width;
+    int                        height;
     std::vector<std::uint32_t> pixels;
     std::vector<float>         depth;
 };
@@ -161,16 +330,18 @@ struct Projected {
     bool  valid;
 };
 
-Projected project(const Vec3& point)
+Projected project(const Surface& surface, const Vec3& point)
 {
     if (point.z <= kNearPlane) {
         return {0.0f, 0.0f, 0.0f, false};
     }
 
     const float inverseDepth = 1.0f / point.z;
+    const float focalLength = (surface.height * 0.5f)
+        / std::tan(kVerticalFieldOfView * kPi / 360.0f);
     return {
-        kWidth * 0.5f + point.x * kFocalLength * inverseDepth,
-        kHeight * 0.5f - (point.y - kCameraY) * kFocalLength * inverseDepth,
+        surface.width * 0.5f + point.x * focalLength * inverseDepth,
+        surface.height * 0.5f - (point.y - kCameraY) * focalLength * inverseDepth,
         inverseDepth,
         true,
     };
@@ -190,9 +361,9 @@ Color applyFog(Color color, float z)
 void rasterTriangle(Surface& surface, const Vec3& a, const Vec3& b, const Vec3& c, Color color,
     bool fog = true, float alpha = 1.0f)
 {
-    const Projected p0 = project(a);
-    const Projected p1 = project(b);
-    const Projected p2 = project(c);
+    const Projected p0 = project(surface, a);
+    const Projected p1 = project(surface, b);
+    const Projected p2 = project(surface, c);
     if (!p0.valid || !p1.valid || !p2.valid) {
         return;
     }
@@ -203,9 +374,12 @@ void rasterTriangle(Surface& surface, const Vec3& a, const Vec3& b, const Vec3& 
     }
 
     const int minX = std::max(0, static_cast<int>(std::floor(std::min({p0.x, p1.x, p2.x}))));
-    const int maxX = std::min(kWidth - 1, static_cast<int>(std::ceil(std::max({p0.x, p1.x, p2.x}))));
-    const int minY = std::max(0, static_cast<int>(std::floor(std::min({p0.y, p1.y, p2.y}))));
-    const int maxY = std::min(kHeight - 1, static_cast<int>(std::ceil(std::max({p0.y, p1.y, p2.y}))));
+    const int maxX = std::min(surface.width - 1,
+        static_cast<int>(std::ceil(std::max({p0.x, p1.x, p2.x}))));
+    const int minY = std::max({0, gRenderBandTop,
+        static_cast<int>(std::floor(std::min({p0.y, p1.y, p2.y})))});
+    const int maxY = std::min({surface.height - 1, gRenderBandBottom - 1,
+        static_cast<int>(std::ceil(std::max({p0.y, p1.y, p2.y})))});
     const float inverseArea = 1.0f / area;
 
     for (int y = minY; y <= maxY; ++y) {
@@ -227,7 +401,7 @@ void rasterTriangle(Surface& surface, const Vec3& a, const Vec3& b, const Vec3& 
             }
 
             const float z = 1.0f / inverseDepth;
-            const std::size_t index = static_cast<std::size_t>(y) * kWidth + x;
+            const std::size_t index = static_cast<std::size_t>(y) * surface.width + x;
             if (z >= surface.depth[index]) {
                 continue;
             }
@@ -243,39 +417,75 @@ void rasterTriangle(Surface& surface, const Vec3& a, const Vec3& b, const Vec3& 
     }
 }
 
-void rasterLine(Surface& surface, const Vec3& a, const Vec3& b, Color color, int width = 1)
+void rasterLine(Surface& surface, const Vec3& a, const Vec3& b, Color color)
 {
-    const Projected p0 = project(a);
-    const Projected p1 = project(b);
+    const Projected p0 = project(surface, a);
+    const Projected p1 = project(surface, b);
     if (!p0.valid || !p1.valid) {
         return;
     }
 
     const float dx = p1.x - p0.x;
     const float dy = p1.y - p0.y;
-    const int steps = std::max(1, static_cast<int>(std::ceil(std::max(std::abs(dx), std::abs(dy)))));
+    const bool xMajor = std::abs(dx) >= std::abs(dy);
+    const float lineWidth = std::clamp(surface.height / 480.0f, 1.35f, 2.0f);
+    const float halfWidth = lineWidth * 0.5f;
 
-    for (int i = 0; i <= steps; ++i) {
-        const float t = static_cast<float>(i) / steps;
-        const int x = static_cast<int>(std::round(p0.x + dx * t));
-        const int y = static_cast<int>(std::round(p0.y + dy * t));
+    auto drawSample = [&](int majorPixel, float minor, float t) {
         const float inverseDepth = p0.inverseDepth + (p1.inverseDepth - p0.inverseDepth) * t;
         const float z = 0.997f / std::max(inverseDepth, 0.00001f);
         const Color shaded = applyFog(color, z);
 
-        for (int oy = -width / 2; oy <= width / 2; ++oy) {
-            for (int ox = -width / 2; ox <= width / 2; ++ox) {
-                const int px = x + ox;
-                const int py = y + oy;
-                if (px < 0 || px >= kWidth || py < 0 || py >= kHeight) {
-                    continue;
-                }
-                const std::size_t index = static_cast<std::size_t>(py) * kWidth + px;
-                if (z < surface.depth[index]) {
-                    surface.depth[index] = z;
-                    surface.pixels[index] = packColor(shaded);
-                }
+        const int centerMinorPixel = static_cast<int>(std::floor(minor));
+        for (int offset = -1; offset <= 1; ++offset) {
+            const int minorPixel = centerMinorPixel + offset;
+            const float pixelCenter = minorPixel + 0.5f;
+            const float coverage = std::clamp(
+                halfWidth + 0.5f - std::abs(pixelCenter - minor), 0.0f, 1.0f);
+            if (coverage <= 0.0f) {
+                continue;
             }
+
+            const int x = xMajor ? majorPixel : minorPixel;
+            const int y = xMajor ? minorPixel : majorPixel;
+            if (x < 0 || x >= surface.width || y < 0 || y >= surface.height
+                || y < gRenderBandTop || y >= gRenderBandBottom) {
+                continue;
+            }
+
+            const std::size_t index = static_cast<std::size_t>(y) * surface.width + x;
+            if (z < surface.depth[index]) {
+                if (coverage >= 0.999f) {
+                    surface.pixels[index] = packColor(shaded);
+                } else {
+                    surface.blendPixel(x, y, shaded, coverage);
+                }
+                surface.depth[index] = z;
+            }
+        }
+    };
+
+    if (xMajor) {
+        const int first = std::max(0,
+            static_cast<int>(std::floor(std::min(p0.x, p1.x))));
+        const int last = std::min(surface.width - 1,
+            static_cast<int>(std::floor(std::max(p0.x, p1.x))));
+        for (int x = first; x <= last; ++x) {
+            const float sampleX = x + 0.5f;
+            const float t = std::clamp(
+                std::abs(dx) > 0.00001f ? (sampleX - p0.x) / dx : 0.0f, 0.0f, 1.0f);
+            drawSample(x, p0.y + dy * t, t);
+        }
+    } else {
+        const int first = std::max({0, gRenderBandTop,
+            static_cast<int>(std::floor(std::min(p0.y, p1.y)))});
+        const int last = std::min({surface.height - 1, gRenderBandBottom - 1,
+            static_cast<int>(std::floor(std::max(p0.y, p1.y)))});
+        for (int y = first; y <= last; ++y) {
+            const float sampleY = y + 0.5f;
+            const float t = std::clamp(
+                std::abs(dy) > 0.00001f ? (sampleY - p0.y) / dy : 0.0f, 0.0f, 1.0f);
+            drawSample(y, p0.x + dx * t, t);
         }
     }
 }
@@ -490,9 +700,24 @@ public:
     float rotationAngle() const { return rotation; }
     int currentStage() const { return stage; }
     int currentLevel() const { return level; }
+    int livesRemaining() const { return lives; }
+    bool isGameOver() const { return gameOver; }
     std::size_t obstacleCount() const { return obstacles.size(); }
 
-    void render(Surface& surface) const
+    void render(Surface& surface, float framesPerSecond = 0.0f) const
+    {
+        RenderExecutor& executor = renderExecutor();
+        const int threadCount = executor.threadCount();
+        executor.execute([&](int threadIndex) {
+            const int top = surface.height * threadIndex / threadCount;
+            const int bottom = surface.height * (threadIndex + 1) / threadCount;
+            RenderBandScope band(top, bottom);
+            renderBand(surface, framesPerSecond);
+        });
+    }
+
+private:
+    void renderBand(Surface& surface, float framesPerSecond) const
     {
         surface.clear({2, 4, 10});
         drawTube(surface);
@@ -504,24 +729,36 @@ public:
         if (invincible <= 0.0f || (static_cast<int>(invincible * 12.0f) & 1) == 0) {
             drawPlayer(surface);
         }
-        drawHud(surface);
+        drawHud(surface, framesPerSecond);
 
         if (invincible > 0.8f) {
-            surface.fillRect(0, 0, kWidth, kHeight, {255, 215, 30}, 0.16f);
+            surface.fillRect(0, 0, surface.width, surface.height, {255, 215, 30}, 0.16f);
         }
 
         if (paused || gameOver) {
-            surface.fillRect(0, 0, kWidth, kHeight, {0, 0, 0}, 0.62f);
+            surface.fillRect(0, 0, surface.width, surface.height, {0, 0, 0}, 0.62f);
             const std::string message = gameOver ? "GAME OVER" : "PAUSED";
-            const int scale = 5;
+            const int uiScale = hudScale(surface);
+            const int scale = 5 * uiScale;
             const int textWidth = static_cast<int>(message.size()) * 6 * scale;
-            drawText(surface, (kWidth - textWidth) / 2, 190, message, scale,
+            const int messageY = static_cast<int>(surface.height * 0.40f);
+            drawText(surface, (surface.width - textWidth) / 2, messageY, message, scale,
                 gameOver ? Color {255, 80, 70} : Color {255, 220, 70});
-            drawText(surface, 214, 242, gameOver ? "[R] RESTART" : "[P] RESUME", 2, {220, 235, 255});
+            const std::string action = gameOver ? "[R] RESTART" : "[P] RESUME";
+            const int actionScale = 2 * uiScale;
+            const int actionWidth = static_cast<int>(action.size()) * 6 * actionScale;
+            drawText(surface, (surface.width - actionWidth) / 2,
+                messageY + 52 * uiScale, action, actionScale, {220, 235, 255});
         }
     }
 
-private:
+    static int hudScale(const Surface& surface)
+    {
+        const float resolutionScale = std::min(
+            surface.width / 640.0f, surface.height / 480.0f);
+        return std::clamp(static_cast<int>(resolutionScale + 0.5f), 1, 3);
+    }
+
     void spawnOne(int track, int colorIndex, float tangentScale = 0.78f,
         float radialScale = 0.72f, float depthScale = 0.86f, float speedScale = 1.0f,
         float zOffset = 0.0f)
@@ -756,24 +993,39 @@ private:
             {255, 226, 35}, 0.94f);
     }
 
-    void drawHud(Surface& surface) const
+    void drawHud(Surface& surface, float framesPerSecond) const
     {
-        surface.fillRect(14, 14, 214, 62, {3, 8, 16}, 0.72f);
-        surface.fillRect(14, 14, 214, 2, {70, 225, 255}, 0.88f);
-        drawText(surface, 26, 24, "CUBE RUNNER", 2, {115, 235, 255});
-        drawText(surface, 26, 48, "SCORE " + std::to_string(static_cast<int>(score)), 2,
+        const int uiScale = hudScale(surface);
+        const int textScale = 2 * uiScale;
+        surface.fillRect(14 * uiScale, 14 * uiScale, 214 * uiScale, 62 * uiScale,
+            {3, 8, 16}, 0.72f);
+        surface.fillRect(14 * uiScale, 14 * uiScale, 214 * uiScale, 2 * uiScale,
+            {70, 225, 255}, 0.88f);
+        drawText(surface, 26 * uiScale, 24 * uiScale, "CUBE RUNNER", textScale,
+            {115, 235, 255});
+        drawText(surface, 26 * uiScale, 48 * uiScale,
+            "SCORE " + std::to_string(static_cast<int>(score)), textScale,
             {245, 248, 255});
 
         const std::string status =
             "LIVES " + std::to_string(lives) + "   STAGE " + std::to_string(stage + 1);
-        const int statusWidth = static_cast<int>(status.size()) * 12;
-        drawText(surface, kWidth - statusWidth - 18, 24, status, 2, {255, 225, 70});
+        const int statusWidth = static_cast<int>(status.size()) * 6 * textScale;
+        drawText(surface, surface.width - statusWidth - 18 * uiScale, 24 * uiScale,
+            status, textScale, {255, 225, 70});
 
-        surface.fillRect(0, kHeight - 31, kWidth, 31, {2, 5, 11}, 0.72f);
+        const std::string fps =
+            "FPS " + std::to_string(std::max(0, static_cast<int>(framesPerSecond + 0.5f)));
+        const int fpsWidth = static_cast<int>(fps.size()) * 6 * textScale;
+        drawText(surface, surface.width - fpsWidth - 18 * uiScale, 48 * uiScale,
+            fps, textScale, {115, 235, 255});
+
+        surface.fillRect(0, surface.height - 31 * uiScale, surface.width, 31 * uiScale,
+            {2, 5, 11}, 0.72f);
         const std::string controls =
             "[A/D] OR DRAG TO STEER   [P] PAUSE   [R] RESTART";
-        const int controlsWidth = static_cast<int>(controls.size()) * 6;
-        drawText(surface, (kWidth - controlsWidth) / 2, kHeight - 22, controls, 1,
+        const int controlsWidth = static_cast<int>(controls.size()) * 6 * uiScale;
+        drawText(surface, (surface.width - controlsWidth) / 2,
+            surface.height - 22 * uiScale, controls, uiScale,
             {190, 220, 240}, false);
     }
 
@@ -802,7 +1054,7 @@ bool savePpm(const Surface& surface, const std::string& path)
         return false;
     }
 
-    file << "P6\n" << kWidth << ' ' << kHeight << "\n255\n";
+    file << "P6\n" << surface.width << ' ' << surface.height << "\n255\n";
     for (std::uint32_t pixel : surface.pixels) {
         const std::array<char, 3> rgb {{
             static_cast<char>((pixel >> 16) & 0xff),
@@ -814,12 +1066,34 @@ bool savePpm(const Surface& surface, const std::string& path)
     return static_cast<bool>(file);
 }
 
+bool parseResolution(const std::string& text, int& width, int& height)
+{
+    const std::size_t separator = text.find_first_of("xX");
+    if (separator == std::string::npos) {
+        return false;
+    }
+
+    const std::string widthText = text.substr(0, separator);
+    const std::string heightText = text.substr(separator + 1);
+    char* widthEnd = nullptr;
+    char* heightEnd = nullptr;
+    const long parsedWidth = std::strtol(widthText.c_str(), &widthEnd, 10);
+    const long parsedHeight = std::strtol(heightText.c_str(), &heightEnd, 10);
+    if (widthEnd == widthText.c_str() || *widthEnd != '\0'
+        || heightEnd == heightText.c_str() || *heightEnd != '\0'
+        || parsedWidth < 640 || parsedWidth > 3840
+        || parsedHeight < 480 || parsedHeight > 2160) {
+        return false;
+    }
+
+    width = static_cast<int>(parsedWidth);
+    height = static_cast<int>(parsedHeight);
+    return true;
+}
+
 } // namespace cube_runner
 
 #ifdef CUBE_RUNNER_HEADLESS
-
-#include <cstdlib>
-#include <iostream>
 
 namespace {
 
@@ -832,9 +1106,11 @@ std::size_t changedPlayfieldPixels(
     const cube_runner::Surface& first, const cube_runner::Surface& second)
 {
     std::size_t changed = 0;
-    for (int y = 90; y < cube_runner::kHeight - 32; ++y) {
-        for (int x = 0; x < cube_runner::kWidth; ++x) {
-            const std::size_t index = static_cast<std::size_t>(y) * cube_runner::kWidth + x;
+    const int top = first.height * 90 / 480;
+    const int bottom = first.height - first.height * 32 / 480;
+    for (int y = top; y < bottom; ++y) {
+        for (int x = 0; x < first.width; ++x) {
+            const std::size_t index = static_cast<std::size_t>(y) * first.width + x;
             if (first.pixels[index] != second.pixels[index]) {
                 ++changed;
             }
@@ -868,6 +1144,47 @@ bool runSelfTest()
     require(changedPlayfieldPixels(before, after) > 500,
         "the tunnel playfield did not visibly move after one frame");
 
+    cube_runner::Surface lineSurface(640, 480);
+    lineSurface.clear({255, 255, 255});
+    cube_runner::rasterLine(lineSurface, {-0.5f, 0.0f, 2.0f}, {0.5f, 0.25f, 2.0f},
+        {0, 0, 0});
+    const std::size_t blendedLinePixels = static_cast<std::size_t>(std::count_if(
+        lineSurface.pixels.begin(), lineSurface.pixels.end(), [](std::uint32_t pixel) {
+            const std::uint32_t rgb = pixel & 0x00ffffffu;
+            return rgb != 0x00ffffffu && rgb != 0u;
+        }));
+    require(blendedLinePixels > 0,
+        "line rasterization did not produce antialiased edge coverage");
+
+    cube_runner::Surface fpsZero(800, 600);
+    cube_runner::Surface fpsSixty(800, 600);
+    movementGame.render(fpsZero, 0.0f);
+    movementGame.render(fpsSixty, 60.0f);
+    require(fpsZero.pixels != fpsSixty.pixels,
+        "the FPS value was not drawn into the HUD");
+
+    int parsedWidth = 0;
+    int parsedHeight = 0;
+    require(cube_runner::parseResolution("1280x720", parsedWidth, parsedHeight)
+            && parsedWidth == 1280 && parsedHeight == 720,
+        "a valid runtime resolution was rejected");
+    require(!cube_runner::parseResolution("1280-by-720", parsedWidth, parsedHeight),
+        "an invalid runtime resolution was accepted");
+    require(cube_runner::renderThreadCount() >= 1
+            && cube_runner::renderThreadCount() <= 4
+            && cube_runner::renderThreadCount() <= CUBE_RUNNER_MAX_RENDER_THREADS,
+        "the render worker count is outside the configured limit");
+
+    cube_runner::KeyPressLatch keyLatch;
+    require(keyLatch.update(false, 1),
+        "a short key press between frames was lost");
+    require(!keyLatch.update(false, 0),
+        "a consumed short key press was repeated");
+    require(keyLatch.update(true, 0) && !keyLatch.update(true, 0),
+        "a held key did not generate exactly one down edge");
+    require(!keyLatch.update(false, 0) && keyLatch.update(true, 0),
+        "a released key could not be pressed again");
+
     for (int frame = 1; frame < static_cast<int>(cube_runner::kReferenceFps); ++frame) {
         movementGame.update(deltaTime, false, false);
     }
@@ -894,6 +1211,26 @@ bool runSelfTest()
     require(nearlyEqual(movementGame.distance(), distanceBeforePause, 0.000001),
         "pausing did not stop forward movement");
 
+    cube_runner::Game resetGame(false);
+    for (int frame = 0; frame < 120; ++frame) {
+        resetGame.update(deltaTime, false, false);
+    }
+    resetGame.reset();
+    require(!resetGame.isGameOver() && resetGame.livesRemaining() == 3
+            && nearlyEqual(resetGame.distance(), 0.0, 0.000001)
+            && resetGame.obstacleCount() == 0,
+        "reset did not restore a fresh playable game");
+
+    cube_runner::Game gameOverResetGame;
+    for (int frame = 0; frame < 18000 && !gameOverResetGame.isGameOver(); ++frame) {
+        gameOverResetGame.update(deltaTime, false, false);
+    }
+    require(gameOverResetGame.isGameOver(),
+        "the deterministic collision scenario did not reach game over");
+    gameOverResetGame.reset();
+    require(!gameOverResetGame.isGameOver() && gameOverResetGame.livesRemaining() == 3,
+        "reset did not recover from game over");
+
     cube_runner::Game stageGame(false);
     const int framesPerStage = static_cast<int>(
         cube_runner::kStageDuration * cube_runner::kReferenceFps) + 1;
@@ -916,10 +1253,48 @@ bool runSelfTest()
         "level speed increase does not match the browser game");
 
     if (passed) {
-        std::cout << "Cube Runner self-test passed: speed, tunnel motion, spawning, pause, "
-                     "stages, and level progression\n";
+        std::cout << "Cube Runner self-test passed: motion, controls, antialiased lines, "
+                     "FPS HUD, runtime resolution, spawning, and progression\n";
     }
     return passed;
+}
+
+int runBenchmark(int width, int height, int frameCount)
+{
+    constexpr float deltaTime = 1.0f / cube_runner::kReferenceFps;
+    cube_runner::Game game(false);
+    cube_runner::Surface surface(width, height);
+
+    for (int frame = 0; frame < 30; ++frame) {
+        game.update(deltaTime, false, false);
+        game.render(surface);
+    }
+
+    const auto start = std::chrono::steady_clock::now();
+    for (int frame = 0; frame < frameCount; ++frame) {
+        const bool turnLeft = (frame % 240) >= 60 && (frame % 240) < 105;
+        const bool turnRight = (frame % 240) >= 155 && (frame % 240) < 210;
+        game.update(deltaTime, turnLeft, turnRight);
+        game.render(surface);
+    }
+    const auto finish = std::chrono::steady_clock::now();
+    const double seconds = std::chrono::duration<double>(finish - start).count();
+    const double framesPerSecond = frameCount / seconds;
+    const double millisecondsPerFrame = seconds * 1000.0 / frameCount;
+
+    std::uint64_t checksum = 0;
+    for (std::size_t index = 0; index < surface.pixels.size(); index += 997) {
+        checksum = checksum * 131u + surface.pixels[index];
+    }
+
+    std::cout << "BENCHMARK " << width << 'x' << height
+              << " frames=" << frameCount
+              << " threads=" << cube_runner::renderThreadCount()
+              << std::fixed << std::setprecision(2)
+              << " fps=" << framesPerSecond
+              << " ms/frame=" << millisecondsPerFrame
+              << " checksum=" << checksum << '\n';
+    return EXIT_SUCCESS;
 }
 
 } // namespace
@@ -929,9 +1304,32 @@ int main(int argc, char** argv)
     if (argc > 1 && std::string(argv[1]) == "--self-test") {
         return runSelfTest() ? EXIT_SUCCESS : EXIT_FAILURE;
     }
+    if (argc > 1 && std::string(argv[1]) == "--benchmark") {
+        int width = cube_runner::kDefaultWidth;
+        int height = cube_runner::kDefaultHeight;
+        if (argc < 3 || !cube_runner::parseResolution(argv[2], width, height)) {
+            std::cerr << "Usage: --benchmark WIDTHxHEIGHT [frames]\n";
+            return EXIT_FAILURE;
+        }
+        const int frameCount = argc > 3 ? std::max(1, std::atoi(argv[3])) : 240;
+        return runBenchmark(width, height, frameCount);
+    }
 
-    const std::string outputPath = argc > 1 ? argv[1] : "cube_runner.ppm";
-    const int frameCount = argc > 2 ? std::max(1, std::atoi(argv[2])) : 360;
+    int width = cube_runner::kDefaultWidth;
+    int height = cube_runner::kDefaultHeight;
+    int argumentOffset = 0;
+    if (argc > 1 && std::string(argv[1]) == "--render") {
+        if (argc < 3 || !cube_runner::parseResolution(argv[2], width, height)) {
+            std::cerr << "Usage: --render WIDTHxHEIGHT [output.ppm] [frames]\n";
+            return EXIT_FAILURE;
+        }
+        argumentOffset = 2;
+    }
+
+    const std::string outputPath = argc > argumentOffset + 1
+        ? argv[argumentOffset + 1] : "cube_runner.ppm";
+    const int frameCount = argc > argumentOffset + 2
+        ? std::max(1, std::atoi(argv[argumentOffset + 2])) : 360;
 
     cube_runner::Game game(false);
     for (int frame = 0; frame < frameCount; ++frame) {
@@ -940,43 +1338,83 @@ int main(int argc, char** argv)
         game.update(1.0f / 60.0f, turnLeft, turnRight);
     }
 
-    cube_runner::Surface surface;
+    cube_runner::Surface surface(width, height);
     game.render(surface);
     if (!cube_runner::savePpm(surface, outputPath)) {
         std::cerr << "Failed to save " << outputPath << '\n';
         return 1;
     }
 
-    std::cout << "Saved " << outputPath << " (" << cube_runner::kWidth << 'x'
-              << cube_runner::kHeight << ")\n";
+    std::cout << "Saved " << outputPath << " (" << surface.width << 'x'
+              << surface.height << ")\n";
     return 0;
 }
 
 #else
 
-int main()
+int main(int argc, char** argv)
 {
     using namespace ege;
     using namespace cube_runner;
 
-    initgraph(kWidth, kHeight, INIT_RENDERMANUAL);
+    int width = kDefaultWidth;
+    int height = kDefaultHeight;
+    int exitAfterFrames = 0;
+    for (int index = 1; index < argc; ++index) {
+        const std::string argument = argv[index];
+        if (argument == "--resolution" && index + 1 < argc) {
+            if (!parseResolution(argv[++index], width, height)) {
+                std::cerr << "Invalid resolution. Expected WIDTHxHEIGHT between 640x480 and 3840x2160.\n";
+                return EXIT_FAILURE;
+            }
+        } else if (argument == "--exit-after" && index + 1 < argc) {
+            exitAfterFrames = std::max(1, std::atoi(argv[++index]));
+        } else if (argument == "--help") {
+            std::cout << "Usage: game_cube_runner [--resolution WIDTHxHEIGHT]"
+                         " [--exit-after frames]\n";
+            return EXIT_SUCCESS;
+        } else {
+            std::cerr << "Unknown argument: " << argument << '\n';
+            return EXIT_FAILURE;
+        }
+    }
+
+    initgraph(width, height, INIT_ANIMATION);
     setcaption("XEGE - Cube Runner");
     setrendermode(RENDER_MANUAL);
 
-    PIMAGE frameImage = newimage(kWidth, kHeight);
-    Surface surface;
+    auto closeWindow = [] {
+        const HWND window = getHWnd();
+        SetCloseHandler(nullptr);
+        if (::IsWindow(window)) {
+            ::SendMessageW(window, WM_CLOSE, 0, 0);
+        }
+    };
+
+    PIMAGE frameImage = newimage(width, height);
+    if (frameImage == nullptr) {
+        std::cerr << "Failed to create the " << width << 'x' << height << " frame buffer.\n";
+        closeWindow();
+        return EXIT_FAILURE;
+    }
+    Surface surface(width, height);
     Game game;
     bool dragging = false;
     int lastMouseX = 0;
+    int renderedFrames = 0;
+    KeyPressLatch escapeKey;
+    KeyPressLatch pauseKey;
+    KeyPressLatch restartKey;
+    const float dragSensitivity = kMouseDragSensitivity * 640.0f / width;
 
-    for (; is_run(); delay_fps(60)) {
-        if (keypress(key_esc)) {
+    while (is_run()) {
+        if (escapeKey.update(keystate(key_esc), keypress(key_esc))) {
             break;
         }
-        if (keypress(key_P)) {
+        if (pauseKey.update(keystate(key_P), keypress(key_P))) {
             game.togglePause();
         }
-        if (keypress(key_R)) {
+        if (restartKey.update(keystate(key_R), keypress(key_R))) {
             game.reset();
         }
 
@@ -989,7 +1427,7 @@ int main()
             } else if (message.is_up() && message.is_left()) {
                 dragging = false;
             } else if (message.is_move() && dragging) {
-                dragRotation += (message.x - lastMouseX) * kMouseDragSensitivity;
+                dragRotation += (message.x - lastMouseX) * dragSensitivity;
                 lastMouseX = message.x;
             }
         }
@@ -1000,15 +1438,20 @@ int main()
         const bool turnLeft  = keystate(key_left) || keystate(key_A);
         const bool turnRight = keystate(key_right) || keystate(key_D);
         game.update(1.0f / 60.0f, turnLeft, turnRight, dragRotation);
-        game.render(surface);
+        game.render(surface, getfps());
 
         color_t* destination = getbuffer(frameImage);
         std::copy(surface.pixels.begin(), surface.pixels.end(), destination);
         putimage(0, 0, frameImage);
+        ++renderedFrames;
+        if (exitAfterFrames > 0 && renderedFrames >= exitAfterFrames) {
+            break;
+        }
+        delay_fps(60);
     }
 
     delimage(frameImage);
-    closegraph();
+    closeWindow();
     return 0;
 }
 
