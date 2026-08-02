@@ -12,6 +12,16 @@ function(ege_add_native_test target test_name)
     add_test(NAME ${test_name} COMMAND ${target})
 endfunction()
 
+function(ege_enable_objc_arc target)
+    if(CMAKE_GENERATOR STREQUAL "Xcode")
+        set_target_properties(${target} PROPERTIES
+            XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES)
+    else()
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>")
+    endif()
+endfunction()
+
 ege_add_native_test(ege_native_public_headers_en native.public_headers_en
     public_headers_main.cpp
     public_headers_en.cpp)
@@ -33,6 +43,14 @@ target_compile_definitions(ege_native_raster_image_contract PRIVATE
 ege_add_native_test(ege_native_text_utility_contract
     native.ege_text_utility_contract
     ege_text_utility_contract_test.cpp)
+
+ege_add_native_test(ege_native_enhanced_api_contract
+    native.ege_enhanced_api_contract
+    ege_enhanced_api_contract_test.cpp)
+
+ege_add_native_test(ege_native_control_focus_contract
+    native.ege_control_focus_contract
+    ege_control_focus_contract_test.cpp)
 
 if(APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
     _ege_find_required_framework(EGE_TEST_COREGRAPHICS_FRAMEWORK CoreGraphics)
@@ -70,8 +88,7 @@ if(APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
         target_link_libraries(ege_native_mac_window_smoke PRIVATE
             "${EGE_TEST_APPKIT_FRAMEWORK}"
             "${EGE_TEST_COREGRAPHICS_FRAMEWORK}")
-        set_target_properties(ege_native_mac_window_smoke PROPERTIES
-            XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES)
+        ege_enable_objc_arc(ege_native_mac_window_smoke)
         set_tests_properties(native.mac_window_smoke PROPERTIES
             RUN_SERIAL TRUE
             SKIP_RETURN_CODE 77
@@ -79,6 +96,7 @@ if(APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
 
         add_executable(ege_native_demo_launch_smoke demo_launch_smoke.mm)
         target_compile_features(ege_native_demo_launch_smoke PRIVATE cxx_std_17)
+        ege_enable_objc_arc(ege_native_demo_launch_smoke)
         target_link_libraries(ege_native_demo_launch_smoke PRIVATE
             "${EGE_TEST_APPKIT_FRAMEWORK}"
             "${EGE_TEST_COREFOUNDATION_FRAMEWORK}"

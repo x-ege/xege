@@ -142,6 +142,8 @@ public:
 
     void gentexture(bool gen);
 
+    bool isAntiAliasingEnabled() const noexcept { return m_aa; }
+
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
@@ -325,6 +327,15 @@ public:
 
     friend graphics_errors getimage_from_png_struct(PIMAGE, void*, void*);
 };
+
+#ifndef EGE_GDIPLUS
+// Native enhanced-API state is stored outside IMAGE to keep the public ABI
+// stable. These hooks keep that state synchronized with IMAGE lifetime and
+// resize operations.
+bool updateNativeFallbackTexture(IMAGE* image, bool generate);
+void releaseNativeFallbackState(const IMAGE* image);
+void clearNativeFallbackPattern(IMAGE* image);
+#endif
 
 #ifdef EGE_GDIPLUS
 graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);

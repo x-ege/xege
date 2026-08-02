@@ -703,14 +703,18 @@ class NativeWindowEventSink final : public WindowEventSink
 public:
     explicit NativeWindowEventSink(_graph_setting* settings) : settings_(settings) {}
 
-    void onCloseRequested() override
+    bool onCloseRequested() override
     {
         if (settings_->callback_close) {
             settings_->callback_close();
-        } else {
-            settings_->exit_flag = 1;
+            // Win32 treats a close callback as the application's opportunity
+            // to decide when to destroy the window. Keep the AppKit window open
+            // unless that callback closes it explicitly.
+            return false;
         }
+        settings_->exit_flag = 1;
         settings_->exit_window = 1;
+        return true;
     }
 
     void onResize(int width, int height) override

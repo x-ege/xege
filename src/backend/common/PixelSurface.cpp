@@ -27,8 +27,13 @@ std::size_t checkedByteCount(std::size_t strideBytes, std::size_t height)
     if (height == 0) {
         throw std::invalid_argument("PixelSurface height must be greater than zero");
     }
-    if (height > std::numeric_limits<std::size_t>::max() / strideBytes) {
-        throw std::length_error("PixelSurface byte count overflows size_t");
+    // A single C++ object cannot be addressed beyond PTRDIFF_MAX.  Reject
+    // such dimensions before entering the allocator; some allocators abort
+    // for an impossible request instead of reporting std::bad_alloc.
+    const std::size_t maxObjectBytes =
+        static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max());
+    if (height > maxObjectBytes / strideBytes) {
+        throw std::length_error("PixelSurface byte count exceeds the addressable object size");
     }
     return strideBytes * height;
 }

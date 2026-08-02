@@ -487,13 +487,23 @@ void emitText(NSString* text, MacWindowState* state)
 - (BOOL)windowShouldClose:(NSWindow*)sender
 {
     (void)sender;
-    if (_state != nullptr) {
-        _state->closed.store(true);
-        const bool firstNotification = !_state->closeNotified.exchange(true);
-        if (!_state->suppressCloseCallback && firstNotification && _state->eventSink != nullptr) {
-            _state->eventSink->onCloseRequested();
-        }
+    if (_state == nullptr) {
+        return YES;
     }
+
+    bool shouldClose = true;
+    const bool firstNotification = !_state->closeNotified.exchange(true);
+    if (!_state->suppressCloseCallback && firstNotification && _state->eventSink != nullptr) {
+        shouldClose = _state->eventSink->onCloseRequested();
+    }
+    if (!shouldClose) {
+        // A rejected request must be observable again on the next title-bar
+        // click or Command+Q, just like a subsequent Win32 WM_CLOSE message.
+        _state->closeNotified.store(false);
+        return NO;
+    }
+
+    _state->closed.store(true);
     return YES;
 }
 

@@ -35,6 +35,24 @@ int egeControlBase::s_maxchildid = 1024;
 
 static egectlvec s_egeCtlParent;
 
+static bool controlIsInSubtree(const egeControlBase* control, const egeControlBase* subtreeRoot)
+{
+    for (const egeControlBase* current = control; current != NULL; current = current->parent()) {
+        if (current == subtreeRoot) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void clearFocusInSubtree(egeControlBase* subtreeRoot)
+{
+    egeControlBase*& focus = graph_setting.egectrl_focus;
+    if (focus != NULL && controlIsInSubtree(focus, subtreeRoot)) {
+        focus = NULL;
+    }
+}
+
 egeControlBase::InitObject::InitObject(egeControlBase* pThis, int inherit_level)
 {
     m_this          = pThis;
@@ -75,6 +93,15 @@ void egeControlBase::initok()
 egeControlBase::~egeControlBase()
 {
     egeControlBase* oldParent = m_parent;
+    egeControlBase* focusedDescendant = graph_setting.egectrl_focus;
+    const bool restoreDescendantFocus = oldParent != NULL && focusedDescendant != NULL &&
+        focusedDescendant != this && controlIsInSubtree(focusedDescendant, this);
+
+    // Focus is global to the control tree. Clear it before any children are
+    // detached or reparented, while their parent chain still identifies this
+    // complete subtree.
+    clearFocusInSubtree(this);
+
     if (oldParent) {
         oldParent->delchild(this);
     }
@@ -98,11 +125,17 @@ egeControlBase::~egeControlBase()
         cvec = NULL;
     }
 
+    // Destroying an intermediate node reparents its surviving children to the
+    // old parent. Preserve focus on such a descendant after it is reachable
+    // again, but never restore focus to the object being destroyed.
+    if (restoreDescendantFocus && graph_setting.egectrl_focus == NULL &&
+        controlIsInSubtree(focusedDescendant, oldParent)) {
+        graph_setting.egectrl_focus = focusedDescendant;
+    }
+
     struct _graph_setting* pg = &graph_setting;
     if (pg->egectrl_root == this) {
         pg->egectrl_root = NULL;
-        pg->egectrl_focus = NULL;
-    } else if (pg->egectrl_focus == this) {
         pg->egectrl_focus = NULL;
     }
 
@@ -196,6 +229,8 @@ int egeControlBase::addchild(egeControlBase* pChild)
         cmap = new egectlmap;
         cvec = new egectlvec;
     }
+    egeControlBase* focusedControl = graph_setting.egectrl_focus;
+    const bool restoreFocus = focusedControl != NULL && controlIsInSubtree(focusedControl, pChild);
     if (pChild->m_parent) {
         pChild->m_parent->delchild(pChild);
     }
@@ -206,6 +241,10 @@ int egeControlBase::addchild(egeControlBase* pChild)
     pChild->m_parent = this;
     pChild->m_zOrder = allocZorder();
     onAddChild(pChild);
+    if (restoreFocus && graph_setting.egectrl_focus == NULL &&
+        controlIsInSubtree(pChild, graph_setting.egectrl_root)) {
+        graph_setting.egectrl_focus = focusedControl;
+    }
     return 0;
 }
 
@@ -218,6 +257,9 @@ int egeControlBase::delchild(egeControlBase* pChild)
     }
     egectlmap::iterator it = cmap->find(pChild);
     if (it != cmap->end()) {
+        // A detached control is no longer reachable through the active tree.
+        // Do not leave keyboard/mouse dispatch targeting it or a descendant.
+        clearFocusInSubtree(pChild);
         egectlvec::iterator itv = cvec->begin();
         for (; itv != cvec->end(); itv++) {
             if (*itv == *it) {

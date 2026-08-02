@@ -65,6 +65,87 @@ bool patternUsesForeground(FillStyle style, int x, int y) noexcept
     }
 }
 
+void setContextFillColor(CGContextRef context, color_t color) noexcept
+{
+    const double alpha = channel(color, 24) / 255.0;
+    CGContextSetRGBFillColor(context,
+        channel(color, 16) / 255.0, channel(color, 8) / 255.0,
+        channel(color, 0) / 255.0, alpha);
+}
+
+void setContextStrokeColor(CGContextRef context, color_t color) noexcept
+{
+    CGContextSetRGBStrokeColor(context,
+        channel(color, 16) / 255.0, channel(color, 8) / 255.0,
+        channel(color, 0) / 255.0, channel(color, 24) / 255.0);
+}
+
+struct FillPatternInfo
+{
+    FillStyle style;
+    color_t foreground;
+    color_t background;
+    bool opaque;
+};
+
+void drawFillPatternCell(void* rawInfo, CGContextRef context)
+{
+    const FillPatternInfo& info = *static_cast<const FillPatternInfo*>(rawInfo);
+    if (info.opaque) {
+        setContextFillColor(context, info.background);
+        CGContextFillRect(context, CGRectMake(0.0, 0.0, 8.0, 8.0));
+    }
+    setContextFillColor(context, info.foreground);
+    for (int y = 0; y < 8; ++y) {
+        for (int x = 0; x < 8; ++x) {
+            if (patternUsesForeground(info.style, x, y)) {
+                CGContextFillRect(context, CGRectMake(x, y, 1.0, 1.0));
+            }
+        }
+    }
+}
+
+template <typename FillOperation>
+void fillWithPattern(CGContextRef context, FillStyle style, color_t foreground,
+    color_t background, bool backgroundOpaque, RasterOp rasterOp, FillOperation operation)
+{
+    if (style == FILL_SOLID || style == FILL_USER) {
+        setContextFillColor(context, foreground);
+        operation();
+        return;
+    }
+
+    FillPatternInfo info = {style, foreground, background, backgroundOpaque};
+    const CGPatternCallbacks callbacks = {0, drawFillPatternCell, nullptr};
+    CGPatternRef pattern = CGPatternCreate(&info, CGRectMake(0.0, 0.0, 8.0, 8.0),
+        CGAffineTransformIdentity, 8.0, 8.0, kCGPatternTilingConstantSpacing,
+        true, &callbacks);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreatePattern(nullptr);
+    if (pattern == nullptr || colorSpace == nullptr) {
+        if (pattern != nullptr) {
+            CGPatternRelease(pattern);
+        }
+        if (colorSpace != nullptr) {
+            CGColorSpaceRelease(colorSpace);
+        }
+        setContextFillColor(context, foreground);
+        operation();
+        return;
+    }
+
+    CGContextSetFillColorSpace(context, colorSpace);
+    const CGFloat alpha = 1.0;
+    CGContextSetFillPattern(context, pattern, &alpha);
+    if (!backgroundOpaque && rasterOp == ROP_COPY) {
+        // Transparent hatch cells must preserve the destination pixels in the
+        // gaps instead of copying transparent black into them.
+        CGContextSetBlendMode(context, kCGBlendModeNormal);
+    }
+    operation();
+    CGColorSpaceRelease(colorSpace);
+    CGPatternRelease(pattern);
+}
+
 CGLineCap lineCap(RTLineCap cap) noexcept
 {
     switch (cap) {
@@ -308,9 +389,10 @@ void CoreGraphicsRenderTarget::clearViewport()
     const int top    = std::clamp(viewportTop_, 0, getHeight());
     const int right  = std::clamp(viewportRight_, left, getWidth());
     const int bottom = std::clamp(viewportBottom_, top, getHeight());
+    const color_t storedBackground = premultiply(backgroundColor_);
     for (int y = top; y < bottom; ++y) {
         std::fill(surface_->row(static_cast<std::size_t>(y)) + left, surface_->row(static_cast<std::size_t>(y)) + right,
-            backgroundColor_);
+            storedBackground);
     }
 }
 
@@ -461,7 +543,7 @@ void CoreGraphicsRenderTarget::drawLineF(float x1, float y1, float x2, float y2)
         return;
     }
     beginPrimitive();
-    graphics_->drawLine(CGPointMake(x1, y1), CGPointMake(x2, y2), lineWidth_, lineColor_);
+    graphics_->drawLine(CGPointMake(x1, y1), CGPointMake(x2, y2), lineWidth_, premultiply(lineColor_));
     endPrimitive();
 }
 
@@ -483,7 +565,7 @@ void CoreGraphicsRenderTarget::drawRect(int x, int y, int width, int height)
         return;
     }
     beginPrimitive();
-    graphics_->strokeRect(CGRectMake(x, y, width, height), lineWidth_, lineColor_);
+    graphics_->strokeRect(CGRectMake(x, y, width, height), lineWidth_, premultiply(lineColor_));
     endPrimitive();
 }
 
@@ -493,7 +575,10 @@ void CoreGraphicsRenderTarget::fillRect(int x, int y, int width, int height)
         return;
     }
     beginPrimitive();
-    graphics_->fillRect(CGRectMake(x, y, width, height), fillPatternColor_);
+    CGContextRef context = graphics_->context();
+    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+        CGContextFillRect(context, CGRectMake(x, y, width, height));
+    });
     endPrimitive();
 }
 
@@ -507,8 +592,7 @@ void CoreGraphicsRenderTarget::drawRoundRect(int x, int y, int width, int height
         std::min(std::abs(ellipseWidth) * 0.5, width * 0.5), std::min(std::abs(ellipseHeight) * 0.5, height * 0.5),
         nullptr);
     CGContextAddPath(graphics_->context(), path);
-    CGContextSetRGBStrokeColor(graphics_->context(), channel(lineColor_, 16) / 255.0, channel(lineColor_, 8) / 255.0,
-        channel(lineColor_, 0) / 255.0, channel(lineColor_, 24) / 255.0);
+    setContextStrokeColor(graphics_->context(), lineColor_);
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -523,13 +607,11 @@ void CoreGraphicsRenderTarget::fillRoundRect(int x, int y, int width, int height
     CGPathRef path = CGPathCreateWithRoundedRect(CGRectMake(x, y, width, height),
         std::min(std::abs(ellipseWidth) * 0.5, width * 0.5), std::min(std::abs(ellipseHeight) * 0.5, height * 0.5),
         nullptr);
-    CGContextAddPath(graphics_->context(), path);
-    const color_t color = fillPatternColor_;
-    const double  alpha = channel(color, 24) / 255.0;
-    CGContextSetRGBFillColor(graphics_->context(), alpha > 0 ? channel(color, 16) / 255.0 / alpha : 0.0,
-        alpha > 0 ? channel(color, 8) / 255.0 / alpha : 0.0, alpha > 0 ? channel(color, 0) / 255.0 / alpha : 0.0,
-        alpha);
-    CGContextFillPath(graphics_->context());
+    CGContextRef context = graphics_->context();
+    CGContextAddPath(context, path);
+    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+        CGContextFillPath(context);
+    });
     CGPathRelease(path);
     endPrimitive();
 }
@@ -584,14 +666,11 @@ void CoreGraphicsRenderTarget::drawEllipse(int x, int y, int startAngle, int end
     }
     beginPrimitive();
     if (std::abs(endAngle - startAngle) >= 360) {
-        graphics_->strokeEllipse(CGRectMake(x, y, width, height), lineWidth_, lineColor_);
+        graphics_->strokeEllipse(CGRectMake(x, y, width, height), lineWidth_, premultiply(lineColor_));
     } else {
         CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, false, false);
         CGContextAddPath(graphics_->context(), path);
-        const double alpha = channel(lineColor_, 24) / 255.0;
-        CGContextSetRGBStrokeColor(graphics_->context(), alpha > 0 ? channel(lineColor_, 16) / 255.0 / alpha : 0.0,
-            alpha > 0 ? channel(lineColor_, 8) / 255.0 / alpha : 0.0,
-            alpha > 0 ? channel(lineColor_, 0) / 255.0 / alpha : 0.0, alpha);
+        setContextStrokeColor(graphics_->context(), lineColor_);
         CGContextStrokePath(graphics_->context());
         CGPathRelease(path);
     }
@@ -605,7 +684,10 @@ void CoreGraphicsRenderTarget::fillEllipse(int x, int y, int startAngle, int end
     }
     if (std::abs(endAngle - startAngle) >= 360) {
         beginPrimitive();
-        graphics_->fillEllipse(CGRectMake(x, y, width, height), fillPatternColor_);
+        CGContextRef context = graphics_->context();
+        fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+            CGContextFillEllipseInRect(context, CGRectMake(x, y, width, height));
+        });
         endPrimitive();
         return;
     }
@@ -620,10 +702,7 @@ void CoreGraphicsRenderTarget::drawSector(int x, int y, int startAngle, int endA
     beginPrimitive();
     CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, true, true);
     CGContextAddPath(graphics_->context(), path);
-    const double alpha = channel(lineColor_, 24) / 255.0;
-    CGContextSetRGBStrokeColor(graphics_->context(), alpha > 0 ? channel(lineColor_, 16) / 255.0 / alpha : 0.0,
-        alpha > 0 ? channel(lineColor_, 8) / 255.0 / alpha : 0.0,
-        alpha > 0 ? channel(lineColor_, 0) / 255.0 / alpha : 0.0, alpha);
+    setContextStrokeColor(graphics_->context(), lineColor_);
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -636,13 +715,11 @@ void CoreGraphicsRenderTarget::fillSector(int x, int y, int startAngle, int endA
     }
     beginPrimitive();
     CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, true, true);
-    CGContextAddPath(graphics_->context(), path);
-    const color_t color = fillPatternColor_;
-    const double  alpha = channel(color, 24) / 255.0;
-    CGContextSetRGBFillColor(graphics_->context(), alpha > 0 ? channel(color, 16) / 255.0 / alpha : 0.0,
-        alpha > 0 ? channel(color, 8) / 255.0 / alpha : 0.0, alpha > 0 ? channel(color, 0) / 255.0 / alpha : 0.0,
-        alpha);
-    CGContextFillPath(graphics_->context());
+    CGContextRef context = graphics_->context();
+    CGContextAddPath(context, path);
+    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+        CGContextFillPath(context);
+    });
     CGPathRelease(path);
     endPrimitive();
 }
@@ -670,10 +747,7 @@ void CoreGraphicsRenderTarget::drawChord(int x, int y, int sa, int ea, int width
     beginPrimitive();
     CGPathRef path = createArcPath(x, y, sa, ea, width, height, false, true);
     CGContextAddPath(graphics_->context(), path);
-    const double alpha = channel(lineColor_, 24) / 255.0;
-    CGContextSetRGBStrokeColor(graphics_->context(), alpha > 0 ? channel(lineColor_, 16) / 255.0 / alpha : 0.0,
-        alpha > 0 ? channel(lineColor_, 8) / 255.0 / alpha : 0.0,
-        alpha > 0 ? channel(lineColor_, 0) / 255.0 / alpha : 0.0, alpha);
+    setContextStrokeColor(graphics_->context(), lineColor_);
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -689,7 +763,7 @@ void CoreGraphicsRenderTarget::drawPolygon(const int* points, int count)
         converted[static_cast<std::size_t>(i)] = CGPointMake(points[i * 2], points[i * 2 + 1]);
     }
     beginPrimitive();
-    graphics_->strokePath(converted.data(), converted.size(), lineWidth_, lineColor_, true);
+    graphics_->strokePath(converted.data(), converted.size(), lineWidth_, premultiply(lineColor_), true);
     endPrimitive();
 }
 
@@ -703,7 +777,16 @@ void CoreGraphicsRenderTarget::fillPolygon(const int* points, int count)
         converted[static_cast<std::size_t>(i)] = CGPointMake(points[i * 2], points[i * 2 + 1]);
     }
     beginPrimitive();
-    graphics_->fillPath(converted.data(), converted.size(), fillPatternColor_, true);
+    CGContextRef context = graphics_->context();
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, converted[0].x, converted[0].y);
+    for (std::size_t i = 1; i < converted.size(); ++i) {
+        CGContextAddLineToPoint(context, converted[i].x, converted[i].y);
+    }
+    CGContextClosePath(context);
+    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+        CGContextFillPath(context);
+    });
     endPrimitive();
 }
 
@@ -717,7 +800,7 @@ void CoreGraphicsRenderTarget::drawPolyline(const int* points, int count)
         converted[static_cast<std::size_t>(i)] = CGPointMake(points[i * 2], points[i * 2 + 1]);
     }
     beginPrimitive();
-    graphics_->strokePath(converted.data(), converted.size(), lineWidth_, lineColor_, false);
+    graphics_->strokePath(converted.data(), converted.size(), lineWidth_, premultiply(lineColor_), false);
     endPrimitive();
 }
 
@@ -904,9 +987,12 @@ void CoreGraphicsRenderTarget::floodFillInternal(int x, int y, color_t boundary,
     if (!insideClip(seedX, seedY)) {
         return;
     }
+    const color_t storedBoundary = premultiply(boundary);
+    const color_t storedFill = premultiply(fillColor_);
+    const color_t storedBackground = premultiply(backgroundColor_);
     const color_t seed = pixelAt(seedX, seedY);
-    if ((surfaceMode && (seed & 0x00FFFFFFU) != (boundary & 0x00FFFFFFU)) ||
-        (!surfaceMode && (seed & 0x00FFFFFFU) == (boundary & 0x00FFFFFFU)))
+    if ((surfaceMode && (seed & 0x00FFFFFFU) != (storedBoundary & 0x00FFFFFFU)) ||
+        (!surfaceMode && (seed & 0x00FFFFFFU) == (storedBoundary & 0x00FFFFFFU)))
     {
         return;
     }
@@ -926,12 +1012,12 @@ void CoreGraphicsRenderTarget::floodFillInternal(int x, int y, color_t boundary,
             continue;
         }
         const color_t current = pixelAt(px, py);
-        const bool    matches = surfaceMode ? (current & 0x00FFFFFFU) == (boundary & 0x00FFFFFFU) :
-                                              (current & 0x00FFFFFFU) != (boundary & 0x00FFFFFFU);
+        const bool    matches = surfaceMode ? (current & 0x00FFFFFFU) == (storedBoundary & 0x00FFFFFFU) :
+                                              (current & 0x00FFFFFFU) != (storedBoundary & 0x00FFFFFFU);
         if (!matches) {
             continue;
         }
-        pixelAt(px, py) = patternUsesForeground(fillStyle_, px, py) ? fillColor_ : backgroundColor_;
+        pixelAt(px, py) = patternUsesForeground(fillStyle_, px, py) ? storedFill : storedBackground;
         if (px > 0) {
             stack.push_back(index - 1);
         }
@@ -959,7 +1045,7 @@ void CoreGraphicsRenderTarget::floodFillSurface(int x, int y, color_t surfaceCol
 
 void CoreGraphicsRenderTarget::clear(color_t color)
 {
-    graphics_->clear(color);
+    graphics_->clear(premultiply(color));
 }
 
 CoreGraphicsRenderTarget::SourceImage CoreGraphicsRenderTarget::captureSource(

@@ -109,16 +109,9 @@ CTFontRef createFont(const std::string& face, int height, int weight, bool itali
 CGColorRef createColor(color_t color)
 {
     const CGFloat alpha = static_cast<CGFloat>((color >> 24U) & 0xFFU) / 255.0;
-    CGFloat       red   = static_cast<CGFloat>((color >> 16U) & 0xFFU) / 255.0;
-    CGFloat       green = static_cast<CGFloat>((color >> 8U) & 0xFFU) / 255.0;
-    CGFloat       blue  = static_cast<CGFloat>(color & 0xFFU) / 255.0;
-    if (alpha > 0.0) {
-        red   = std::min<CGFloat>(1.0, red / alpha);
-        green = std::min<CGFloat>(1.0, green / alpha);
-        blue  = std::min<CGFloat>(1.0, blue / alpha);
-    } else {
-        red = green = blue = 0.0;
-    }
+    const CGFloat red   = static_cast<CGFloat>((color >> 16U) & 0xFFU) / 255.0;
+    const CGFloat green = static_cast<CGFloat>((color >> 8U) & 0xFFU) / 255.0;
+    const CGFloat blue  = static_cast<CGFloat>(color & 0xFFU) / 255.0;
     const CGFloat             components[] = {red, green, blue, alpha};
     ScopedCF<CGColorSpaceRef> colorSpace(CGColorSpaceCreateDeviceRGB());
     return colorSpace ? CGColorCreate(colorSpace.get(), components) : nullptr;

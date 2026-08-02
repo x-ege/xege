@@ -5,6 +5,7 @@
 #include <limits>
 #include <stdexcept>
 
+namespace ege {
 namespace {
 
 int failures = 0;
@@ -78,7 +79,7 @@ void testBoundsAndOverflowSafety() {
 
 } // namespace
 
-int main() {
+int runPixelSurfaceTests() {
     testOddWidthAndStablePointer();
     testByteLayoutAndPremultiplication();
     testBoundsAndOverflowSafety();
@@ -89,4 +90,10 @@ int main() {
     }
     std::cout << "PixelSurface checks passed\n";
     return 0;
+}
+
+} // namespace ege
+
+int main() {
+    return ege::runPixelSurfaceTests();
 }

@@ -49,6 +49,80 @@ foreach(_ege_expected_text
     endif()
 endforeach()
 
+# Explicit definitions may use either CMake's untyped -DNAME=value form or its
+# typed -DNAME:TYPE=value form. In both cases tasks.sh must recognise the
+# caller's value and avoid appending a second platform default.
+foreach(_ege_definition_style untyped typed)
+    if(_ege_definition_style STREQUAL "typed")
+        set(_ege_backend_definition "-DEGE_DEFAULT_BACKEND:STRING=COREGRAPHICS")
+        set(_ege_opengl_definition "-DEGE_ENABLE_OPENGL:BOOL=OFF")
+        set(_ege_window_definition "-DEGE_ENABLE_WINDOW_TESTS:BOOL=OFF")
+    else()
+        set(_ege_backend_definition "-DEGE_DEFAULT_BACKEND=COREGRAPHICS")
+        set(_ege_opengl_definition "-DEGE_ENABLE_OPENGL=OFF")
+        set(_ege_window_definition "-DEGE_ENABLE_WINDOW_TESTS=OFF")
+    endif()
+
+    execute_process(
+        COMMAND bash tasks.sh --debug --show-config --
+            "${_ege_backend_definition}"
+            "${_ege_opengl_definition}"
+            "${_ege_window_definition}"
+        WORKING_DIRECTORY "${EGE_SOURCE_DIR}"
+        RESULT_VARIABLE _ege_definition_probe_result
+        OUTPUT_VARIABLE _ege_definition_probe_stdout
+        ERROR_VARIABLE _ege_definition_probe_stderr)
+    if(NOT _ege_definition_probe_result EQUAL 0)
+        message(FATAL_ERROR
+            "tasks.sh ${_ege_definition_style} -D probe failed "
+            "(${_ege_definition_probe_result}).\n"
+            "stdout:\n${_ege_definition_probe_stdout}\n"
+            "stderr:\n${_ege_definition_probe_stderr}")
+    endif()
+
+    foreach(_ege_definition_name
+            EGE_DEFAULT_BACKEND EGE_ENABLE_OPENGL EGE_ENABLE_WINDOW_TESTS)
+        string(REGEX MATCHALL
+            "-D${_ege_definition_name}(:[A-Za-z_]+)?=[^ \t\r\n]+"
+            _ege_definition_matches "${_ege_definition_probe_stdout}")
+        list(LENGTH _ege_definition_matches _ege_definition_count)
+        if(NOT _ege_definition_count EQUAL 1)
+            message(FATAL_ERROR
+                "tasks.sh must preserve exactly one ${_ege_definition_name} "
+                "for ${_ege_definition_style} -D input, found "
+                "${_ege_definition_count}.\n${_ege_definition_probe_stdout}")
+        endif()
+    endforeach()
+endforeach()
+
+execute_process(
+    COMMAND bash tasks.sh --debug --show-config --
+        -DCMAKE_SYSTEM_NAME:STRING=Windows
+    WORKING_DIRECTORY "${EGE_SOURCE_DIR}"
+    RESULT_VARIABLE _ege_typed_system_probe_result
+    OUTPUT_VARIABLE _ege_typed_system_probe_stdout
+    ERROR_VARIABLE _ege_typed_system_probe_stderr)
+if(NOT _ege_typed_system_probe_result EQUAL 0)
+    message(FATAL_ERROR
+        "tasks.sh typed CMAKE_SYSTEM_NAME probe failed "
+        "(${_ege_typed_system_probe_result}).\n"
+        "stdout:\n${_ege_typed_system_probe_stdout}\n"
+        "stderr:\n${_ege_typed_system_probe_stderr}")
+endif()
+foreach(_ege_forbidden_native_text
+        "/build/macos/Debug"
+        "macOS native build: AppleClang/CoreGraphics"
+        "-DEGE_DEFAULT_BACKEND=COREGRAPHICS")
+    string(FIND "${_ege_typed_system_probe_stdout}"
+        "${_ege_forbidden_native_text}" _ege_forbidden_native_match)
+    if(NOT _ege_forbidden_native_match EQUAL -1)
+        message(FATAL_ERROR
+            "A typed Windows CMAKE_SYSTEM_NAME must disable native macOS "
+            "defaults, but tasks.sh reported: ${_ege_forbidden_native_text}\n"
+            "${_ege_typed_system_probe_stdout}")
+    endif()
+endforeach()
+
 # Exercise the same three-level platform/configuration directory shape used by
 # the VS Code tasks. This guards against passing '../..' from
 # build/macos/Debug, which resolves to build/ instead of the source checkout.
@@ -56,6 +130,7 @@ file(REMOVE_RECURSE "${EGE_TASKS_CONTRACT_BINARY_DIR}")
 execute_process(
     COMMAND "${CMAKE_COMMAND}" -E env
         "EGE_BUILD_ROOT=${EGE_TASKS_CONTRACT_BINARY_DIR}"
+        "EGE_SOURCE_PATH=."
         bash tasks.sh --debug --target xege --load --
         -DEGE_BUILD_DEMO=OFF
         -DEGE_BUILD_TEST=OFF

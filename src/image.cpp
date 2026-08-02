@@ -26,10 +26,12 @@
 
 #ifndef _WIN32
 #include <strings.h>
-#define _wcsicmp wcscasecmp
 
-#define BI_RGB 0
-#define BI_BITFIELDS 3
+namespace ege
+{
+
+constexpr DWORD BI_RGB       = 0;
+constexpr DWORD BI_BITFIELDS = 3;
 
 #pragma pack(push, 1)
 struct BITMAPFILEHEADER {
@@ -81,6 +83,8 @@ struct BITMAPV4HEADER {
 static_assert(sizeof(BITMAPFILEHEADER) == 14, "BITMAPFILEHEADER must be 14 bytes");
 static_assert(sizeof(BITMAPINFOHEADER) == 40, "BITMAPINFOHEADER must be 40 bytes");
 static_assert(sizeof(BITMAPV4HEADER) == 108, "BITMAPV4HEADER must be 108 bytes");
+
+} // namespace ege
 #endif
 
 #ifndef _WIN32
@@ -89,7 +93,10 @@ static_assert(sizeof(BITMAPV4HEADER) == 108, "BITMAPV4HEADER must be 108 bytes")
 #include <cwctype>
 #include <cstdlib>
 
-inline FILE* _wfopen(const wchar_t* filename, const wchar_t* mode) {
+namespace ege
+{
+
+inline FILE* openWideFile(const wchar_t* filename, const wchar_t* mode) {
     if (filename == NULL || mode == NULL) {
         return NULL;
     }
@@ -103,6 +110,8 @@ inline FILE* _wfopen(const wchar_t* filename, const wchar_t* mode) {
     }
     return fopen(utf8Filename.c_str(), utf8Mode.c_str());
 }
+
+} // namespace ege
 #endif
 
 #include "image.h"
@@ -122,6 +131,23 @@ inline FILE* _wfopen(const wchar_t* filename, const wchar_t* mode) {
 
 namespace ege
 {
+
+#ifdef _WIN32
+static FILE* openWideFile(const wchar_t* filename, const wchar_t* mode)
+{
+    return ::_wfopen(filename, mode);
+}
+
+static int wideCaseCompare(const wchar_t* first, const wchar_t* second)
+{
+    return ::_wcsicmp(first, second);
+}
+#else
+static int wideCaseCompare(const wchar_t* first, const wchar_t* second)
+{
+    return ::wcscasecmp(first, second);
+}
+#endif
 
 static ImageAlphaFormat to_render_alpha_format(color_type colorType)
 {
@@ -270,6 +296,9 @@ IMAGE::IMAGE(const IMAGE& img)
 IMAGE::~IMAGE()
 {
     gentexture(false);
+#ifndef EGE_GDIPLUS
+    releaseNativeFallbackState(this);
+#endif
     deleteimage();
 }
 
@@ -290,6 +319,11 @@ void IMAGE::inittest(const WCHAR* strCallFunction) const
 
 void IMAGE::gentexture(bool gen)
 {
+#ifndef EGE_GDIPLUS
+    const bool updated = updateNativeFallbackTexture(this, gen);
+    m_texture = gen && updated ? static_cast<void*>(this) : NULL;
+    return;
+#endif
     if (!gen) {
         if (m_texture != NULL) {
 #ifdef EGE_GDIPLUS
@@ -921,8 +955,6 @@ int IMAGE::resize_f(int width, int height)
         }
         delete[] m_pBuffer;
         m_pBuffer = newBuffer;
-    } else if (regenerateTexture) {
-        gentexture(false);
     }
 #endif
     // Rebuild the native CPU surface before publishing the new dimensions.
@@ -933,6 +965,9 @@ int IMAGE::resize_f(int width, int height)
             dynamic_cast<backend::CoreGraphicsRenderTarget*>(m_renderTarget);
         if (!target || !target->resize(std::max(1, width), std::max(1, height), false)) {
             return grAllocError;
+        }
+        if (regenerateTexture) {
+            gentexture(false);
         }
         m_pBuffer = reinterpret_cast<PDWORD>(target->getPixelBuffer());
     }
@@ -990,7 +1025,9 @@ int IMAGE::resize(int width, int height)
 {
     inittest(L"IMAGE::resize");
     int ret = this->resize_f(width, height);
-    cleardevice(this);
+    if (ret == grOk) {
+        cleardevice(this);
+    }
     return ret;
 }
 
@@ -1348,7 +1385,7 @@ int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
     if (isEmpty(filename))
         return grParamError;
 
-    FILE* fp = _wfopen(filename, L"rb");
+    FILE* fp = openWideFile(filename, L"rb");
     if (fp == NULL)
         return grFileNotFound;
 
@@ -4226,7 +4263,7 @@ int savepng(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
         return grParamError;
 
     pimg = CONVERT_IMAGE_CONST(pimg);
-    FILE* fp = _wfopen(filename, L"wb");
+    FILE* fp = openWideFile(filename, L"wb");
 
     if (fp == NULL) {
         return grIOerror;
@@ -4266,7 +4303,7 @@ int savebmp(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
         return grParamError;
     }
 
-    FILE* file = _wfopen(filename, L"wb");
+    FILE* file = openWideFile(filename, L"wb");
     if (file == NULL) {
         return grIOerror;
     }
@@ -4636,7 +4673,7 @@ ImageFormat checkImageFormatByFileName(const wchar_t* fileName)
 
     /* 忽略大小写查找匹配项 */
     for (int i = 0; i < formatMapLength; i++) {
-        if (_wcsicmp(fileExtension, formatMap[i].ext) == 0) {
+        if (wideCaseCompare(fileExtension, formatMap[i].ext) == 0) {
             imageFormat = formatMap[i].format;
             break;
         }

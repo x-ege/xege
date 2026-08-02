@@ -92,6 +92,9 @@ int main()
 
 // 根据相机分辨率调整窗口大小，保持比例一致
 // 返回 true 表示窗口大小发生了变化
+namespace ege
+{
+
 bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
 {
     int windowWidth = getwidth();
@@ -162,6 +165,8 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
 
     return true;
 }
+
+} // namespace ege
 
 void showErrorWindow()
 {
@@ -360,7 +365,7 @@ int main()
                 if (switchCamera(camera, currentDeviceIndex, deviceCount, newWidth, newHeight)) {
                     currentResolutionIndex = newResolutionIndex;
                     // 调整窗口大小以匹配相机分辨率比例
-                    adjustWindowToCamera(newWidth, newHeight);
+                    ege::adjustWindowToCamera(newWidth, newHeight);
                 }
             }
 

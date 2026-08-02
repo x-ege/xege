@@ -59,6 +59,15 @@ void testInvalidUtf8Replacement()
     EGE_CHECK(decoded.size() == 2);
     EGE_CHECK(static_cast<std::uint32_t>(decoded[0]) == 0xFFFDU);
     EGE_CHECK(decoded[1] == L'A');
+
+    const char encodedSurrogate[] = {
+        static_cast<char>(0xED), static_cast<char>(0xA0),
+        static_cast<char>(0x80), '\0'};
+    const std::wstring surrogateDecoded = ege::mb2w(encodedSurrogate);
+    EGE_CHECK(!surrogateDecoded.empty());
+    for (wchar_t character : surrogateDecoded) {
+        EGE_CHECK(static_cast<std::uint32_t>(character) == 0xFFFDU);
+    }
 }
 
 } // namespace

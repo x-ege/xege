@@ -3,6 +3,7 @@
 #include <array>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 
 namespace {
 
@@ -24,6 +25,17 @@ int countLinePixels(ege::PCIMAGE image)
     int count = 0;
     for (int index = 0; index < kWidth * kHeight; ++index) {
         count += isLinePixel(pixels[index]);
+    }
+    return count;
+}
+
+int countColor(ege::PCIMAGE image, ege::color_t color, int left, int top, int right, int bottom)
+{
+    int count = 0;
+    for (int y = top; y < bottom; ++y) {
+        for (int x = left; x < right; ++x) {
+            count += ege::getpixel(x, y, image) == color;
+        }
     }
     return count;
 }
@@ -103,6 +115,72 @@ void testCopyAndRasterOps()
 
     ege::putimage(target.value, 0, 0, 8, 8, source.value, 0, 0, 4, 4, SRCCOPY);
     EGE_CHECK(ege::getpixel(2, 2, target.value) == kLine);
+
+    // GDI putpixel writes the requested color directly; setwritemode applies
+    // to drawing primitives, not raw pixel access. Keep that public contract
+    // on the native backend as well.
+    ege::setwritemode(R2_XORPEN, target.value);
+    ege::putpixel(4, 5, kBlue, target.value);
+    EGE_CHECK(ege::getpixel(4, 5, target.value) == kBlue);
+    ege::setwritemode(R2_COPYPEN, target.value);
+}
+
+void testPatternFillContract()
+{
+    ege_test::Image image(kWidth, kHeight);
+    EGE_CHECK(image.value != nullptr);
+
+    ege::setbkcolor(kBackground, image.value);
+    ege::cleardevice(image.value);
+    ege::setbkmode(TRANSPARENT, image.value);
+    ege::setfillstyle(LINE_FILL, kLine, image.value);
+    ege::bar(0, 0, 32, 32, image.value);
+    const int transparentLines = countColor(image.value, kLine, 0, 0, 32, 32);
+    const int transparentGaps = countColor(image.value, kBackground, 0, 0, 32, 32);
+    EGE_CHECK(transparentLines > 0 && transparentGaps > 0);
+
+    // In OPAQUE mode the gaps in a hatch use the current background color,
+    // matching the Win32 brush contract instead of preserving old pixels.
+    ege::setbkcolor(kFill, image.value);
+    ege::cleardevice(image.value);
+    ege::setbkcolor_f(kBlue, image.value);
+    ege::setbkmode(OPAQUE, image.value);
+    ege::setfillstyle(LINE_FILL, kLine, image.value);
+    ege::bar(0, 0, 32, 32, image.value);
+    EGE_CHECK(countColor(image.value, kLine, 0, 0, 32, 32) > 0);
+    EGE_CHECK(countColor(image.value, kBlue, 0, 0, 32, 32) > 0);
+    EGE_CHECK(countColor(image.value, kFill, 0, 0, 32, 32) == 0);
+}
+
+void testFailedResizePreservesImage()
+{
+    ege_test::Image image(2, 2);
+    ege::putpixel(1, 1, kLine, image.value);
+    ege::color_t* const originalBuffer = ege::getbuffer(image.value);
+    const int result = ege::resize(image.value,
+        std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+    EGE_CHECK(result != ege::grOk);
+    EGE_CHECK(ege::getwidth(image.value) == 2 && ege::getheight(image.value) == 2);
+    EGE_CHECK(ege::getbuffer(image.value) == originalBuffer);
+    EGE_CHECK(ege::getpixel(1, 1, image.value) == kLine);
+}
+
+void testBufferAndStorageErrors()
+{
+    ege_test::Image image(4, 4);
+    const ege::color_t pixel = kBlue;
+    EGE_CHECK(ege::getimagestoragemode(image.value) == ege::IMAGE_STORAGE_CPU_BITMAP);
+    EGE_CHECK(ege::setimagestoragemode(image.value, ege::IMAGE_STORAGE_CPU_BITMAP) == ege::grOk);
+    EGE_CHECK(ege::setimagestoragemode(image.value, ege::IMAGE_STORAGE_GPU) == ege::grInvalidMode);
+    EGE_CHECK(ege::setimagestoragemode(image.value,
+        static_cast<ege::image_storage_mode>(99)) == ege::grParamError);
+
+    EGE_CHECK(ege::getbuffer(image.value,
+        static_cast<ege::image_buffer_access>(99)) == nullptr);
+    EGE_CHECK(ege::updatebuffer(image.value, 0, 0, 1, 1, nullptr) == ege::grNullPointer);
+    EGE_CHECK(ege::updatebuffer(image.value, -1, 0, 1, 1, &pixel) == ege::grInvalidRegion);
+    EGE_CHECK(ege::updatebuffer(image.value, 3, 3, 2, 2, &pixel) == ege::grInvalidRegion);
+    EGE_CHECK(ege::updatebuffer(image.value, 0, 0, 1, 1, &pixel, 1) == ege::grParamError);
 }
 
 void testSaveDecodeAndVisualRecognition()
@@ -143,6 +221,9 @@ int main()
 {
     testRasterAndPixelAccess();
     testCopyAndRasterOps();
+    testPatternFillContract();
+    testFailedResizePreservesImage();
+    testBufferAndStorageErrors();
     testSaveDecodeAndVisualRecognition();
     return ege_test::finish("EGE raster/image contract");
 }

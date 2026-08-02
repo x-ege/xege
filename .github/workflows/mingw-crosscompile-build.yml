@@ -71,10 +71,15 @@ jobs:
           cmake -S . -B build-mingw-ubuntu \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
             -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake \
+            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
             -DEGE_BUILD_DEMO=ON
 
           # Build the project
           cmake --build build-mingw-ubuntu --parallel $(nproc)
+          # Demo targets are excluded from ALL, so EGE_BUILD_DEMO=ON alone
+          # only configures them. Link every demo to catch missing platform
+          # sources and transitive Windows libraries.
+          cmake --build build-mingw-ubuntu --target demos --parallel $(nproc)
 
       - name: Package MinGW Ubuntu artifacts
         env:
@@ -155,10 +160,14 @@ jobs:
           cmake -S . -B build-mingw-macos \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
             -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake \
+            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
             -DEGE_BUILD_DEMO=ON
 
           # Build the project
           cmake --build build-mingw-macos --parallel $(sysctl -n hw.ncpu)
+          # Keep this equivalent to the Ubuntu cross job: explicitly link the
+          # EXCLUDE_FROM_ALL demo targets instead of only configuring them.
+          cmake --build build-mingw-macos --target demos --parallel $(sysctl -n hw.ncpu)
 
       - name: Package macOS cross-compiled artifacts
         env:

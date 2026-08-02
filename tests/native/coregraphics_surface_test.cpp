@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 
+namespace ege {
 namespace {
 
 int failures = 0;
@@ -98,7 +99,7 @@ void testDrawingPrimitivesAndPath() {
 
 } // namespace
 
-int main() {
+int runCoreGraphicsSurfaceTests() {
     testDirectBufferAndTopDownCoordinates();
     testPremultipliedAlphaLayout();
     testDrawingPrimitivesAndPath();
@@ -109,4 +110,10 @@ int main() {
     }
     std::cout << "CoreGraphicsSurface checks passed\n";
     return 0;
+}
+
+} // namespace ege
+
+int main() {
+    return ege::runCoreGraphicsSurfaceTests();
 }

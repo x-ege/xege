@@ -37,19 +37,38 @@ function isMacOS() {
 # supplies a cross-compilation toolchain/system. Keep this decision independent
 # from the presence of mingw-w64 or Wine on the developer machine.
 function isNativeMacOS() {
-    local config_str="${CMAKE_CONFIG_DEFINE[*]}"
     isMacOS &&
-        [[ "$config_str" != *"CMAKE_TOOLCHAIN_FILE"* ]] &&
-        [[ "$config_str" != *"CMAKE_SYSTEM_NAME=Windows"* ]]
+        ! hasCMakeDefinition "CMAKE_TOOLCHAIN_FILE" &&
+        ! cmakeDefinitionEquals "CMAKE_SYSTEM_NAME" "Windows"
 }
 
 function hasCMakeDefinition() {
     local definition="$1"
     local argument
     for argument in "${CMAKE_CONFIG_DEFINE[@]}"; do
-        if [[ "$argument" == "-D${definition}="* ]]; then
+        case "$argument" in
+        -D"${definition}"=* | -D"${definition}":*=*)
             return 0
-        fi
+            ;;
+        esac
+    done
+    return 1
+}
+
+function cmakeDefinitionEquals() {
+    local definition="$1"
+    local expected_value="$2"
+    local argument
+    local value
+    for argument in "${CMAKE_CONFIG_DEFINE[@]}"; do
+        case "$argument" in
+        -D"${definition}"=* | -D"${definition}":*=*)
+            value="${argument#*=}"
+            if [[ "$value" == "$expected_value" ]]; then
+                return 0
+            fi
+            ;;
+        esac
     done
     return 1
 }
@@ -177,6 +196,24 @@ function loadCMakeProject() {
     # platform-specific (for example build/macos/Debug), so deriving the source
     # with a fixed number of '..' components is both fragile and unnecessary.
     local source_path="${EGE_SOURCE_PATH:-$PROJECT_DIR}"
+    case "$source_path" in
+    /* | [A-Za-z]:[\\/]*)
+        ;;
+    *)
+        source_path="$PROJECT_DIR/$source_path"
+        ;;
+    esac
+
+    # Resolve relative components before changing into the build directory.
+    # CMake must receive a stable source directory even when EGE_SOURCE_PATH is
+    # supplied as ".", "demo", or another path relative to the checkout.
+    if [[ "$source_path" != [A-Za-z]:[\\/]* ]]; then
+        if [[ ! -d "$source_path" ]]; then
+            echo "Error: EGE source directory does not exist: $source_path" >&2
+            return 1
+        fi
+        source_path="$(cd "$source_path" && pwd -P)"
+    fi
     cmake_args+=("$source_path")
 
     set -x

@@ -6,6 +6,7 @@
 #include <cwchar>
 #include <algorithm>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "font.h"
@@ -28,6 +29,32 @@ static UINT horizontalAlignToDrawTextFormat(int horizontalAlign);
 static Point private_escapementToOffset(int textHeight, int textEscapement);
 static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text);
 static void private_textout(PIMAGE img, const wchar_t* text, int x, int y);
+
+static TextHAlign toRenderTextHAlign(int horizontal)
+{
+    return horizontal == CENTER_TEXT ? TEXT_CENTER
+        : horizontal == RIGHT_TEXT ? TEXT_RIGHT : TEXT_LEFT;
+}
+
+static TextVAlign toRenderTextVAlign(int vertical)
+{
+    return vertical == CENTER_TEXT ? TEXT_MIDDLE
+        : vertical == BOTTOM_TEXT ? TEXT_BOTTOM : TEXT_TOP;
+}
+
+static int cachedCharacterWidth(RenderTarget* target, wchar_t character,
+    std::unordered_map<wchar_t, int>& widths)
+{
+    const auto found = widths.find(character);
+    if (found != widths.end()) {
+        return found->second;
+    }
+
+    const wchar_t text[] = {character, L'\0'};
+    const int width = std::max(0, target->getTextWidth(text));
+    widths.emplace(character, width);
+    return width;
+}
 
 void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg);
 void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg);
@@ -107,6 +134,8 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
             if (text && *text && w > 0 && h > 0) {
                 std::vector<std::wstring> lines;
                 std::wstring current;
+                int currentWidth = 0;
+                std::unordered_map<wchar_t, int> characterWidths;
                 for (const wchar_t* cursor = text; ; ++cursor) {
                     wchar_t character = *cursor;
                     if (character == L'\r') continue;
@@ -114,16 +143,24 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                     if (character == L'\n' || character == L'\0') {
                         lines.push_back(current);
                         current.clear();
+                        currentWidth = 0;
                         if (character == L'\0') break;
                         continue;
                     }
 
+                    const int characterWidth = cachedCharacterWidth(
+                        img->m_renderTarget, character, characterWidths);
                     current.push_back(character);
-                    if (current.size() > 1 && img->m_renderTarget->getTextWidth(current.c_str()) > w) {
+                    currentWidth += characterWidth;
+                    if (current.size() > 1 && currentWidth > w) {
                         current.pop_back();
                         lines.push_back(current);
                         current.clear();
-                        if (character != L' ') current.push_back(character);
+                        currentWidth = 0;
+                        if (character != L' ') {
+                            current.push_back(character);
+                            currentWidth = characterWidth;
+                        }
                     }
                 }
 
@@ -164,10 +201,8 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                         }
                     }
                     img->m_renderTarget->setTextJustify(
-                        img->m_texttype.horiz == CENTER_TEXT ? TEXT_CENTER :
-                        img->m_texttype.horiz == RIGHT_TEXT ? TEXT_RIGHT : TEXT_LEFT,
-                        img->m_texttype.vert == CENTER_TEXT ? TEXT_MIDDLE :
-                        img->m_texttype.vert == BOTTOM_TEXT ? TEXT_BOTTOM : TEXT_TOP);
+                        toRenderTextHAlign(img->m_texttype.horiz),
+                        toRenderTextVAlign(img->m_texttype.vert));
                     img->m_renderTarget->setViewport(
                         oldLeft, oldTop, oldRight, oldBottom, oldClip != 0);
                 }
@@ -550,11 +585,8 @@ void settextjustify(int horiz, int vert, PIMAGE pimg)
         img->m_texttype.horiz = horiz;
         img->m_texttype.vert = vert;
         if (img->m_renderTarget) {
-            const TextHAlign horizontal = horiz == CENTER_TEXT ? TEXT_CENTER
-                : horiz == RIGHT_TEXT ? TEXT_RIGHT : TEXT_LEFT;
-            const TextVAlign vertical = vert == CENTER_TEXT ? TEXT_MIDDLE
-                : vert == BOTTOM_TEXT ? TEXT_BOTTOM : TEXT_TOP;
-            img->m_renderTarget->setTextJustify(horizontal, vertical);
+            img->m_renderTarget->setTextJustify(
+                toRenderTextHAlign(horiz), toRenderTextVAlign(vert));
         }
     }
     CONVERT_IMAGE_END;

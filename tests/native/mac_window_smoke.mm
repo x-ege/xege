@@ -16,7 +16,11 @@ namespace
 class RecordingSink final : public ege::WindowEventSink
 {
 public:
-    void onCloseRequested() override { ++closeRequests; }
+    bool onCloseRequested() override
+    {
+        ++closeRequests;
+        return allowClose;
+    }
     void onResize(int width, int height) override
     {
         ++resizeEvents;
@@ -38,6 +42,7 @@ public:
     int mouseWheelEvents{0};
     int lastWidth{0};
     int lastHeight{0};
+    bool allowClose{true};
 };
 
 bool hasWindowServerSession()
@@ -208,8 +213,8 @@ int main()
         window.processEvents();
 
         // A synthetic Command+Q takes the same delegate path as clicking the
-        // close button. It closes only this EGE window and never terminates the
-        // test process.
+        // close button. First reject it to model SetCloseHandler, then accept a
+        // second request. Neither path terminates the test process.
         NSEvent* quitEvent = [NSEvent keyEventWithType:NSEventTypeKeyDown
                                              location:NSZeroPoint
                                         modifierFlags:NSEventModifierFlagCommand
@@ -220,10 +225,18 @@ int main()
                           charactersIgnoringModifiers:@"q"
                                             isARepeat:NO
                                               keyCode:0x0C];
+        sink.allowClose = false;
         [NSApp postEvent:quitEvent atStart:NO];
         window.processEvents();
-        if (!window.isClosed() || sink.closeRequests != 1) {
-            return fail("Command+Q did not produce exactly one non-terminating close request");
+        if (window.isClosed() || sink.closeRequests != 1) {
+            return fail("rejected Command+Q closed the native window");
+        }
+
+        sink.allowClose = true;
+        [NSApp postEvent:quitEvent atStart:NO];
+        window.processEvents();
+        if (!window.isClosed() || sink.closeRequests != 2) {
+            return fail("accepted Command+Q did not close the native window");
         }
 
         window.close();

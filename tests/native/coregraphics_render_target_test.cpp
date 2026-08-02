@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 
+namespace ege {
 namespace {
 
 int failures = 0;
@@ -105,6 +106,56 @@ void testTransferAlphaBlurAndPrimitives() {
     CHECK(target.getPixel(19, 5) == 0xFF00FF00U);
 }
 
+void testStraightStateColorsBecomePremultipliedPixels() {
+    constexpr ege::color_t straight = 0x80201008U;
+    constexpr ege::color_t premultiplied = 0x80100804U;
+    CoreGraphicsRenderTarget target(96, 48);
+
+    // Public drawing state is straight ARGB, while the backing surface is
+    // premultiplied.  Low RGB values catch accidental unpremultiplication.
+    target.clear(straight);
+    CHECK(target.getPixel(0, 0) == premultiplied);
+
+    target.clear(0);
+    target.setFillStyle(ege::FILL_SOLID, straight);
+    target.fillRect(2, 2, 8, 8);
+    CHECK(target.getPixel(4, 4) == premultiplied);
+
+    target.clear(0);
+    target.setBkColor(straight);
+    target.setViewport(2, 2, 10, 10, true);
+    target.clearViewport();
+    CHECK(target.getPixelBuffer()[4 * target.getWidth() + 4] == premultiplied);
+
+    target.clear(0xFF000000U);
+    target.setViewport(0, 0, target.getWidth(), target.getHeight(), true);
+    target.setFillStyle(ege::FILL_SOLID, straight);
+    target.floodFillSurface(4, 4, 0xFF000000U);
+    CHECK(target.getPixel(4, 4) == premultiplied);
+
+    target.clear(0);
+    target.setLineColor(straight);
+    target.setLineWidth(1.0f);
+    target.drawLineF(2.5f, 2.5f, 20.5f, 2.5f);
+    CHECK(target.getPixel(8, 2) == premultiplied);
+
+    target.clear(0);
+    target.setFont(24, 0, "Helvetica", 0, 0, 400, false, false, false);
+    target.setTextColor(straight);
+    target.drawText(2, 2, "Color");
+    target.flush();
+    bool foundTextPixel = false;
+    for (int index = 0; index < target.getWidth() * target.getHeight(); ++index) {
+        const ege::color_t pixel = target.getPixelBuffer()[index];
+        if ((pixel >> 24U) == 0) continue;
+        foundTextPixel = true;
+        CHECK(((pixel >> 16U) & 0xFFU) <= 17U);
+        CHECK(((pixel >> 8U) & 0xFFU) <= 9U);
+        CHECK((pixel & 0xFFU) <= 5U);
+    }
+    CHECK(foundTextPixel);
+}
+
 void testUpdateRotateAndText() {
     CoreGraphicsRenderTarget target(320, 100);
     const ege::color_t rows[] = { 0xFF010203U, 0xFF040506U, 0xDEADBEEFU, 0xFF070809U, 0xFF0A0B0CU, 0xCAFEBABEU };
@@ -135,9 +186,10 @@ void testUpdateRotateAndText() {
 
 } // namespace
 
-int main() {
+int runCoreGraphicsRenderTargetTests() {
     testBufferResizeRopAndViewport();
     testTransferAlphaBlurAndPrimitives();
+    testStraightStateColorsBecomePremultipliedPixels();
     testUpdateRotateAndText();
     if (failures != 0) {
         std::cerr << failures << " CoreGraphicsRenderTarget check(s) failed\n";
@@ -145,4 +197,10 @@ int main() {
     }
     std::cout << "CoreGraphicsRenderTarget checks passed\n";
     return 0;
+}
+
+} // namespace ege
+
+int main() {
+    return ege::runCoreGraphicsRenderTargetTests();
 }

@@ -109,17 +109,13 @@ color_t getpixel(int x, int y, PCIMAGE pimg)
 void putpixel(int x, int y, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-
-    if (img->m_renderTarget) {
-        img->m_renderTarget->putPixel(x, y, color);
-        CONVERT_IMAGE_END;
-        return;
-    }
-
     x += img->m_vpt.left;
     y += img->m_vpt.top;
     if (in_rect(x, y, img->m_vpt.right, img->m_vpt.bottom)) {
-        img->m_pBuffer[y * img->m_width + x] = color;
+        color_t* const buffer = img->getbuffer_for_write(x, y, 1, 1);
+        if (buffer != NULL) {
+            buffer[y * img->m_width + x] = color;
+        }
     }
     CONVERT_IMAGE_END;
 }
@@ -792,6 +788,8 @@ void setfillcolor(color_t color, PIMAGE pimg)
     }
 #ifdef EGE_GDIPLUS
     img->set_pattern(NULL);
+#else
+    clearNativeFallbackPattern(img);
 #endif
     CONVERT_IMAGE_END;
 }
@@ -1942,6 +1940,8 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 #endif
 #ifdef EGE_GDIPLUS
     img->set_pattern(NULL);
+#else
+    clearNativeFallbackPattern(img);
 #endif
     CONVERT_IMAGE_END;
 }

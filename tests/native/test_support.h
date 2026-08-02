@@ -7,7 +7,8 @@
 #include <iostream>
 #include <string>
 
-namespace ege_test {
+namespace ege {
+namespace test {
 
 class Image final {
 public:
@@ -33,7 +34,7 @@ inline void check(bool condition, const char* expression, const char* file, int 
     }
 }
 
-#define EGE_CHECK(condition) ::ege_test::check((condition), #condition, __FILE__, __LINE__)
+#define EGE_CHECK(condition) ::ege::test::check((condition), #condition, __FILE__, __LINE__)
 
 inline std::uint64_t checksum(ege::PCIMAGE image)
 {
@@ -81,4 +82,9 @@ inline int finish(const char* suite)
     return 0;
 }
 
-} // namespace ege_test
+} // namespace test
+} // namespace ege
+
+// Preserve the existing test-only call sites while keeping every
+// implementation inside the repository's ege namespace.
+namespace ege_test = ::ege::test;

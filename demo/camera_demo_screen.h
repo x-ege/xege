@@ -8,6 +8,9 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
+namespace ege
+{
+
 inline void cameraDemoAvailableScreenSize(int* width, int* height)
 {
 #ifdef _WIN32
@@ -31,3 +34,5 @@ inline void cameraDemoAvailableScreenSize(int* width, int* height)
     *width = (std::max)(getwidth(), 640);
     *height = (std::max)(getheight(), 480);
 }
+
+} // namespace ege

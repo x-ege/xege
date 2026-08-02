@@ -12,7 +12,9 @@ struct WindowOptions {
 
 struct WindowEventSink {
     virtual ~WindowEventSink() = default;
-    virtual void onCloseRequested() = 0;
+    // Return true to accept the native close request. Returning false keeps the
+    // window open, matching the Win32 SetCloseHandler contract.
+    virtual bool onCloseRequested() = 0;
     virtual void onResize(int width, int height) = 0;
     virtual void onKey(std::uint32_t key, bool pressed, bool repeat) = 0;
     virtual void onText(std::uint32_t codepoint) = 0;

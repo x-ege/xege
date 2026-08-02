@@ -188,14 +188,19 @@ if(EGE_ENABLE_CAMERA_CAPTURE)
             "${EGE_COREMEDIA_FRAMEWORK}"
             "${EGE_ACCELERATE_FRAMEWORK}"
         )
-        target_compile_definitions(xege PRIVATE CCAP_ENABLE_FILE_PLAYBACK=1)
+        target_compile_definitions(xege PRIVATE
+            CCAP_ENABLE_FILE_PLAYBACK=1
+            CCAP_ENABLE_VIDEO_WRITER=1)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         find_package(Threads REQUIRED)
         target_link_libraries(xege PRIVATE Threads::Threads)
     elseif(WIN32)
+        target_sources(xege PRIVATE ${EGE_CCAP_WINDOWS_SOURCES})
         target_link_libraries(xege PRIVATE
             mf mfplat mfreadwrite mfuuid shlwapi propsys)
-        target_compile_definitions(xege PRIVATE CCAP_ENABLE_FILE_PLAYBACK=1)
+        target_compile_definitions(xege PRIVATE
+            CCAP_ENABLE_FILE_PLAYBACK=1
+            CCAP_ENABLE_VIDEO_WRITER=1)
     endif()
 endif()
 

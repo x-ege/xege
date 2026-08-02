@@ -64,11 +64,20 @@ set(EGE_CCAP_SOURCES
     3rdparty/ccap/src/ccap_imp_windows.cpp
     3rdparty/ccap/src/ccap_utils.cpp
     3rdparty/ccap/src/ccap_utils_c.cpp
+    3rdparty/ccap/src/ccap_writer.cpp
+    3rdparty/ccap/src/ccap_writer_c.cpp
 )
 
 set(EGE_CCAP_APPLE_SOURCES
     3rdparty/ccap/src/ccap_file_reader_apple.mm
     3rdparty/ccap/src/ccap_imp_apple.mm
+    3rdparty/ccap/src/ccap_writer_apple.mm
+)
+
+set(EGE_CCAP_WINDOWS_SOURCES
+    3rdparty/ccap/src/ccap_file_reader_windows.cpp
+    3rdparty/ccap/src/ccap_imp_windows_msmf.cpp
+    3rdparty/ccap/src/ccap_writer_windows.cpp
 )
 
 set(EGE_APPLE_MUSIC_SOURCES

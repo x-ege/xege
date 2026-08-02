@@ -97,7 +97,12 @@ foreach(DEMO_SRC ${DEMO_SRCS})
 
   ege_add_executable_demo(${DEMO_NAME} ${DEMO_SRC})
 
-  if(DEMO_NAME MATCHES "^camera_")
+  if(DEMO_NAME STREQUAL "game_cube_runner")
+    # Cube Runner uses std::clamp throughout its software rasterizer.
+    # Make that requirement explicit instead of relying on a compiler's
+    # platform-specific default language mode.
+    target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
+  elseif(DEMO_NAME MATCHES "^camera_")
     target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
     target_compile_definitions(${DEMO_NAME} PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
   endif()
