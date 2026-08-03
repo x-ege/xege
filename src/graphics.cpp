@@ -621,10 +621,8 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         if (pg == pg_w) {
             if (pg->callback_close) {
                 pg->callback_close();
-                return DefWindowProcW(hWnd, message, wParam, lParam);
-            } else {
-                return DefWindowProcW(hWnd, message, wParam, lParam);
             }
+            return DefWindowProcW(hWnd, message, wParam, lParam);
         }
         break;
     case WM_DESTROY:
@@ -957,6 +955,7 @@ DWORD WINAPI messageloopthread(_graph_setting* pg)
 {
     /* 执行应用程序初始化: */
     if (!init_instance(pg->instance)) {
+        pg->init_sem.add_permit();
         return 0xFFFFFFFF;
     }
 
