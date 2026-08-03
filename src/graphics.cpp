@@ -641,6 +641,7 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
     case WM_KEYUP:
     case WM_SYSKEYUP:
     case WM_CHAR:
+        // 这里的WM_SYSKEYDOWN和WM_SYSKEYUP是为了处理Alt键的按下和释放事件，但是如果以后需要让系统接收这两个消息，需要把他返回给默认处理
         // if (hWnd == pg->hwnd)
         {
             if (pg->unicode_char_message) {
