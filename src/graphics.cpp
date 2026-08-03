@@ -123,9 +123,9 @@ static void ui_msg_process(EGEMSG& qmsg)
     }
     qmsg.flag |= 1;
     if (qmsg.message >= WM_KEYFIRST && qmsg.message <= WM_KEYLAST) {
-        if (qmsg.message == WM_KEYDOWN) {
+        if (qmsg.message == WM_KEYDOWN || qmsg.message == WM_SYSKEYDOWN) {
             pg->egectrl_root->keymsgdown((unsigned)qmsg.wParam, 0); // 以后补加flag
-        } else if (qmsg.message == WM_KEYUP) {
+        } else if (qmsg.message == WM_KEYUP || qmsg.message == WM_SYSKEYUP) {
             pg->egectrl_root->keymsgup((unsigned)qmsg.wParam, 0); // 以后补加flag
         } else if (qmsg.message == WM_CHAR) {
             pg->egectrl_root->keymsgchar((unsigned)qmsg.wParam, 0); // 以后补加flag
@@ -466,7 +466,7 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
 {
     /* https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keydown */
     unsigned msg = 0;
-    if (message == WM_KEYDOWN && keycode < MAX_KEY_VCODE) {
+    if ((message == WM_KEYDOWN || message == WM_SYSKEYDOWN) && keycode < MAX_KEY_VCODE) {
         msg                      = 1;
         pg->keystatemap[keycode] = true;
 
@@ -485,7 +485,7 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
         }
 
     }
-    if (message == WM_KEYUP && keycode < MAX_KEY_VCODE) {
+    if ((message == WM_KEYUP || message == WM_SYSKEYUP) && keycode < MAX_KEY_VCODE) {
         pg->keystatemap[keycode] = false;
 
         if (pg->key_release_count[keycode] < UINT16_MAX) {
@@ -636,8 +636,11 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         }
         break;
     case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
     case WM_KEYUP:
+    case WM_SYSKEYUP:
     case WM_CHAR:
+        // 这里的WM_SYSKEYDOWN和WM_SYSKEYUP是为了处理Alt键的按下和释放事件，但是如果以后需要让系统接收这两个消息，需要把他返回给默认处理
         // if (hWnd == pg->hwnd)
         {
             if (pg->unicode_char_message) {
