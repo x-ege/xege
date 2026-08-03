@@ -99,7 +99,7 @@ unsigned long getlogodatasize();
 }
 #endif
 
-DWORD WINAPI messageloopthread(LPVOID lpParameter);
+DWORD WINAPI messageloopthread(_graph_setting* pg);
 
 _graph_setting::_graph_setting() : init_sem{0}
 {
@@ -621,9 +621,8 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         if (pg == pg_w) {
             if (pg->callback_close) {
                 pg->callback_close();
-            } else {
-                return DefWindowProcW(hWnd, message, wParam, lParam);
             }
+            return DefWindowProcW(hWnd, message, wParam, lParam);
         }
         break;
     case WM_DESTROY:
@@ -952,13 +951,11 @@ void closegraph()
 }
 
 /*private function*/
-DWORD WINAPI messageloopthread(LPVOID lpParameter)
+DWORD WINAPI messageloopthread(_graph_setting* pg)
 {
-    _graph_setting* pg = (_graph_setting*)lpParameter;
-    MSG             msg;
-
     /* 执行应用程序初始化: */
     if (!init_instance(pg->instance)) {
+        pg->init_sem.add_permit();
         return 0xFFFFFFFF;
     }
 
@@ -981,6 +978,7 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
 
     pg->init_sem.add_permit();
 
+    MSG msg;
     while (!pg->exit_window) {
         if (GetMessageW(&msg, NULL, 0, 0)) {
             TranslateMessage(&msg);
