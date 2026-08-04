@@ -79,6 +79,7 @@
 #endif
 
 #include "ege/stdint.h"
+#include "ege/color.h"
 
 #if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include <windef.h>
@@ -158,19 +159,6 @@
 #endif
 
 #define EGE_GDIPLUS
-
-#define EGERGBA(r, g, b, a)  ((::ege::color_t)(((r) << 16) | ((g) << 8) | (b) | ((a) << 24)))
-#define EGERGB(r, g, b)      EGERGBA(r, g, b, 0xFF)
-#define EGEARGB(a, r, g, b)  EGERGBA(r, g, b, a)
-#define EGEACOLOR(a, color)  ((::ege::color_t)(((color) & 0xFFFFFF) | ((a) << 24)))
-#define EGECOLORA(color, a)  EGEACOLOR(a, color)
-#define EGEGET_R(c)          (((c) >> 16) & 0xFF)
-#define EGEGET_G(c)          (((c) >> 8) & 0xFF)
-#define EGEGET_B(c)          (((c)) & 0xFF)
-#define EGEGET_A(c)          (((c) >> 24) & 0xFF)
-#define EGEGRAY(gray)        EGERGB(gray, gray, gray)
-#define EGEGRAYA(gray, a)    EGERGBA(gray, gray, gray, a)
-#define EGEAGRAY(a, gray)    EGEGRAYA(gray, a)
 
 /* you can also use 932 as shift-jis, 950 as big5 ... */
 /* see https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers */
@@ -315,13 +303,6 @@ enum message_mouse
     MSG_MOUSE_RIGHT 	 = 0x02,    ///< 鼠标右键
     MSG_MOUSE_MID   	 = 0x04     ///< 鼠标中键（滚轮按键）
 };
-
-
-#ifndef EGE_COLOR_T_TYPEDEF
-#define EGE_COLOR_T_TYPEDEF
-/// @brief 颜色类型定义，使用32位无符号整数表示ARGB颜色
-typedef uint32_t color_t;
-#endif
 
 /**
  * @enum alpha_type
