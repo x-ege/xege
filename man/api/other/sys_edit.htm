@@ -1,0 +1,311 @@
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>sys_edit 类</title>
+    <link rel="stylesheet" type="text/css" href="../../css/index-table.css"/>
+</head>
+<body>
+
+<pre><font size="4"><a href="../../index.htm">主页</a> / <a href="../index.htm">库函数目录</a> / <a href="index.htm">其它</a> / sys_edit 类</font>
+<font size="4">
+
+<font size="4" color="#0000FF"><strong>头文件：</strong></font>
+<font color="#008080">#include &lt;ege/sys_edit.h&gt;</font>
+
+<font size="4" color="#0000FF"><strong>继承自：</strong></font>
+<font color="#008080">egeControlBase</font>
+
+<hr>
+
+<h3><font color="#0000FF">构造函数</font></h3>
+<pre><font color=#0000FF>sys_edit</font>(<font color=#0000FF>int </font>inherit = inherit_level_e, ege::egeControlBase* pParent = NULL);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+使用默认参数即可构造输入框对象。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>inherit</td><td>继承级别（通常使用默认值）</td></tr>
+    <tr><td>pParent</td><td>父控件指针（通常为 NULL）</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<h3><font color="#0000FF">成员函数</font></h3>
+
+<font size="4" color="#0000FF"><strong>create()</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>create</font>(<font color=#0000FF>bool </font>multiline = <font color=#0000FF>false</font>, <font color=#0000FF>int </font>scrollbar = 2);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+创建输入框。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>multiline</td><td>是否为多行输入框，true 为多行，false 为单行。</td></tr>
+    <tr><td>scrollbar</td><td>未实现，暂保留。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+0
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>move()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>move</font>(<font color=#0000FF>int </font>x, <font color=#0000FF>int </font>y);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+移动输入框到目标位置。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>x, y</td><td>目标位置坐标。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>size()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>size</font>(<font color=#0000FF>int </font>w, <font color=#0000FF>int </font>h);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框大小。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>w, h</td><td>输入框的宽度和高度。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>visible()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>visible</font>(<font color=#0000FF>bool </font>bvisable);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框可见性。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>bvisable</td><td>true 表示可见，false 表示不可见。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>setfocus()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>setfocus</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+使输入框获得输入焦点。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>gettext()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>gettext</font>(<font color=#0000FF>int </font>maxlen, LPSTR text);   <font color=#008000>// 字符型</font>
+<font color=#0000FF>void </font><font color=#008080>gettext</font>(<font color=#0000FF>int </font>maxlen, LPWSTR text);  <font color=#008000>// 宽字符型</font></pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取输入框的当前内容，写入字符缓冲区 text 中（超出 maxlen 时截断）。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>maxlen</td><td>缓冲区最大可容纳字符数（含末尾结束符）。</td></tr>
+    <tr><td>text</td><td>字符缓冲区首地址。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>settext()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>settext</font>(LPCSTR text);   <font color=#008000>// 字符型</font>
+<font color=#0000FF>void </font><font color=#008080>settext</font>(LPCWSTR text);  <font color=#008000>// 宽字符型</font></pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框的内容。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>text</td><td>要设置的内容字符串。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>getx()</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>getx</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取输入框左上角的 x 坐标。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+输入框左上角的 x 坐标。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>gety()</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>gety</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取输入框左上角的 y 坐标。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+输入框左上角的 y 坐标。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>getw() , width()</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>getw</font>();
+<font color=#0000FF>int </font><font color=#008080>width</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取输入框的宽度。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+输入框的宽度。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>geth() , height()</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>geth</font>();
+<font color=#0000FF>int </font><font color=#008080>height</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取输入框的高度。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+输入框的高度。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>setmaxlen()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>setmaxlen</font>(<font color=#0000FF>int </font>maxlen);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框允许输入的最大字符数（英文字符、标点、汉字均计为一个字符）。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>maxlen</td><td>最大字符数。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>setbgcolor()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>setbgcolor</font>(<font color=#800080>color_t </font>bgcolor);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框背景颜色。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>bgcolor</td><td>背景颜色值。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>setcolor()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>setcolor</font>(<font color=#800080>color_t </font>color);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框的文字颜色。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>color</td><td>文字颜色值。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>setfont()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>setfont</font>(<font color=#0000FF>int </font>h, <font color=#0000FF>int </font>w, LPCSTR fontface);
+<font color=#0000FF>void </font><font color=#008080>setfont</font>(<font color=#0000FF>int </font>h, <font color=#0000FF>int </font>w, LPCWSTR fontface);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框文字字体。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>h</td><td>字体高度。</td></tr>
+    <tr><td>w</td><td>字符宽度（0 表示自适应）。</td></tr>
+    <tr><td>fontface</td><td>字体样式名（如 "宋体"）。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>setreadonly()</strong></font>
+<pre><font color=#0000FF>void </font><font color=#008080>setreadonly</font>(<font color=#0000FF>bool </font>readonly);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置输入框是否为只读（只读状态下无法输入）。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>readonly</td><td>true 为只读，false 为允许输入（创建后默认为允许）。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>destroy()</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>destroy</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+销毁输入框。销毁后需重新创建才能使用。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+<table>
+    <tr><th>值</th><th>含义</th></tr>
+    <tr><td>1</td><td>进行了销毁操作。</td></tr>
+    <tr><td>0</td><td>之前已经被销毁。</td></tr>
+</table>
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>示例：</strong></font>
+（无）
+
+</font>
+</pre>
+
+</body>

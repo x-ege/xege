@@ -65,6 +65,8 @@ g++ yourfile.cpp -lgraphics -lgdi32 -limm32 -lmsimg32 -lole32 -loleaut32 -lwinmm
 <font color=#FF0000 size=5>需要依次加入graphics, gdi32, imm32, msimg32, ole32, oleaut32, winmm, uuid共8个</font>
 注意次序不正确可能会引起编译错误
 
+另外，从24.04版本开始，GCC的链接参数只需<font color=#FF0000 size=4>-lgraphics -lgdi32 -lgdiplus</font>即可。
+
 例如在Code::Blocks下（需要建立project），在菜单 - Project - build options，设置Linker选项，如图：
 <img src="cb.png">
 

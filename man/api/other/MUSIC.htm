@@ -1,0 +1,199 @@
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>MUSIC 类</title>
+    <link rel="stylesheet" type="text/css" href="../../css/index-table.css"/>
+</head>
+<body>
+
+<pre><font size="4"><a href="../../index.htm">主页</a> / <a href="../index.htm">库函数目录</a> / <a href="index.htm">其它</a> / MUSIC 类</font>
+<font size="4">
+
+<font size="4" color="#0000FF"><strong>头文件：</strong></font>
+<font color="#008080">#include &lt;graphics.h&gt;</font>
+
+<hr>
+
+<h3><font color="#0000FF">构造函数</font></h3>
+<pre><font color=#0000FF>MUSIC</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+构造一个 MUSIC 对象，初始状态下未打开任何音乐文件。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+（无）
+
+<hr>
+
+<h3><font color="#0000FF">成员函数</font></h3>
+
+<font size="4" color="#0000FF"><strong>OpenFile()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>OpenFile</font>(LPCSTR  filepath);
+<font color=#800080>DWORD </font><font color=#008080>OpenFile</font>(LPCWSTR filepath);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+打开音乐文件。成功打开后播放状态为 <font color="#800080">MUSIC_MODE_STOP</font>。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>filepath</td><td>带路径的文件名。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+操作成功返回 0，操作失败返回非 0。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>IsOpen()</strong></font>
+<pre><font color=#0000FF>int </font><font color=#008080>IsOpen</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+判断是否已经打开了音乐文件。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+<table>
+    <tr><th>值</th><th>含义</th></tr>
+    <tr><td>1</td><td>已打开音乐文件。</td></tr>
+    <tr><td>0</td><td>未打开音乐文件。</td></tr>
+</table>
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>GetPlayStatus()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>GetPlayStatus</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取当前播放状态。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+播放状态，为以下值之一：
+<table>
+    <tr><th>常量</th><th>含义</th></tr>
+    <tr><td><font color="#800080">MUSIC_MODE_NOT_OPEN</font></td><td>没有正确打开音乐文件。</td></tr>
+    <tr><td><font color="#800080">MUSIC_MODE_NOT_READY</font></td><td>设备未准备好（较少使用）。</td></tr>
+    <tr><td><font color="#800080">MUSIC_MODE_PAUSE</font></td><td>暂停中。</td></tr>
+    <tr><td><font color="#800080">MUSIC_MODE_PLAY</font></td><td>正在播放。</td></tr>
+    <tr><td><font color="#800080">MUSIC_MODE_STOP</font></td><td>成功打开后，或播放完毕后的状态。</td></tr>
+    <tr><td><font color="#800080">MUSIC_MODE_OPEN</font></td><td>打开中（较少使用）。</td></tr>
+    <tr><td><font color="#800080">MUSIC_MODE_SEEK</font></td><td>定位中（较少使用）。</td></tr>
+</table>
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>Play()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>Play</font>(<font color=#800080>DWORD </font>dwFrom = MUSIC_ERROR, <font color=#800080>DWORD </font>dwTo = MUSIC_ERROR);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+播放音乐。<br>
+- 无参数时，为继续播放（从暂停位置恢复）。<br>
+- 调用 <code>Play(0)</code> 为从头开始播放。<br>
+播放状态变为 <font color="#800080">MUSIC_MODE_PLAY</font>。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>dwFrom</td><td>音乐播放开始位置（毫秒）。</td></tr>
+    <tr><td>dwTo</td><td>音乐播放结束位置（毫秒）。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+操作成功返回 0，操作失败返回非 0。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>Pause()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>Pause</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+暂停播放。播放状态变为 <font color="#800080">MUSIC_MODE_PAUSE</font>。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+操作成功返回 0，操作失败返回非 0。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>Stop()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>Stop</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+停止播放。播放状态变为 <font color="#800080">MUSIC_MODE_STOP</font>。<br>
+播放将停止，但播放进度保持不变（下次播放从停止位置继续）。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+操作成功返回 0，操作失败返回非 0。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>SetVolume()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>SetVolume</font>(<font color=#0000FF>float </font>value);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+设置播放音量。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>value</td><td>音量值，范围 0.0 ~ 1.0。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+操作成功返回 0，操作失败返回非 0。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>Seek()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>Seek</font>(<font color=#800080>DWORD </font>dwTo);</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+定位播放进度。（目前无效，建议使用 <code>Play(dwTo)</code> 代替。）
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+<table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td>dwTo</td><td>播放进度位置（毫秒）。</td></tr>
+</table>
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+操作成功返回 0，操作失败返回非 0。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>GetPosition()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>GetPosition</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取当前播放进度。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+当前播放进度，单位毫秒。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>GetLength()</strong></font>
+<pre><font color=#800080>DWORD </font><font color=#008080>GetLength</font>();</pre>
+<font size="4" color="#0000FF"><strong>功能：</strong></font>
+获取音乐文件的总时长。
+
+<font size="4" color="#0000FF"><strong>参数：</strong></font>
+（无）
+
+<font size="4" color="#0000FF"><strong>返回值：</strong></font>
+音乐总时长，单位毫秒。
+
+<hr>
+
+<font size="4" color="#0000FF"><strong>示例：</strong></font>
+（无）
+
+</font>
+</pre>
+
+</body>
