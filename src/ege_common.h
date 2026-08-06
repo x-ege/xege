@@ -19,7 +19,6 @@
 #include "utils.h"
 #include "color.h"
 #include "encodeconv.h"
-#include "message.h"
 #include "mouse.h"
 #include "keyboard.h"
 #include "window.h"
