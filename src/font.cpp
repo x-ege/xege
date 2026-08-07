@@ -1,8 +1,6 @@
 #include "ege_head.h"
 #include "ege_common.h"
 
-#include "font.h"
-
 namespace ege
 {
 
