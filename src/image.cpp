@@ -2,7 +2,7 @@
 * EGE (Easy Graphics Engine)
 * filename  image.cpp
 
-本文件集中所有对image基本操作的接口和类定义
+本文件集中所有对image基本操作的接口和类定义，不基于stb_image
 */
 
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -21,10 +21,6 @@
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL
 // #endif
-
-#include "external/stb_image.h"
-#include "external/stb_image_write.h"
-#include "stb_image_impl.h"
 
 #include <math.h>
 #include <limits.h>
@@ -451,33 +447,6 @@ void IMAGE::putimage(int xDest, int yDest, DWORD dwRop) const
     CONVERT_IMAGE_END;
 }
 
-static graphics_errors convertStbImageError(const char* errorStr)
-{
-    graphics_errors error = grError;
-
-    if (!isEmpty(errorStr)) {
-        if (startsWith(errorStr, "can't fopen")) {
-            error = grFileNotFound;
-        } else if (startsWith(errorStr, "outofmem")) {
-            error = grOutOfMemory;
-        } else if (startsWith(errorStr, "too large") || startsWith(errorStr, "unsupported") ||
-                   startsWith(errorStr, "unknown")   || startsWith(errorStr, "wrong")) {
-            error = grUnsupportedFormat;
-        } else if (startsWith(errorStr, "bad") || startsWith(errorStr, "invalid") || startsWith(errorStr, "corrupt") ||
-                   startsWith(errorStr, "not") || startsWith(errorStr, "missing") || startsWith(errorStr, "illegal")){
-            error = grInvalidFileFormat;
-        }
-    }
-
-    return error;
-}
-
-int IMAGE::getimage(const char* filename, int zoomWidth, int zoomHeight)
-{
-    const std::wstring& filename_w = mb2w(filename);
-    return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
-}
-
 graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
 {
     /* 将图像尺寸调整至和 bitmap 一致 */
@@ -513,112 +482,6 @@ graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap)
     bitmap.UnlockBits(&bitmapData);
 
     return (bitmap.GetLastStatus() == Gdiplus::Ok) ? grOk : grError;
-}
-
-int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
-{
-    (void)zoomWidth, (void)zoomHeight; // ignore
-    inittest(L"IMAGE::getimage");
-
-    if (isEmpty(filename))
-        return grParamError;
-
-    FILE* fp = _wfopen(filename, L"rb");
-    if (fp == NULL)
-        return grFileNotFound;
-
-    graphics_errors error = grOk;
-
-    int width = 0, height = 0;
-    int channelsInFile = 0;
-
-    /* 尝试使用 stb_image 加载图像(支持格式: PNG, BMP, JPEG, GIF, PSD, HDR, PGM, PPM, PNM, TGA)*/
-    color_t* pixels = (color_t*)stbi_load_from_file(fp, &width, &height, &channelsInFile, STBI_rgb_alpha);
-    if (pixels) {
-        const int pixelCount = width * height;
-
-        if (this->resize_f(width, height) == grOk) {
-            /* stb_image 返回的像素颜色存储按字节从高到低依次为 ABGR，和 ege 的存储顺序 ARGB 不一致，需要交换 R 和 B 通道. */
-            ABGRToARGB((color_t*)m_pBuffer, pixels, pixelCount);
-            image_premultiply((color_t*)m_pBuffer,  width, height);
-            error = grOk;
-        } else {
-            error = grAllocError;
-        }
-        stbi_image_free(pixels);
-    } else {
-        /* 加载失败，将错误信息转换为相应的错误码 */
-        error = convertStbImageError(stbi_failure_reason());
-    }
-
-    fclose(fp);
-
-    /* 如图像格式不受 stb_image 支持或者 stb_image 认为格式错误，再次尝试使用 GDI+ 读取 */
-    if (error == grUnsupportedFormat || error == grInvalidFileFormat) {
-        /* GDI+ 支持格式：BMP, GIF, JPEG, PNG, TIFF, Exif, WMF, EMF */
-        Gdiplus::Bitmap bitmap(filename);
-
-        /* GDI+ bug: GDI+ Bitmap 只会报 InvalidParameter 错误，无法得到具体错误类型信息 */
-        if (bitmap.GetLastStatus() != Gdiplus::Ok) {
-            /* 通过文件扩展名判断是否是支持解码的格式，格式支持为 grInvalidFileFormat，格式不支持则为 grUnsupportedFormat. */
-            ImageFormat       imageFormat  = checkImageFormatByFileName(filename);
-            ImageDecodeFormat decodeFormat = getImageDecodeFormat(imageFormat);
-
-            error = (decodeFormat == ImageDecodeFormat_NULL) ? grUnsupportedFormat : grInvalidFileFormat;
-        } else {
-            /* 从 GDI+ Bitmap 中读取图像数据，写入 ege IMAGE 中*/
-            error = getimage_from_bitmap(this, bitmap);
-        }
-    }
-
-    return error;
-}
-
-int IMAGE::saveimage(const char* filename, bool withAlphaChannel) const
-{
-    return saveimage(mb2w(filename).c_str(), withAlphaChannel);
-}
-
-int IMAGE::saveimage(const wchar_t* filename, bool withAlphaChannel) const
-{
-    return ege::saveimage(this, filename, withAlphaChannel);
-}
-
-int IMAGE::savepngimg(FILE* fp, bool withAlphaChannel) const
-{
-    int channels = withAlphaChannel ? 4 : 3;
-
-    int pixelCount = m_width * m_height;
-    int stride = channels * m_width;
-    uint8_t* buffer = (uint8_t*)malloc(channels * pixelCount);
-
-    if (buffer == NULL ) {
-        return grOutOfMemory;
-    }
-
-    if (withAlphaChannel) {
-        // 像素格式转换 (BGRABGRA --> RGBARGBA)
-        image_unpremultiply((color_t*)buffer, (color_t*)m_pBuffer, m_width, m_height);
-        ARGBToABGR((color_t*)buffer, (color_t*)buffer, pixelCount);
-    } else {
-        // 像素格式转换 (BGRABGRA --> RGBRGB)
-        uint8_t* dst = buffer;
-        const color_t* src = (color_t*)m_pBuffer;
-        for (int i = 0; i < pixelCount; i++) {
-            const color_t color = color_unpremultiply(*src);
-            dst[0] = EGEGET_R(color);
-            dst[1] = EGEGET_G(color);
-            dst[2] = EGEGET_B(color);
-
-            dst += channels;
-            src++;
-        }
-    }
-
-    int result = stbi_write_png_to_func(stbi_write_to_FILE_func,fp, m_width, m_height, channels, buffer, stride);
-    free(buffer);
-
-    return result ? grOk : grError;
 }
 
 int IMAGE::getimage(const char* resType, const char* resName, int zoomWidth, int zoomHeight)
@@ -2769,18 +2632,6 @@ void putimage(PIMAGE imgDest, int xDest, int yDest, int widthDest, int heightDes
     pSrcImg->putimage(imgDest, xDest, yDest, widthDest, heightDest, xSrc, ySrc, dwRop);
 }
 
-int getimage(PIMAGE imgDest, const char* imageFile, int zoomWidth, int zoomHeight)
-{
-    EGE_GETIMAGE_CHK_NULL(imgDest);
-    return imgDest->getimage(imageFile, zoomWidth, zoomHeight);
-}
-
-int getimage(PIMAGE imgDest, const wchar_t* imageFile, int zoomWidth, int zoomHeight)
-{
-    EGE_GETIMAGE_CHK_NULL(imgDest);
-    return imgDest->getimage(imageFile, zoomWidth, zoomHeight);
-}
-
 int getimage(PIMAGE imgDest, const char* resType, const char* resName, int zoomWidth, int zoomHeight)
 {
     EGE_GETIMAGE_CHK_NULL(imgDest);
@@ -2960,91 +2811,6 @@ int imagefilter_blurring(
     }
 
     CONVERT_IMAGE_END;
-    return ret;
-}
-
-static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
-{
-    int     len_suffix, len_text;
-    LPCWSTR p_suffix;
-    LPCWSTR p_text;
-    len_suffix = (int)wcslen(suffix);
-    len_text   = (int)wcslen(text);
-
-    if ((len_text < len_suffix) || (len_text == 0)) {
-        return FALSE;
-    }
-
-    p_suffix = suffix;
-    p_text   = (text + (len_text - len_suffix));
-
-    while (*p_text != 0) {
-        if (towupper(*p_text) != towupper(*p_suffix)) {
-            return FALSE;
-        }
-        p_text++;
-        p_suffix++;
-    }
-
-    return TRUE;
-}
-
-int saveimage(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
-{
-    const std::wstring& filename_w = mb2w(filename);
-    return saveimage(pimg, filename_w.c_str(), withAlphaChannel);
-}
-
-int saveimage(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
-{
-    PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    int     ret = 0;
-
-    if (img) {
-        if (nocaseends(L".bmp", filename)) {
-            ret = savebmp(pimg, filename, withAlphaChannel);
-        } else if (nocaseends(L".png", filename)) {
-            ret = savepng(pimg, filename, withAlphaChannel);
-        } else {
-            ret = savepng(pimg, filename, withAlphaChannel);
-        }
-    }
-
-    CONVERT_IMAGE_END;
-    return ret;
-}
-
-int getimage_pngfile(PIMAGE pimg, const char* filename)
-{
-    const std::wstring& filename_w = mb2w(filename);
-    return getimage_pngfile(pimg, filename_w.c_str());
-}
-
-int getimage_pngfile(PIMAGE pimg, const wchar_t* filename)
-{
-    return getimage(pimg, filename);
-}
-
-int savepng(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
-{
-    const std::wstring& filename_w = mb2w(filename);
-    return savepng(pimg, filename_w.c_str(), withAlphaChannel);
-}
-
-int savepng(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
-{
-    if (isEmpty(filename))
-        return grParamError;
-
-    pimg = CONVERT_IMAGE_CONST(pimg);
-    FILE* fp = _wfopen(filename, L"wb");
-
-    if (fp == NULL) {
-        return grIOerror;
-    }
-
-    int ret = pimg->savepngimg(fp, withAlphaChannel);
-    fclose(fp);
     return ret;
 }
 
