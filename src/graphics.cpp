@@ -240,14 +240,7 @@ int graphupdate(_graph_setting* pg)
         return grNoInitGraph;
     }
 
-    if (IsWindowVisible(pg->hwnd)) {
-        swapbuffers();
-        updateFrameRate();
-    } else {
-        updateFrameRate(false);
-    }
-
-    pg->update_mark_count = UPDATE_MAX_CALL;
+    /* 先调整窗口大小，再交换缓冲区，否则放大窗口时会出现白边 */
 
     RECT rect, crect;
     HWND hwnd;
@@ -272,6 +265,15 @@ int graphupdate(_graph_setting* pg)
         SetWindowPos(pg->hwnd, NULL, 0, 0, rect.right + _dw - rect.left, rect.bottom + _dh - rect.top,
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
     }
+
+	if (IsWindowVisible(pg->hwnd)) {
+		swapbuffers();
+		updateFrameRate();
+	} else {
+		updateFrameRate(false);
+	}
+
+	pg->update_mark_count = UPDATE_MAX_CALL;
 
     return grOk;
 }
