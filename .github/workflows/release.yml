@@ -43,6 +43,8 @@ jobs:
       
       - name: Validate release and extract version
         id: validate
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -e
           
@@ -56,7 +58,11 @@ jobs:
           
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             # Manual trigger - test release
-            VERSION="${{ inputs.version }}"
+            VERSION="$INPUT_VERSION"
+            if [[ ! "$VERSION" =~ ^[A-Za-z0-9._-]+$ ]]; then
+              echo "Error: Version must contain only letters, numbers, dots, underscores, and hyphens."
+              exit 1
+            fi
             echo "Manual test release triggered with version: $VERSION"
             echo "is_official_release=false" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -479,6 +485,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
@@ -493,8 +500,14 @@ jobs:
 
       - name: Package executables
         shell: powershell
+        env:
+          EGE_VERSION: ${{ needs.validate-and-setup.outputs.version }}
         run: |
-          $version = "${{ needs.validate-and-setup.outputs.version }}"
+          $version = $env:EGE_VERSION
+          if ($version -notmatch '^[A-Za-z0-9._-]+$') {
+            Write-Error "Invalid version string: $version"
+            exit 1
+          }
           $dist = "dist/ege-executables-$version-windows-msvc2022-x64-release"
           New-Item -ItemType Directory -Force -Path $dist | Out-Null
 
@@ -764,7 +777,10 @@ jobs:
           Official user-facing releases are published from x-ege/xege-sdk.
           EOF
 
-            7z a -tzip -mx=9 "$PACKAGE_DIR/ege-libs-${VERSION}-${slug}.zip" "$package_root"
+            (
+              cd "$PACKAGE_DIR"
+              7z a -tzip -mx=9 "ege-libs-${VERSION}-${slug}.zip" "ege-libs-${VERSION}-${slug}"
+            )
           }
 
           create_lib_package "vs2022" "Visual Studio 2022 / MSVC v143" "vs2022"
@@ -814,10 +830,19 @@ jobs:
           set -e
 
           api="https://api.github.com/repos/${{ github.repository }}"
-          release_json=$(curl -fsSL \
+          http_code=$(curl -sSL -o release.json -w '%{http_code}' \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
-            "$api/releases/tags/$TAG_NAME" || true)
+            "$api/releases/tags/$TAG_NAME")
+
+          if [ "$http_code" = "200" ]; then
+            release_json=$(cat release.json)
+          elif [ "$http_code" = "404" ]; then
+            release_json=""
+          else
+            echo "ERROR: Unexpected HTTP status $http_code when querying release for tag $TAG_NAME"
+            exit 1
+          fi
 
           if [ -n "$release_json" ]; then
             release_id=$(echo "$release_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
