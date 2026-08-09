@@ -910,9 +910,7 @@ int IMAGE::putimage_withalpha(PIMAGE imgDest,   // handle to dest
     const PIMAGE img = CONVERT_IMAGE(imgDest);
     if (img) {
         PCIMAGE imgSrc = this;
-        int     y, x;
-        DWORD   ddx, dsx;
-        DWORD * pdp, *psp;
+
         // fix rect
         fix_rect_1size(img, imgSrc, &xDest, &yDest, &xSrc, &ySrc, &widthSrc, &heightSrc);
 
