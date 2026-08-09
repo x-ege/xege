@@ -28,6 +28,12 @@ jobs:
       version: ${{ steps.validate.outputs.version }}
       version_tag: ${{ steps.validate.outputs.version_tag }}
       create_github_release: ${{ steps.validate.outputs.create_github_release }}
+      release_channel: ${{ steps.validate.outputs.release_channel }}
+      release_name: ${{ steps.validate.outputs.release_name }}
+      release_draft: ${{ steps.validate.outputs.release_draft }}
+      release_prerelease: ${{ steps.validate.outputs.release_prerelease }}
+      release_make_latest: ${{ steps.validate.outputs.release_make_latest }}
+      replace_existing_release: ${{ steps.validate.outputs.replace_existing_release }}
     
     steps:
       - name: Checkout repository
@@ -56,6 +62,12 @@ jobs:
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "version_tag=test-$VERSION" >> $GITHUB_OUTPUT
             echo "create_github_release=false" >> $GITHUB_OUTPUT
+            echo "release_channel=manual-test" >> $GITHUB_OUTPUT
+            echo "release_name=EGE $VERSION Test Build" >> $GITHUB_OUTPUT
+            echo "release_draft=false" >> $GITHUB_OUTPUT
+            echo "release_prerelease=true" >> $GITHUB_OUTPUT
+            echo "release_make_latest=false" >> $GITHUB_OUTPUT
+            echo "replace_existing_release=false" >> $GITHUB_OUTPUT
             
           elif [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.ref_name }}" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
             # Tag push - try official release, fallback to test release if validation fails
@@ -114,6 +126,12 @@ jobs:
               echo "version=$VERSION" >> $GITHUB_OUTPUT
               echo "version_tag=$TAG_NAME" >> $GITHUB_OUTPUT
               echo "create_github_release=true" >> $GITHUB_OUTPUT
+              echo "release_channel=official" >> $GITHUB_OUTPUT
+              echo "release_name=EGE $VERSION" >> $GITHUB_OUTPUT
+              echo "release_draft=true" >> $GITHUB_OUTPUT
+              echo "release_prerelease=false" >> $GITHUB_OUTPUT
+              echo "release_make_latest=true" >> $GITHUB_OUTPUT
+              echo "replace_existing_release=false" >> $GITHUB_OUTPUT
             else
               # Tag validation failed, fallback to test release
               echo "⚠ Tag validation failed: $TAG_VALIDATION_ERROR"
@@ -130,6 +148,12 @@ jobs:
               echo "version=$VERSION" >> $GITHUB_OUTPUT
               echo "version_tag=test-${TAG_NAME}" >> $GITHUB_OUTPUT
               echo "create_github_release=false" >> $GITHUB_OUTPUT
+              echo "release_channel=invalid-tag-test" >> $GITHUB_OUTPUT
+              echo "release_name=EGE $VERSION Test Build" >> $GITHUB_OUTPUT
+              echo "release_draft=false" >> $GITHUB_OUTPUT
+              echo "release_prerelease=true" >> $GITHUB_OUTPUT
+              echo "release_make_latest=false" >> $GITHUB_OUTPUT
+              echo "replace_existing_release=false" >> $GITHUB_OUTPUT
             fi
             
           elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/master" ]; then
@@ -140,14 +164,20 @@ jobs:
             fi
             COMMIT_SHA="${{ github.sha }}"
             COMMIT_SHORT=$(echo "$COMMIT_SHA" | cut -c1-7)
-            VERSION="${VERSION}-dev-${COMMIT_SHORT}"
-            
+            VERSION="${VERSION}-nightly-${COMMIT_SHORT}"
+
             echo "Master branch push detected"
-            echo "Creating test release with version: $VERSION"
+            echo "Creating nightly preview release with version: $VERSION"
             echo "is_official_release=false" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "version_tag=dev-${COMMIT_SHORT}" >> $GITHUB_OUTPUT
-            echo "create_github_release=false" >> $GITHUB_OUTPUT
+            echo "version_tag=nightly" >> $GITHUB_OUTPUT
+            echo "create_github_release=true" >> $GITHUB_OUTPUT
+            echo "release_channel=nightly" >> $GITHUB_OUTPUT
+            echo "release_name=EGE Nightly Preview ($VERSION)" >> $GITHUB_OUTPUT
+            echo "release_draft=false" >> $GITHUB_OUTPUT
+            echo "release_prerelease=true" >> $GITHUB_OUTPUT
+            echo "release_make_latest=false" >> $GITHUB_OUTPUT
+            echo "replace_existing_release=true" >> $GITHUB_OUTPUT
             
           else
             echo "Error: Unexpected trigger condition"
@@ -435,11 +465,70 @@ jobs:
           name: libs-${{ matrix.name }}
           path: artifacts/${{ matrix.lib_dir }}/
           retention-days: 7
-  
-  # Job 4: Create release package
+
+  # Job 4: Build release executables
+  build-release-executables:
+    name: Build Release Executables
+    needs: validate-and-setup
+    permissions:
+      contents: read
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build VS2022 x64 Release demos and tools
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path build-exe | Out-Null
+          Set-Location build-exe
+          cmake .. -A x64 -T v143 -DEGE_BUILD_DEMO=ON
+          cmake --build . --config Release --parallel
+
+      - name: Package executables
+        shell: powershell
+        run: |
+          $version = "${{ needs.validate-and-setup.outputs.version }}"
+          $dist = "dist/ege-executables-$version-windows-msvc2022-x64-release"
+          New-Item -ItemType Directory -Force -Path $dist | Out-Null
+
+          $exeFiles = Get-ChildItem -Path build-exe -Recurse -Filter "*.exe" |
+            Where-Object { $_.FullName -notmatch "\\CMakeFiles\\" }
+
+          if (-not $exeFiles) {
+            Write-Error "No executable files were produced."
+            exit 1
+          }
+
+          foreach ($exe in $exeFiles) {
+            Copy-Item -LiteralPath $exe.FullName -Destination $dist -Force
+          }
+
+          "EGE executable preview build" | Set-Content -Encoding UTF8 "$dist/README.txt"
+          "Version: $version" | Add-Content -Encoding UTF8 "$dist/README.txt"
+          "Source commit: ${{ github.sha }}" | Add-Content -Encoding UTF8 "$dist/README.txt"
+          "Toolchain: Visual Studio 2022 / MSVC v143 / x64 / Release" | Add-Content -Encoding UTF8 "$dist/README.txt"
+
+          Compress-Archive -Path $dist -DestinationPath "$dist.zip" -Force
+          Get-ChildItem dist
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ege-executables-${{ needs.validate-and-setup.outputs.version }}-windows-msvc2022-x64-release
+          path: dist/*.zip
+          retention-days: 30
+
+  # Job 5: Create release package
   create-release-package:
     name: Create Release Package
-    needs: [validate-and-setup, build-msvc-libraries, build-mingw-windows-libraries, build-cross-libraries]
+    needs: [validate-and-setup, build-msvc-libraries, build-mingw-windows-libraries, build-cross-libraries, build-release-executables]
     permissions:
       contents: write  # Required for creating releases and uploading assets
     runs-on: ubuntu-latest
@@ -477,6 +566,12 @@ jobs:
         with:
           pattern: libs-*
           path: artifacts/
+
+      - name: Download executable artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ege-executables-*
+          path: executable-assets/
       
       - name: Install packaging tools
         run: |
@@ -618,7 +713,72 @@ jobs:
           
           # Create version.txt
           echo "$VERSION" > "$RELEASE_DIR/version.txt"
-      
+
+      - name: Create per-toolchain library packages
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_DIR="ege-${VERSION}"
+          PACKAGE_DIR="release-assets"
+          mkdir -p "$PACKAGE_DIR"
+
+          copy_common_files() {
+            local package_root="$1"
+            mkdir -p "$package_root"
+            cp -r "$RELEASE_DIR/include" "$package_root/"
+            cp "$RELEASE_DIR/CMakeLists.txt" "$package_root/"
+            cp "$RELEASE_DIR/version.txt" "$package_root/"
+            if [ -f "$RELEASE_DIR/说明.txt" ]; then
+              cp "$RELEASE_DIR/说明.txt" "$package_root/"
+            fi
+            if [ -d "$RELEASE_DIR/doc" ]; then
+              cp -r "$RELEASE_DIR/doc" "$package_root/"
+            fi
+          }
+
+          create_lib_package() {
+            local slug="$1"
+            local label="$2"
+            local lib_path="$3"
+            local package_root="$PACKAGE_DIR/ege-libs-${VERSION}-${slug}"
+
+            if [ ! -d "$RELEASE_DIR/lib/$lib_path" ]; then
+              echo "ERROR: Missing library directory: $RELEASE_DIR/lib/$lib_path"
+              exit 1
+            fi
+
+            copy_common_files "$package_root"
+            mkdir -p "$package_root/lib/$(dirname "$lib_path")"
+            cp -r "$RELEASE_DIR/lib/$lib_path" "$package_root/lib/$lib_path"
+
+            cat > "$package_root/PACKAGE.txt" <<EOF
+          EGE library preview package
+          Version: $VERSION
+          Channel: ${{ needs.validate-and-setup.outputs.release_channel }}
+          Source commit: ${{ github.sha }}
+          Toolchain: $label
+
+          This package is produced by the source repository for testing and integration.
+          Official user-facing releases are published from x-ege/xege-sdk.
+          EOF
+
+            7z a -tzip -mx=9 "$PACKAGE_DIR/ege-libs-${VERSION}-${slug}.zip" "$package_root"
+          }
+
+          create_lib_package "vs2022" "Visual Studio 2022 / MSVC v143" "vs2022"
+          create_lib_package "vs2019" "Visual Studio 2019 / MSVC v142" "vs2019"
+          create_lib_package "msys2-gcc-latest" "MSYS2 MinGW-w64 GCC latest" "mingw64"
+          create_lib_package "codeblocks-gcc14" "Code::Blocks 25.03 compatible GCC 14" "codeblocks"
+          create_lib_package "clion-gcc13" "CLion / RedPanda C++ compatible GCC 13" "redpanda"
+          create_lib_package "ubuntu-mingw" "Ubuntu MinGW-w64 cross compiler" "mingw-w64-debian"
+          create_lib_package "macos-mingw" "macOS MinGW-w64 cross compiler" "macOS"
+
+          echo "Per-toolchain packages:"
+          ls -lh "$PACKAGE_DIR"/*.zip
+        shell: bash
+
       - name: Create archives
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
@@ -641,19 +801,80 @@ jobs:
           path: |
             ege-*.7z
             ege-*.zip
+            release-assets/*.zip
+            executable-assets/**/*.zip
           retention-days: 90
-      
+
+      - name: Replace existing nightly preview release
+        if: needs.validate-and-setup.outputs.replace_existing_release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.validate-and-setup.outputs.version_tag }}
+        run: |
+          set -e
+
+          api="https://api.github.com/repos/${{ github.repository }}"
+          release_json=$(curl -fsSL \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$api/releases/tags/$TAG_NAME" || true)
+
+          if [ -n "$release_json" ]; then
+            release_id=$(echo "$release_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+            echo "Deleting previous release for tag $TAG_NAME (id: $release_id)"
+            curl -fsSL -X DELETE \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "$api/releases/$release_id"
+          else
+            echo "No existing release found for tag $TAG_NAME"
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f "$TAG_NAME" "${{ github.sha }}"
+          git push origin "refs/tags/$TAG_NAME" --force
+        shell: bash
+
       - name: Create GitHub Release
         if: needs.validate-and-setup.outputs.create_github_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.validate-and-setup.outputs.version_tag }}
-          name: EGE ${{ steps.version.outputs.VERSION }}
-          draft: true
+          target_commitish: ${{ github.sha }}
+          name: ${{ needs.validate-and-setup.outputs.release_name }}
+          draft: ${{ needs.validate-and-setup.outputs.release_draft }}
+          prerelease: ${{ needs.validate-and-setup.outputs.release_prerelease }}
+          make_latest: ${{ needs.validate-and-setup.outputs.release_make_latest }}
+          fail_on_unmatched_files: true
           files: |
             ege-*.7z
             ege-*.zip
+            release-assets/*.zip
+            executable-assets/**/*.zip
           body: |
+            # ${{ needs.validate-and-setup.outputs.release_name }}
+
+            > This release is produced by the source repository (`x-ege/xege`) for testing and integration.
+            > Official user-facing releases are published from `x-ege/xege-sdk`.
+
+            ## Download Instructions
+
+            - **ege-${{ steps.version.outputs.VERSION }}.7z** - combined preview package (smaller archive)
+            - **ege-${{ steps.version.outputs.VERSION }}.zip** - combined preview package (ZIP format)
+            - **ege-libs-${{ steps.version.outputs.VERSION }}-*.zip** - per-toolchain library packages
+            - **ege-executables-${{ steps.version.outputs.VERSION }}-windows-msvc2022-x64-release.zip** - Windows executable preview build
+
+            ## Package split
+
+            - `vs2022`, `vs2019`: MSVC libraries, with x86/x64 and Debug/Release outputs.
+            - `msys2-gcc-latest`, `codeblocks-gcc14`, `clion-gcc13`: Windows MinGW library packages.
+            - `ubuntu-mingw`, `macos-mingw`: cross-compiled MinGW library packages.
+
+            Source commit: ${{ github.sha }}
+
+            ---
+
             # EGE ${{ steps.version.outputs.VERSION }} Release
             
             ## 下载说明 / Download Instructions
