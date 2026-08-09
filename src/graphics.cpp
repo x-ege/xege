@@ -100,6 +100,7 @@ unsigned long getlogodatasize();
 #endif
 
 DWORD WINAPI messageloopthread(_graph_setting* pg);
+static void on_destroy(struct _graph_setting* pg);
 
 _graph_setting::_graph_setting() : init_sem{0}
 {
@@ -109,6 +110,8 @@ _graph_setting::_graph_setting() : init_sem{0}
 
 _graph_setting::~_graph_setting()
 {
+	on_destroy(this);
+
     if (threadui.joinable()) {
         threadui.join();
     }
