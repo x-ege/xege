@@ -746,6 +746,9 @@ jobs:
             if [ -f "$RELEASE_DIR/说明.txt" ]; then
               cp "$RELEASE_DIR/说明.txt" "$package_root/"
             fi
+            if [ -f "$RELEASE_DIR/egelogo.jpg" ]; then
+              cp "$RELEASE_DIR/egelogo.jpg" "$package_root/"
+            fi
             if [ -d "$RELEASE_DIR/doc" ]; then
               cp -r "$RELEASE_DIR/doc" "$package_root/"
             fi
