@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number without prefix (e.g., 25.11, 25.11.1, or 25.11-rc). Used for test releases. For official release, create a tag instead.'
+        description: 'Version number without prefix (e.g., 25.11, 25.11.1, or 25.11-rc). Manual runs create a draft GitHub Release; for an official release, create a tag instead.'
         required: true
         type: string
   push:
@@ -67,10 +67,10 @@ jobs:
             echo "is_official_release=false" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "version_tag=test-$VERSION" >> $GITHUB_OUTPUT
-            echo "create_github_release=false" >> $GITHUB_OUTPUT
+            echo "create_github_release=true" >> $GITHUB_OUTPUT
             echo "release_channel=manual-test" >> $GITHUB_OUTPUT
-            echo "release_name=EGE $VERSION Test Build" >> $GITHUB_OUTPUT
-            echo "release_draft=false" >> $GITHUB_OUTPUT
+            echo "release_name=EGE $VERSION Manual Test (Draft)" >> $GITHUB_OUTPUT
+            echo "release_draft=true" >> $GITHUB_OUTPUT
             echo "release_prerelease=true" >> $GITHUB_OUTPUT
             echo "release_make_latest=false" >> $GITHUB_OUTPUT
             echo "replace_existing_release=false" >> $GITHUB_OUTPUT
