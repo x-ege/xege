@@ -28,7 +28,7 @@ int main() {
     
     // 测试不同分辨率的旋转性能
     auto resolutions = TestFramework::getTestResolutions();
-    ImageGenerator generator;
+    //ImageGenerator generator;
     
     const double PI = 3.14159265358979323846;
     
@@ -53,7 +53,7 @@ int main() {
                   timer.start();        for (int i = 0; i < iterations; i++) {
             int centerX = res.width / 4;  // 源图像中心
             int centerY = res.height / 4; // 源图像中心
-            ege::putimage_rotate(nullptr, srcImg, 0, 0, centerX, centerY, angleRad);
+            ege::putimage_rotate(nullptr, srcImg, 0, 0, (float)centerX, (float)centerY, (float)angleRad);
         }
         timer.stop();
         
@@ -78,7 +78,7 @@ int main() {
             int centerY = res.height / 2;            // 清除背景
             ege::putimage(0, 0, bgImg);
             // 旋转绘制
-            ege::putimage_rotate(nullptr, srcImg, 0, 0, centerX, centerY, angle);
+            ege::putimage_rotate(nullptr, srcImg, 0, 0, (float)centerX, (float)centerY, (float)angle);
         }
         timer.stop();
           double totalTime = timer.getElapsedMs();
@@ -105,7 +105,7 @@ int main() {
                 double angle = 45.0 * PI / 180.0; // 固定45度角
                 int centerX = res.width / 2;
                 int centerY = res.height / 2;                // 使用带缩放的旋转
-                ege::putimage_rotatezoom(nullptr, srcImg, 0, 0, centerX, centerY, angle, scale);
+                ege::putimage_rotatezoom(nullptr, srcImg, 0, 0, (float)centerX, (float)centerY, (float)angle, (float)scale);
             }
             timer.stop();
             
@@ -123,7 +123,7 @@ int main() {
             double angle = (i * 12.0) * PI / 180.0;
             int centerX = res.width / 2;
             int centerY = res.height / 2;
-            ege::putimage_rotate(nullptr, srcImg, 0, 0, centerX, centerY, angle);
+            ege::putimage_rotate(nullptr, srcImg, 0, 0, (float)centerX, (float)centerY, (float)angle);
         }
         timer.stop();
         
@@ -139,7 +139,7 @@ int main() {
             double angle = 30.0 * PI / 180.0;
             int centerX = (i * 50) % res.width;
             int centerY = (i * 50) % res.height;
-            ege::putimage_rotate(nullptr, srcImg, 0, 0, centerX, centerY, angle);
+            ege::putimage_rotate(nullptr, srcImg, 0, 0, (float)centerX, (float)centerY, (float)angle);
         }
         timer.stop();
         
@@ -156,7 +156,7 @@ int main() {
             // 故意使用会超出边界的中心点
             int centerX = -50 + (i * 10);
             int centerY = -50 + (i * 10);
-            ege::putimage_rotate(nullptr, srcImg, 0, 0, centerX, centerY, angle);
+            ege::putimage_rotate(nullptr, srcImg, 0, 0, (float)centerX, (float)centerY, (float)angle);
         }
         timer.stop();
         

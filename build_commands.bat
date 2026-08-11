@@ -92,11 +92,13 @@ cmake --build build\vs2022_64 --config Release -j
 cmake --build build\vs2022_64 --config Debug -j
 
 :: Visual Studio 2026 32bit
+:: CMake 最低版本 4.2
 cmake -G "Visual Studio 18 2026" -A Win32 -S . -B build\vs2026 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2026\x86" -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG="%CD%\build\lib\vs2026\x86"
 cmake --build build\vs2026 --config Release -j
 cmake --build build\vs2026 --config Debug -j
 
 :: Visual Studio 2026 64bit
+:: CMake 最低版本 4.2
 cmake -G "Visual Studio 18 2026" -A x64 -S . -B build\vs2026_64 -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE="%CD%\build\lib\vs2026\x64" -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG="%CD%\build\lib\vs2026\x64"
 cmake --build build\vs2026_64 --config Release -j
 cmake --build build\vs2026_64 --config Debug -j
