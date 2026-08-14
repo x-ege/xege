@@ -64,7 +64,7 @@ foreach(_ege_definition_style untyped typed)
     endif()
 
     execute_process(
-        COMMAND bash tasks.sh --debug --show-config --
+        COMMAND bash -l tasks.sh --debug --show-config --
             "${_ege_backend_definition}"
             "${_ege_opengl_definition}"
             "${_ege_window_definition}"
@@ -96,7 +96,7 @@ foreach(_ege_definition_style untyped typed)
 endforeach()
 
 execute_process(
-    COMMAND bash tasks.sh --debug --show-config --
+    COMMAND bash -l tasks.sh --debug --show-config --
         -DCMAKE_SYSTEM_NAME:STRING=Windows
     WORKING_DIRECTORY "${EGE_SOURCE_DIR}"
     RESULT_VARIABLE _ege_typed_system_probe_result

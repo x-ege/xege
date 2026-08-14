@@ -75,9 +75,13 @@ void setContextFillColor(CGContextRef context, color_t color) noexcept
 
 void setContextStrokeColor(CGContextRef context, color_t color) noexcept
 {
+    const unsigned int alpha = channel(color, 24);
+    const auto straightChannel = [alpha](unsigned int value) {
+        return alpha == 0 ? 0.0 : std::min(255.0, value * 255.0 / alpha) / 255.0;
+    };
     CGContextSetRGBStrokeColor(context,
-        channel(color, 16) / 255.0, channel(color, 8) / 255.0,
-        channel(color, 0) / 255.0, channel(color, 24) / 255.0);
+        straightChannel(channel(color, 16)), straightChannel(channel(color, 8)),
+        straightChannel(channel(color, 0)), alpha / 255.0);
 }
 
 struct FillPatternInfo
@@ -592,7 +596,7 @@ void CoreGraphicsRenderTarget::drawRoundRect(int x, int y, int width, int height
         std::min(std::abs(ellipseWidth) * 0.5, width * 0.5), std::min(std::abs(ellipseHeight) * 0.5, height * 0.5),
         nullptr);
     CGContextAddPath(graphics_->context(), path);
-    setContextStrokeColor(graphics_->context(), lineColor_);
+    setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -670,7 +674,7 @@ void CoreGraphicsRenderTarget::drawEllipse(int x, int y, int startAngle, int end
     } else {
         CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, false, false);
         CGContextAddPath(graphics_->context(), path);
-        setContextStrokeColor(graphics_->context(), lineColor_);
+        setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
         CGContextStrokePath(graphics_->context());
         CGPathRelease(path);
     }
@@ -702,7 +706,7 @@ void CoreGraphicsRenderTarget::drawSector(int x, int y, int startAngle, int endA
     beginPrimitive();
     CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, true, true);
     CGContextAddPath(graphics_->context(), path);
-    setContextStrokeColor(graphics_->context(), lineColor_);
+    setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -747,7 +751,7 @@ void CoreGraphicsRenderTarget::drawChord(int x, int y, int sa, int ea, int width
     beginPrimitive();
     CGPathRef path = createArcPath(x, y, sa, ea, width, height, false, true);
     CGContextAddPath(graphics_->context(), path);
-    setContextStrokeColor(graphics_->context(), lineColor_);
+    setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();

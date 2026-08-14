@@ -78,6 +78,13 @@ int main()
             return 77;
         }
 
+        int screenWidth = 0;
+        int screenHeight = 0;
+        if (!ege::backend::MacWindow::primaryScreenSize(&screenWidth, &screenHeight)
+            || screenWidth <= 0 || screenHeight <= 0) {
+            return fail("primary screen size is unavailable");
+        }
+
         RecordingSink sink;
         ege::backend::MacWindow window;
         const ege::WindowOptions defaultOptions;

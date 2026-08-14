@@ -305,15 +305,12 @@ void CoreTextRenderer::drawString(CGContextRef context, float x, float y, const 
     CGContextSetTextMatrix(context, CGAffineTransformIdentity);
     CGContextSetTextPosition(context, 0.0, 0.0);
     CTLineDraw(line.get(), context);
-    CGContextRestoreGState(context);
-
     if (strikeout_ && info.width > 0.0) {
-        CGContextSaveGState(context);
         CGContextSetFillColorWithColor(context, foreground.get());
         const CGFloat thickness = std::max<CGFloat>(1.0, textHeight / 14.0);
-        CGContextFillRect(context, CGRectMake(drawX, drawY + info.ascent * 0.55, info.width * widthScale, thickness));
-        CGContextRestoreGState(context);
+        CGContextFillRect(context, CGRectMake(0.0, info.ascent * 0.45, info.width, thickness));
     }
+    CGContextRestoreGState(context);
 }
 
 } // namespace backend

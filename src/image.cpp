@@ -968,11 +968,16 @@ int IMAGE::resize_f(int width, int height)
     if (m_renderTarget && (width != oldWindowSize.width || height != oldWindowSize.height)) {
         backend::CoreGraphicsRenderTarget* target =
             dynamic_cast<backend::CoreGraphicsRenderTarget*>(m_renderTarget);
-        if (!target || !target->resize(std::max(1, width), std::max(1, height), false)) {
-            return grAllocError;
-        }
+        // A generated texture wraps the current target buffer. Release it
+        // before resize can replace that storage.
         if (regenerateTexture) {
             gentexture(false);
+        }
+        if (!target || !target->resize(std::max(1, width), std::max(1, height), false)) {
+            if (regenerateTexture) {
+                gentexture(true);
+            }
+            return grAllocError;
         }
         m_pBuffer = reinterpret_cast<PDWORD>(target->getPixelBuffer());
     }

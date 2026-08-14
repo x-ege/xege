@@ -23,7 +23,7 @@ void api_sleep(long ms)
         ::Sleep(ms);
         dll::timeEndPeriod(1);
 #else
-        usleep(ms * 1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 #endif
     }
 }

@@ -140,6 +140,19 @@ void testStraightStateColorsBecomePremultipliedPixels() {
     CHECK(target.getPixel(8, 2) == premultiplied);
 
     target.clear(0);
+    target.setLineWidth(2.0f);
+    target.drawRoundRect(4, 4, 24, 16, 8, 8);
+    CHECK(std::find(target.getPixelBuffer(),
+        target.getPixelBuffer() + target.getWidth() * target.getHeight(),
+        premultiplied) != target.getPixelBuffer() + target.getWidth() * target.getHeight());
+
+    target.clear(0);
+    target.drawEllipse(4, 4, 0, 180, 24, 16);
+    CHECK(std::find(target.getPixelBuffer(),
+        target.getPixelBuffer() + target.getWidth() * target.getHeight(),
+        premultiplied) != target.getPixelBuffer() + target.getWidth() * target.getHeight());
+
+    target.clear(0);
     target.setFont(24, 0, "Helvetica", 0, 0, 400, false, false, false);
     target.setTextColor(straight);
     target.drawText(2, 2, "Color");

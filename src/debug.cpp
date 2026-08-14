@@ -17,7 +17,8 @@ void internal_panic(const wchar_t* errmsg)
     MessageBoxW(graph_setting.hwnd, errmsg, L"EGE INTERNAL ERROR", MB_ICONSTOP);
     ExitProcess((UINT)grError);
 #else
-    fprintf(stderr, "EGE INTERNAL ERROR: %ls\n", errmsg);
+    const std::string message = w2utf8(errmsg);
+    fprintf(stderr, "EGE INTERNAL ERROR: %s\n", message.c_str());
     exit(grError);
 #endif
 }

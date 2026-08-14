@@ -213,6 +213,11 @@ void testSaveDecodeAndVisualRecognition()
         EGE_CHECK(ege::getpixel(57, 62, decoded) == EGERGB(241, 196, 15));
         EGE_CHECK(countLinePixels(decoded) > 80);
     }
+
+    ege_test::Image scaled(1, 1);
+    EGE_CHECK(ege::getimage(scaled.value, png.string().c_str(), 48, 32) == ege::grOk);
+    EGE_CHECK(ege::getwidth(scaled.value) == 48 && ege::getheight(scaled.value) == 32);
+    EGE_CHECK(ege::getimage(scaled.value, png.string().c_str(), -1, 32) == ege::grParamError);
 }
 
 } // namespace

@@ -16,6 +16,7 @@ void testDetachingSubtreeClearsDescendantFocus()
     egeControlBase root;
     egeControlBase child;
     egeControlBase grandchild;
+    EGE_CHECK(graph_setting.egectrl_root == &root);
     child.addchild(&grandchild);
 
     EGE_CHECK(child.parent() == &root);

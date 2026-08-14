@@ -3,6 +3,10 @@
 
 #include "utils.h"
 
+#ifndef _WIN32
+#include <sys/stat.h>
+#endif
+
 namespace  ege
 {
 
@@ -23,8 +27,14 @@ bool isPathExist(const wchar_t* path, PathType* pathType)
         exist = true;
     }
 #else
-    type = PathType_NOTEXIST;
-    exist = false;
+    const std::string utf8Path = w2mb(path);
+    struct stat info;
+    if (!utf8Path.empty() && stat(utf8Path.c_str(), &info) == 0) {
+        type = S_ISDIR(info.st_mode) ? PathType_DIR : PathType_FILE;
+        exist = true;
+    } else {
+        type = PathType_NOTEXIST;
+    }
 #endif
 
     if (pathType != NULL) {

@@ -1,9 +1,11 @@
 #include "test_support.h"
 #include "encodeconv.h"
+#include "utils.h"
 
 #include <array>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
 
 namespace {
 
@@ -70,6 +72,20 @@ void testInvalidUtf8Replacement()
     }
 }
 
+void testFilesystemUtilities()
+{
+    const std::filesystem::path artifactDirectory = ege_test::artifacts();
+    const std::filesystem::path missing = artifactDirectory / "missing-utility-path";
+    const std::wstring directoryPath = ege::mb2w(artifactDirectory.string().c_str());
+    const std::wstring missingPath = ege::mb2w(missing.string().c_str());
+    ege::PathType type = ege::PathType_NONE;
+    EGE_CHECK(ege::isPathExist(directoryPath.c_str(), &type));
+    EGE_CHECK(type == ege::PathType_DIR);
+    EGE_CHECK(ege::isDirExist(directoryPath.c_str()));
+    EGE_CHECK(!ege::isPathExist(missingPath.c_str(), &type));
+    EGE_CHECK(type == ege::PathType_NOTEXIST);
+}
+
 } // namespace
 
 int main()
@@ -77,5 +93,6 @@ int main()
     testPublicTextApi();
     testColorRandomAndCompressionApi();
     testInvalidUtf8Replacement();
+    testFilesystemUtilities();
     return ege_test::finish("EGE text/utility contract");
 }

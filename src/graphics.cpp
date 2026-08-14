@@ -459,12 +459,18 @@ void setmode(int gdriver, int gmode)
         } else {
             GetWindowRect(GetDesktopWindow(), &rect);
         }
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+        int desktopWidth = 640;
+        int desktopHeight = 480;
+        (void)backend::MacWindow::primaryScreenSize(&desktopWidth, &desktopHeight);
 #endif
         pg->dc_w = (short)(gmode & 0xFFFF);
         pg->dc_h = (short)((unsigned int)gmode >> 16);
         if (pg->dc_w < 0) {
 #ifdef _WIN32
             pg->dc_w = rect.right - rect.left;
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+            pg->dc_w = desktopWidth;
 #else
             pg->dc_w = 640;
 #endif
@@ -472,6 +478,8 @@ void setmode(int gdriver, int gmode)
         if (pg->dc_h < 0) {
 #ifdef _WIN32
             pg->dc_h = rect.bottom - rect.top;
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+            pg->dc_h = desktopHeight;
 #else
             pg->dc_h = 480;
 #endif

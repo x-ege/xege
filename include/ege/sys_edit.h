@@ -41,8 +41,8 @@ public:
     int create(bool multiline = false, int scrollbar = 2)
     {
 #ifdef _WIN32
-        if (m_hwnd) {
-            destroy();
+        if (m_hwnd && !destroy()) {
+            return grError;
         }
 
         msg_createwindow msg = {NULL};

@@ -820,10 +820,10 @@ struct FlatFigure {
 };
 
 struct PathSegmentData {
-    ege_point start;
-    ege_point control1;
-    ege_point control2;
-    ege_point end;
+    ege_point start{};
+    ege_point control1{};
+    ege_point control2{};
+    ege_point end{};
     bool cubic = false;
 };
 
@@ -1635,7 +1635,8 @@ static std::vector<FlatFigure> external_boundary_figures(
     for (std::size_t figureIndex = 0; figureIndex < input.size(); ++figureIndex) {
         const std::vector<ege_point>& points = input[figureIndex].points;
         if (points.size() < 2) continue;
-        const std::size_t edgeCount = input[figureIndex].closed ? points.size() : points.size();
+        const std::size_t edgeCount =
+            input[figureIndex].closed ? points.size() : points.size() - 1;
         for (std::size_t edgeIndex = 0; edgeIndex < edgeCount; ++edgeIndex) {
             const ege_point& first = points[edgeIndex];
             const ege_point& second = points[(edgeIndex + 1) % points.size()];

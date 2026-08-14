@@ -23,6 +23,7 @@
 // #endif
 
 #include "external/stb_image.h"
+#include "external/stb_image_resize2.h"
 #include "external/stb_image_write.h"
 #include "stb_image_impl.h"
 
@@ -101,16 +102,17 @@ graphics_errors getimage_from_memory_stb(PIMAGE image, const void* memory, long 
 
 int IMAGE::getimage(const char* filename, int zoomWidth, int zoomHeight)
 {
+	if (isEmpty(filename))
+		return grParamError;
 	const std::wstring& filename_w = mb2w(filename);
 	return getimage(filename_w.c_str(), zoomWidth, zoomHeight);
 }
 
 int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
 {
-	(void)zoomWidth, (void)zoomHeight; // ignore
 	inittest(L"IMAGE::getimage");
 
-	if (isEmpty(filename))
+	if (isEmpty(filename) || zoomWidth < 0 || zoomHeight < 0)
 		return grParamError;
 
 	FILE* fp = openWideFile(filename, L"rb");
@@ -125,17 +127,40 @@ int IMAGE::getimage(const wchar_t* filename, int zoomWidth, int zoomHeight)
 	/* 尝试使用 stb_image 加载图像(支持格式: PNG, BMP, JPEG, GIF, PSD, HDR, PGM, PPM, PNM, TGA)*/
 	color_t* pixels = (color_t*)stbi_load_from_file(fp, &width, &height, &channelsInFile, STBI_rgb_alpha);
 	if (pixels) {
-		const int pixelCount = width * height;
+		const int targetWidth = zoomWidth == 0 ? width : zoomWidth;
+		const int targetHeight = zoomHeight == 0 ? height : zoomHeight;
+		const size_t targetCount = static_cast<size_t>(targetWidth) * targetHeight;
+		color_t* outputPixels = pixels;
+		color_t* scaledPixels = NULL;
+		if (targetWidth <= 0 || targetHeight <= 0 || targetCount > INT_MAX) {
+			error = grParamError;
+		} else if (targetWidth != width || targetHeight != height) {
+			scaledPixels = static_cast<color_t*>(malloc(targetCount * sizeof(color_t)));
+			if (scaledPixels == NULL) {
+				error = grOutOfMemory;
+			} else if (stbir_resize_uint8_srgb(
+				reinterpret_cast<const unsigned char*>(pixels), width, height, 0,
+				reinterpret_cast<unsigned char*>(scaledPixels), targetWidth, targetHeight, 0,
+				STBIR_RGBA) == NULL) {
+				error = grError;
+			} else {
+				outputPixels = scaledPixels;
+			}
+		}
 
-		if (this->resize_f(width, height) == grOk) {
+		if (error == grOk && this->resize_f(targetWidth, targetHeight) == grOk) {
 			/* stb_image 返回的像素颜色存储按字节从高到低依次为 ABGR，和 ege 的存储顺序 ARGB 不一致，需要交换 R 和 B 通道. */
 			color_t* destination = getbuffer();
-			ABGRToARGB(destination, pixels, pixelCount);
-			image_premultiply(destination, width, height);
-			error = grOk;
-		} else {
+			if (destination != NULL) {
+				ABGRToARGB(destination, outputPixels, static_cast<int>(targetCount));
+				image_premultiply(destination, targetWidth, targetHeight);
+			} else {
+				error = grInvalidMemory;
+			}
+		} else if (error == grOk) {
 			error = grAllocError;
 		}
+		free(scaledPixels);
 		stbi_image_free(pixels);
 	} else {
 		/* 加载失败，将错误信息转换为相应的错误码 */
@@ -271,12 +296,16 @@ static BOOL nocaseends(LPCWSTR suffix, LPCWSTR text)
 
 int saveimage(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 {
+	if (isEmpty(filename))
+		return grParamError;
 	const std::wstring& filename_w = mb2w(filename);
 	return saveimage(pimg, filename_w.c_str(), withAlphaChannel);
 }
 
 int saveimage(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 {
+	if (isEmpty(filename))
+		return grParamError;
 	PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
 	int     ret = 0;
 
@@ -296,6 +325,8 @@ int saveimage(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 
 int getimage_pngfile(PIMAGE pimg, const char* filename)
 {
+	if (isEmpty(filename))
+		return grParamError;
 	const std::wstring& filename_w = mb2w(filename);
 	return getimage_pngfile(pimg, filename_w.c_str());
 }
@@ -307,6 +338,8 @@ int getimage_pngfile(PIMAGE pimg, const wchar_t* filename)
 
 int savepng(PCIMAGE pimg, const char* filename, bool withAlphaChannel)
 {
+	if (isEmpty(filename))
+		return grParamError;
 	const std::wstring& filename_w = mb2w(filename);
 	return savepng(pimg, filename_w.c_str(), withAlphaChannel);
 }
@@ -317,6 +350,9 @@ int savepng(PCIMAGE pimg, const wchar_t* filename, bool withAlphaChannel)
 		return grParamError;
 
 	pimg = CONVERT_IMAGE_CONST(pimg);
+	if (pimg == NULL) {
+		return grParamError;
+	}
 	FILE* fp = openWideFile(filename, L"wb");
 
 	if (fp == NULL) {

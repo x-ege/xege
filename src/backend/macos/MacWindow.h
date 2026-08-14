@@ -27,6 +27,8 @@ public:
     MacWindow(MacWindow&&)                 = delete;
     MacWindow& operator=(MacWindow&&)      = delete;
 
+    static bool primaryScreenSize(int* width, int* height);
+
     bool create(int width, int height, const char* title,
         const WindowOptions& options, WindowEventSink* eventSink) override;
     void show() override;

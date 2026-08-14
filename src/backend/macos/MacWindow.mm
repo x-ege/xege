@@ -559,6 +559,31 @@ MacWindow::~MacWindow()
     close();
 }
 
+bool MacWindow::primaryScreenSize(int* width, int* height)
+{
+    if (width == nullptr || height == nullptr) {
+        return false;
+    }
+    __block int screenWidth = 0;
+    __block int screenHeight = 0;
+    performOnMainThreadSync(^{
+        @autoreleasepool {
+            NSScreen* primaryScreen = NSScreen.screens.firstObject;
+            if (primaryScreen != nil) {
+                const NSRect frame = primaryScreen.frame;
+                screenWidth = static_cast<int>(std::lround(NSWidth(frame)));
+                screenHeight = static_cast<int>(std::lround(NSHeight(frame)));
+            }
+        }
+    });
+    if (screenWidth <= 0 || screenHeight <= 0) {
+        return false;
+    }
+    *width = screenWidth;
+    *height = screenHeight;
+    return true;
+}
+
 bool MacWindow::create(int width, int height, const char* title,
     const WindowOptions& options, WindowEventSink* eventSink)
 {
