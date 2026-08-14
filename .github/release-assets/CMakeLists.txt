@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.13)
 
-if(CMAKE_HOST_UNIX)
+# Preserve the existing Linux SDK experience: when no explicit toolchain is
+# supplied, a Linux host selects the packaged MinGW Windows target. Apple hosts
+# are deliberately excluded because macOS now consumes the native archive.
+if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE
+        AND NOT DEFINED CMAKE_TOOLCHAIN_FILE
+        AND NOT DEFINED CMAKE_SYSTEM_NAME)
     set(CMAKE_SYSTEM_NAME Windows)
     set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
-
-    # cross compilers to use for C, C++ and RC
     set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
     set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
     set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
-
-    # modify default behavior of FIND_XXX() commands
     set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
     set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
     set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
@@ -24,8 +25,28 @@ target_include_directories(ege-common INTERFACE
 
 message(STATUS "ege include dir: ${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-# 设置静态库搜索路径
-if(MSVC)
+# Select the prebuilt library for the target platform. macOS is always native;
+# Windows cross-compilation from Linux still requires an explicit toolchain.
+if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
+    set(osLibDir "macOS")
+    add_library(ege-macos STATIC IMPORTED)
+    set_target_properties(ege-macos PROPERTIES
+        IMPORTED_LOCATION
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/${osLibDir}/libgraphics.a")
+    target_link_libraries(ege-common INTERFACE ege-macos)
+
+    foreach(framework
+            AppKit CoreGraphics CoreText ImageIO Foundation AVFoundation
+            CoreVideo CoreMedia Accelerate AVFAudio AudioToolbox)
+        find_library(EGE_RELEASE_${framework}_FRAMEWORK NAMES ${framework})
+        if(NOT EGE_RELEASE_${framework}_FRAMEWORK)
+            message(FATAL_ERROR
+                "Required macOS framework '${framework}' was not found")
+        endif()
+        target_link_libraries(ege-common INTERFACE
+            "${EGE_RELEASE_${framework}_FRAMEWORK}")
+    endforeach()
+elseif(MSVC)
     # 设置 MSVC 编译选项, 当版本大于 vs2019 时, 使用 c++17 标准.
     set(CPP_COMPILE_OPTIONS "/std:c++17")
 
@@ -106,14 +127,14 @@ if(MSVC)
         "$<$<CONFIG:RELWITHDEBINFO>:/DNDEBUG>"
         "$<$<CONFIG:MINSIZEREL>:/DNDEBUG>"
         "$<IF:$<CONFIG:Debug>,/MDd,/MD>")
-endif()
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_HOST_APPLE)
-        set(osLibDir "macOS")
+        message(FATAL_ERROR
+            "The macOS MinGW prebuilt package was retired. Build natively with "
+            "AppleClang, or use an older EGE release for that workflow.")
     elseif(CMAKE_HOST_UNIX)
         set(osLibDir "mingw-w64-debian")
-    elseif(MINGW)
+    else()
         # Note: Automatic detection of MinGW variant (MSYS2/Code::Blocks/RedPanda) is not reliable
         # Default to mingw64 (MSYS2). Users should download the package matching their compiler.
         # Available variants: mingw64 (MSYS2), codeblocks, redpanda (CLion/小熊猫C++)
@@ -125,6 +146,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_compile_options(ege-common INTERFACE -D_FORTIFY_SOURCE=0)
     target_link_options(ege-common INTERFACE -mwindows -static -static-libgcc -static-libstdc++)
     target_link_libraries(ege-common INTERFACE graphics gdiplus gdi32 imm32 msimg32 ole32 oleaut32 winmm uuid)
+else()
+    message(FATAL_ERROR
+        "No prebuilt EGE package is available for ${CMAKE_SYSTEM_NAME} / "
+        "${CMAKE_CXX_COMPILER_ID}. Linux packages require MinGW-w64; macOS "
+        "packages require AppleClang.")
 endif()
 
 if(DEFINED osLibDir)
@@ -144,12 +170,28 @@ add_custom_target(demos)
 foreach(DEMO_SRC ${DEMO_SRCS})
     message(STATUS "DEMO_SRC: ${DEMO_SRC}")
     get_filename_component(DEMO_NAME ${DEMO_SRC} NAME_WE)
+
+    if(DEMO_NAME STREQUAL "graph_star" AND NOT WIN32)
+        message(STATUS "Skipping ${DEMO_NAME}: Windows screensaver demo")
+        continue()
+    endif()
+
     add_executable(${DEMO_NAME} ${DEMO_SRC})
     target_link_libraries(${DEMO_NAME} ege-common)
     add_dependencies(demos ${DEMO_NAME})
+
+    if(DEMO_NAME STREQUAL "game_cube_runner")
+        target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
+    elseif(DEMO_NAME MATCHES "^camera_")
+        target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
+        target_compile_definitions(${DEMO_NAME} PRIVATE
+            EGE_ENABLE_CAMERA_CAPTURE=1)
+    endif()
 endforeach()
 
-target_sources(graph_rotateimage PRIVATE demo/egelogo.rc)
+if(WIN32)
+    target_sources(graph_rotateimage PRIVATE demo/egelogo.rc)
+endif()
 
 message(CHECK_START "Finding GMP Library")
 include(CheckCXXSourceCompiles)

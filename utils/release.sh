@@ -7,26 +7,30 @@ EGE_DIR=$(pwd)
 git clean -ffdx build Release
 
 if [[ $(uname -s) == "Darwin" ]]; then
-    # Native AppleClang/CoreGraphics package. Release/lib/macOS remains the
-    # legacy macOS-hosted MinGW package used by the cross-compile workflow.
+    # macOS packages are native AppleClang/CoreGraphics archives. This path
+    # replaces the former macOS-hosted MinGW/Windows package.
     if ./tasks.sh --clean --release --load --target xege --build; then
-        mkdir -p Release/lib/macos-native
-        cp -f build/macos/Release/*.a Release/lib/macos-native
-        echo "Copy native macOS libs done: $(pwd)/Release/lib/macos-native"
+        mkdir -p Release/lib/macOS
+        cp -f build/macos/Release/*.a Release/lib/macOS
+        echo "Copy native macOS libs done: $(pwd)/Release/lib/macOS"
 
-        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-demo-macos-native"
+        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-demo-macOS"
     else
         echo "Build macOS failed!" >&2
     fi
 elif [[ $(uname -s) == "Linux" ]]; then
-    if ./tasks.sh --clean --release --load --target xege --build; then
+    if ./tasks.sh --clean --release --load --target xege --build -- \
+        -DCMAKE_TOOLCHAIN_FILE="$EGE_DIR/cmake/toolchains/mingw-w64.cmake"; then
         # 目前暂时只提供 mingw-w64-debian 的版本, 所以默认 mingw-w64-debian. 后续如果要支持更多, 那么再改.
         mkdir -p Release/lib/mingw-w64-debian
         # 新的目录结构: build/Release
         cp -rf build/Release/*.a Release/lib/mingw-w64-debian 2>/dev/null ||
             cp -rf build/*.a Release/lib/mingw-w64-debian
         echo "Copy mingw-w64-debian libs done: $(pwd)/Release/lib/mingw-w64-debian"
-        ./utils/test-release-libs.sh --build-dir "$EGE_DIR/build-mingw-debian"
+        ./utils/test-release-libs.sh \
+            --build-dir "$EGE_DIR/build-mingw-debian" \
+            -- \
+            -DCMAKE_TOOLCHAIN_FILE="$EGE_DIR/cmake/toolchains/mingw-w64.cmake"
     else
         echo "Build mingw-w64-debian failed!" >&2
     fi

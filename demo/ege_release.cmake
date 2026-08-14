@@ -82,9 +82,9 @@ if(MSVC)
 endif()
 
 if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
-    # Release/lib/macOS is the legacy macOS-hosted MinGW package. Keep native
-    # AppleClang archives separate so the two ABIs can never be mixed.
-    set(osLibDir "macos-native")
+    # lib/macOS is the native AppleClang/Core Graphics package. The former
+    # macOS-hosted MinGW/Windows archive is no longer published.
+    set(osLibDir "macOS")
     add_library(xege STATIC IMPORTED)
     set_target_properties(xege PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../Release/lib/${osLibDir}/libgraphics.a)
 
@@ -100,7 +100,11 @@ if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
             "${EGE_RELEASE_${framework}_FRAMEWORK}")
     endforeach()
 elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    if(CMAKE_HOST_UNIX)
+    if(CMAKE_HOST_APPLE)
+        message(FATAL_ERROR
+            "The macOS MinGW prebuilt package was retired. Build natively with "
+            "AppleClang, or use an older EGE release for that workflow.")
+    elseif(CMAKE_HOST_UNIX)
         set(osLibDir "mingw-w64-debian")
     else()
         set(osLibDir "mingw64")

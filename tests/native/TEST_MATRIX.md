@@ -17,7 +17,8 @@ condition, not a pass by omission.
 | Global canvas and public API | `native.ege_api_smoke` produces `ege-api-headless.png` | Runtime without NSApplication or NSWindow; saved image is decoded and checked pixel-by-pixel |
 | Native window/options/event bridge | `native.mac_window_smoke` | Visible manual opt-in only with `EGE_ENABLE_WINDOW_TESTS=ON`; absent from the default CTest suite |
 | Demo programs | `demos` build target; optional `demo.*.launch` tests | Build-only by default; visible launches require `EGE_ENABLE_WINDOW_TESTS=ON` |
-| CMake backend and cross toolchain contracts | `cmake.backend_default_contract`, `cmake.mingw_toolchain_contract` | Configure/build |
+| CMake backend, cross toolchain and macOS release contracts | `cmake.backend_default_contract`, `cmake.mingw_toolchain_contract`, `cmake.macos_release_contract` | Configure/build plus static release-path assertions |
+| macOS prebuilt SDK | `Release Package` and `macOS Native CoreGraphics Build` workflows | Universal `arm64`/`x86_64` archive validation and all-demo link against the packaged CMake configuration |
 | Windows compatibility | MinGW configure and selected library/demo link | Build-only from macOS host |
 | Camera samples | `camera_base`, `camera_wave`; enabling camera capture requires the `3rdparty/ccap` sources to already be present (normally via a recursive submodule checkout; CMake never initializes the submodule) | Compile/link in the `demos` target; live camera startup is an explicit hardware test so ordinary CTest does not access devices or show permission UI |
 | `graph_star` | Windows screensaver with Win32 preview-parent APIs | Windows-only exclusion on macOS/Linux |

@@ -145,7 +145,8 @@
 
 - 移除 `libpng` 和 `zlib` 依赖，简化编译配置
 - 优化 CMake 配置，添加构建选项允许设置不构建示例程序
-- 优化 GitHub Actions 工作流，增加 MinGW Windows 构建和 macOS 交叉编译支持
+- 优化 GitHub Actions 工作流，增加 MinGW Windows 构建和 macOS
+  AppleClang/Core Graphics 原生构建支持
 - 增加编译测试模块，用于发现编译兼容性问题
 - 添加单元测试相关模块和性能测试逻辑
 - 优化发布脚本，支持跨平台（macOS/Linux/Windows）
@@ -193,7 +194,7 @@
 
 - 📁 一键生成 EGE 项目（支持预编译库和源码两种模板）
 - ▶️ 单文件快速编译运行，无需复杂配置
-- 🍎 支持 macOS/Linux（通过 mingw-w64 + wine 跨平台编译）
+- 🍎 支持 macOS 原生构建；Linux 仍通过 mingw-w64 + Wine 交叉编译 Windows 版
 - 🌐 中英文双语界面，自动适配 VS Code 语言设置
 
 **安装方式**：

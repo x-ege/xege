@@ -89,9 +89,9 @@ When master branch is updated (not a tag push), a test release is automatically 
 - Code::Blocks GCC 14.2.0
 - CLion/小熊猫C++ (RedPanda C++) GCC 13.1.0
 
-**交叉编译库:**
-- Ubuntu MinGW-w64
-- macOS MinGW-w64
+**跨平台库:**
+- Ubuntu MinGW-w64 Windows 交叉编译库
+- macOS AppleClang/Core Graphics 原生通用静态库（arm64/x86_64）
 
 ### 阶段 2: 创建发布包 / Stage 2: Create Release Package
 
@@ -130,7 +130,7 @@ ege-{version}/
 │   ├── codeblocks/         # Code::Blocks
 │   ├── redpanda/           # CLion/小熊猫C++
 │   ├── mingw-w64-debian/   # Ubuntu cross-compile
-│   └── macOS/              # macOS cross-compile
+│   └── macOS/              # macOS native universal archive
 ├── man/                     # API 文档 / API docs
 ├── egelogo.jpg
 ├── version.txt

@@ -320,6 +320,10 @@ if(EGE_BUILD_TEST)
                 -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
                 -DEGE_TOOLCHAIN_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/cmake/mingw-toolchain
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/mingw_toolchain_contract.cmake)
+        add_test(NAME cmake.macos_release_contract
+            COMMAND "${CMAKE_COMMAND}"
+                -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/macos_release_contract.cmake)
         if(APPLE)
             add_test(NAME cmake.macos_native_tasks_contract
                 COMMAND "${CMAKE_COMMAND}"

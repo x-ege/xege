@@ -9,7 +9,8 @@ EGE（Easy Graphics Engine）是一个适用于初学者的图形库，具有类
 - **兼容性强**：支持 Visual Studio 6.0 至 Visual Studio 2022，MinGW，小熊猫C++等多种开发环境
 - **功能丰富**：提供基础绘图、高级绘图（抗锯齿、透明度）、图像处理、动画编程等功能
 - **多媒体支持**：支持多种图像格式（BMP, JPG, PNG, GIF）和音频播放
-- **跨平台**：支持 Windows 原生开发，以及 Linux/macOS 下的交叉编译
+- **跨平台**：支持 Windows 原生开发、macOS Core Graphics/AppKit 原生开发，
+  以及 Linux 下的 Windows 交叉编译
 
 ## API 模块概览
 

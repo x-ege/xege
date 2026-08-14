@@ -2,7 +2,7 @@
 
 [![MSVC Build](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml)
 [![MinGW Windows Build](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml)
-[![MinGW Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
+[![MinGW Linux Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
 [![macOS Native CoreGraphics Build](https://github.com/x-ege/xege/actions/workflows/macos-native-coregraphics-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/macos-native-coregraphics-build.yml)
 [![License](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)](https://github.com/x-ege/xege)
@@ -94,8 +94,9 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
    - `EGE: 在当前工作区设置 ege 项目` - 使用预编译库创建项目
    - `EGE: 在当前工作区设置带有 EGE 源代码的 ege 项目` - 使用源码创建项目
    - `EGE: 构建并运行当前文件` - 快速编译运行单个 cpp 文件
-3. 插件的现有预编译流程可能仍使用 mingw-w64 + Wine；从源码构建 macOS
-   原生版请参考 [编译指南](BUILD.md#macos-原生-core-graphics-构建)
+3. 新版 SDK 的 `lib/macOS/libgraphics.a` 是 AppleClang/Core Graphics 原生静态库；
+   不再提供 macOS 主机上的 MinGW/Wine 交叉编译产物。旧版插件若仍固定调用
+   Wine，请升级插件，或参考 [编译指南](BUILD.md#macos-原生-core-graphics-构建)
 
 > 更多详情请访问插件主页：[CLion 插件](https://github.com/x-ege/ege-clion-plugin) | [VS Code 插件](https://github.com/x-ege/ege-vscode-plugin)
 

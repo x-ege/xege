@@ -58,8 +58,8 @@ bash tasks.sh --debug --show-config
 ```
 
 `utils/release.sh` 在 macOS 上生成的 AppleClang 静态库位于
-`Release/lib/macos-native`；历史 `Release/lib/macOS` 目录继续保留给 macOS
-主机上的 MinGW Windows 交叉编译包，二者不会混用。
+`Release/lib/macOS`。该原生产物已经替代历史上由 macOS 主机通过 MinGW
+生成的 Windows 静态库；需要旧工作流的用户应使用旧版 EGE。
 
 ### 逐像素 CPU buffer 语义
 
@@ -93,7 +93,7 @@ windows端可以通过运行根目录下的`build_commands.bat`批处理脚本�
 
 详细信息请检查脚本具体内容。
 
-## 交叉编译 Windows 版的工具链
+## 在 Linux 上交叉编译 Windows 版
 
 ```sh
 # Ubuntu 16.04及以上发行版
@@ -101,10 +101,11 @@ sudo apt-get install mingw-w64 wine
 
 # Arch Linux
 sudo pacman -S mingw-w64 wine
-
-# macOS（仅当需要交叉编译 Windows 版时）
-brew install mingw-w64 wine
 ```
+
+Linux 原生后端尚未完成，因此 Linux 发布和 CI 继续通过
+`cmake/toolchains/mingw-w64.cmake` 显式生成 Windows 静态库及 `.exe`。macOS
+不再支持或发布这条交叉编译路径。
 
 ## 基本编译步骤
 
