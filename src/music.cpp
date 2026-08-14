@@ -7,8 +7,6 @@ MUSIC类的定义
 #include "ege_head.h"
 #include "ege_common.h"
 
-#include "music.h"
-
 #ifdef _WIN32
 #include <mmsystem.h>
 #include <digitalv.h>

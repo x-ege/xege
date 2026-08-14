@@ -121,7 +121,8 @@ unsigned long getlogodatasize();
 }
 #endif
 
-DWORD WINAPI messageloopthread(LPVOID lpParameter);
+DWORD WINAPI messageloopthread(_graph_setting* pg);
+static void on_destroy(struct _graph_setting* pg);
 
 _graph_setting::_graph_setting() : init_sem{0}
 {
@@ -139,6 +140,8 @@ _graph_setting::~_graph_setting()
     if (threadui.joinable() && hwnd != NULL && IsWindow(hwnd)) {
         PostMessageW(hwnd, EGE_WM_PROCESS_SHUTDOWN, 0, 0);
     }
+#else
+	on_destroy(this);
 #endif
     if (threadui.joinable()) {
         threadui.join();
@@ -194,9 +197,9 @@ static void ui_msg_process(EGEMSG& qmsg)
     }
     qmsg.flag |= 1;
     if (qmsg.message >= WM_KEYFIRST && qmsg.message <= WM_KEYLAST) {
-        if (qmsg.message == WM_KEYDOWN) {
+        if (qmsg.message == WM_KEYDOWN || qmsg.message == WM_SYSKEYDOWN) {
             pg->egectrl_root->keymsgdown((unsigned)qmsg.wParam, 0); // 以后补加flag
-        } else if (qmsg.message == WM_KEYUP) {
+        } else if (qmsg.message == WM_KEYUP || qmsg.message == WM_SYSKEYUP) {
             pg->egectrl_root->keymsgup((unsigned)qmsg.wParam, 0); // 以后补加flag
         } else if (qmsg.message == WM_CHAR) {
             pg->egectrl_root->keymsgchar((unsigned)qmsg.wParam, 0); // 以后补加flag
@@ -328,19 +331,7 @@ int graphupdate(_graph_setting* pg)
         return grNoInitGraph;
     }
 
-#ifdef _WIN32
-    if (IsWindowVisible(pg->hwnd)) {
-        swapbuffers();
-        updateFrameRate();
-    } else {
-        updateFrameRate(false);
-    }
-#else
-    swapbuffers();
-    updateFrameRate();
-#endif
-
-    pg->update_mark_count = UPDATE_MAX_CALL;
+    /* 先调整窗口大小，再交换缓冲区，否则放大窗口时会出现白边 */
 
 #ifdef _WIN32
     RECT rect, crect;
@@ -366,7 +357,19 @@ int graphupdate(_graph_setting* pg)
         SetWindowPos(pg->hwnd, NULL, 0, 0, rect.right + _dw - rect.left, rect.bottom + _dh - rect.top,
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
     }
+
+    if (IsWindowVisible(pg->hwnd)) {
+        swapbuffers();
+        updateFrameRate();
+    } else {
+        updateFrameRate(false);
+    }
+#else
+    swapbuffers();
+    updateFrameRate();
 #endif
+
+    pg->update_mark_count = UPDATE_MAX_CALL;
 
     return grOk;
 }
@@ -627,7 +630,7 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
 {
     /* https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keydown */
     unsigned msg = 0;
-    if (message == WM_KEYDOWN && keycode < MAX_KEY_VCODE) {
+    if ((message == WM_KEYDOWN || message == WM_SYSKEYDOWN) && keycode < MAX_KEY_VCODE) {
         msg                      = 1;
         pg->keystatemap[keycode] = true;
 
@@ -646,7 +649,7 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
         }
 
     }
-    if (message == WM_KEYUP && keycode < MAX_KEY_VCODE) {
+    if ((message == WM_KEYUP || message == WM_SYSKEYUP) && keycode < MAX_KEY_VCODE) {
         pg->keystatemap[keycode] = false;
 
         if (pg->key_release_count[keycode] < UINT16_MAX) {
@@ -893,9 +896,8 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         if (pg == pg_w) {
             if (pg->callback_close) {
                 pg->callback_close();
-            } else {
-                return DefWindowProcW(hWnd, message, wParam, lParam);
             }
+            return DefWindowProcW(hWnd, message, wParam, lParam);
         }
         break;
     case WM_DESTROY:
@@ -909,8 +911,11 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         }
         break;
     case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
     case WM_KEYUP:
+    case WM_SYSKEYUP:
     case WM_CHAR:
+        // 这里的WM_SYSKEYDOWN和WM_SYSKEYUP是为了处理Alt键的按下和释放事件，但是如果以后需要让系统接收这两个消息，需要把他返回给默认处理
         // if (hWnd == pg->hwnd)
         {
             if (pg->unicode_char_message) {
@@ -1306,14 +1311,12 @@ void closegraph()
 }
 
 /*private function*/
-DWORD WINAPI messageloopthread(LPVOID lpParameter)
+DWORD WINAPI messageloopthread(_graph_setting* pg)
 {
-    _graph_setting* pg = (_graph_setting*)lpParameter;
 #ifdef _WIN32
-    MSG             msg;
-
     /* 执行应用程序初始化: */
     if (!init_instance(pg->instance)) {
+        pg->init_sem.add_permit();
         return 0xFFFFFFFF;
     }
 
@@ -1336,6 +1339,7 @@ DWORD WINAPI messageloopthread(LPVOID lpParameter)
 
     pg->init_sem.add_permit();
 
+    MSG msg;
     while (!pg->exit_window) {
         if (GetMessageW(&msg, NULL, 0, 0)) {
             TranslateMessage(&msg);

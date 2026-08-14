@@ -235,6 +235,8 @@ typedef LPLOGFONTA LPLOGFONT;
 #define WM_KEYDOWN 0x0100
 #define WM_KEYUP 0x0101
 #define WM_CHAR 0x0102
+#define WM_SYSKEYDOWN 0x0104
+#define WM_SYSKEYUP 0x0105
 #define WM_KEYLAST 0x0109
 #endif
 

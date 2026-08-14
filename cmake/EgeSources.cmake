@@ -19,10 +19,10 @@ set(EGE_FRONTEND_SOURCES
     src/gdi_conv.cpp
     src/graphics.cpp
     src/image.cpp
+    src/image_ex.cpp
     src/keyboard.cpp
     src/logo.cpp
     src/math.cpp
-    src/message.cpp
     src/mouse.cpp
     src/music.cpp
     src/random.cpp
@@ -49,6 +49,12 @@ foreach(_ege_source IN LISTS EGE_OPTIONAL_FRONTEND_SOURCES)
         list(APPEND EGE_FRONTEND_SOURCES "${_ege_source}")
     endif()
 endforeach()
+
+# The native backend implements the enhanced path API in
+# ege_gdiplus_fallback.cpp. The extracted GDI+ implementation is Windows-only.
+if(WIN32)
+    list(APPEND EGE_FRONTEND_SOURCES src/ege_path.cpp)
+endif()
 
 set(EGE_CCAP_SOURCES
     3rdparty/ccap/src/ccap_c.cpp
