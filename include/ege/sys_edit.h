@@ -141,6 +141,7 @@ public:
         return 0;
     }
 
+	// implement in egegapi.cpp to use the ARGBTOZBGR macro definition from color.h
     LRESULT onMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
     void visible(bool bvisible)
@@ -274,6 +275,32 @@ public:
         ::CloseHandle(msg.hEvent);
 #endif
     }
+	
+	void select(int start = 0, int end = -1)
+	{
+		setfocus();
+		::SendMessageW(m_hwnd, EM_SETSEL, (WPARAM)start, (LPARAM)end);
+	}
+	
+	void setborder(bool border)
+	{
+		DWORD style = ::GetWindowLongW(m_hwnd, GWL_STYLE);
+		DWORD exstyle = ::GetWindowLongW(m_hwnd, GWL_EXSTYLE);
+		
+		if (border) {
+			style |= WS_BORDER;
+			exstyle |= WS_EX_CLIENTEDGE;
+		} else {
+			style &= ~(WS_BORDER);
+			exstyle &= ~(WS_EX_CLIENTEDGE);
+		}
+		
+		::SetWindowLongW(m_hwnd, GWL_STYLE, style);
+		::SetWindowLongW(m_hwnd, GWL_EXSTYLE, exstyle);
+		
+		::SetWindowPos(m_hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+		::RedrawWindow(m_hwnd, NULL, NULL, RDW_INVALIDATE | RDW_FRAME);
+	}
 
 protected:
 #ifdef _WIN32
