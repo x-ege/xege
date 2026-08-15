@@ -49,19 +49,21 @@ cmake -E chdir build/mac-window-tests ctest --output-on-failure \
 
 ## Windows putimage/性能套件
 
-`tests/tests/` 是历史 Win32 GDI 套件，直接链接 Windows 系统库，因此只在
-Windows 目标上加入构建。它覆盖 `putimage*` 正确性、Alpha/透明色、旋转和
-性能基准。
+`tests/tests/` 是历史 Win32 GDI 性能/运行烟雾套件，直接链接 Windows 系统
+库，因此只在 Windows 目标上加入构建。它覆盖 `putimage*`、Alpha/透明色和
+旋转等场景，但主要输出计时结果，没有稳定的像素正确性断言，不作为 CI
+正确性门禁。
 
 ```powershell
 cmake -S . -B build/windows-tests -DEGE_BUILD_TEST=ON -DEGE_BUILD_DEMO=OFF
 cmake --build build/windows-tests --config Release --parallel
-cmake -E chdir build/windows-tests ctest -C Release --output-on-failure
+cmake -E chdir build/windows-tests ctest -C Release --output-on-failure -L performance
 ```
 
 可执行文件通常位于 `build/windows-tests/bin/Release/`（具体取决于生成器）。
 性能结果会受机器负载、调试/发布配置和窗口会话影响，不应作为跨机器
-稳定性结论。
+稳定性结论。Windows CI 使用 `-LE performance`，只运行有确定结果的 CMake
+契约；性能套件保留为人工运行入口。
 
 ## 覆盖边界
 

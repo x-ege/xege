@@ -278,12 +278,18 @@ public:
 	
 	void select(int start = 0, int end = -1)
 	{
+#ifdef _WIN32
 		setfocus();
 		::SendMessageW(m_hwnd, EM_SETSEL, (WPARAM)start, (LPARAM)end);
+#else
+		(void)start;
+		(void)end;
+#endif
 	}
 	
 	void setborder(bool border)
 	{
+#ifdef _WIN32
 		DWORD style = ::GetWindowLongW(m_hwnd, GWL_STYLE);
 		DWORD exstyle = ::GetWindowLongW(m_hwnd, GWL_EXSTYLE);
 		
@@ -300,6 +306,9 @@ public:
 		
 		::SetWindowPos(m_hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 		::RedrawWindow(m_hwnd, NULL, NULL, RDW_INVALIDATE | RDW_FRAME);
+#else
+		(void)border;
+#endif
 	}
 
 protected:

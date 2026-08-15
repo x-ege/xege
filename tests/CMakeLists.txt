@@ -85,3 +85,17 @@ add_test(NAME putimage_transparent COMMAND putimage_transparent_test)
 add_test(NAME putimage_rotate COMMAND putimage_rotate_test)
 add_test(NAME putimage_comparison COMMAND putimage_comparison_test)
 add_test(NAME putimage_alphablend_comprehensive COMMAND putimage_alphablend_comprehensive_test)
+
+# These legacy programs print timing data and exercise large image sizes. They
+# are useful for manual Windows benchmarking, but they have no deterministic
+# correctness assertions and are too slow for the bounded CI smoke gate.
+set_tests_properties(
+    putimage_performance
+    putimage_basic
+    putimage_alphablend
+    putimage_transparent
+    putimage_rotate
+    putimage_comparison
+    putimage_alphablend_comprehensive
+    PROPERTIES LABELS "win32;performance"
+)

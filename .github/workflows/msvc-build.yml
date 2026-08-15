@@ -88,11 +88,11 @@ jobs:
           cd build-vs2026
           cmake --build . --config ${{ matrix.build_type }} --parallel
 
-      - name: Run Win32 regression smoke tests
+      - name: Run deterministic CMake contract tests
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
         run: >-
           ctest --test-dir build-vs2026 -C ${{ matrix.build_type }}
-          --output-on-failure --timeout 60 -E putimage_performance
+          --output-on-failure --timeout 60 -LE performance
 
   vs2022-build:
     name: MSVC 2022 Build (${{ matrix.build_type }})
@@ -120,10 +120,10 @@ jobs:
         run: |
           cd build-vs2022
           cmake --build . --config ${{ matrix.build_type }} --parallel
-      - name: Run Win32 regression smoke tests
+      - name: Run deterministic CMake contract tests
         run: >-
           ctest --test-dir build-vs2022 -C ${{ matrix.build_type }}
-          --output-on-failure --timeout 60 -E putimage_performance
+          --output-on-failure --timeout 60 -LE performance
 
   vs2019-build:
     name: MSVC 2019 Build (${{ matrix.build_type }})
@@ -152,10 +152,10 @@ jobs:
         run: |
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
-      - name: Run Win32 regression smoke tests
+      - name: Run deterministic CMake contract tests
         run: >-
           ctest --test-dir build-vs2019 -C ${{ matrix.build_type }}
-          --output-on-failure --timeout 60 -E putimage_performance
+          --output-on-failure --timeout 60 -LE performance
 
   # 注意：VS2015 (v140) / VS2017 (v141) / VS2010-VS2013 (v100-v120) 已从 CI 中移除
   # 原因：
