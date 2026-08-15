@@ -2,11 +2,13 @@
 
 [![MSVC Build](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml)
 [![MinGW Windows Build](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml)
-[![MinGW Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
+[![MinGW Linux Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
+[![macOS Native CoreGraphics Build](https://github.com/x-ege/xege/actions/workflows/macos-native-coregraphics-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/macos-native-coregraphics-build.yml)
 [![License](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/x-ege/xege)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)](https://github.com/x-ege/xege)
 
-EGE (Easy Graphics Engine) 是一个 Windows 下的简易绘图库，提供类似 BGI (`graphics.h`) 的接口，专为 C/C++ 初学者设计。
+EGE (Easy Graphics Engine) 是一个提供类似 BGI (`graphics.h`) 接口的简易绘图库，
+支持 Windows GDI 和 macOS Core Graphics/AppKit 原生后端，专为 C/C++ 初学者设计。
 
 ## 目录
 
@@ -58,6 +60,7 @@ EGE 支持以下 开发工具/编译器：
 | [小熊猫 C++](http://royqh.net/redpandacpp/) | 支持 | ✅ **推荐** 已内置 EGE, 下载即可用 |
 | Code::Blocks | 支持 | 已测试版本: 25.03 (最新) |
 | MinGW / MinGW-w64 | 支持 | ✅ 支持, SDK 发布时会基于最新版本进行测试 |
+| AppleClang / Xcode Command Line Tools | macOS | ✅ Core Graphics + AppKit 原生 Mach-O 构建，不需要 Wine |
 | 老版本 Visual Studio | 2010 ~ 2015 | ⚠️ 支持，但不推荐（不支持 C++17） |
 | Visual C++ 6.0 | aka vc6.0 | ⚠️ 旧版支持，可从[官网](https://xege.org/install_and_config)下载内嵌版本 |
 | Dev-C++ | 支持 | ⚠️ 十年未更新, 不那么推荐 </br> 已测试版本: 5.11 (最新) |
@@ -91,7 +94,9 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
    - `EGE: 在当前工作区设置 ege 项目` - 使用预编译库创建项目
    - `EGE: 在当前工作区设置带有 EGE 源代码的 ege 项目` - 使用源码创建项目
    - `EGE: 构建并运行当前文件` - 快速编译运行单个 cpp 文件
-3. 插件支持 Windows、macOS（需 mingw-w64 + wine）和 Linux
+3. 新版 SDK 的 `lib/macOS/libgraphics.a` 是 AppleClang/Core Graphics 原生静态库；
+   不再提供 macOS 主机上的 MinGW/Wine 交叉编译产物。旧版插件若仍固定调用
+   Wine，请升级插件，或参考 [编译指南](BUILD.md#macos-原生-core-graphics-构建)
 
 > 更多详情请访问插件主页：[CLion 插件](https://github.com/x-ege/ege-clion-plugin) | [VS Code 插件](https://github.com/x-ege/ege-vscode-plugin)
 
@@ -110,7 +115,7 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 | 特点 | 说明 |
 |------|------|
 | 零依赖轻量级 | 使用 `stb_image` 和 `sdefl/sinfl` 替代 `libpng`/`zlib`，无外部依赖，单库即可使用 |
-| 直接像素访问 | 提供 `getbuffer` 接口直接访问图像像素数据，实现高效的软件渲染和图像处理 |
+| 直接像素访问 | `getbuffer` 返回 CPU 权威的顶向下、连续预乘 BGRA 像素；macOS Core Graphics 直接复用该 buffer，无 GPU readback |
 | 抗锯齿支持 | 内置 GDI+ 支持，`ege_` 系列函数提供高质量抗锯齿绘图 |
 | 预乘 Alpha 优化 | 默认使用 PRGB32 (预乘 Alpha) 格式，配合 `AlphaBlend` 实现 GPU 加速混合 |
 | 多图像格式支持 | 支持 PNG, JPEG, BMP, GIF, TGA, PSD, HDR 等常见图像格式 |
@@ -125,6 +130,19 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 EGE 使用 [CMake](https://cmake.org) 作为构建系统。
 
 详细编译步骤请参阅 [编译指南](BUILD.md)。
+
+macOS 原生构建的最小配置为：
+
+```sh
+cmake -S . -B build/native \
+  -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
+  -DEGE_ENABLE_OPENGL=OFF \
+  -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+cmake --build build/native --target xege
+```
+
+Linux 原生 Cairo 后端尚未实现，当前会在 CMake 配置阶段 fail-fast。OpenGL
+实验分支只作为构建分层和后端接口参考，不默认启用。
 
 ## 社区与支持
 

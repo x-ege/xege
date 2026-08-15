@@ -81,12 +81,32 @@ if(MSVC)
         "$<$<CONFIG:MINSIZEREL>:/DNDEBUG>")
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
+    # lib/macOS is the native AppleClang/Core Graphics package. The former
+    # macOS-hosted MinGW/Windows archive is no longer published.
+    set(osLibDir "macOS")
+    add_library(xege STATIC IMPORTED)
+    set_target_properties(xege PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../Release/lib/${osLibDir}/libgraphics.a)
+
+    foreach(framework
+            AppKit CoreGraphics CoreText ImageIO Foundation AVFoundation
+            CoreVideo CoreMedia Accelerate AVFAudio AudioToolbox)
+        find_library(EGE_RELEASE_${framework}_FRAMEWORK NAMES ${framework})
+        if(NOT EGE_RELEASE_${framework}_FRAMEWORK)
+            message(FATAL_ERROR
+                "Required macOS framework '${framework}' was not found")
+        endif()
+        target_link_libraries(xege INTERFACE
+            "${EGE_RELEASE_${framework}_FRAMEWORK}")
+    endforeach()
+elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_HOST_APPLE)
-        set(osLibDir "macOS")
+        message(FATAL_ERROR
+            "The macOS MinGW prebuilt package was retired. Build natively with "
+            "AppleClang, or use an older EGE release for that workflow.")
     elseif(CMAKE_HOST_UNIX)
         set(osLibDir "mingw-w64-debian")
-    elseif(MINGW)
+    else()
         set(osLibDir "mingw64")
     endif()
 
@@ -96,6 +116,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_compile_options(xege INTERFACE -D_FORTIFY_SOURCE=0)
     target_link_options(xege INTERFACE -mwindows -static -static-libgcc -static-libstdc++)
     target_link_libraries(xege INTERFACE gdiplus gdi32 imm32 msimg32 ole32 oleaut32 winmm uuid)
+elseif(NOT MSVC)
+    message(FATAL_ERROR
+        "No prebuilt EGE package is available for ${CMAKE_SYSTEM_NAME} / "
+        "${CMAKE_CXX_COMPILER_ID}. Use the source build or select an explicit "
+        "Windows toolchain.")
 endif()
 
 target_include_directories(xege INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../include)

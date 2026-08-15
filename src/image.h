@@ -1,8 +1,11 @@
 #pragma once
 
 #include "ege_head.h"
+#include "backend/interface/RenderTarget.h"
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 
 namespace ege
@@ -84,6 +87,8 @@ private:
 
 public:
     HDC     m_hDC;
+    RenderTarget* m_renderTarget;  // Native render target; null for legacy GDI images.
+    mutable RenderTarget* m_samplingTarget; // Optional future backend upload cache.
     HBITMAP m_hBmp;
     int     m_width;
     int     m_height;
@@ -92,10 +97,15 @@ public:
     color_t m_fillcolor;
     color_t m_textcolor;
     color_t m_bk_color;
+    color_t m_fontBkColor;
+    int     m_bkMode;
+    int     m_writeMode;
+    int     m_fillstyle;
 
 private:
 #ifdef EGE_GDIPLUS
     Gdiplus::Graphics* m_graphics;
+    Gdiplus::Bitmap*   m_graphicsBitmap;
     Gdiplus::Pen*      m_pen;
     Gdiplus::Brush*    m_brush;
 #endif
@@ -132,16 +142,27 @@ public:
 
     void gentexture(bool gen);
 
+    bool isAntiAliasingEnabled() const noexcept { return m_aa; }
+
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
-    color_t* getbuffer() const { return (color_t*)m_pBuffer; }
+    color_t*       getbuffer();
+    color_t*       getbuffer(image_buffer_access access);
+    const color_t* getbuffer() const;
+    color_t*       getbuffer_for_write(int x, int y, int width, int height);
+    int            updatebuffer(int x, int y, int width, int height,
+                                const color_t* pixels, int pitchBytes);
+    image_storage_mode getStorageMode() const;
+    int setStorageMode(image_storage_mode mode, bool preservePixels = true);
+    RenderTarget* getRenderTargetForSampling() const;
 #ifdef EGE_GDIPLUS
     // TODO: thread safe?
     Gdiplus::Graphics* getGraphics();
     Gdiplus::Pen*      getPen();
     Gdiplus::Brush*    getBrush();
     void               set_pattern(Gdiplus::Brush* brush);
+    void               syncGraphicsViewport(int oldLeft, int oldTop);
 #endif
     void enable_anti_alias(bool enable);
 
@@ -307,7 +328,18 @@ public:
     friend graphics_errors getimage_from_png_struct(PIMAGE, void*, void*);
 };
 
+#ifndef EGE_GDIPLUS
+// Native enhanced-API state is stored outside IMAGE to keep the public ABI
+// stable. These hooks keep that state synchronized with IMAGE lifetime and
+// resize operations.
+bool updateNativeFallbackTexture(IMAGE* image, bool generate);
+void releaseNativeFallbackState(const IMAGE* image);
+void clearNativeFallbackPattern(IMAGE* image);
+#endif
+
+#ifdef EGE_GDIPLUS
 graphics_errors getimage_from_bitmap(PIMAGE pimg, Gdiplus::Bitmap& bitmap);
+#endif
 
 int savebmp(PCIMAGE pimg, FILE* file, bool alpha = false);
 

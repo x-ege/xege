@@ -20,6 +20,7 @@
 
 #include <graphics.h>
 #include <ege/camera_capture.h>
+#include "camera_demo_screen.h"
 
 #include <memory>
 #include <vector>
@@ -98,16 +99,21 @@ int main()
 
 /// 结合水波荡漾的 Demo, 给一个相机的版本
 
-struct Point
+namespace ege
 {
-    Point() : x(0), y(0), dx(0), dy(0) {}
 
-    Point(float _x, float _y, float _u, float _v) : x(_x), y(_y), dx(0), dy(0), u(_u), v(_v) {}
+struct WavePoint
+{
+    WavePoint() : x(0), y(0), dx(0), dy(0) {}
+
+    WavePoint(float _x, float _y, float _u, float _v) : x(_x), y(_y), dx(0), dy(0), u(_u), v(_v) {}
 
     float x, y;
     float dx, dy;
     float u, v;
 };
+
+} // namespace ege
 
 void my_line(int* data, int width, int height, int pnt1x, int pnt1y, int pnt2x, int pnt2y, int color)
 {
@@ -192,8 +198,8 @@ public:
             int         index   = w * i;
             for (int j = 0; j != w; ++j) {
                 const float widthJ = j * widthStep;
-                m_vec[0][index]    = Point(widthJ, heightI, widthJ, heightI);
-                m_vec[1][index]    = Point(widthJ, heightI, widthJ, heightI);
+                m_vec[0][index]    = ege::WavePoint(widthJ, heightI, widthJ, heightI);
+                m_vec[1][index]    = ege::WavePoint(widthJ, heightI, widthJ, heightI);
 
                 ++index;
             }
@@ -425,15 +431,15 @@ public:
 
     void drawNet()
     {
-        std::vector<Point>& vec = m_vec[m_index];
+        std::vector<ege::WavePoint>& vec = m_vec[m_index];
         int                 sz  = vec.size();
         int                 i; // i变量前置, 方便vc6.0 编译
         m_pointCache.resize(sz);
 #if _MSC_VER < 1600 // 兼容vc6.0
-        Point* v = &m_pointCache[0];
+        ege::WavePoint* v = &m_pointCache[0];
         memcpy(v, &vec[0], sz * sizeof(vec[0]));
 #else
-        Point* v = m_pointCache.data();
+        ege::WavePoint* v = m_pointCache.data();
         memcpy(v, vec.data(), sz * sizeof(vec[0]));
 #endif
 
@@ -501,8 +507,8 @@ public:
     float getIntensity() { return m_intensity; }
 
 private:
-    std::vector<Point> m_vec[2];
-    std::vector<Point> m_pointCache;
+    std::vector<ege::WavePoint> m_vec[2];
+    std::vector<ege::WavePoint> m_pointCache;
     int                m_index;
     int                m_width, m_height;
     float              m_intensity;
@@ -518,7 +524,10 @@ private:
 
 // 根据相机分辨率调整窗口大小，保持比例一致
 // 返回 true 表示窗口大小发生了变化
-bool adjustWindowToCamera(int cameraWidth, int cameraHeight, PIMAGE& target, Net& net)
+namespace ege
+{
+
+bool adjustWindowToCamera(int cameraWidth, int cameraHeight, PIMAGE& target, ::Net& net)
 {
     int windowWidth = getwidth();
     int windowHeight = getheight();
@@ -528,11 +537,10 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight, PIMAGE& target, Net
     int cameraShortEdge = (std::min)(cameraWidth, cameraHeight);
     float cameraRatio = (float)cameraWidth / cameraHeight;
 
-    // 获取屏幕可用区域（考虑任务栏）
-    RECT workArea;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
-    int screenAvailWidth = workArea.right - workArea.left;
-    int screenAvailHeight = workArea.bottom - workArea.top;
+    // 获取屏幕可用区域（Windows 考虑任务栏；macOS 使用主显示器范围）。
+    int screenAvailWidth = 0;
+    int screenAvailHeight = 0;
+    cameraDemoAvailableScreenSize(&screenAvailWidth, &screenAvailHeight);
     // 留一点边距，避免窗口贴边
     screenAvailWidth -= 20;
     screenAvailHeight -= 40;
@@ -594,6 +602,8 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight, PIMAGE& target, Net
 
     return true;
 }
+
+} // namespace ege
 
 void showErrorWindow()
 {
@@ -840,7 +850,7 @@ int main()
                 if (switchCamera(camera, currentDeviceIndex, deviceCount, newWidth, newHeight)) {
                     currentResolutionIndex = newResolutionIndex;
                     // 调整窗口大小以匹配相机分辨率比例
-                    adjustWindowToCamera(newWidth, newHeight, target, net);
+                    ege::adjustWindowToCamera(newWidth, newHeight, target, net);
                     // 获取新分辨率的第一帧
                     frame = camera.grabFrame(5000);
                     if (frame) {

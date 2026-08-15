@@ -12,14 +12,14 @@
 - 自动检测编译器类型和版本
 - 自动选择对应的静态库目录
 - 支持 MSVC (VS2017-VS2026) 和 MinGW-w64 编译器
-- 支持 Linux/macOS 交叉编译环境
+- 支持 macOS AppleClang 原生构建和 Linux MinGW 交叉编译环境
 - 包含 demo 目录下所有示例程序的编译配置
 
 **库目录映射：**
 - MSVC: 根据编译器版本自动选择 `lib/vs2017/`, `lib/vs2019/`, `lib/vs2022/` 等
 - MinGW (Windows): 默认使用 `lib/mingw64/`
 - MinGW (Ubuntu): 使用 `lib/mingw-w64-debian/`
-- MinGW (macOS): 使用 `lib/macOS/`
+- AppleClang (macOS): 使用 `lib/macOS/` 原生通用静态库
 - Code::Blocks: 使用 `lib/codeblocks/`
 - CLion/小熊猫C++: 使用 `lib/redpanda/`
 
@@ -45,7 +45,7 @@ ege-25.11/
 │   ├── codeblocks/         # Code::Blocks 25.03 静态库
 │   ├── redpanda/           # CLion/小熊猫C++ 静态库
 │   ├── mingw-w64-debian/   # Ubuntu 交叉编译静态库
-│   └── macOS/              # macOS 交叉编译静态库
+│   └── macOS/              # macOS 原生通用静态库 (arm64/x86_64)
 ├── man/                    # API 文档
 ├── egelogo.jpg             # EGE Logo
 ├── version.txt             # 版本号

@@ -41,11 +41,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
 #include <windowsx.h>
+#endif
 
 #include "ege_head.h"
 #include "ege_common.h"
 #include "ege_extension.h"
+#include "window.h"
+#if defined(EGE_BACKEND_COREGRAPHICS)
+#include "backend/macos/MacWindow.h"
+#endif
 
 #ifdef _ITERATOR_DEBUG_LEVEL
 #undef _ITERATOR_DEBUG_LEVEL
@@ -83,11 +89,27 @@ namespace ege
 // 静态分配，零初始化
 struct _graph_setting graph_setting;
 
+#if defined(EGE_BACKEND_COREGRAPHICS)
+static bool is_headless_mode()
+{
+    const char* value = getenv("EGE_HEADLESS");
+    return value != NULL && value[0] == '1' && value[1] == '\0';
+}
+#endif
+
 static initmode_flag   g_initoption    = INIT_DEFAULT;
+#ifdef _WIN32
 static DWORD g_windowstyle   = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_VISIBLE;
 static DWORD g_windowexstyle = WS_EX_LEFT | WS_EX_LTRREADING;
+#else
+static DWORD g_windowstyle   = 0;
+static DWORD g_windowexstyle = 0;
+#endif
 static int   g_windowpos_x   = CW_USEDEFAULT;
 static int   g_windowpos_y   = CW_USEDEFAULT;
+#ifdef _WIN32
+static const UINT EGE_WM_PROCESS_SHUTDOWN = WM_APP + 0x3E0;
+#endif
 
 #ifdef __cplusplus
 extern "C"
@@ -110,11 +132,60 @@ _graph_setting::_graph_setting() : init_sem{0}
 
 _graph_setting::~_graph_setting()
 {
+#ifdef _WIN32
+    // closegraph() intentionally only hides the reusable legacy window. At
+    // process teardown, however, the UI thread must destroy its own HWND so
+    // GetMessage() can finish before join(). A private window message avoids
+    // invoking an application close callback during static destruction.
+    if (threadui.joinable() && hwnd != NULL && IsWindow(hwnd)) {
+        PostMessageW(hwnd, EGE_WM_PROCESS_SHUTDOWN, 0, 0);
+    }
+#else
 	on_destroy(this);
-
+#endif
     if (threadui.joinable()) {
         threadui.join();
     }
+
+    // closegraph() keeps resources alive so legacy programs can initialize
+    // the same environment again. Static destruction is the final ownership
+    // boundary: release EGE-owned pages before destroying queues and the
+    // native window itself.
+    PIMAGE ownedPages[BITMAP_PAGE_SIZE] = {};
+    for (int index = 0; index < BITMAP_PAGE_SIZE; ++index) {
+        ownedPages[index] = img_page[index];
+        img_page[index] = NULL;
+    }
+    PIMAGE timerImage = img_timer_update;
+    img_timer_update = NULL;
+    imgtarget = NULL;
+    imgtarget_set = NULL;
+
+    for (int index = 0; index < BITMAP_PAGE_SIZE; ++index) {
+        bool alreadyDeleted = false;
+        for (int previous = 0; previous < index; ++previous) {
+            alreadyDeleted = alreadyDeleted || ownedPages[index] == ownedPages[previous];
+        }
+        if (ownedPages[index] != NULL && !alreadyDeleted) {
+            delete ownedPages[index];
+        }
+    }
+    bool timerIsPage = false;
+    for (int index = 0; index < BITMAP_PAGE_SIZE; ++index) {
+        timerIsPage = timerIsPage || timerImage == ownedPages[index];
+    }
+    if (timerImage != NULL && !timerIsPage) {
+        delete timerImage;
+    }
+
+    delete msgkey_queue;
+    msgkey_queue = NULL;
+    delete msgmouse_queue;
+    msgmouse_queue = NULL;
+
+    delete window;
+    window = NULL;
+    hwnd = NULL;
 }
 
 /*private function*/
@@ -183,6 +254,7 @@ static int redraw_window(_graph_setting* pg, HDC dc)
  */
 int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect& rect)
 {
+#ifdef _WIN32
     /* Note: BitBlt 参数指定的位置受 GDI 坐标变换和视口原点影响 */
 
     /* 保存影响 BitBlt 的设置 */
@@ -212,6 +284,9 @@ int frameBufferCopy(HDC frontDC, const Point& frontPoint, HDC backDC, const Rect
     }
 
     return copyResult ? grOk : grError;
+#else
+    return grOk;
+#endif
 }
 
 int swapbuffers()
@@ -221,6 +296,18 @@ int swapbuffers()
 
     struct _graph_setting* pg = &graph_setting;
 
+    if (pg->window) {
+        PIMAGE visualPage = (pg->visual_page >= 0 && pg->visual_page < BITMAP_PAGE_SIZE)
+            ? pg->img_page[pg->visual_page] : NULL;
+        if (visualPage != NULL) {
+            const color_t* pixels = static_cast<const IMAGE*>(visualPage)->getbuffer();
+            pg->window->present(pixels, visualPage->getwidth(), visualPage->getheight(),
+                                static_cast<size_t>(visualPage->getwidth()) * sizeof(color_t));
+        }
+        return grOk;
+    }
+
+#ifdef _WIN32
     PIMAGE backFrameBuffer = pg->img_page[pg->visual_page];
     HDC backFrameBufferDC = backFrameBuffer->getdc();
 
@@ -228,6 +315,7 @@ int swapbuffers()
     Rect backRect(0, 0, pg->base_w, pg->base_h);
     frameBufferCopy(frontFrameBufferDC, Point(0, 0), backFrameBufferDC, backRect);
     ReleaseDC(getHWnd(), frontFrameBufferDC);
+#endif
 
     return grOk;
 }
@@ -245,6 +333,7 @@ int graphupdate(_graph_setting* pg)
 
     /* 先调整窗口大小，再交换缓冲区，否则放大窗口时会出现白边 */
 
+#ifdef _WIN32
     RECT rect, crect;
     HWND hwnd;
     int  _dw, _dh;
@@ -269,20 +358,41 @@ int graphupdate(_graph_setting* pg)
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
     }
 
-	if (IsWindowVisible(pg->hwnd)) {
-		swapbuffers();
-		updateFrameRate();
-	} else {
-		updateFrameRate(false);
-	}
+    if (IsWindowVisible(pg->hwnd)) {
+        swapbuffers();
+        updateFrameRate();
+    } else {
+        updateFrameRate(false);
+    }
+#else
+    swapbuffers();
+    updateFrameRate();
+#endif
 
-	pg->update_mark_count = UPDATE_MAX_CALL;
+    pg->update_mark_count = UPDATE_MAX_CALL;
 
     return grOk;
 }
 
+static void handle_native_window_close(_graph_setting* pg)
+{
+    pg->exit_window = 1;
+    // Match the legacy Win32 WM_DESTROY policy: default-mode applications
+    // terminate even when their own loop does not poll is_run().
+    if (pg->close_manually && pg->use_force_exit) {
+        exit(0);
+    }
+}
+
 int dealmessage(_graph_setting* pg, bool force_update)
 {
+    // Native backends own their event loop on the drawing thread.
+    if (pg->window) {
+        pg->window->processEvents();
+        if (pg->window->isClosed()) {
+            handle_native_window_close(pg);
+        }
+    }
     if (force_update || pg->update_mark_count < UPDATE_MAX_CALL) {
         graphupdate(pg);
     }
@@ -292,21 +402,44 @@ int dealmessage(_graph_setting* pg, bool force_update)
 /*private function*/
 void guiupdate(_graph_setting* pg, egeControlBase* root)
 {
-    pg->msgkey_queue->process(ui_msg_process);
-    pg->msgmouse_queue->process(ui_msg_process);
+    // During early initialization and shutdown these pointers may be null.
+    if (pg == NULL || root == NULL) {
+        return;
+    }
+    if (pg->msgkey_queue) {
+        pg->msgkey_queue->process(ui_msg_process);
+    }
+    if (pg->msgmouse_queue) {
+        pg->msgmouse_queue->process(ui_msg_process);
+    }
     root->update();
 }
 
 /*private function*/
 int waitdealmessage(_graph_setting* pg)
 {
+    if (pg == NULL) {
+        return 0;
+    }
+
+    if (pg->window) {
+        pg->window->processEvents();
+        if (pg->window->isClosed()) {
+            handle_native_window_close(pg);
+        }
+    }
+
     // MSG msg;
     if (pg->update_mark_count < UPDATE_MAX_CALL) {
         egeControlBase* root = pg->egectrl_root;
-        root->draw(NULL);
+        if (root) {
+            root->draw(NULL);
+        }
 
         graphupdate(pg);
-        guiupdate(pg, root);
+        if (root) {
+            guiupdate(pg, root);
+        }
     }
     ege_sleep(1);
     return !pg->exit_window;
@@ -318,6 +451,7 @@ void setmode(int gdriver, int gmode)
     struct _graph_setting* pg = &graph_setting;
 
     if (gdriver == TRUECOLORSIZE) {
+#ifdef _WIN32
         RECT rect;
         HWND parentWindow = getParentWindow();
         if (parentWindow) {
@@ -325,13 +459,30 @@ void setmode(int gdriver, int gmode)
         } else {
             GetWindowRect(GetDesktopWindow(), &rect);
         }
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+        int desktopWidth = 640;
+        int desktopHeight = 480;
+        (void)backend::MacWindow::primaryScreenSize(&desktopWidth, &desktopHeight);
+#endif
         pg->dc_w = (short)(gmode & 0xFFFF);
         pg->dc_h = (short)((unsigned int)gmode >> 16);
         if (pg->dc_w < 0) {
+#ifdef _WIN32
             pg->dc_w = rect.right - rect.left;
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+            pg->dc_w = desktopWidth;
+#else
+            pg->dc_w = 640;
+#endif
         }
         if (pg->dc_h < 0) {
+#ifdef _WIN32
             pg->dc_h = rect.bottom - rect.top;
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+            pg->dc_h = desktopHeight;
+#else
+            pg->dc_h = 480;
+#endif
         }
     } else {
         pg->dc_w = 640;
@@ -343,11 +494,13 @@ void setmode(int gdriver, int gmode)
 
 static BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszName, LONG_PTR lParam)
 {
+#ifdef _WIN32
     HICON hico = (HICON)LoadImageW(hModule, lpszName, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
     if (hico) {
         *((HICON*)lParam) = hico;
         return FALSE;
     }
+#endif
     return TRUE;
 }
 
@@ -364,14 +517,18 @@ static void on_repaint(struct _graph_setting* pg, HWND hwnd, HDC dc)
     bool release = false;
     pg->img_timer_update->copyimage(pg->img_page[page]);
     if (dc == NULL) {
+#ifdef _WIN32
         dc      = GetDC(hwnd);
+#endif
         release = true;
     }
 
     frameBufferCopy(dc, Point(0, 0), pg->img_timer_update->m_hDC, Rect(0, 0, pg->base_w, pg->base_h));
 
     if (release) {
+#ifdef _WIN32
         ReleaseDC(hwnd, dc);
+#endif
     }
 }
 
@@ -393,6 +550,7 @@ static void on_timer(struct _graph_setting* pg, HWND hwnd, unsigned id)
 /*private function*/
 static void on_paint(struct _graph_setting* pg, HWND hwnd)
 {
+#ifdef _WIN32
     if (!pg->lock_window) {
         PAINTSTRUCT ps;
         HDC         hdc;
@@ -403,6 +561,7 @@ static void on_paint(struct _graph_setting* pg, HWND hwnd)
         ValidateRect(hwnd, NULL);
         pg->update_mark_count--;
     }
+#endif
 }
 
 /*private function*/
@@ -410,7 +569,9 @@ static void on_destroy(struct _graph_setting* pg)
 {
     pg->exit_window = 1;
     dll::freeDlls();
+#ifdef _WIN32
     PostQuitMessage(0);
+#endif
     if (pg->close_manually && pg->use_force_exit) {
         exit(0);
     }
@@ -419,6 +580,7 @@ static void on_destroy(struct _graph_setting* pg)
 /*private function*/
 static void on_setcursor(struct _graph_setting* pg, HWND hwnd)
 {
+#ifdef _WIN32
     if (pg->mouse_show) {
         SetCursor(LoadCursor(NULL, IDC_ARROW));
     } else {
@@ -433,11 +595,13 @@ static void on_setcursor(struct _graph_setting* pg, HWND hwnd)
             SetCursor(LoadCursor(NULL, IDC_ARROW));
         }
     }
+#endif
 }
 
 /*private function*/
 static void on_ime_control(struct _graph_setting* pg, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
+#ifdef _WIN32
     if (wparam == IMC_SETSTATUSWINDOWPOS) {
         HIMC            hImc = dll::ImmGetContext(hwnd);
         COMPOSITIONFORM cpf  = {0};
@@ -445,11 +609,13 @@ static void on_ime_control(struct _graph_setting* pg, HWND hwnd, UINT message, W
         cpf.ptCurrentPos     = *(LPPOINT)lparam;
         dll::ImmSetCompositionWindow(hImc, &cpf);
     }
+#endif
 }
 
 /*private function*/
 static void windowmanager(ege::_graph_setting* pg, bool create, struct msg_createwindow* msg)
 {
+#ifdef _WIN32
     if (create) {
         msg->hwnd = ::CreateWindowExW(msg->exstyle, msg->classname, NULL, msg->style, 0, 0, 0, 0, getHWnd(),
             (HMENU)msg->id, getHInstance(), NULL);
@@ -464,6 +630,7 @@ static void windowmanager(ege::_graph_setting* pg, bool create, struct msg_creat
             ::SetEvent(msg->hEvent);
         }
     }
+#endif
 }
 
 /*private function*/
@@ -513,7 +680,11 @@ static void on_key(struct _graph_setting* pg, UINT message, unsigned long keycod
         msg.message = message;
         msg.wParam  = keycode;
         msg.lParam  = keyflag;
+#ifdef _WIN32
         msg.time    = ::GetTickCount();
+#else
+        msg.time    = static_cast<DWORD>(get_highfeq_time_ls() * 1000.0);
+#endif
         pg->msgkey_queue->push(msg);
     }
 }
@@ -537,8 +708,106 @@ static void push_mouse_msg(struct _graph_setting* pg, UINT message, WPARAM wpara
     pg->msgmouse_queue->push(msg);
 }
 
+#if defined(EGE_BACKEND_COREGRAPHICS)
+class NativeWindowEventSink final : public WindowEventSink
+{
+public:
+    explicit NativeWindowEventSink(_graph_setting* settings) : settings_(settings) {}
+
+    bool onCloseRequested() override
+    {
+        if (settings_->callback_close) {
+            settings_->callback_close();
+            // Win32 treats a close callback as the application's opportunity
+            // to decide when to destroy the window. Keep the AppKit window open
+            // unless that callback closes it explicitly.
+            return false;
+        }
+        settings_->exit_flag = 1;
+        settings_->exit_window = 1;
+        return true;
+    }
+
+    void onResize(int width, int height) override
+    {
+        if (width > 0 && height > 0 &&
+            (settings_->base_w != width || settings_->base_h != height)) {
+            resize_window_surface(width, height);
+        }
+    }
+
+    void onKey(std::uint32_t key, bool pressed, bool repeat) override
+    {
+        const LPARAM repeatFlag = repeat ? static_cast<LPARAM>(0x40000001) : 1;
+        on_key(settings_, pressed ? WM_KEYDOWN : WM_KEYUP, key, repeatFlag);
+    }
+
+    void onText(std::uint32_t codepoint) override
+    {
+        if (settings_->unicode_char_message) {
+            on_key(settings_, WM_CHAR, codepoint, 1);
+            return;
+        }
+
+        const wchar_t wideText[] = {static_cast<wchar_t>(codepoint), L'\0'};
+        const std::string encoded = w2mb(wideText);
+        for (std::string::const_iterator it = encoded.begin(); it != encoded.end(); ++it) {
+            on_key(settings_, WM_CHAR, static_cast<unsigned char>(*it), 1);
+        }
+    }
+
+    void onMouseMove(int x, int y) override
+    {
+        settings_->mouse_pos = Point(x, y);
+        pushMouse(WM_MOUSEMOVE, 0, x, y);
+    }
+
+    void onMouseButton(int button, bool pressed, int x, int y) override
+    {
+        static const int keyCodes[] = {VK_LBUTTON, VK_RBUTTON, VK_MBUTTON};
+        static const UINT downMessages[] = {WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN};
+        static const UINT upMessages[] = {WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP};
+        if (button < 0 || button >= 3) {
+            return;
+        }
+        settings_->mouse_pos = Point(x, y);
+        settings_->keystatemap[keyCodes[button]] = pressed;
+        if (pressed) {
+            if (settings_->key_press_count[keyCodes[button]] < UINT16_MAX) {
+                ++settings_->key_press_count[keyCodes[button]];
+            }
+        } else if (settings_->key_release_count[keyCodes[button]] < UINT16_MAX) {
+            ++settings_->key_release_count[keyCodes[button]];
+        }
+        pushMouse(pressed ? downMessages[button] : upMessages[button], 0, x, y);
+    }
+
+    void onMouseWheel(float, float deltaY, int x, int y) override
+    {
+        const int wheelDelta = static_cast<int>(deltaY * WHEEL_DELTA);
+        const WPARAM wheel = static_cast<WPARAM>(
+            static_cast<std::uint32_t>(static_cast<std::uint16_t>(wheelDelta)) << 16U);
+        pushMouse(WM_MOUSEWHEEL, wheel, x, y);
+    }
+
+private:
+    void pushMouse(UINT message, WPARAM parameter, int x, int y)
+    {
+        WPARAM state = parameter;
+        state |= settings_->keystatemap[VK_LBUTTON] ? MK_LBUTTON : 0;
+        state |= settings_->keystatemap[VK_RBUTTON] ? MK_RBUTTON : 0;
+        state |= settings_->keystatemap[VK_MBUTTON] ? MK_MBUTTON : 0;
+        push_mouse_msg(settings_, message, state, MAKELPARAM(x, y),
+                       static_cast<int>(get_highfeq_time_ls() * 1000.0));
+    }
+
+    _graph_setting* settings_;
+};
+#endif
+
 static void mouseProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _WIN32
     /* up 消息会后紧跟一条 move 消息，标记并将其忽略 */
     static bool skipNextMoveMessage = false;
     if ((message < WM_MOUSEFIRST) || (message > WM_MOUSELAST))
@@ -597,11 +866,13 @@ static void mouseProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     pg->mouse_pos = curPos;
+#endif
 }
 
 /*private function*/
 static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _WIN32
     struct _graph_setting* pg_w = NULL;
     struct _graph_setting* pg   = &graph_setting;
     // int wmId, wmEvent;
@@ -620,6 +891,13 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
     case WM_PAINT:
         if (pg == pg_w) {
             on_paint(pg, hWnd);
+        }
+        break;
+    case EGE_WM_PROCESS_SHUTDOWN:
+        if (pg == pg_w) {
+            pg->close_manually = false;
+            pg->use_force_exit = false;
+            DestroyWindow(hWnd);
         }
         break;
     case WM_CLOSE:
@@ -720,6 +998,9 @@ static LRESULT CALLBACK wndproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         return ((egeControlBase*)pg_w)->onMessage(message, wParam, lParam);
     }
     return 0;
+#else
+    return 0;
+#endif
 }
 
 PVOID getProcfunc()
@@ -768,7 +1049,7 @@ void logoscene()
     for (alpha = 0; alpha <= 0xFF && b_nobreak; alpha += 16, delay_fps(60)) {
         cleardevice();
         putimage_alphablend(
-            NULL, pimg, (getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, (UCHAR)alpha);
+            NULL, pimg, (getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, (unsigned char)alpha);
         while (kbhit()) {
             getkey();
             b_nobreak = 0;
@@ -790,7 +1071,7 @@ void logoscene()
     for (; alpha >= 0 && b_nobreak; alpha -= 16, delay_fps(60)) {
         cleardevice();
         putimage_alphablend(
-            NULL, pimg, (getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, (UCHAR)alpha);
+            NULL, pimg, (getwidth() - pimg->getwidth()) / 2, (getheight() - pimg->getheight()) / 2, (unsigned char)alpha);
         while (kbhit()) {
             getkey();
             b_nobreak = 0;
@@ -822,9 +1103,10 @@ inline void init_img_page(struct _graph_setting* pg)
 
 void initicon(void)
 {
+    struct _graph_setting* pg        = &graph_setting;
+#ifdef _WIN32
     HINSTANCE              hInstance = GetModuleHandle(NULL);
     HICON                  hIcon     = NULL;
-    struct _graph_setting* pg        = &graph_setting;
 
     // 提前设置了图标
     if (pg->window_hicon != 0) {
@@ -849,6 +1131,7 @@ void initicon(void)
 
     // default icon
     pg->window_hicon = LoadIcon(NULL, IDI_APPLICATION);
+#endif
 }
 
 void setcodepage(unsigned int codepage)
@@ -885,10 +1168,20 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         int width  = (short)(*gmode & 0xFFFF);
         int height = (short)((unsigned int)(*gmode) >> 16);
         resizewindow(width, height);
-        HWND hwnd = getHWnd();
-        if (!::IsWindowVisible(hwnd)) {
-            ::ShowWindow(hwnd, SW_SHOW);
+#ifdef _WIN32
+        if (pg->window != NULL) {
+            pg->window->show();
+        } else {
+            HWND hwnd = getHWnd();
+            if (!::IsWindowVisible(hwnd)) {
+                ::ShowWindow(hwnd, SW_SHOW);
+            }
         }
+#else
+        if (pg->window != NULL) {
+            pg->window->show();
+        }
+#endif
         return;
     }
 
@@ -896,18 +1189,58 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     setmode(*gdriver, *gmode);
     init_img_page(pg);
 
+#ifndef _WIN32
+    pg->use_force_exit = (g_initoption & INIT_NOFORCEEXIT) == 0;
+    pg->close_manually = true;
+    SetCloseHandler((g_initoption & INIT_NOFORCEEXIT) ? DefCloseHandler : NULL);
+#endif
+
+    // setmode() resolves legacy negative dimensions (for example -1 means the
+    // default/desktop-sized canvas). Window creation must use those resolved
+    // values rather than the raw packed request.
+    int width  = pg->dc_w;
+    int height = pg->dc_h;
+
+#ifdef _WIN32
+    // Preserve the established HWND/message-thread/BitBlt implementation.
+    pg->window = NULL;
     pg->instance = GetModuleHandle(NULL);
-
     initicon();
-
-    // 注册窗口类，设置默认消息处理函数, 此处创建 Unicode 窗口
     register_classW(pg, pg->instance);
-
     pg->threadui = std::thread{messageloopthread, pg};
     pg->init_sem.acquire();
     pg->init_sem.add_permit();
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+    pg->window = NULL;
+    pg->hwnd = NULL;
+    if (!is_headless_mode()) {
+        static NativeWindowEventSink nativeEventSink(pg);
+        pg->window = new backend::MacWindow();
+        WindowOptions windowOptions;
+        windowOptions.borderless = (g_initoption & INIT_NOBORDER) != 0;
+        windowOptions.topmost = (g_initoption & INIT_TOPMOST) != 0;
+        if (!pg->window->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
+            delete pg->window;
+            pg->window = NULL;
+            pg->exit_window = 1;
+            pg->exit_flag = 1;
+            return;
+        }
+        pg->hwnd = reinterpret_cast<HWND>(pg->window->getNativeHandle());
+    }
+    if (pg->dc == 0) {
+        graph_init(pg);
+    }
+    pg->init_sem.add_permit();
+#else
+#error "No native EGE window backend is configured for this target"
+#endif
 
-    UpdateWindow(pg->hwnd);
+#ifdef _WIN32
+    if (pg->hwnd) {
+        UpdateWindow(pg->hwnd);
+    }
+
 
     if (!(g_initoption & INIT_HIDE)) {
         ShowWindow(pg->hwnd, SW_SHOWNORMAL);
@@ -924,6 +1257,20 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     GetCursorPos(&pt);
     ScreenToClient(pg->hwnd, &pt);
     pg->mouse_pos = Point(pt.x, pt.y);
+#endif
+
+    if (pg->window != NULL) {
+        const std::string utf8Caption = w2utf8(pg->window_caption.c_str());
+        pg->window->setTitle(utf8Caption.c_str());
+        if (g_windowpos_x != CW_USEDEFAULT && g_windowpos_y != CW_USEDEFAULT) {
+            pg->window->setPosition(g_windowpos_x, g_windowpos_y);
+        }
+        if (g_initoption & INIT_HIDE) {
+            pg->window->hide();
+        } else {
+            pg->window->show();
+        }
+    }
 
     static egeControlBase _egeControlBase;
 
@@ -941,7 +1288,10 @@ void initgraph(int* gdriver, int* gmode, const char* path)
 
 void initgraph(int width, int height, initmode_flag mode)
 {
-    int g = TRUECOLORSIZE, m = (width) | (height << 16);
+    const unsigned int packedMode =
+        (static_cast<unsigned int>(width) & 0xFFFFU) |
+        ((static_cast<unsigned int>(height) & 0xFFFFU) << 16);
+    int g = TRUECOLORSIZE, m = static_cast<int>(packedMode);
     setinitmode(mode, g_windowpos_x, g_windowpos_y);
     initgraph(&g, &m, "");
 }
@@ -955,12 +1305,23 @@ void detectgraph(int* gdriver, int* gmode)
 void closegraph()
 {
     struct _graph_setting* pg = &graph_setting;
-    ShowWindow(pg->hwnd, SW_HIDE);
+#ifdef _WIN32
+    if (pg->window != NULL) {
+        pg->window->hide();
+    } else {
+        ShowWindow(pg->hwnd, SW_HIDE);
+    }
+#else
+    if (pg->window != NULL) {
+        pg->window->hide();
+    }
+#endif
 }
 
 /*private function*/
 DWORD WINAPI messageloopthread(_graph_setting* pg)
 {
+#ifdef _WIN32
     /* 执行应用程序初始化: */
     if (!init_instance(pg->instance)) {
         pg->init_sem.add_permit();
@@ -995,7 +1356,7 @@ DWORD WINAPI messageloopthread(_graph_setting* pg)
             Sleep(1);
         }
     }
-
+#endif
     return 0;
 }
 
@@ -1003,6 +1364,7 @@ DWORD WINAPI messageloopthread(_graph_setting* pg)
 BOOL init_instance(HINSTANCE hInstance)
 {
     struct _graph_setting* pg = &graph_setting;
+#ifdef _WIN32
     int                    dw = 0, dh = 0;
     // WCHAR Title[256] = {0};
     // WCHAR Title2[256] = {0};
@@ -1014,16 +1376,20 @@ BOOL init_instance(HINSTANCE hInstance)
 
     HWND parentWindow = getParentWindow();
 
-    if (parentWindow) {
-        LONG_PTR style  = GetWindowLongPtrW(parentWindow, GWL_STYLE);
-        style          |= WS_CHILDWINDOW | WS_CLIPCHILDREN;
-        SetWindowLongPtrW(parentWindow, GWL_STYLE, style);
-    }
-
     POINT windowPos     = {g_windowpos_x, g_windowpos_y};
     SIZE  windowSize    = {pg->dc_w + dw, pg->dc_h + dh};
     DWORD windowStyle   = g_windowstyle & ~WS_VISIBLE;
     DWORD windowExStyle = g_windowexstyle;
+
+    if (parentWindow) {
+        windowPos.x = 0;
+        windowPos.y = 0;
+        windowSize.cx = pg->dc_w;
+        windowSize.cy = pg->dc_h;
+        windowStyle &= ~(WS_POPUP | WS_CAPTION | WS_THICKFRAME |
+                         WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+        windowStyle |= WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+    }
 
     pg->hwnd =
         createWindow(getParentWindow(), pg->window_caption.c_str(), windowStyle, windowExStyle, windowPos, windowSize);
@@ -1033,7 +1399,6 @@ BOOL init_instance(HINSTANCE hInstance)
     }
 
     if (parentWindow != NULL) {
-        // SetParent(pg->hwnd, g_attach_hwnd);
         wchar_t name[64];
         swprintf(name, L"ege_%X", (DWORD)(DWORD_PTR)parentWindow);
         if (CreateEventW(NULL, FALSE, TRUE, name)) {
@@ -1071,6 +1436,7 @@ BOOL init_instance(HINSTANCE hInstance)
     }
 
     pg->exit_window = 0;
+#endif
     return TRUE;
 }
 
@@ -1078,6 +1444,7 @@ void setinitmode(initmode_flag mode, int x, int y)
 {
     g_initoption              = mode;
 
+#ifdef _WIN32
     if (mode & INIT_NOBORDER) {
         if (mode & INIT_CHILD) {
             g_windowstyle = WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_VISIBLE;
@@ -1092,6 +1459,7 @@ void setinitmode(initmode_flag mode, int x, int y)
     if (mode & INIT_TOPMOST) {
         g_windowexstyle |= WS_EX_TOPMOST;
     }
+#endif
     if (mode & INIT_UNICODE) {
         setunicodecharmessage(true);
     }
@@ -1112,10 +1480,12 @@ long getGraphicsVer()
 
 void gdiplusinit()
 {
+#ifdef EGE_GDIPLUS
     if (graph_setting.g_gdiplusToken == 0) {
         Gdiplus::GdiplusStartupInput gdiplusStartupInput;
         Gdiplus::GdiplusStartup(&graph_setting.g_gdiplusToken, &gdiplusStartupInput, NULL);
     }
+#endif
 }
 
 /**
@@ -1125,6 +1495,7 @@ void gdiplusinit()
  * @param oldGraphics 旧 graphics 对象，如果为 NULL 则仅创建新的 Graphics 对象，不做额外的设置
  * @return Gdiplus::Graphics* 创建的 Graphics 对象
  */
+#ifdef EGE_GDIPLUS
 Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* oldGraphics)
 {
     /* 重置视口原点(如果不重置会影响到 GDI+ Graphics 对象坐标系原点) */
@@ -1181,11 +1552,17 @@ Gdiplus::Graphics* recreateGdiplusGraphics(HDC hdc, const Gdiplus::Graphics* old
 
     return newGraphics;
 }
+#else
+void* recreateGdiplusGraphics(HDC hdc, const void* oldGraphics)
+{
+    return NULL;
+}
+#endif
 
 void replacePixels(PIMAGE pimg, color_t src, color_t dst, bool ignoreAlpha)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_hDC) {
+    if (img && img->m_width > 0 && img->m_height > 0) {
         color_t* bufferBegin = img->getbuffer();
         const color_t* bufferEnd =  bufferBegin + img->m_width * img->m_height;
 

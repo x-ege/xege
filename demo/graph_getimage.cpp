@@ -1,4 +1,5 @@
 #include <graphics.h>
+#include <cstdlib>
 #include <string.h>
 #include <stdio.h>
 
@@ -61,4 +62,3 @@ int main()
 	closegraph();
 	return 0;
 }
-

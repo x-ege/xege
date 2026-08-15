@@ -16,6 +16,7 @@
 
 #include <graphics.h>
 #include <ege/camera_capture.h>
+#include "camera_demo_screen.h"
 
 #include <memory>
 #include <vector>
@@ -91,6 +92,9 @@ int main()
 
 // 根据相机分辨率调整窗口大小，保持比例一致
 // 返回 true 表示窗口大小发生了变化
+namespace ege
+{
+
 bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
 {
     int windowWidth = getwidth();
@@ -101,11 +105,10 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
     int cameraShortEdge = (std::min)(cameraWidth, cameraHeight);
     float cameraRatio = (float)cameraWidth / cameraHeight;
 
-    // 获取屏幕可用区域（考虑任务栏）
-    RECT workArea;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
-    int screenAvailWidth = workArea.right - workArea.left;
-    int screenAvailHeight = workArea.bottom - workArea.top;
+    // 获取屏幕可用区域（Windows 考虑任务栏；macOS 使用主显示器范围）。
+    int screenAvailWidth = 0;
+    int screenAvailHeight = 0;
+    cameraDemoAvailableScreenSize(&screenAvailWidth, &screenAvailHeight);
     // 留一点边距，避免窗口贴边
     screenAvailWidth -= 20;
     screenAvailHeight -= 40;
@@ -162,6 +165,8 @@ bool adjustWindowToCamera(int cameraWidth, int cameraHeight)
 
     return true;
 }
+
+} // namespace ege
 
 void showErrorWindow()
 {
@@ -360,7 +365,7 @@ int main()
                 if (switchCamera(camera, currentDeviceIndex, deviceCount, newWidth, newHeight)) {
                     currentResolutionIndex = newResolutionIndex;
                     // 调整窗口大小以匹配相机分辨率比例
-                    adjustWindowToCamera(newWidth, newHeight);
+                    ege::adjustWindowToCamera(newWidth, newHeight);
                 }
             }
 
