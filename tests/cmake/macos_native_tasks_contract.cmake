@@ -70,7 +70,7 @@ foreach(_ege_expected_text
         "-DEGE_DEFAULT_BACKEND=COREGRAPHICS"
         "-DEGE_ENABLE_OPENGL=OFF"
         "-DEGE_ENABLE_WINDOW_TESTS=OFF"
-        "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0")
+        "-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=11.0")
     string(FIND "${_ege_tasks_stdout}" "${_ege_expected_text}" _ege_text_match)
     if(_ege_text_match EQUAL -1)
         message(FATAL_ERROR
@@ -249,7 +249,7 @@ foreach(_ege_expected_text
         "-DEGE_DEFAULT_BACKEND=COREGRAPHICS"
         "-DEGE_ENABLE_OPENGL=OFF"
         "-DEGE_ENABLE_WINDOW_TESTS=OFF"
-        "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0")
+        "-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=11.0")
     string(FIND "${_ege_release_tasks_stdout}" "${_ege_expected_text}"
         _ege_release_text_match)
     if(_ege_release_text_match EQUAL -1)
