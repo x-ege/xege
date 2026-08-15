@@ -4,6 +4,7 @@
 #include "backend/interface/Window.h"
 
 #include <memory>
+#include <string>
 
 namespace ege
 {
@@ -28,6 +29,8 @@ public:
     MacWindow& operator=(MacWindow&&)      = delete;
 
     static bool primaryScreenSize(int* width, int* height);
+    static bool inputBox(const char* title, const char* prompt,
+                         std::string* value);
 
     bool create(int width, int height, const char* title,
         const WindowOptions& options, WindowEventSink* eventSink) override;

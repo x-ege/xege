@@ -40,6 +40,14 @@ MusicResult millisecondsFromSeconds(NSTimeInterval seconds)
         std::min<double>(milliseconds, kMusicError - 1));
 }
 
+bool hasMIDIExtension(NSURL* fileURL)
+{
+    NSString* extension = fileURL.pathExtension.lowercaseString;
+    return [extension isEqualToString:@"mid"] ||
+           [extension isEqualToString:@"midi"] ||
+           [extension isEqualToString:@"kar"];
+}
+
 class MacOSMusicBackend final : public MusicBackend
 {
 public:
@@ -57,42 +65,65 @@ public:
         }
 
         @autoreleasepool {
-            NSString* filePath =
-                [[NSString alloc] initWithUTF8String:path.c_str()];
-            if (filePath == nil) {
-                return kMusicError;
-            }
-            NSURL* fileURL = [NSURL fileURLWithPath:filePath];
+            @try {
+                NSString* filePath =
+                    [[NSString alloc] initWithUTF8String:path.c_str()];
+                if (filePath == nil) {
+                    return kMusicError;
+                }
+                NSURL* fileURL = [NSURL fileURLWithPath:filePath];
 
-            NSError* error = nil;
-            m_audioPlayer =
-                [[AVAudioPlayer alloc] initWithContentsOfURL:fileURL
-                                                      error:&error];
-            if (m_audioPlayer != nil && [m_audioPlayer prepareToPlay]) {
-                m_kind     = PlayerKind::Audio;
-                m_duration = m_audioPlayer.duration;
-            } else {
-                m_audioPlayer = nil;
-                if (!openMIDI(fileURL)) {
+                NSError* error = nil;
+                m_audioPlayer =
+                    [[AVAudioPlayer alloc] initWithContentsOfURL:fileURL
+                                                          error:&error];
+                if (m_audioPlayer != nil) {
+                    // Loading metadata is enough to open a file. prepareToPlay
+                    // may legitimately fail in a headless session or when no
+                    // output device is present; Play() will report a runtime
+                    // device failure later if playback is requested.
+                    (void)[m_audioPlayer prepareToPlay];
+                    m_kind     = PlayerKind::Audio;
+                    m_duration = m_audioPlayer.duration;
+                } else {
+                    m_audioPlayer = nil;
+                    // AVAudioPlayer failures are not evidence that a file is
+                    // MIDI. Initialising the DLS synthesizer for arbitrary or
+                    // corrupt input can raise an Objective-C exception.
+                    if (!hasMIDIExtension(fileURL) || !openMIDI(fileURL)) {
+                        releasePlayersLocked();
+                        return kMusicError;
+                    }
+                }
+
+                if (!(m_duration > 0) || !std::isfinite(m_duration)) {
                     releasePlayersLocked();
                     return kMusicError;
                 }
-            }
 
-            if (!(m_duration > 0) || !std::isfinite(m_duration)) {
-                releasePlayersLocked();
-                return kMusicError;
-            }
-
-            m_status = kMusicModeStop;
-            m_open   = true;
-            m_exit   = false;
-            try {
-                m_controlThread =
-                    std::thread(&MacOSMusicBackend::controlLoop, this);
-            } catch (...) {
-                m_open = false;
-                releasePlayersLocked();
+                m_status = kMusicModeStop;
+                m_open   = true;
+                m_exit   = false;
+                try {
+                    m_controlThread =
+                        std::thread(&MacOSMusicBackend::controlLoop, this);
+                } catch (...) {
+                    m_open = false;
+                    releasePlayersLocked();
+                    return kMusicError;
+                }
+            } @catch (NSException*) {
+                // Public MUSIC APIs report failure with MUSIC_ERROR. Never let
+                // malformed input or unavailable AVFoundation components abort
+                // the caller's process.
+                m_audioPlayer = nil;
+                m_audioEngine = nil;
+                m_midiSynth   = nil;
+                m_sequencer   = nil;
+                m_kind        = PlayerKind::None;
+                m_duration    = 0;
+                m_status      = kMusicModeNotOpen;
+                m_open        = false;
                 return kMusicError;
             }
         }
@@ -107,37 +138,43 @@ public:
         }
 
         @autoreleasepool {
-            const bool defaultFullLoop =
-                repeat && from == kMusicError && to == kMusicError;
-            NSTimeInterval start =
-                from == kMusicError
-                    ? (defaultFullLoop ? 0 : currentPositionLocked())
-                    : static_cast<NSTimeInterval>(from) / 1000.0;
-            NSTimeInterval end =
-                to == kMusicError
-                    ? m_duration
-                    : static_cast<NSTimeInterval>(to) / 1000.0;
-            start = std::clamp<NSTimeInterval>(start, 0, m_duration);
-            end   = std::clamp<NSTimeInterval>(end, 0, m_duration);
-            if (start >= end) {
+            @try {
+                const bool defaultFullLoop =
+                    repeat && from == kMusicError && to == kMusicError;
+                NSTimeInterval start =
+                    from == kMusicError
+                        ? (defaultFullLoop ? 0 : currentPositionLocked())
+                        : static_cast<NSTimeInterval>(from) / 1000.0;
+                NSTimeInterval end =
+                    to == kMusicError
+                        ? m_duration
+                        : static_cast<NSTimeInterval>(to) / 1000.0;
+                start = std::clamp<NSTimeInterval>(start, 0, m_duration);
+                end   = std::clamp<NSTimeInterval>(end, 0, m_duration);
+                if (start >= end) {
+                    return kMusicError;
+                }
+
+                if (from != kMusicError || defaultFullLoop ||
+                    currentPositionLocked() >= m_duration) {
+                    setPositionLocked(start);
+                }
+
+                m_rangeStart = start;
+                m_rangeEnd   = end;
+                m_repeat     = repeat;
+                if (!startLocked()) {
+                    return kMusicError;
+                }
+
+                m_status = kMusicModePlay;
+                m_condition.notify_all();
+                return kSuccess;
+            } @catch (NSException*) {
+                m_status = kMusicModeNotReady;
+                m_repeat = false;
                 return kMusicError;
             }
-
-            if (from != kMusicError || defaultFullLoop ||
-                currentPositionLocked() >= m_duration) {
-                setPositionLocked(start);
-            }
-
-            m_rangeStart = start;
-            m_rangeEnd   = end;
-            m_repeat     = repeat;
-            if (!startLocked()) {
-                return kMusicError;
-            }
-
-            m_status = kMusicModePlay;
-            m_condition.notify_all();
-            return kSuccess;
         }
     }
 
@@ -148,8 +185,13 @@ public:
             return kMusicError;
         }
         @autoreleasepool {
-            stopLocked();
-            m_status = kMusicModePause;
+            @try {
+                stopLocked();
+                m_status = kMusicModePause;
+            } @catch (NSException*) {
+                m_status = kMusicModeNotReady;
+                return kMusicError;
+            }
         }
         return kSuccess;
     }
@@ -161,9 +203,15 @@ public:
             return kMusicError;
         }
         @autoreleasepool {
-            stopLocked();
-            m_repeat = false;
-            m_status = kMusicModeStop;
+            @try {
+                stopLocked();
+                m_repeat = false;
+                m_status = kMusicModeStop;
+            } @catch (NSException*) {
+                m_status = kMusicModeNotReady;
+                m_repeat = false;
+                return kMusicError;
+            }
         }
         return kSuccess;
     }
@@ -181,7 +229,12 @@ public:
             return kMusicError;
         }
         @autoreleasepool {
-            setPositionLocked(target);
+            @try {
+                setPositionLocked(target);
+            } @catch (NSException*) {
+                m_status = kMusicModeNotReady;
+                return kMusicError;
+            }
         }
         return kSuccess;
     }
@@ -195,10 +248,15 @@ public:
 
         value = std::clamp(value, 0.0f, 1.0f);
         @autoreleasepool {
-            if (m_kind == PlayerKind::Audio) {
-                m_audioPlayer.volume = value;
-            } else {
-                m_audioEngine.mainMixerNode.outputVolume = value;
+            @try {
+                if (m_kind == PlayerKind::Audio) {
+                    m_audioPlayer.volume = value;
+                } else {
+                    m_audioEngine.mainMixerNode.outputVolume = value;
+                }
+            } @catch (NSException*) {
+                m_status = kMusicModeNotReady;
+                return kMusicError;
             }
         }
         return kSuccess;
@@ -218,14 +276,27 @@ public:
             m_controlThread.join();
         }
 
+        MusicResult result = kSuccess;
         std::lock_guard<std::mutex> lock(m_mutex);
         @autoreleasepool {
-            stopLocked();
-            releasePlayersLocked();
+            @try {
+                stopLocked();
+                releasePlayersLocked();
+            } @catch (NSException*) {
+                // ARC assignments below still release every retained object;
+                // do not let framework teardown replace a program's exit path.
+                m_sequencer   = nil;
+                m_midiSynth   = nil;
+                m_audioEngine = nil;
+                m_audioPlayer = nil;
+                m_kind        = PlayerKind::None;
+                result        = kMusicError;
+            }
             m_open   = false;
             m_status = kMusicModeNotOpen;
+            m_repeat = false;
         }
-        return kSuccess;
+        return result;
     }
 
     MusicResult GetPosition() override
@@ -235,7 +306,12 @@ public:
             return kMusicError;
         }
         @autoreleasepool {
-            return millisecondsFromSeconds(currentPositionLocked());
+            @try {
+                return millisecondsFromSeconds(currentPositionLocked());
+            } @catch (NSException*) {
+                m_status = kMusicModeNotReady;
+                return kMusicError;
+            }
         }
     }
 
@@ -252,9 +328,13 @@ public:
             return kMusicModeNotOpen;
         }
         @autoreleasepool {
-            if (m_status == kMusicModePlay && !isPlayingLocked() &&
-                !m_repeat) {
-                m_status = kMusicModeStop;
+            @try {
+                if (m_status == kMusicModePlay && !isPlayingLocked() &&
+                    !m_repeat) {
+                    m_status = kMusicModeStop;
+                }
+            } @catch (NSException*) {
+                m_status = kMusicModeNotReady;
             }
         }
         return m_status;
@@ -274,6 +354,10 @@ private:
         description.componentType         = kAudioUnitType_MusicDevice;
         description.componentSubType      = kAudioUnitSubType_DLSSynth;
         description.componentManufacturer = kAudioUnitManufacturer_Apple;
+
+        if (AudioComponentFindNext(nullptr, &description) == nullptr) {
+            return false;
+        }
 
         m_audioEngine = [[AVAudioEngine alloc] init];
         m_midiSynth =
@@ -386,21 +470,26 @@ private:
                 }
 
                 @autoreleasepool {
-                    const NSTimeInterval position =
-                        currentPositionLocked();
-                    if (position < m_rangeEnd && isPlayingLocked()) {
-                        continue;
-                    }
-
-                    stopLocked();
-                    if (m_repeat) {
-                        setPositionLocked(m_rangeStart);
-                        if (!startLocked()) {
-                            m_status = kMusicModeNotReady;
+                    @try {
+                        const NSTimeInterval position =
+                            currentPositionLocked();
+                        if (position < m_rangeEnd && isPlayingLocked()) {
+                            continue;
                         }
-                    } else {
-                        setPositionLocked(m_rangeEnd);
-                        m_status = kMusicModeStop;
+
+                        stopLocked();
+                        if (m_repeat) {
+                            setPositionLocked(m_rangeStart);
+                            if (!startLocked()) {
+                                m_status = kMusicModeNotReady;
+                            }
+                        } else {
+                            setPositionLocked(m_rangeEnd);
+                            m_status = kMusicModeStop;
+                        }
+                    } @catch (NSException*) {
+                        m_status = kMusicModeNotReady;
+                        m_repeat = false;
                     }
                 }
             }

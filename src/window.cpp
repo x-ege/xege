@@ -3,6 +3,10 @@
 
 #include "window.h"
 
+#if defined(EGE_BACKEND_COREGRAPHICS)
+#include "backend/macos/MacWindow.h"
+#endif
+
 #define STYLE_NORMAL  (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN)
 
 namespace ege
@@ -185,6 +189,11 @@ void getParentSize(int* width, int* height)
 
     *width  = rect.right - rect.left;
     *height = rect.bottom - rect.top;
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+    if (!backend::MacWindow::primaryScreenSize(width, height)) {
+        *width = 640;
+        *height = 480;
+    }
 #else
     *width = 640;
     *height = 480;
@@ -232,8 +241,13 @@ void EGEAPI resizewindow(int width, int height)
 
 int attachHWND(HWND hWnd)
 {
+#ifdef _WIN32
     g_attach_hwnd = hWnd;
     return 0;
+#else
+    (void)hWnd;
+    return grError;
+#endif
 }
 
 HWND createWindow(HWND parentWindow, const wchar_t* caption, DWORD style, DWORD exstyle, POINT pos, SIZE size)

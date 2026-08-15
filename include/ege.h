@@ -234,7 +234,7 @@ enum initmode_flag
 {
     INIT_DEFAULT         = 0x0,   ///< Default mode
     INIT_NOBORDER        = 0x1,   ///< Borderless window
-    INIT_CHILD           = 0x2,   ///< Child window mode
+    INIT_CHILD           = 0x2,   ///< Child window mode (Windows only; requires attachHWND)
     INIT_TOPMOST         = 0x4,   ///< Topmost window
     INIT_RENDERMANUAL    = 0x8,   ///< Manual rendering mode
     INIT_NOFORCEEXIT     = 0x10,  ///< Don't force exit program when closing window, only set internal flag, is_run() can get the flag
@@ -1389,6 +1389,8 @@ void EGEAPI setcaption(const wchar_t* caption);
 /**
  * @brief Set window icon
  * @param icon_id Icon resource ID
+ * @note Windows resource-ID API. Native macOS currently leaves the icon
+ * unchanged; use the application bundle icon for packaged apps.
  */
 void EGEAPI seticon(int icon_id);
 
@@ -1396,6 +1398,7 @@ void EGEAPI seticon(int icon_id);
  * @brief Attach to existing window handle
  * @param hWnd Window handle to attach to
  * @return Operation result code
+ * @note Windows-only. Native macOS returns grError and does not attach.
  */
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -4843,16 +4846,18 @@ int EGEAPI putimage_rotatetransparent(
 
 /**
  * @brief Get drawing window handle
- * @return Drawing window handle (HWND)
- * @note Returns Windows system window handle, can be used for Windows API calls
+ * @return Windows HWND, or an opaque internal NSWindow pointer on native macOS;
+ * NULL when no window is initialized
+ * @note The macOS compatibility value must not be passed to Win32 APIs or
+ * released by the caller. Use it only as an opaque native-window identity.
  * @see getHInstance(), getHDC()
  */
 HWND        EGEAPI getHWnd();
 
 /**
  * @brief Get drawing window instance handle
- * @return Application instance handle (HINSTANCE)
- * @note Returns Windows system application instance handle, can be used for Windows API calls
+ * @return Windows application instance handle; NULL on native non-Windows backends
+ * @note Only the Windows result may be passed to Windows API calls.
  * @see getHWnd(), getHDC()
  */
 HINSTANCE   EGEAPI getHInstance();
@@ -4860,9 +4865,9 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief Get drawing device context
  * @param pimg Image object pointer, if NULL then get drawing window's device context
- * @return Device context handle (HDC)
- * @note Returns Windows system device context handle, can be used for GDI drawing operations
- * @warning Do not manually release returned HDC, managed automatically by EGE library
+ * @return Windows device-context handle; NULL on native non-Windows backends
+ * @note Only the Windows result may be used for GDI drawing operations.
+ * @warning On Windows, do not manually release the returned HDC; EGE owns it.
  * @see getHWnd(), getHInstance()
  */
 HDC         EGEAPI getHDC(PCIMAGE pimg = NULL);
@@ -5165,11 +5170,11 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 /**
  * @brief Music playback class
  *
- * MUSIC class provides music playback functionality based on Windows Media Control Interface (MCI),
- * supports playing various audio formats such as WAV, MP3, MIDI, etc.
+ * MUSIC uses Windows MCI on Windows and AVFAudio/AudioToolbox on native macOS.
+ * Supported formats are those accepted by the selected platform backend.
  *
- * @note This class is based on Windows MCI implementation, only supports Windows platform
- * @note Supported audio formats include: WAV, MP3, MIDI, etc.
+ * @note Supported on Windows and native macOS. WAV is portable across both;
+ *       MP3/MIDI availability follows the operating system codecs.
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC
@@ -5189,8 +5194,8 @@ public:
 
     /**
      * @brief Type conversion operator
-     * @return Returns window handle (HWND)
-     * @note Used for interaction with Windows API
+     * @return Returns the legacy Windows callback handle; null on macOS
+     * @note Kept for source and ABI compatibility. New code should not rely on it.
      */
     operator HWND() const { return (HWND)m_dwCallBack; }
 
@@ -5255,8 +5260,7 @@ public:
      * @brief Seek to playback position
      * @param dwTo Target playback position (milliseconds)
      * @return Returns 0 on success, non-zero on failure
-     * @note Currently this function is invalid, recommend using Play(dwTo) instead
-     * @deprecated Recommend using Play(dwTo) to achieve seeking
+     * @note The target must not exceed GetLength()
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);
@@ -5317,8 +5321,8 @@ public:
     DWORD GetPlayStatus();
 
 private:
-    DWORD m_DID;        ///< MCI device ID
-    PVOID m_dwCallBack; ///< Callback handle
+    DWORD m_DID;        ///< Legacy ABI state / MCI device ID on Windows
+    PVOID m_dwCallBack; ///< Legacy Windows callback handle
 };
 
 uint32_t EGEAPI ege_compress_bound(uint32_t dataSize);

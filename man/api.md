@@ -404,12 +404,18 @@ int main() {
 
 ## 音乐 (music)
 
-音乐模块提供音频播放功能。
+音乐模块通过 `MUSIC` 类提供音频播放功能：Windows 使用 MCI，
+原生 macOS 使用 AVFAudio/AudioToolbox。
 
 ### 音频播放
 
-- `ege_enable_music(bool enable)` - 启用/禁用音乐功能
-- `music(LPCSTR filename)` - 播放音乐文件
+- `MUSIC::OpenFile(...)` - 打开音频或 MIDI 文件
+- `MUSIC::Play(...)` / `RepeatPlay(...)` - 播放或循环播放
+- `MUSIC::Pause()` / `Stop()` / `Close()` - 控制生命周期
+- `MUSIC::Seek(...)` / `SetVolume(...)` - 调整位置和音量
+- `MUSIC::GetPosition()` / `GetLength()` / `GetPlayStatus()` - 查询状态
+
+格式支持以操作系统后端为准；WAV 是建议的跨平台基线。
 
 ---
 
@@ -520,4 +526,5 @@ int main() {
 
 ---
 
-本文档基于 EGE 25.11 版本编写
+本文档以 EGE 25.11 API 结构为基础，并包含随 master 更新的平台差异说明；
+原生 macOS 支持属于下一版本，而非历史 25.11 发布包。

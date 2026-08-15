@@ -2,6 +2,24 @@
 
 遵循[如何维护更新日志](https://keepachangelog.com/zh-CN/1.0.0/)编写。
 
+## Unreleased
+
+### 原生 macOS 支持
+
+- 新增 Core Graphics CPU PixelSurface 绘图后端和 AppKit 窗口/输入后端，
+  AppleClang 可直接生成 Mach-O 程序，无需 MinGW/Wine。
+- 新增基于 AVFAudio/AudioToolbox 的 macOS `MUSIC` 实现，并覆盖
+  无效/损坏文件的错误边界。
+- 官方 macOS 预编译库为 `arm64`/`x86_64` universal archive，
+  最低目标固定为 macOS 11.0。
+- 增加 headless 像素/API 契约、MUSIC 契约、退出码保留、
+  AppKit 窗口以及 demo 启动测试。真实窗口测试仍为显式 opt-in，
+  摄像头实机/权限测试仍需人工验收。
+- 已知平台差异：`sys_edit`、Win32 句柄/资源 API 和 `graph_star`
+  仍仅限 Windows；Linux 原生后端尚未实现。
+
+> 本节描述 `master` 上尚未发布的内容，v25.11 不包含原生 macOS 后端。
+
 ## 25.11
 
 ### 新增功能

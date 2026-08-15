@@ -2,6 +2,32 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Show Native Build Configuration",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--show-config"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "problemMatcher": []
+        },
+        {
+            "label": "Build and Test Headless (Debug)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--load", "--build", "--test", "--", "-DEGE_ENABLE_WINDOW_TESTS=OFF"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "test",
+            "problemMatcher": ["$msCompile", "$gcc"]
+        },
+        {
+            "label": "Build and Test Visible macOS Window Tests (Opt-in)",
+            "type": "shell",
+            "command": "bash",
+            "args": ["-l", "tasks.sh", "--debug", "--load", "--build", "--test", "--", "-DEGE_ENABLE_WINDOW_TESTS=ON", "-DEGE_ENABLE_CAMERA_CAPTURE=OFF"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group": "test",
+            "problemMatcher": ["$msCompile", "$gcc"]
+        },
+        {
             "label": "Load CMake Project (Debug)",
             "type": "shell",
             "command": "bash",
@@ -173,7 +199,7 @@
             "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
-            "label": "Run Demo - Camera Base (Debug)",
+            "label": "Run Demo - Camera Base (Debug, requires ccap)",
             "type": "shell",
             "command": "bash",
             "args": ["-l", "tasks.sh", "--debug", "--target", "camera_base", "--build", "--run", "camera_base"],
@@ -182,7 +208,7 @@
             "problemMatcher": ["$msCompile", "$gcc"]
         },
         {
-            "label": "Run Demo - Camera Wave (Debug)",
+            "label": "Run Demo - Camera Wave (Debug, requires ccap)",
             "type": "shell",
             "command": "bash",
             "args": ["-l", "tasks.sh", "--debug", "--target", "camera_wave", "--build", "--run", "camera_wave"],

@@ -43,6 +43,7 @@ public:
     void setFillStyle(FillStyle style, color_t color) override;
     void setRasterOp(RasterOp rop) override;
     void setWritingMode(int mode) override;
+    void setAntialiasing(bool enabled) override;
 
     color_t   getLineColor() const override;
     color_t   getFillColor() const override;
@@ -151,9 +152,20 @@ private:
         std::vector<color_t> pixels;
     };
 
-    void      beginPrimitive();
+    struct RasterBounds
+    {
+        int left;
+        int top;
+        int right;
+        int bottom;
+    };
+
+    void      beginPrimitive(CGRect logicalBounds, float padding);
     void      endPrimitive();
     void      configureStroke();
+    RasterBounds primitiveRasterBounds(CGRect logicalBounds, float padding) const;
+    float       primitiveStrokePadding(bool includeMiter) const noexcept;
+    color_t     primitiveColor(color_t color) const noexcept;
     CGPathRef createArcPath(
         int x, int y, int startAngle, int endAngle, int width, int height, bool center, bool close) const;
     CGPoint  physicalPoint(float x, float y) const;
@@ -165,6 +177,8 @@ private:
     void     floodFillInternal(int x, int y, color_t boundary, bool surfaceMode);
 
     static color_t     applyRasterOp(color_t destination, color_t source, RasterOp operation) noexcept;
+    static color_t     applyPrimitiveRasterOp(
+        color_t destination, color_t source, RasterOp operation) noexcept;
     static color_t     premultiply(color_t straight) noexcept;
     static color_t     blendPremultiplied(color_t destination, color_t source, unsigned char factor = 255) noexcept;
     static color_t     blendStraight(color_t destination, color_t source, unsigned char factor = 255) noexcept;
@@ -175,8 +189,13 @@ private:
 
     std::unique_ptr<PixelSurface>        surface_;
     std::unique_ptr<CoreGraphicsSurface> graphics_;
+    std::unique_ptr<PixelSurface>        rasterScratchSurface_;
+    std::unique_ptr<CoreGraphicsSurface> rasterScratchGraphics_;
+    std::unique_ptr<CoreGraphicsSurface> rasterDestinationGraphics_;
     CoreTextRenderer                     textRenderer_;
     bool                                 onScreen_;
+    bool                                 antialiasing_;
+    RasterBounds                         rasterDirtyBounds_;
 
     color_t        lineColor_;
     color_t        fillColor_;

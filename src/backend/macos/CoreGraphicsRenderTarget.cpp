@@ -176,10 +176,30 @@ CGLineJoin lineJoin(RTLineJoin join) noexcept
     }
 }
 
+CGRect boundsForPoints(const std::vector<CGPoint>& points) noexcept
+{
+    if (points.empty()) {
+        return CGRectZero;
+    }
+    CGFloat minX = points[0].x;
+    CGFloat maxX = points[0].x;
+    CGFloat minY = points[0].y;
+    CGFloat maxY = points[0].y;
+    for (const CGPoint point : points) {
+        minX = std::min(minX, point.x);
+        maxX = std::max(maxX, point.x);
+        minY = std::min(minY, point.y);
+        maxY = std::max(maxY, point.y);
+    }
+    return CGRectMake(minX, minY, maxX - minX, maxY - minY);
+}
+
 } // namespace
 
 CoreGraphicsRenderTarget::CoreGraphicsRenderTarget(int width, int height, bool onScreen) :
     onScreen_(onScreen),
+    antialiasing_(false),
+    rasterDirtyBounds_{0, 0, 0, 0},
     lineColor_(0xFFFFFFFFU),
     fillColor_(0xFFFFFFFFU),
     textColor_(0xFFFFFFFFU),
@@ -236,6 +256,7 @@ bool CoreGraphicsRenderTarget::resize(int width, int height, bool preservePixels
             }
         }
         std::unique_ptr<CoreGraphicsSurface> replacementGraphics(new CoreGraphicsSurface(*replacement));
+        replacementGraphics->setAntialiasing(antialiasing_);
         graphics_.swap(replacementGraphics);
         surface_.swap(replacement);
         viewportLeft_   = 0;
@@ -331,6 +352,14 @@ void CoreGraphicsRenderTarget::setWritingMode(int mode)
     writingMode_ = mode;
     if (mode >= static_cast<int>(ROP_BLACK) && mode <= static_cast<int>(ROP_WHITE)) {
         rasterOp_ = static_cast<RasterOp>(mode);
+    }
+}
+
+void CoreGraphicsRenderTarget::setAntialiasing(bool enabled)
+{
+    antialiasing_ = enabled;
+    if (graphics_ != nullptr) {
+        graphics_->setAntialiasing(enabled);
     }
 }
 
@@ -461,10 +490,99 @@ int CoreGraphicsRenderTarget::getCurrentY() const
     return currentY_;
 }
 
-void CoreGraphicsRenderTarget::beginPrimitive()
+CoreGraphicsRenderTarget::RasterBounds
+CoreGraphicsRenderTarget::primitiveRasterBounds(
+    CGRect logicalBounds, float padding) const
 {
+    // Expand in logical space before transforming.  Transforming an already
+    // inflated rectangle is conservative for rotations, non-uniform scale and
+    // shear, whereas multiplying by one approximate scale factor can miss the
+    // transformed stroke envelope.
+    const CGFloat logicalPadding = static_cast<CGFloat>(
+        std::max(0.0f, padding));
+    const CGRect paddedBounds = CGRectInset(
+        CGRectStandardize(logicalBounds), -logicalPadding, -logicalPadding);
+    CGRect physicalBounds = CGRectApplyAffineTransform(
+        paddedBounds, transforms_.back());
+    physicalBounds = CGRectOffset(
+        physicalBounds, viewportLeft_, viewportTop_);
+
+    // Cover Core Graphics' device-pixel edge rounding after the exact affine
+    // bounds calculation above.
+    constexpr double physicalGuard = 2.0;
+
+    int left = static_cast<int>(std::floor(
+        CGRectGetMinX(physicalBounds) - physicalGuard));
+    int top = static_cast<int>(std::floor(
+        CGRectGetMinY(physicalBounds) - physicalGuard));
+    int right = static_cast<int>(std::ceil(
+        CGRectGetMaxX(physicalBounds) + physicalGuard));
+    int bottom = static_cast<int>(std::ceil(
+        CGRectGetMaxY(physicalBounds) + physicalGuard));
+
+    const int clipLeft = viewportClip_
+        ? std::clamp(viewportLeft_, 0, getWidth()) : 0;
+    const int clipTop = viewportClip_
+        ? std::clamp(viewportTop_, 0, getHeight()) : 0;
+    const int clipRight = viewportClip_
+        ? std::clamp(viewportRight_, clipLeft, getWidth()) : getWidth();
+    const int clipBottom = viewportClip_
+        ? std::clamp(viewportBottom_, clipTop, getHeight()) : getHeight();
+    left = std::clamp(left, clipLeft, clipRight);
+    top = std::clamp(top, clipTop, clipBottom);
+    right = std::clamp(right, left, clipRight);
+    bottom = std::clamp(bottom, top, clipBottom);
+    return {left, top, right, bottom};
+}
+
+float CoreGraphicsRenderTarget::primitiveStrokePadding(
+    bool includeMiter) const noexcept
+{
+    const float halfWidth = lineWidth_ * 0.5f;
+    if (!includeMiter || lineJoin_ != RT_LINEJOIN_MITER) {
+        return halfWidth;
+    }
+    // Quartz defines the miter limit as the maximum miter length relative to
+    // the line width.  Use that full worst-case reach so an acute join cannot
+    // draw outside the ROP scratch region that endPrimitive() scans.
+    return std::max(halfWidth, lineWidth_ * std::max(1.0f, miterLimit_));
+}
+
+void CoreGraphicsRenderTarget::beginPrimitive(
+    CGRect logicalBounds, float padding)
+{
+    if (rasterOp_ != ROP_COPY) {
+        rasterDirtyBounds_ = primitiveRasterBounds(logicalBounds, padding);
+        const std::size_t width = static_cast<std::size_t>(getWidth());
+        const std::size_t height = static_cast<std::size_t>(getHeight());
+        if (rasterScratchSurface_ == nullptr ||
+            rasterScratchGraphics_ == nullptr ||
+            rasterScratchSurface_->width() != width ||
+            rasterScratchSurface_->height() != height) {
+            auto replacementSurface =
+                std::make_unique<PixelSurface>(width, height);
+            auto replacementGraphics =
+                std::make_unique<CoreGraphicsSurface>(*replacementSurface);
+            rasterScratchGraphics_ = std::move(replacementGraphics);
+            rasterScratchSurface_ = std::move(replacementSurface);
+        }
+        for (int y = rasterDirtyBounds_.top;
+             y < rasterDirtyBounds_.bottom; ++y) {
+            color_t* row = rasterScratchSurface_->row(
+                static_cast<std::size_t>(y));
+            std::fill(row + rasterDirtyBounds_.left,
+                      row + rasterDirtyBounds_.right, 0U);
+        }
+        rasterDestinationGraphics_ = std::move(graphics_);
+        graphics_ = std::move(rasterScratchGraphics_);
+    }
+
     CGContextRef context = graphics_->context();
     CGContextSaveGState(context);
+    // Boolean ROP2 operations have pixel coverage semantics. Disable edge
+    // smoothing while drawing their coverage mask so partially transparent
+    // pixels cannot become operands of a bitwise operation.
+    graphics_->setAntialiasing(rasterOp_ == ROP_COPY && antialiasing_);
     if (viewportClip_) {
         const int left   = std::max(0, viewportLeft_);
         const int top    = std::max(0, viewportTop_);
@@ -474,13 +592,66 @@ void CoreGraphicsRenderTarget::beginPrimitive()
     }
     CGContextTranslateCTM(context, viewportLeft_, viewportTop_);
     CGContextConcatCTM(context, transforms_.back());
-    graphics_->setBlendMode(rasterOp_ == ROP_XOR ? kCGBlendModeXOR : kCGBlendModeCopy);
+    // Non-copy ROP2 operations are composed exactly in endPrimitive(). Core
+    // Graphics' kCGBlendModeXOR is Porter-Duff compositing, not bitwise XOR.
+    graphics_->setBlendMode(kCGBlendModeCopy);
     configureStroke();
 }
 
 void CoreGraphicsRenderTarget::endPrimitive()
 {
     CGContextRestoreGState(graphics_->context());
+    if (rasterDestinationGraphics_ == nullptr) {
+        return;
+    }
+
+    graphics_->flush();
+    rasterScratchGraphics_ = std::move(graphics_);
+    graphics_ = std::move(rasterDestinationGraphics_);
+    for (int y = rasterDirtyBounds_.top;
+         y < rasterDirtyBounds_.bottom; ++y) {
+        color_t* destination = surface_->row(static_cast<std::size_t>(y));
+        const color_t* source = rasterScratchSurface_->row(
+            static_cast<std::size_t>(y));
+        for (int x = rasterDirtyBounds_.left;
+             x < rasterDirtyBounds_.right; ++x) {
+            const unsigned int coverage = source[x] >> 24U;
+            if (coverage != 0) {
+                const auto unpremultiplyChannel = [coverage](unsigned int value) {
+                    return std::min(255U,
+                        (value * 255U + coverage / 2U) / coverage);
+                };
+                const color_t straightSource =
+                    0xFF000000U |
+                    (unpremultiplyChannel(channel(source[x], 16)) << 16U) |
+                    (unpremultiplyChannel(channel(source[x], 8)) << 8U) |
+                    unpremultiplyChannel(channel(source[x], 0));
+                const color_t result = applyPrimitiveRasterOp(
+                    destination[x], straightSource, rasterOp_);
+                if (coverage == 255U) {
+                    destination[x] = result;
+                } else {
+                    const unsigned int inverse = 255U - coverage;
+                    destination[x] = (destination[x] & 0xFF000000U) |
+                        ((channel(result, 16) * coverage +
+                          channel(destination[x], 16) * inverse + 127U) /
+                         255U << 16U) |
+                        ((channel(result, 8) * coverage +
+                          channel(destination[x], 8) * inverse + 127U) /
+                         255U << 8U) |
+                        ((channel(result, 0) * coverage +
+                          channel(destination[x], 0) * inverse + 127U) /
+                         255U);
+                }
+            }
+        }
+    }
+}
+
+color_t CoreGraphicsRenderTarget::primitiveColor(color_t color) const noexcept
+{
+    return rasterOp_ == ROP_COPY
+        ? color : (0xFF000000U | (color & 0x00FFFFFFU));
 }
 
 void CoreGraphicsRenderTarget::configureStroke()
@@ -538,7 +709,25 @@ void CoreGraphicsRenderTarget::configureStroke()
 
 void CoreGraphicsRenderTarget::drawLine(int x1, int y1, int x2, int y2)
 {
-    drawLineF(static_cast<float>(x1), static_cast<float>(y1), static_cast<float>(x2), static_cast<float>(y2));
+    if (lineStyle_ == LINE_NONE) {
+        return;
+    }
+    // Core Graphics centers strokes on the path. Legacy integer primitives
+    // use device-pixel coordinates, so odd-width strokes need a half-pixel
+    // offset to affect exactly one row/column when antialiasing is disabled.
+    const float offset = !antialiasing_ &&
+        (static_cast<int>(std::lround(lineWidth_)) & 1) ? 0.5f : 0.0f;
+    beginPrimitive(CGRectMake(
+        std::min(x1, x2) + offset, std::min(y1, y2) + offset,
+        std::abs(x2 - x1), std::abs(y2 - y1)),
+        primitiveStrokePadding(false));
+    graphics_->drawLine(
+        CGPointMake(static_cast<float>(x1) + offset,
+                    static_cast<float>(y1) + offset),
+        CGPointMake(static_cast<float>(x2) + offset,
+                    static_cast<float>(y2) + offset),
+        lineWidth_, premultiply(primitiveColor(lineColor_)));
+    endPrimitive();
 }
 
 void CoreGraphicsRenderTarget::drawLineF(float x1, float y1, float x2, float y2)
@@ -546,8 +735,12 @@ void CoreGraphicsRenderTarget::drawLineF(float x1, float y1, float x2, float y2)
     if (lineStyle_ == LINE_NONE) {
         return;
     }
-    beginPrimitive();
-    graphics_->drawLine(CGPointMake(x1, y1), CGPointMake(x2, y2), lineWidth_, premultiply(lineColor_));
+    beginPrimitive(CGRectMake(
+        std::min(x1, x2), std::min(y1, y2),
+        std::abs(x2 - x1), std::abs(y2 - y1)),
+        primitiveStrokePadding(false));
+    graphics_->drawLine(CGPointMake(x1, y1), CGPointMake(x2, y2),
+        lineWidth_, premultiply(primitiveColor(lineColor_)));
     endPrimitive();
 }
 
@@ -568,8 +761,10 @@ void CoreGraphicsRenderTarget::drawRect(int x, int y, int width, int height)
     if (width <= 0 || height <= 0 || lineStyle_ == LINE_NONE) {
         return;
     }
-    beginPrimitive();
-    graphics_->strokeRect(CGRectMake(x, y, width, height), lineWidth_, premultiply(lineColor_));
+    beginPrimitive(CGRectMake(x, y, width, height),
+        primitiveStrokePadding(false));
+    graphics_->strokeRect(CGRectMake(x, y, width, height), lineWidth_,
+        premultiply(primitiveColor(lineColor_)));
     endPrimitive();
 }
 
@@ -578,9 +773,10 @@ void CoreGraphicsRenderTarget::fillRect(int x, int y, int width, int height)
     if (width <= 0 || height <= 0 || fillStyle_ == FILL_EMPTY) {
         return;
     }
-    beginPrimitive();
+    beginPrimitive(CGRectMake(x, y, width, height), 0.0f);
     CGContextRef context = graphics_->context();
-    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+    fillWithPattern(context, fillStyle_, primitiveColor(fillPatternColor_),
+        primitiveColor(backgroundColor_), backgroundOpaque_, rasterOp_, [&] {
         CGContextFillRect(context, CGRectMake(x, y, width, height));
     });
     endPrimitive();
@@ -591,12 +787,14 @@ void CoreGraphicsRenderTarget::drawRoundRect(int x, int y, int width, int height
     if (width <= 0 || height <= 0 || lineStyle_ == LINE_NONE) {
         return;
     }
-    beginPrimitive();
+    beginPrimitive(CGRectMake(x, y, width, height),
+        primitiveStrokePadding(false));
     CGPathRef path = CGPathCreateWithRoundedRect(CGRectMake(x, y, width, height),
         std::min(std::abs(ellipseWidth) * 0.5, width * 0.5), std::min(std::abs(ellipseHeight) * 0.5, height * 0.5),
         nullptr);
     CGContextAddPath(graphics_->context(), path);
-    setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
+    setContextStrokeColor(graphics_->context(),
+        premultiply(primitiveColor(lineColor_)));
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -607,13 +805,14 @@ void CoreGraphicsRenderTarget::fillRoundRect(int x, int y, int width, int height
     if (width <= 0 || height <= 0 || fillStyle_ == FILL_EMPTY) {
         return;
     }
-    beginPrimitive();
+    beginPrimitive(CGRectMake(x, y, width, height), 0.0f);
     CGPathRef path = CGPathCreateWithRoundedRect(CGRectMake(x, y, width, height),
         std::min(std::abs(ellipseWidth) * 0.5, width * 0.5), std::min(std::abs(ellipseHeight) * 0.5, height * 0.5),
         nullptr);
     CGContextRef context = graphics_->context();
     CGContextAddPath(context, path);
-    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+    fillWithPattern(context, fillStyle_, primitiveColor(fillPatternColor_),
+        primitiveColor(backgroundColor_), backgroundOpaque_, rasterOp_, [&] {
         CGContextFillPath(context);
     });
     CGPathRelease(path);
@@ -668,13 +867,16 @@ void CoreGraphicsRenderTarget::drawEllipse(int x, int y, int startAngle, int end
     if (width <= 0 || height <= 0 || lineStyle_ == LINE_NONE) {
         return;
     }
-    beginPrimitive();
+    beginPrimitive(CGRectMake(x, y, width, height),
+        primitiveStrokePadding(false));
     if (std::abs(endAngle - startAngle) >= 360) {
-        graphics_->strokeEllipse(CGRectMake(x, y, width, height), lineWidth_, premultiply(lineColor_));
+        graphics_->strokeEllipse(CGRectMake(x, y, width, height), lineWidth_,
+            premultiply(primitiveColor(lineColor_)));
     } else {
         CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, false, false);
         CGContextAddPath(graphics_->context(), path);
-        setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
+        setContextStrokeColor(graphics_->context(),
+            premultiply(primitiveColor(lineColor_)));
         CGContextStrokePath(graphics_->context());
         CGPathRelease(path);
     }
@@ -687,9 +889,10 @@ void CoreGraphicsRenderTarget::fillEllipse(int x, int y, int startAngle, int end
         return;
     }
     if (std::abs(endAngle - startAngle) >= 360) {
-        beginPrimitive();
+        beginPrimitive(CGRectMake(x, y, width, height), 0.0f);
         CGContextRef context = graphics_->context();
-        fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+        fillWithPattern(context, fillStyle_, primitiveColor(fillPatternColor_),
+            primitiveColor(backgroundColor_), backgroundOpaque_, rasterOp_, [&] {
             CGContextFillEllipseInRect(context, CGRectMake(x, y, width, height));
         });
         endPrimitive();
@@ -703,10 +906,12 @@ void CoreGraphicsRenderTarget::drawSector(int x, int y, int startAngle, int endA
     if (width <= 0 || height <= 0 || lineStyle_ == LINE_NONE) {
         return;
     }
-    beginPrimitive();
+    beginPrimitive(CGRectMake(x, y, width, height),
+        primitiveStrokePadding(true));
     CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, true, true);
     CGContextAddPath(graphics_->context(), path);
-    setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
+    setContextStrokeColor(graphics_->context(),
+        premultiply(primitiveColor(lineColor_)));
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -717,11 +922,12 @@ void CoreGraphicsRenderTarget::fillSector(int x, int y, int startAngle, int endA
     if (width <= 0 || height <= 0 || fillStyle_ == FILL_EMPTY) {
         return;
     }
-    beginPrimitive();
+    beginPrimitive(CGRectMake(x, y, width, height), 0.0f);
     CGPathRef path = createArcPath(x, y, startAngle, endAngle, width, height, true, true);
     CGContextRef context = graphics_->context();
     CGContextAddPath(context, path);
-    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+    fillWithPattern(context, fillStyle_, primitiveColor(fillPatternColor_),
+        primitiveColor(backgroundColor_), backgroundOpaque_, rasterOp_, [&] {
         CGContextFillPath(context);
     });
     CGPathRelease(path);
@@ -748,10 +954,12 @@ void CoreGraphicsRenderTarget::drawChord(int x, int y, int sa, int ea, int width
     if (width <= 0 || height <= 0 || lineStyle_ == LINE_NONE) {
         return;
     }
-    beginPrimitive();
+    beginPrimitive(CGRectMake(x, y, width, height),
+        primitiveStrokePadding(true));
     CGPathRef path = createArcPath(x, y, sa, ea, width, height, false, true);
     CGContextAddPath(graphics_->context(), path);
-    setContextStrokeColor(graphics_->context(), premultiply(lineColor_));
+    setContextStrokeColor(graphics_->context(),
+        premultiply(primitiveColor(lineColor_)));
     CGContextStrokePath(graphics_->context());
     CGPathRelease(path);
     endPrimitive();
@@ -766,8 +974,9 @@ void CoreGraphicsRenderTarget::drawPolygon(const int* points, int count)
     for (int i = 0; i < count; ++i) {
         converted[static_cast<std::size_t>(i)] = CGPointMake(points[i * 2], points[i * 2 + 1]);
     }
-    beginPrimitive();
-    graphics_->strokePath(converted.data(), converted.size(), lineWidth_, premultiply(lineColor_), true);
+    beginPrimitive(boundsForPoints(converted), primitiveStrokePadding(true));
+    graphics_->strokePath(converted.data(), converted.size(), lineWidth_,
+        premultiply(primitiveColor(lineColor_)), true);
     endPrimitive();
 }
 
@@ -780,7 +989,7 @@ void CoreGraphicsRenderTarget::fillPolygon(const int* points, int count)
     for (int i = 0; i < count; ++i) {
         converted[static_cast<std::size_t>(i)] = CGPointMake(points[i * 2], points[i * 2 + 1]);
     }
-    beginPrimitive();
+    beginPrimitive(boundsForPoints(converted), 0.0f);
     CGContextRef context = graphics_->context();
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, converted[0].x, converted[0].y);
@@ -788,7 +997,8 @@ void CoreGraphicsRenderTarget::fillPolygon(const int* points, int count)
         CGContextAddLineToPoint(context, converted[i].x, converted[i].y);
     }
     CGContextClosePath(context);
-    fillWithPattern(context, fillStyle_, fillPatternColor_, backgroundColor_, backgroundOpaque_, rasterOp_, [&] {
+    fillWithPattern(context, fillStyle_, primitiveColor(fillPatternColor_),
+        primitiveColor(backgroundColor_), backgroundOpaque_, rasterOp_, [&] {
         CGContextFillPath(context);
     });
     endPrimitive();
@@ -803,8 +1013,9 @@ void CoreGraphicsRenderTarget::drawPolyline(const int* points, int count)
     for (int i = 0; i < count; ++i) {
         converted[static_cast<std::size_t>(i)] = CGPointMake(points[i * 2], points[i * 2 + 1]);
     }
-    beginPrimitive();
-    graphics_->strokePath(converted.data(), converted.size(), lineWidth_, premultiply(lineColor_), false);
+    beginPrimitive(boundsForPoints(converted), primitiveStrokePadding(true));
+    graphics_->strokePath(converted.data(), converted.size(), lineWidth_,
+        premultiply(primitiveColor(lineColor_)), false);
     endPrimitive();
 }
 
@@ -889,6 +1100,51 @@ color_t CoreGraphicsRenderTarget::applyRasterOp(color_t destination, color_t sou
     default:
         return source;
     }
+}
+
+color_t CoreGraphicsRenderTarget::applyPrimitiveRasterOp(
+    color_t destination, color_t source, RasterOp operation) noexcept
+{
+    if (operation == ROP_NOP) {
+        return destination;
+    }
+    const unsigned int alpha = channel(destination, 24);
+    const auto unpremultiplyChannel = [alpha](unsigned int value) {
+        return alpha == 0 ? 0U : std::min(
+            255U, (value * 255U + alpha / 2U) / alpha);
+    };
+    // PixelSurface stores premultiplied ARGB.  ROP2 is defined on straight RGB
+    // operands; applying it directly to stored channels can create values above
+    // alpha, which is not a valid premultiplied pixel.
+    const color_t destinationRGB =
+        (unpremultiplyChannel(channel(destination, 16)) << 16U) |
+        (unpremultiplyChannel(channel(destination, 8)) << 8U) |
+        unpremultiplyChannel(channel(destination, 0));
+    const color_t sourceRGB = source & 0x00FFFFFFU;
+    color_t result = destinationRGB;
+    switch (operation) {
+    case ROP_BLACK:       result = 0x000000U; break;
+    case ROP_NOTMERGEPEN: result = ~(destinationRGB | sourceRGB); break;
+    case ROP_MASKNOTPEN:  result = destinationRGB & ~sourceRGB; break;
+    case ROP_NOTCOPYPEN:  result = ~sourceRGB; break;
+    case ROP_MASKPENNOT:  result = sourceRGB & ~destinationRGB; break;
+    case ROP_NOT:         result = ~destinationRGB; break;
+    case ROP_XOR:         result = destinationRGB ^ sourceRGB; break;
+    case ROP_NOTMASKPEN:  result = ~(destinationRGB & sourceRGB); break;
+    case ROP_AND:         result = destinationRGB & sourceRGB; break;
+    case ROP_NOTXORPEN:   result = ~(destinationRGB ^ sourceRGB); break;
+    case ROP_NOP:         result = destinationRGB; break;
+    case ROP_MERGENOTPEN: result = destinationRGB | ~sourceRGB; break;
+    case ROP_COPY:        result = sourceRGB; break;
+    case ROP_MERGEPENNOT: result = sourceRGB | ~destinationRGB; break;
+    case ROP_OR:          result = destinationRGB | sourceRGB; break;
+    case ROP_WHITE:       result = 0x00FFFFFFU; break;
+    default:              result = sourceRGB; break;
+    }
+    return pack(alpha,
+        scaleByte(channel(result, 16), alpha),
+        scaleByte(channel(result, 8), alpha),
+        scaleByte(channel(result, 0), alpha));
 }
 
 color_t CoreGraphicsRenderTarget::premultiply(color_t straight) noexcept
@@ -1358,9 +1614,12 @@ void CoreGraphicsRenderTarget::drawText(float x, float y, const char* text)
         fillPatternColor_ = saved;
         fillStyle_        = savedStyle;
     }
-    beginPrimitive();
+    const float radius = std::hypot(width, height);
+    beginPrimitive(CGRectMake(x - radius, y - radius,
+        radius * 2.0f, radius * 2.0f), 2.0f);
     graphics_->setBlendMode(kCGBlendModeNormal);
-    textRenderer_.draw(graphics_->context(), x, y, text, textColor_, horizontalAlign_, verticalAlign_);
+    textRenderer_.draw(graphics_->context(), x, y, text,
+        primitiveColor(textColor_), horizontalAlign_, verticalAlign_);
     endPrimitive();
 }
 
@@ -1381,9 +1640,12 @@ void CoreGraphicsRenderTarget::drawText(float x, float y, const wchar_t* text)
         fillPatternColor_ = saved;
         fillStyle_        = savedStyle;
     }
-    beginPrimitive();
+    const float radius = std::hypot(width, height);
+    beginPrimitive(CGRectMake(x - radius, y - radius,
+        radius * 2.0f, radius * 2.0f), 2.0f);
     graphics_->setBlendMode(kCGBlendModeNormal);
-    textRenderer_.draw(graphics_->context(), x, y, text, textColor_, horizontalAlign_, verticalAlign_);
+    textRenderer_.draw(graphics_->context(), x, y, text,
+        primitiveColor(textColor_), horizontalAlign_, verticalAlign_);
     endPrimitive();
 }
 

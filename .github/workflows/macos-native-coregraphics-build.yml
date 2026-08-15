@@ -15,9 +15,13 @@ concurrency:
 
 jobs:
   native-coregraphics:
-    name: AppleClang / CoreGraphics / Release
+    name: AppleClang / CoreGraphics / ${{ matrix.build_type }}
     runs-on: macos-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Release, Debug]
 
     steps:
       - name: Checkout repository
@@ -34,7 +38,8 @@ jobs:
       - name: Configure native CoreGraphics build
         run: >-
           cmake -S . -B build/native-coregraphics
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
           -DEGE_DEFAULT_BACKEND=COREGRAPHICS
           -DEGE_ENABLE_OPENGL=OFF
           -DEGE_ENABLE_CAMERA_CAPTURE=ON
@@ -58,10 +63,18 @@ jobs:
           test -x build/native-coregraphics/demo/graph_5star
           test -x build/native-coregraphics/demo/camera_base
           test -x build/native-coregraphics/demo/camera_wave
+          otool -l build/native-coregraphics/demo/camera_base | grep -q __info_plist
+          strings build/native-coregraphics/demo/camera_base | grep -q NSCameraUsageDescription
           file build/native-coregraphics/libgraphics.a
           demo_type="$(file build/native-coregraphics/demo/graph_5star)"
           echo "$demo_type"
           grep -q "Mach-O" <<<"$demo_type"
+          minos_values="$(find build/native-coregraphics/CMakeFiles/xege.dir \
+            -name '*.o' -print0 | while IFS= read -r -d '' object; do \
+              xcrun vtool -show-build "$object"; \
+            done | awk '$1 == "minos" { print $2 }' | sort -u)"
+          echo "macOS deployment targets: ${minos_values}"
+          test "$minos_values" = "11.0"
 
       - name: Verify native prebuilt package consumers
         shell: bash
@@ -76,7 +89,8 @@ jobs:
             "$package_dir/lib/macOS/"
 
           cmake -S "$package_dir" -B build/native-package-consumer \
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
           cmake --build build/native-package-consumer \
             --target demos --parallel 3
 

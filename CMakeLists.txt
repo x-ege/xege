@@ -11,6 +11,18 @@ if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
 endif()
 cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 
+# Keep native Apple builds compatible with the oldest supported macOS release.
+# This must be set before project()/enable_language(), otherwise objects inherit
+# the SDK version of the (rolling) build machine as their deployment target.
+# Explicit caller values always win. Cross-compilation toolchains are excluded.
+if(CMAKE_HOST_APPLE
+        AND NOT CMAKE_TOOLCHAIN_FILE
+        AND (NOT DEFINED CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        AND NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING
+        "Minimum macOS version supported by native XEGE builds")
+endif()
+
 # Cross-compilers belong in a toolchain file and must be selected before this
 # project() call.  In particular, a Unix host no longer implies a Windows
 # target; CMAKE_SYSTEM_NAME always describes the actual target platform.
@@ -25,9 +37,15 @@ if(EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
             EGE_BUILD_TEMP
             EGE_DEFAULT_BACKEND
             EGE_ENABLE_OPENGL
-            EGE_ENABLE_CAMERA_CAPTURE)
+            EGE_ENABLE_CAMERA_CAPTURE
+            EGE_ENABLE_CPP17
+            EGE_DISABLE_DEBUG_INFO)
         unset(${_ege_cached_option} CACHE)
     endforeach()
+    # Treat this cache reset as a one-shot request instead of leaving every
+    # future configure in reset mode.
+    set(EGE_CLEAR_OPTIONS_CACHE OFF CACHE BOOL
+        "Clear XEGE option caches before configuring" FORCE)
 endif()
 
 option(EGE_BUILD_DEMO "Build EGE demos" ${EGE_IS_ROOT_PROJECT})
@@ -308,6 +326,16 @@ if(EGE_BUILD_TEST)
         add_subdirectory(tests/native)
     endif()
     if(EGE_IS_ROOT_PROJECT)
+        if(CMAKE_GENERATOR STREQUAL "Xcode")
+            # Xcode's OBJECT_FILE_DIR_normal is derived from the target name
+            # (`xege.build`), not the CMake project name (`XEGE.build`). These
+            # differ on case-sensitive macOS volumes.
+            set(_ege_native_object_dir
+                "${CMAKE_CURRENT_BINARY_DIR}/build/xege.build/$<CONFIG>/Objects-normal")
+        else()
+            set(_ege_native_object_dir
+                "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/xege.dir")
+        endif()
         add_test(NAME cmake.backend_default_contract
             COMMAND "${CMAKE_COMMAND}"
                 -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
@@ -323,6 +351,10 @@ if(EGE_BUILD_TEST)
         add_test(NAME cmake.macos_release_contract
             COMMAND "${CMAKE_COMMAND}"
                 -DEGE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                -DEGE_NATIVE_LIBRARY=$<TARGET_FILE:xege>
+                -DEGE_NATIVE_OBJECT_DIR=${_ege_native_object_dir}
+                -DEGE_TARGET_APPLE=${APPLE}
+                -DEGE_EXPECTED_MACOS_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/macos_release_contract.cmake)
         if(APPLE)
             add_test(NAME cmake.macos_native_tasks_contract
@@ -355,6 +387,9 @@ message(STATUS "  Target platform: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "  Default backend: ${EGE_RESOLVED_BACKEND}")
 message(STATUS "  Optional OpenGL: ${EGE_ENABLE_OPENGL}")
 message(STATUS "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+if(APPLE)
+    message(STATUS "  macOS deployment target: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+endif()
 if(CMAKE_CONFIGURATION_TYPES)
     message(STATUS "  Build configurations: ${CMAKE_CONFIGURATION_TYPES}")
 else()
