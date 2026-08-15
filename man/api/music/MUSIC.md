@@ -28,6 +28,11 @@
 ## MUSIC 类
  >头文件包含: **#include <graphics.h>**
 
+>平台说明：Windows 后端使用 MCI；原生 macOS 后端使用 AVFAudio 和
+>AudioToolbox。实际格式支持由系统后端决定，WAV 是建议的跨平台基线；macOS
+>另外支持系统可解码的音频以及 `.mid`/`.midi`/`.kar` MIDI 文件。打开失败返回
+>`MUSIC_ERROR`，不会把任意损坏文件当作 MIDI 尝试。
+
 
 ### 函数
 #### 构造函数
@@ -240,6 +245,5 @@ DWORD GetLength();
 **返回值**
 音乐总时长，单位毫秒。
 </div></br>
-
 
 

@@ -2,21 +2,15 @@
     "version": 4,
     "configurations": [
         {
-            "name": "default",
+            "name": "CMake Tools",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "defines": [
-                "EGE_ENABLE_CAMERA_CAPTURE=1"
-            ],
             "includePath": [
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/include/ege",
                 "${workspaceFolder}/3rdparty/ccap/include"
             ],
-            "configurationProvider": "ms-vscode.cmake-tools",
-            "compilerArgs": [
-                "/Zc:__cplusplus"
-            ]
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ]
 }

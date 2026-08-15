@@ -105,6 +105,11 @@ foreach(DEMO_SRC ${DEMO_SRCS})
   elseif(DEMO_NAME MATCHES "^camera_")
     target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
     target_compile_definitions(${DEMO_NAME} PRIVATE EGE_ENABLE_CAMERA_CAPTURE=1)
+    if(APPLE)
+      target_link_options(${DEMO_NAME} PRIVATE
+        "-sectcreate" "__TEXT" "__info_plist"
+        "${CMAKE_CURRENT_SOURCE_DIR}/macos-camera-info.plist")
+    endif()
   endif()
 endforeach()
 

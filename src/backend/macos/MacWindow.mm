@@ -165,20 +165,28 @@ std::uint32_t windowsVirtualKeyForEvent(NSEvent* event)
     }
 }
 
-bool modifierPressedForEvent(NSEvent* event)
+bool modifierPressedForEvent(NSEvent* event, bool currentState)
 {
+    NSEventModifierFlags aggregateFlag = 0;
     switch (event.keyCode) {
     case 0x38:
-    case 0x3C: return (event.modifierFlags & NSEventModifierFlagShift) != 0;
+    case 0x3C: aggregateFlag = NSEventModifierFlagShift; break;
     case 0x3B:
-    case 0x3E: return (event.modifierFlags & NSEventModifierFlagControl) != 0;
+    case 0x3E: aggregateFlag = NSEventModifierFlagControl; break;
     case 0x3A:
-    case 0x3D: return (event.modifierFlags & NSEventModifierFlagOption) != 0;
+    case 0x3D: aggregateFlag = NSEventModifierFlagOption; break;
     case 0x37:
-    case 0x36: return (event.modifierFlags & NSEventModifierFlagCommand) != 0;
+    case 0x36: aggregateFlag = NSEventModifierFlagCommand; break;
     case 0x39: return (event.modifierFlags & NSEventModifierFlagCapsLock) != 0;
     default:   return false;
     }
+    // AppKit's device-independent flags merge the left and right keys. A
+    // flagsChanged event identifies the physical key that changed, so toggle
+    // that side while the aggregate remains set. When the final side is
+    // released the aggregate clears and both ordinary single-key and dual-key
+    // sequences resolve to false without leaving a stuck modifier.
+    return (event.modifierFlags & aggregateFlag) != 0
+        ? !currentState : false;
 }
 
 void emitText(NSString* text, MacWindowState* state)
@@ -214,9 +222,11 @@ void emitText(NSString* text, MacWindowState* state)
     NSInteger _pixelHeight;
     NSMutableAttributedString* _markedText;
     MacWindowState* _state;
+    bool _modifierKeyStates[256];
 }
 - (instancetype)initWithFrame:(NSRect)frame state:(MacWindowState*)state;
 - (void)setPresentedImage:(CGImageRef)image pixelWidth:(NSInteger)width pixelHeight:(NSInteger)height;
+- (void)resetModifierKeys;
 - (void)detachState;
 @end
 
@@ -231,6 +241,7 @@ void emitText(NSString* text, MacWindowState* state)
         _pixelHeight    = 0;
         _markedText     = [[NSMutableAttributedString alloc] init];
         _state          = state;
+        std::fill_n(_modifierKeyStates, 256, false);
     }
     return self;
 }
@@ -328,12 +339,14 @@ void emitText(NSString* text, MacWindowState* state)
 
 - (void)sendMouseButton:(NSEvent*)event pressed:(bool)pressed
 {
-    if (_state == nullptr || _state->eventSink == nullptr || event.buttonNumber > 2) {
+    if (_state == nullptr || _state->eventSink == nullptr || event.buttonNumber > 4) {
         return;
     }
     const NSPoint point = [self pixelPointForEvent:event];
-    const int button = event.buttonNumber == 0 ? 0 : (event.buttonNumber == 1 ? 1 : 2);
-    _state->eventSink->onMouseButton(button, pressed, static_cast<int>(point.x), static_cast<int>(point.y));
+    _state->eventSink->onMouseButton(
+        static_cast<int>(event.buttonNumber), pressed,
+        static_cast<int>(point.x), static_cast<int>(point.y),
+        static_cast<int>(std::max<NSInteger>(1, event.clickCount)));
 }
 
 - (void)mouseDown:(NSEvent*)event       { [self sendMouseButton:event pressed:true]; }
@@ -391,7 +404,48 @@ void emitText(NSString* text, MacWindowState* state)
     }
     const std::uint32_t key = windowsVirtualKeyForEvent(event);
     if (key != 0) {
-        _state->eventSink->onKey(key, modifierPressedForEvent(event), false);
+        const NSUInteger keyCode = event.keyCode;
+        const bool currentState = keyCode < 256
+            ? _modifierKeyStates[keyCode] : false;
+        const bool pressed = modifierPressedForEvent(event, currentState);
+        if (keyCode < 256) {
+            _modifierKeyStates[keyCode] = pressed;
+        }
+        _state->eventSink->onKey(key, pressed, false);
+    }
+}
+
+- (void)resetModifierKeys
+{
+    // Caps Lock is a toggle, not a held modifier. Do not synthesize a release
+    // for it when the window loses focus; AppKit will report its actual toggle
+    // state in a later flagsChanged event. The other modifier keys are physical
+    // keys, and their release events must reach the sink so its generic Shift /
+    // Control / Alt state cannot remain stuck after focus moves elsewhere.
+    static const struct PhysicalModifier {
+        unsigned short keyCode;
+        std::uint32_t virtualKey;
+    } modifiers[] = {
+        {0x38, 0xA0}, // left Shift
+        {0x3C, 0xA1}, // right Shift
+        {0x3B, 0xA2}, // left Control
+        {0x3E, 0xA3}, // right Control
+        {0x3A, 0xA4}, // left Option / Alt
+        {0x3D, 0xA5}, // right Option / Alt
+        {0x37, 0x5B}, // left Command
+        {0x36, 0x5C}, // right Command
+    };
+
+    for (const PhysicalModifier& modifier : modifiers) {
+        if (!_modifierKeyStates[modifier.keyCode]) {
+            continue;
+        }
+        // Clear before calling user code, making this operation idempotent even
+        // if the callback causes another focus transition synchronously.
+        _modifierKeyStates[modifier.keyCode] = false;
+        if (_state != nullptr && _state->eventSink != nullptr) {
+            _state->eventSink->onKey(modifier.virtualKey, false, false);
+        }
     }
 }
 
@@ -515,6 +569,14 @@ void emitText(NSString* text, MacWindowState* state)
     }
 }
 
+- (void)windowDidResignKey:(NSNotification*)notification
+{
+    NSWindow* window = notification.object;
+    if ([window.contentView respondsToSelector:@selector(resetModifierKeys)]) {
+        [(EGEMacContentView*)window.contentView resetModifierKeys];
+    }
+}
+
 - (void)windowDidResize:(NSNotification*)notification
 {
     if (_state == nullptr || _state->closed.load()) {
@@ -582,6 +644,47 @@ bool MacWindow::primaryScreenSize(int* width, int* height)
     *width = screenWidth;
     *height = screenHeight;
     return true;
+}
+
+bool MacWindow::inputBox(const char* title, const char* prompt,
+                         std::string* value)
+{
+    if (value == nullptr) {
+        return false;
+    }
+
+    __block bool accepted = false;
+    __block std::string result;
+    performOnMainThreadSync(^{
+        @autoreleasepool {
+            if ([NSScreen screens].count == 0) {
+                return;
+            }
+            [NSApplication sharedApplication];
+            NSAlert* alert = [[NSAlert alloc] init];
+            alert.messageText = stringFromUTF8(title);
+            alert.informativeText = stringFromUTF8(prompt);
+            [alert addButtonWithTitle:@"OK"];
+            [alert addButtonWithTitle:@"Cancel"];
+
+            NSTextField* field = [[NSTextField alloc]
+                initWithFrame:NSMakeRect(0, 0, 360, 24)];
+            alert.accessoryView = field;
+            if (!shouldAvoidApplicationActivation()) {
+                [NSApp activateIgnoringOtherApps:YES];
+            }
+            const NSModalResponse response = [alert runModal];
+            if (response == NSAlertFirstButtonReturn) {
+                const char* utf8 = field.stringValue.UTF8String;
+                result = utf8 != nullptr ? utf8 : "";
+                accepted = true;
+            }
+        }
+    });
+    if (accepted) {
+        *value = result;
+    }
+    return accepted;
 }
 
 bool MacWindow::create(int width, int height, const char* title,

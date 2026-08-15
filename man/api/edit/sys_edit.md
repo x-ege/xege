@@ -30,6 +30,9 @@
 
 >继承自: **egeControlBase**
 
+>平台说明：`sys_edit` 依赖 Win32 原生编辑控件，当前仅 Windows 实现。
+>原生 macOS 尚不创建该控件；单次文本输入可使用 `inputbox_getline()`。
+
 ### 函数
 #### 构造函数
 使用默认参数即可

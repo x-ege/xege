@@ -22,8 +22,10 @@
 
 <font size="4" color="#0000FF"><strong>说明：</strong></font>
 在 Windows 下，句柄是一个窗口的标识，得到句柄后，可以使用 Windows SDK 中的各种 API 实现对窗口的控制。
+macOS 上该类型只是源码兼容别名；当前值是内部 NSWindow 的不透明指针，
+不能传给 Win32 API，也不应由调用者释放。
 
-示例：
+以下示例仅适用于 Windows；跨平台修改标题请使用 setcaption()：
 <pre><font color=#008000>// 获得窗口句柄
 </font><font color=#800080>HWND </font>hWnd = <font color=#008080>getHWnd</font>();
 <font color=#008000>// 使用 API 函数修改窗口名称
@@ -32,4 +34,3 @@
 </pre>
 
 </body>
-

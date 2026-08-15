@@ -141,7 +141,12 @@ _graph_setting::~_graph_setting()
         PostMessageW(hwnd, EGE_WM_PROCESS_SHUTDOWN, 0, 0);
     }
 #else
-	on_destroy(this);
+    // Static destruction must release native resources without replacing the
+    // application's return code with exit(0). Forced exit is only meaningful
+    // for an explicit user close request while the program is running.
+    close_manually = false;
+    use_force_exit = false;
+    on_destroy(this);
 #endif
     if (threadui.joinable()) {
         threadui.join();
@@ -718,10 +723,9 @@ public:
     {
         if (settings_->callback_close) {
             settings_->callback_close();
-            // Win32 treats a close callback as the application's opportunity
-            // to decide when to destroy the window. Keep the AppKit window open
-            // unless that callback closes it explicitly.
-            return false;
+            // Match Win32 WM_CLOSE: the callback is a notification and the
+            // default close action still runs afterwards.
+            return true;
         }
         settings_->exit_flag = 1;
         settings_->exit_window = 1;
@@ -738,8 +742,41 @@ public:
 
     void onKey(std::uint32_t key, bool pressed, bool repeat) override
     {
+        // AppKit reports left/right modifiers individually. Keep the generic
+        // Win32-compatible key states in sync because getkey()/mouse messages
+        // expose Shift and Control through those generic entries.
+        int genericKey = 0;
+        if (key == key_shift_l || key == key_shift_r) {
+            genericKey = key_shift;
+        } else if (key == key_control_l || key == key_control_r) {
+            genericKey = key_control;
+        } else if (key == key_menu_l || key == key_menu_r) {
+            genericKey = key_menu;
+        }
+        const bool genericWasPressed = genericKey != 0 &&
+            settings_->keystatemap[genericKey];
+
         const LPARAM repeatFlag = repeat ? static_cast<LPARAM>(0x40000001) : 1;
         on_key(settings_, pressed ? WM_KEYDOWN : WM_KEYUP, key, repeatFlag);
+
+        if (genericKey != 0) {
+            const bool genericPressed =
+                (genericKey == key_shift &&
+                    (settings_->keystatemap[key_shift_l] || settings_->keystatemap[key_shift_r])) ||
+                (genericKey == key_control &&
+                    (settings_->keystatemap[key_control_l] || settings_->keystatemap[key_control_r])) ||
+                (genericKey == key_menu &&
+                    (settings_->keystatemap[key_menu_l] || settings_->keystatemap[key_menu_r]));
+            settings_->keystatemap[genericKey] = genericPressed;
+            if (genericPressed != genericWasPressed) {
+                std::uint16_t& count = genericPressed
+                    ? settings_->key_press_count[genericKey]
+                    : settings_->key_release_count[genericKey];
+                if (count < UINT16_MAX) {
+                    ++count;
+                }
+            }
+        }
     }
 
     void onText(std::uint32_t codepoint) override
@@ -762,12 +799,21 @@ public:
         pushMouse(WM_MOUSEMOVE, 0, x, y);
     }
 
-    void onMouseButton(int button, bool pressed, int x, int y) override
+    void onMouseButton(int button, bool pressed, int x, int y,
+                       int clickCount) override
     {
-        static const int keyCodes[] = {VK_LBUTTON, VK_RBUTTON, VK_MBUTTON};
-        static const UINT downMessages[] = {WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN};
-        static const UINT upMessages[] = {WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP};
-        if (button < 0 || button >= 3) {
+        static const int keyCodes[] = {
+            VK_LBUTTON, VK_RBUTTON, VK_MBUTTON, VK_XBUTTON1, VK_XBUTTON2};
+        static const UINT downMessages[] = {
+            WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN,
+            WM_XBUTTONDOWN, WM_XBUTTONDOWN};
+        static const UINT upMessages[] = {
+            WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP,
+            WM_XBUTTONUP, WM_XBUTTONUP};
+        static const UINT doubleMessages[] = {
+            WM_LBUTTONDBLCLK, WM_RBUTTONDBLCLK, WM_MBUTTONDBLCLK,
+            WM_XBUTTONDBLCLK, WM_XBUTTONDBLCLK};
+        if (button < 0 || button >= 5) {
             return;
         }
         settings_->mouse_pos = Point(x, y);
@@ -779,7 +825,15 @@ public:
         } else if (settings_->key_release_count[keyCodes[button]] < UINT16_MAX) {
             ++settings_->key_release_count[keyCodes[button]];
         }
-        pushMouse(pressed ? downMessages[button] : upMessages[button], 0, x, y);
+        WPARAM parameter = 0;
+        if (button == 3 || button == 4) {
+            const std::uint32_t xButton = button == 3 ? XBUTTON1 : XBUTTON2;
+            parameter = static_cast<WPARAM>(xButton << 16U);
+        }
+        const UINT message = pressed && clickCount >= 2
+            ? doubleMessages[button]
+            : (pressed ? downMessages[button] : upMessages[button]);
+        pushMouse(message, parameter, x, y);
     }
 
     void onMouseWheel(float, float deltaY, int x, int y) override
@@ -797,6 +851,10 @@ private:
         state |= settings_->keystatemap[VK_LBUTTON] ? MK_LBUTTON : 0;
         state |= settings_->keystatemap[VK_RBUTTON] ? MK_RBUTTON : 0;
         state |= settings_->keystatemap[VK_MBUTTON] ? MK_MBUTTON : 0;
+        state |= settings_->keystatemap[VK_XBUTTON1] ? MK_XBUTTON1 : 0;
+        state |= settings_->keystatemap[VK_XBUTTON2] ? MK_XBUTTON2 : 0;
+        state |= settings_->keystatemap[key_shift] ? MK_SHIFT : 0;
+        state |= settings_->keystatemap[key_control] ? MK_CONTROL : 0;
         push_mouse_msg(settings_, message, state, MAKELPARAM(x, y),
                        static_cast<int>(get_highfeq_time_ls() * 1000.0));
     }

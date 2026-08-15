@@ -52,8 +52,35 @@ ege_add_native_test(ege_native_control_focus_contract
     native.ege_control_focus_contract
     ege_control_focus_contract_test.cpp)
 
+ege_add_native_test(ege_native_music_contract
+    native.ege_music_contract
+    ege_music_contract_test.cpp)
+target_compile_definitions(ege_native_music_contract PRIVATE
+    EGE_TEST_ARTIFACT_DIR="${CMAKE_BINARY_DIR}/test-artifacts")
+
+add_executable(ege_native_process_exit_contract
+    ege_process_exit_contract.cpp)
+target_compile_features(ege_native_process_exit_contract PRIVATE cxx_std_17)
+target_link_libraries(ege_native_process_exit_contract PRIVATE xege)
+add_test(NAME native.ege_process_exit_contract
+    COMMAND "${CMAKE_COMMAND}"
+        -DEGE_EXIT_PROGRAM=$<TARGET_FILE:ege_native_process_exit_contract>
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/assert_process_exit.cmake")
+set_tests_properties(native.ege_process_exit_contract PROPERTIES TIMEOUT 15)
+
 if(APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
     _ege_find_required_framework(EGE_TEST_COREGRAPHICS_FRAMEWORK CoreGraphics)
+    _ege_find_required_framework(EGE_TEST_APPKIT_FRAMEWORK AppKit)
+
+    ege_add_native_test(ege_native_public_objcxx_headers
+        native.public_objcxx_headers
+        public_headers_objcxx_main.cpp
+        public_close_callback_appkit.mm
+        public_headers_appkit_first.mm)
+    target_link_libraries(ege_native_public_objcxx_headers PRIVATE
+        "${EGE_TEST_APPKIT_FRAMEWORK}"
+        "${EGE_TEST_COREGRAPHICS_FRAMEWORK}")
+    ege_enable_objc_arc(ege_native_public_objcxx_headers)
 
     ege_add_native_test(ege_native_coregraphics_surface
         native.coregraphics_surface
@@ -80,7 +107,6 @@ if(APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
     if(EGE_ENABLE_WINDOW_TESTS)
         message(WARNING
             "EGE_ENABLE_WINDOW_TESTS=ON: native tests will create visible windows")
-        _ege_find_required_framework(EGE_TEST_APPKIT_FRAMEWORK AppKit)
         _ege_find_required_framework(EGE_TEST_COREFOUNDATION_FRAMEWORK CoreFoundation)
 
         ege_add_native_test(ege_native_mac_window_smoke native.mac_window_smoke
@@ -90,6 +116,28 @@ if(APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
             "${EGE_TEST_COREGRAPHICS_FRAMEWORK}")
         ege_enable_objc_arc(ege_native_mac_window_smoke)
         set_tests_properties(native.mac_window_smoke PROPERTIES
+            RUN_SERIAL TRUE
+            SKIP_RETURN_CODE 77
+            TIMEOUT 15)
+
+        add_executable(ege_native_expected_exit_runner expected_exit_runner.cpp)
+        target_compile_features(ege_native_expected_exit_runner PRIVATE cxx_std_17)
+
+        add_executable(ege_native_public_close_callback_contract
+            public_close_callback_smoke.cpp
+            public_close_callback_appkit.mm
+            public_headers_appkit_first.mm)
+        target_compile_features(ege_native_public_close_callback_contract
+            PRIVATE cxx_std_17)
+        target_link_libraries(ege_native_public_close_callback_contract PRIVATE
+            xege
+            "${EGE_TEST_APPKIT_FRAMEWORK}"
+            "${EGE_TEST_COREGRAPHICS_FRAMEWORK}")
+        ege_enable_objc_arc(ege_native_public_close_callback_contract)
+        add_test(NAME native.public_close_callback_contract
+            COMMAND ege_native_expected_exit_runner
+                $<TARGET_FILE:ege_native_public_close_callback_contract> 42)
+        set_tests_properties(native.public_close_callback_contract PROPERTIES
             RUN_SERIAL TRUE
             SKIP_RETURN_CODE 77
             TIMEOUT 15)

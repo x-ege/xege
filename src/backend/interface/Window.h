@@ -12,14 +12,19 @@ struct WindowOptions {
 
 struct WindowEventSink {
     virtual ~WindowEventSink() = default;
-    // Return true to accept the native close request. Returning false keeps the
-    // window open, matching the Win32 SetCloseHandler contract.
+    // Return true to accept the native close request. The internal interface
+    // supports rejection for embedders/tests; EGE's public void
+    // SetCloseHandler callback is a notification and accepts the close after
+    // invoking the user handler, matching Win32 WM_CLOSE processing.
     virtual bool onCloseRequested() = 0;
     virtual void onResize(int width, int height) = 0;
     virtual void onKey(std::uint32_t key, bool pressed, bool repeat) = 0;
     virtual void onText(std::uint32_t codepoint) = 0;
     virtual void onMouseMove(int x, int y) = 0;
-    virtual void onMouseButton(int button, bool pressed, int x, int y) = 0;
+    // button uses the EGE order left/right/middle/X1/X2. clickCount is at
+    // least one and lets the frontend preserve native double-click events.
+    virtual void onMouseButton(int button, bool pressed, int x, int y,
+                               int clickCount) = 0;
     virtual void onMouseWheel(float deltaX, float deltaY, int x, int y) = 0;
 };
 

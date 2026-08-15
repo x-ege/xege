@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
 
+if(CMAKE_HOST_APPLE AND NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING
+        "Minimum macOS version supported by the packaged EGE library")
+endif()
+
 # Preserve the existing Linux SDK experience: when no explicit toolchain is
 # supplied, a Linux host selects the packaged MinGW Windows target. Apple hosts
 # are deliberately excluded because macOS now consumes the native archive.
@@ -26,7 +31,8 @@ target_include_directories(ege-common INTERFACE
 message(STATUS "ege include dir: ${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # Select the prebuilt library for the target platform. macOS is always native;
-# Windows cross-compilation from Linux still requires an explicit toolchain.
+# on Linux the compatibility block above selects the packaged MinGW toolchain
+# when the caller did not already provide one explicitly.
 if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
     set(osLibDir "macOS")
     add_library(ege-macos STATIC IMPORTED)
@@ -74,40 +80,10 @@ elseif(MSVC)
         else()
             set(osLibDir "vs2019/x86")
         endif()
-    elseif(MSVC_VERSION GREATER_EQUAL 1910)
-        # vs2017
-        if(CMAKE_CL_64)
-            set(osLibDir "vs2017/x64")
-        else()
-            set(osLibDir "vs2017/x86")
-        endif()
-
-        # 设置 MSVC 编译选项, 当版本为 vs2017 时, 使用 c++14 标准.
-        set(CPP_COMPILE_OPTIONS "/std:c++14")
-    elseif(MSVC_VERSION GREATER_EQUAL 1900)
-        # vs2015
-        if(CMAKE_CL_64)
-            set(osLibDir "vs2015/amd64")
-        else()
-            set(osLibDir "vs2015")
-        endif()
-
-        # 设置 MSVC 编译选项, 当版本为 vs2015 时, 使用 c++14 标准.
-        set(CPP_COMPILE_OPTIONS "/std:c++14")
-    elseif(MSVC_VERSION GREATER_EQUAL 1600)
-        if(MSVC_VERSION GREATER_EQUAL 1700)
-            message(WARNING "You are using vs2012/vs2013, which is not tested, please use vs2010, vs2015 or later version of MSVC compiler.")
-        endif()
-
-        # vs2010
-        if(CMAKE_CL_64)
-            set(osLibDir "vs2010/amd64")
-        else()
-            set(osLibDir "vs2010")
-        endif()
-
     else()
-        message(FATAL_ERROR "Your MSVC version is too old. Please use VS2015 or newer. / 你的 MSVC 版本太老了, 请使用 vs2015 或更新版本的 MSVC 编译器.")
+        message(FATAL_ERROR
+            "This release package contains MSVC libraries for VS2019 and "
+            "VS2022 only. Build XEGE from source when using an older compiler.")
     endif()
 
     # /Zc:__cplusplus 选项仅在 VS2017 15.7 (MSVC_VERSION >= 1914) 及以上版本支持
@@ -186,6 +162,11 @@ foreach(DEMO_SRC ${DEMO_SRCS})
         target_compile_features(${DEMO_NAME} PRIVATE cxx_std_17)
         target_compile_definitions(${DEMO_NAME} PRIVATE
             EGE_ENABLE_CAMERA_CAPTURE=1)
+        if(APPLE)
+            target_link_options(${DEMO_NAME} PRIVATE
+                "-sectcreate" "__TEXT" "__info_plist"
+                "${CMAKE_CURRENT_SOURCE_DIR}/demo/macos-camera-info.plist")
+        endif()
     endif()
 endforeach()
 
@@ -193,7 +174,7 @@ if(WIN32)
     target_sources(graph_rotateimage PRIVATE demo/egelogo.rc)
 endif()
 
-message(CHECK_START "Finding GMP Library")
+message(STATUS "Finding GMP Library")
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_LIBRARIES gmpxx gmp)
 check_cxx_source_compiles("
@@ -206,7 +187,7 @@ int main() {
 unset(CMAKE_REQUIRED_LIBRARIES)
 
 if(GMP_AVAILABLE)
-    message(CHECK_PASS "found")
+    message(STATUS "Finding GMP Library - found")
     file(
         GLOB GMP_DEMO_SRCS
         LIST_DIRECTORIES false
@@ -222,5 +203,5 @@ if(GMP_AVAILABLE)
         add_dependencies(demos ${DEMO_NAME})
     endforeach()
 else()
-    message(CHECK_PASS "not found")
+    message(STATUS "Finding GMP Library - not found")
 endif()

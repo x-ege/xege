@@ -1,6 +1,6 @@
 # EGE 编译指南
 
-EGE 源码使用 CMake 构建。Windows 默认使用 GDI；macOS 现在可用
+EGE 源码使用 CMake 3.13 或更高版本构建。Windows 默认使用 GDI；macOS 现在可用
 AppleClang 直接生成 Mach-O 原生程序，默认绘制后端为 Core Graphics，窗口后端为
 AppKit。macOS 原生构建不需要 MinGW、Wine 或 OpenGL。
 
@@ -22,6 +22,7 @@ Linux 原生 Cairo 后端尚未实现，配置会 fail-fast，不会默认生成
 ```sh
 cmake -S . -B build/native-coregraphics \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
   -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
   -DEGE_ENABLE_OPENGL=OFF \
   -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
@@ -30,18 +31,23 @@ cmake -S . -B build/native-coregraphics \
   -DEGE_BUILD_TEMP=OFF
 cmake --build build/native-coregraphics --parallel
 cmake --build build/native-coregraphics --target graph_5star --parallel
-ctest --test-dir build/native-coregraphics --output-on-failure
+cmake -E chdir build/native-coregraphics ctest --output-on-failure
 file build/native-coregraphics/demo/graph_5star
 ```
 
 `file` 的最后一行应包含 `Mach-O`，而不是 `PE32` 或 `.exe`。`COREGRAPHICS` 是 macOS
 的默认后端，但建议 CI 与验收脚本显式指定，避免缓存污染。
+macOS 11.0 是当前支持下限。根项目和发布工作流会固定该值，
+以免滚动 Xcode SDK 将制品错标成只支持构建机的新系统。
 
 默认 CTest 严格使用无头模式，不创建 `NSApplication` 或 `NSWindow`。公共 API 测试通过
 `EGE_HEADLESS=1` 初始化全局画布，将结果写入
 `build/native-coregraphics/test-artifacts/ege-api-headless.png`，再解码并逐像素验证。
-会显示真实窗口的 `native.mac_window_smoke` 和 `demo.*.launch` 不会注册到默认测试集；
+会显示真实窗口的 `native.mac_window_smoke`、
+`native.public_close_callback_contract` 和 `demo.*.launch` 不会注册到默认测试集；
 只有人工明确配置 `-DEGE_ENABLE_WINDOW_TESTS=ON` 时才启用。
+`native.ege_music_contract` 会打开自动生成的静音 WAV 并测试损坏输入，
+不做可听播放；camera 目标在默认 CI 中只编译/链接，不访问真实设备。
 
 ### VS Code 与 `tasks.sh`
 
@@ -57,9 +63,34 @@ file build/native-coregraphics/demo/graph_5star
 bash tasks.sh --debug --show-config
 ```
 
+`tasks.sh --clean` 和 `--reload` 会删除当前选中的 CMake build 目录。
+脚本会拒绝删除仓库根目录或无法确认属于本项目的自定义目录，
+但调用前仍应检查 `--show-config` 输出。
+
 `utils/release.sh` 在 macOS 上生成的 AppleClang 静态库位于
-`Release/lib/macOS`。该原生产物已经替代历史上由 macOS 主机通过 MinGW
-生成的 Windows 静态库；需要旧工作流的用户应使用旧版 EGE。
+`Release/lib/macOS`。脚本分别构建 arm64/x86_64，用 `lipo` 合成 universal
+archive，检查每个 slice 的 macOS 11.0 标记，并使用与官方包相同的
+`.github/release-assets/CMakeLists.txt` 链接所有 demo。构建中间件默认位于
+`build/release-local`，可用 `EGE_RELEASE_BUILD_ROOT` 改变；测试或自动化可用
+`EGE_RELEASE_DIR` 把输出定向到隔离目录。脚本会启用 camera，因此必须先初始化
+`3rdparty/ccap`。`EGE_MACOS_DEPLOYMENT_TARGET` 可覆盖本地试验目标，但正式发布与
+兼容性验收固定为 11.0。
+
+仓库和发布包中的 camera demo 已内嵌 `NSCameraUsageDescription`。自行创建的 macOS
+camera 可执行文件或 app bundle 也必须在其 Info.plist 中提供该键，否则系统可能在
+首次访问摄像头时终止程序；同时仍需由用户授予相机权限。
+
+Windows 专用的 `utils/release-msvc.sh`、`utils/release-mingw.sh` 和
+`utils/test-release-libs.sh` 不会隐式执行 `git clean`。前两个脚本默认使用按工具集/架构
+隔离的构建目录，仅在显式传入 `--force-clean` 时删除仓库内准确的 `build/` 与
+`Release/` 目录；调用前请先确认其中没有需要保留的生成物。`--help` 只显示帮助，
+不修改工作树。VS2010 构建需要临时为
+部分源码添加 BOM，脚本通过退出 trap 恢复编码；仍建议在专用发布工作树中运行。
+`utils/release.sh` 的 macOS 路径也不清理工作树，并可用上述环境变量完全隔离输出。
+
+`utils/test-run-demos.sh --directory <demo-build-dir>` 可在交互式桌面会话中启动
+已构建 demo：macOS 直接运行 Mach-O，Linux 对 Windows `.exe` 明确使用 Wine。
+camera demo 默认排除，只有显式传 `--include-camera` 才会触发其权限/设备路径。
 
 ### 逐像素 CPU buffer 语义
 
@@ -314,7 +345,8 @@ cmake --build . --target demos
 
 即可在构建目录下的 `demo` 文件夹中生成各可执行文件。
 
-Linux 环境下，需要修改 `demo/egelogo.rc` 文件，将路径分隔符 `\\` 改为 `/`。
+`graph_rotateimage` 的 Windows 资源文件已使用跨工具链可识别的路径，
+无需在 Linux MinGW 交叉编译前修改源文件。
 
 ## 编译临时测试文件
 
@@ -363,7 +395,8 @@ int main(int argc, char const *argv[])
 
 ```
 
-执行前文所述编译步骤后在 `build/temp` 目录下就会生成可执行文件 `temp_test.exe`。
+执行前文所述编译步骤后会在 build 目录的 `temp/` 下生成可执行文件：
+Windows 为 `temp_test.exe`，macOS 为无扩展名的 `temp_test`。
 
 ## Linux 主机上交叉编译 Windows 例程
 

@@ -21,27 +21,41 @@ jobs:
       - name: Check VS2026 (v145 toolset) availability
         id: check_vs2026
         run: |
-          # Check if VS2026 and its v145 toolset are available using vswhere
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          
-          # Check for VS2026 installation
-          $vs2026 = & $vswhere -version "[18.0,19.0)" -property installationPath 2>$null
-          
-          $v145Found = $false
+
+          # v145 is a PlatformToolset name; the VS2026 MSBuild targets live
+          # below VC\v180, not VC\v145. Probe the exact CMake generator/toolset
+          # pair instead of relying on Visual Studio's internal directory layout.
+          $vs2026 = @(& $vswhere -products "*" -version "[18.0,19.0)" `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property installationPath 2>$null) | Select-Object -First 1
+          $probeSucceeded = $false
           if ($vs2026) {
-            $v145Path = Join-Path $vs2026 "MSBuild\Microsoft\VC\v145"
-            if (Test-Path $v145Path) {
-              $v145Found = $true
-              echo "✅ v145 toolset found at: $v145Path"
-            }
+            $probeRoot = Join-Path $env:RUNNER_TEMP `
+              ("xege-vs2026-v145-" + [guid]::NewGuid().ToString("N"))
+            New-Item -ItemType Directory -Force -Path $probeRoot | Out-Null
+            @(
+              "cmake_minimum_required(VERSION 3.13)"
+              "project(xege_vs2026_v145_probe LANGUAGES CXX)"
+            ) | Set-Content -Path (Join-Path $probeRoot "CMakeLists.txt") -Encoding ascii
+
+            cmake -S $probeRoot -B (Join-Path $probeRoot "build") `
+              -G "Visual Studio 18 2026" -A x64 -T v145 `
+              -DCMAKE_GENERATOR_INSTANCE="$vs2026"
+            $probeSucceeded = $LASTEXITCODE -eq 0
+            Remove-Item -Recurse -Force $probeRoot
           }
-          
-          if ($vs2026 -and $v145Found) {
-            echo "VS2026_AVAILABLE=true" >> $env:GITHUB_OUTPUT
-            echo "✅ Visual Studio 2026 is installed at: $vs2026"
+
+          if ($probeSucceeded) {
+            "VS2026_AVAILABLE=true" | Out-File -FilePath $env:GITHUB_OUTPUT `
+              -Encoding utf8 -Append
+            "VS2026_INSTANCE=$vs2026" | Out-File -FilePath $env:GITHUB_OUTPUT `
+              -Encoding utf8 -Append
+            echo "✅ Visual Studio 2026 with v145 is usable at: $vs2026"
           } else {
-            echo "VS2026_AVAILABLE=false" >> $env:GITHUB_OUTPUT
-            echo "⏭️ VS2026 with v145 toolset is not available on this runner."
+            "VS2026_AVAILABLE=false" | Out-File -FilePath $env:GITHUB_OUTPUT `
+              -Encoding utf8 -Append
+            echo "⏭️ Visual Studio 18 2026 with v145 is not usable on this runner."
             echo "⏭️ Skipping VS2026 build."
             echo ""
             echo "=== Available Visual Studio Installations (via vswhere) ==="
@@ -52,6 +66,8 @@ jobs:
       - name: Checkout repository
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       
       - name: Setup Visual Studio environment
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
@@ -60,9 +76,9 @@ jobs:
       - name: Configure CMake
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
         run: |
-          mkdir build-vs2026
-          cd build-vs2026
-          cmake .. -T v145 -DEGE_BUILD_DEMO=ON
+          cmake -S . -B build-vs2026 -G "Visual Studio 18 2026" -A x64 -T v145 `
+            "-DCMAKE_GENERATOR_INSTANCE=${{ steps.check_vs2026.outputs.VS2026_INSTANCE }}" `
+            -DEGE_BUILD_DEMO=ON -DEGE_ENABLE_CAMERA_CAPTURE=ON
 
       - name: Build
         if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
@@ -71,6 +87,12 @@ jobs:
         run: |
           cd build-vs2026
           cmake --build . --config ${{ matrix.build_type }} --parallel
+
+      - name: Run deterministic CMake contract tests
+        if: steps.check_vs2026.outputs.VS2026_AVAILABLE == 'true'
+        run: >-
+          ctest --test-dir build-vs2026 -C ${{ matrix.build_type }}
+          --output-on-failure --timeout 60 -LE performance
 
   vs2022-build:
     name: MSVC 2022 Build (${{ matrix.build_type }})
@@ -81,6 +103,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       
       - name: Setup Visual Studio environment
         uses: microsoft/setup-msbuild@v1.1
@@ -89,13 +113,17 @@ jobs:
         run: |
           mkdir build-vs2022
           cd build-vs2022
-          cmake .. -T v143 -DEGE_BUILD_DEMO=ON # vs2022
+          cmake .. -T v143 -DEGE_BUILD_DEMO=ON -DEGE_ENABLE_CAMERA_CAPTURE=ON # vs2022
       - name: Build
         env:
           DO_TEST_RELEASE_LIBS: true
         run: |
           cd build-vs2022
           cmake --build . --config ${{ matrix.build_type }} --parallel
+      - name: Run deterministic CMake contract tests
+        run: >-
+          ctest --test-dir build-vs2022 -C ${{ matrix.build_type }}
+          --output-on-failure --timeout 60 -LE performance
 
   vs2019-build:
     name: MSVC 2019 Build (${{ matrix.build_type }})
@@ -107,6 +135,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
         
       - name: Setup Visual Studio environment
         uses: microsoft/setup-msbuild@v1.1
@@ -115,13 +145,17 @@ jobs:
         run: |
           mkdir build-vs2019
           cd build-vs2019
-          cmake .. -T v142 -DEGE_BUILD_DEMO=ON
+          cmake .. -T v142 -DEGE_BUILD_DEMO=ON -DEGE_ENABLE_CAMERA_CAPTURE=ON
       - name: Build
         env:
           DO_TEST_RELEASE_LIBS: true
         run: |
           cd build-vs2019
           cmake --build . --config ${{ matrix.build_type }} --parallel
+      - name: Run deterministic CMake contract tests
+        run: >-
+          ctest --test-dir build-vs2019 -C ${{ matrix.build_type }}
+          --output-on-failure --timeout 60 -LE performance
 
   # 注意：VS2015 (v140) / VS2017 (v141) / VS2010-VS2013 (v100-v120) 已从 CI 中移除
   # 原因：

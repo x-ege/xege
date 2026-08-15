@@ -11,6 +11,8 @@
 
 配合窗口初始化模式 INIT_CHILD 和 INIT_NOBORDER 一起使用，使 EGE 窗口成为其它窗口的子窗口。
 
+此功能仅在 Windows 实现。macOS 上不能将 HWND 附加到 AppKit 窗口，该兼容签名不应使用。
+
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
 <pre><font color=#800080>int </font><font color=#008080>attachHWND</font>(<font color=#800080>HWND</font> hWnd);</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
@@ -27,4 +29,3 @@ hWnd
 示例：
 （无）
 </body>
-

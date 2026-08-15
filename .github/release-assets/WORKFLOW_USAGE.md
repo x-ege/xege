@@ -116,9 +116,14 @@ The workflow:
 ```
 ege-{version}/
 ├── CMakeLists.txt           # 根 CMake 配置 / Root CMake config
+├── README.md                # 使用说明 / Usage guide
+├── BUILD.md                 # 源码构建说明 / Source build guide
+├── RELEASE.md               # 变更记录 / Changelog
+├── LICENSE                  # 许可证 / License
 ├── demo/                    # 示例程序 / Demo programs
 │   ├── *.cpp
 │   ├── *.rc
+│   ├── macos-camera-info.plist # macOS camera permission text
 │   └── gmp-demo/
 ├── doc/                     # 文档 / Documentation
 ├── include/                 # 头文件 / Header files

@@ -20,12 +20,24 @@
 #include <cstdint>
 #include <cwchar>
 
+/*
+ * Objective-C defines BOOL in <objc/objc.h>.  Reuse that definition for every
+ * Apple translation unit, including plain C++, so EGE and AppKit headers can
+ * be included in either order without changing the type across translation
+ * units.  Other non-Windows platforms keep the Win32-compatible 32-bit type.
+ */
+#if defined(__APPLE__)
+#include <objc/objc.h>
+#endif
+
 typedef std::uint8_t  BYTE;
 typedef std::uint16_t WORD;
 typedef std::uint32_t DWORD;
 typedef std::int32_t  LONG;
 typedef std::uint32_t UINT;
+#if !defined(__APPLE__)
 typedef std::int32_t  BOOL;
+#endif
 
 typedef std::intptr_t  LONG_PTR;
 typedef std::uintptr_t ULONG_PTR;
@@ -192,12 +204,53 @@ typedef LPLOGFONTA LPLOGFONT;
 #define PS_ALTERNATE 8
 #endif
 
+#ifndef R2_BLACK
+#define R2_BLACK 1
+#endif
+#ifndef R2_NOTMERGEPEN
+#define R2_NOTMERGEPEN 2
+#endif
+#ifndef R2_MASKNOTPEN
+#define R2_MASKNOTPEN 3
+#endif
+#ifndef R2_NOTCOPYPEN
+#define R2_NOTCOPYPEN 4
+#endif
+#ifndef R2_MASKPENNOT
+#define R2_MASKPENNOT 5
+#endif
+#ifndef R2_NOT
+#define R2_NOT 6
+#endif
+#ifndef R2_XORPEN
+#define R2_XORPEN 7
+#endif
+#ifndef R2_NOTMASKPEN
+#define R2_NOTMASKPEN 8
+#endif
+#ifndef R2_MASKPEN
+#define R2_MASKPEN 9
+#endif
+#ifndef R2_NOTXORPEN
+#define R2_NOTXORPEN 10
+#endif
+#ifndef R2_NOP
+#define R2_NOP 11
+#endif
+#ifndef R2_MERGENOTPEN
+#define R2_MERGENOTPEN 12
+#endif
 #ifndef R2_COPYPEN
 #define R2_COPYPEN 13
 #endif
-
-#ifndef R2_XORPEN
-#define R2_XORPEN 7
+#ifndef R2_MERGEPENNOT
+#define R2_MERGEPENNOT 14
+#endif
+#ifndef R2_MERGEPEN
+#define R2_MERGEPEN 15
+#endif
+#ifndef R2_WHITE
+#define R2_WHITE 16
 #endif
 
 #ifndef SRCCOPY

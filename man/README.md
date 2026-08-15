@@ -45,13 +45,17 @@ mingw-w64 工具链交叉编译 Windows 程序，并使用 Wine 运行。
 
 EGE 项目是一个 CMake 项目， 使用标准的 CMake 构建方式即可编译，熟手可以自行操作。
 
-对于新手来说， 可以参考如下步骤：
+以下是 Windows 新手流程；macOS 请直接参考
+[`BUILD.md` 的原生 Core Graphics 构建章节](../BUILD.md#macos-原生-core-graphics-构建)：
 
 1. 下载安装[CMake](https://cmake.org)
 2. 任意编译器, 推荐安装 Visual Studio 2022 以上的版本以获得最好的体验。以 `Visual Studio 2022` 为例， 在 Windows 商店中， 直接搜索 `Visual Studio Installer` 安装， 之后启动 `Visual Studio Installer` 选择 C++ 开发环境并安装即可。
 3. 启动 `cmake-gui.exe`, 选择源码目录和编译目录，点击 `Configure` 按钮， 选择你的编译器， 然后点击 `Generate` 按钮生成项目文件。之后点击 `Open Project` 打开项目文件， 然后在 Visual Studio 中编译即可。
 
-## 库教程和文档目录（注意：本文档对应的ege版本为 25.11）
+## 库教程和文档目录
+
+> 目录主体源自 EGE 25.11 在线手册；仓库中的平台说明会随 master 更新，
+> 包括下一版本的原生 macOS 支持。历史 25.11 发布包本身不包含该原生库。
 
 * [基本说明](http://xege.org/manual/intro/index.htm)
 * [图形库安装说明](http://xege.org/manual/setup/index.htm)

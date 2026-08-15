@@ -9,23 +9,23 @@
 <font size="4">
 <font size="4" color="#0000FF"><strong>功能：</strong></font>
 
-获取绘图窗口句柄。
+获取 Windows 设备上下文句柄。
 
 <font size="4" color="#0000FF"><strong>声明：</strong></font>
-<pre><font color=#800080>HWND </font><font color=#008080>getHDC</font>();</pre>
+<pre><font color=#800080>HDC </font><font color=#008080>getHDC</font>();</pre>
 <font size="4" color="#0000FF"><strong>参数：</strong></font>
 （无）
 
 <font size="4" color="#0000FF"><strong>返回值：</strong></font>
 
-绘图窗口句柄。
+Windows 上返回绘图设备上下文；macOS 上返回空兼容句柄。
 
 <font size="4" color="#0000FF"><strong>说明：</strong></font>
 
 在 Windows 下，HDC 是设备上下文句柄，得到该句柄后，可以在对应的窗口中使用 GDI/GDI++ 中的各种 API 进行绘图操作。
+macOS 以 CPU PixelSurface/Core Graphics 为绘图模型，应使用 EGE API 或 `getbuffer()`。
 
 示例：
 
 
 </body>
-

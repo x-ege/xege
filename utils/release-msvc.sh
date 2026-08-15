@@ -1,10 +1,44 @@
 #!/usr/bin/env bash
 
+usage() {
+    cat <<'EOF'
+Usage: utils/release-msvc.sh [--force-clean]
+
+Build the local MSVC release libraries in toolset-specific build directories.
+No directory is bulk-deleted by default, although generated library files may
+be overwritten. --force-clean removes exactly build/ and Release/ first; use
+it only when their generated contents can be discarded.
+EOF
+}
+
+FORCE_CLEAN=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    --force-clean)
+        FORCE_CLEAN=true
+        shift
+        ;;
+    *)
+        echo "Unknown option: $1" >&2
+        usage >&2
+        exit 2
+        ;;
+    esac
+done
+
 cd "$(dirname "$0")/.." || exit 1
 
 EGE_DIR=$(pwd)
 
-git clean -ffdx build Release
+if [[ "$FORCE_CLEAN" == "true" ]]; then
+    echo "Removing generated release directories: $EGE_DIR/build $EGE_DIR/Release"
+    cmake -E remove_directory "$EGE_DIR/build"
+    cmake -E remove_directory "$EGE_DIR/Release"
+fi
 declare -a FAILED_TASKS=()
 
 # 环境变量默认值
@@ -44,9 +78,11 @@ function msvcBuild() {
     # 64bit
     if hasX64; then
         echo "Building $vs_version x64..."
+        local build_dir="$EGE_DIR/build/release-$vs_version-x64"
 
         # 先加载项目
-        if ! ./tasks.sh --clean --toolset "$toolset" --arch x64 --target xege --load; then
+        if ! ./tasks.sh --build-dir "$build_dir" --toolset "$toolset" \
+                --arch x64 --target xege --load; then
             echo "Error: Failed to load $vs_version x64 project"
             FAILED_TASKS+=("$vs_version-x64-Load")
         else
@@ -55,8 +91,9 @@ function msvcBuild() {
             DEBUG_SUCCESS=false
 
             # Build Release
-            if ./tasks.sh --release --target xege --build; then
-                cp -rf build/Release/*.lib "Release/lib/$vs_version/x64/" || {
+            if ./tasks.sh --build-dir "$build_dir" --release --target xege --build; then
+                cp -f "$build_dir/Release/graphics.lib" \
+                    "Release/lib/$vs_version/x64/" || {
                     echo "Error: Failed to copy $vs_version x64 Release libs"
                     exit 1
                 }
@@ -68,8 +105,9 @@ function msvcBuild() {
             fi
 
             # Build Debug
-            if ./tasks.sh --debug --target xege --build; then
-                cp -rf build/Debug/*.lib "Release/lib/$vs_version/x64/" || {
+            if ./tasks.sh --build-dir "$build_dir" --debug --target xege --build; then
+                cp -f "$build_dir/Debug/graphicsd.lib" \
+                    "Release/lib/$vs_version/x64/" || {
                     echo "Error: Failed to copy $vs_version x64 Debug libs"
                     exit 1
                 }
@@ -80,11 +118,13 @@ function msvcBuild() {
                 FAILED_TASKS+=("$vs_version-x64-Debug")
             fi
 
-            git clean -ffdx build/Release build/Debug
-
             # 仅当 Release 和 Debug 都构建成功时才运行测试
             if [[ "$RELEASE_SUCCESS" == "true" ]] && [[ "$DEBUG_SUCCESS" == "true" ]]; then
-                ./utils/test-release-libs.sh --toolset "$toolset" --arch x64 --build-dir "build-${vs_version/vs/msvc}-x64"
+                if ! TEST_RELEASE_LIBS=true ./utils/test-release-libs.sh \
+                        --toolset "$toolset" --arch x64 \
+                        --build-dir "$EGE_DIR/build/release-smoke-${vs_version/vs/msvc}-x64"; then
+                    FAILED_TASKS+=("$vs_version-x64-test")
+                fi
             else
                 echo "Skipping test for $vs_version x64 due to build failures"
             fi
@@ -94,9 +134,11 @@ function msvcBuild() {
     # 32bit
     if hasX86; then
         echo "Building $vs_version x86..."
+        local build_dir="$EGE_DIR/build/release-$vs_version-x86"
 
         # 先加载项目
-        if ! ./tasks.sh --clean --toolset "$toolset" --arch Win32 --target xege --load; then
+        if ! ./tasks.sh --build-dir "$build_dir" --toolset "$toolset" \
+                --arch Win32 --target xege --load; then
             echo "Error: Failed to load $vs_version x86 project"
             FAILED_TASKS+=("$vs_version-x86-Load")
         else
@@ -105,8 +147,9 @@ function msvcBuild() {
             DEBUG_SUCCESS=false
 
             # Build Release
-            if ./tasks.sh --release --target xege --build; then
-                cp -rf build/Release/*.lib "Release/lib/$vs_version/x86/" || {
+            if ./tasks.sh --build-dir "$build_dir" --release --target xege --build; then
+                cp -f "$build_dir/Release/graphics.lib" \
+                    "Release/lib/$vs_version/x86/" || {
                     echo "Error: Failed to copy $vs_version x86 Release libs"
                     exit 1
                 }
@@ -118,8 +161,9 @@ function msvcBuild() {
             fi
 
             # Build Debug
-            if ./tasks.sh --debug --target xege --build; then
-                cp -rf build/Debug/*.lib "Release/lib/$vs_version/x86/" || {
+            if ./tasks.sh --build-dir "$build_dir" --debug --target xege --build; then
+                cp -f "$build_dir/Debug/graphicsd.lib" \
+                    "Release/lib/$vs_version/x86/" || {
                     echo "Error: Failed to copy $vs_version x86 Debug libs"
                     exit 1
                 }
@@ -130,11 +174,13 @@ function msvcBuild() {
                 FAILED_TASKS+=("$vs_version-x86-Debug")
             fi
 
-            git clean -ffdx build/Release build/Debug
-
             # 仅当 Release 和 Debug 都构建成功时才运行测试
             if [[ "$RELEASE_SUCCESS" == "true" ]] && [[ "$DEBUG_SUCCESS" == "true" ]]; then
-                ./utils/test-release-libs.sh --toolset "$toolset" --arch Win32 --build-dir "build-${vs_version/vs/msvc}-x86"
+                if ! TEST_RELEASE_LIBS=true ./utils/test-release-libs.sh \
+                        --toolset "$toolset" --arch Win32 \
+                        --build-dir "$EGE_DIR/build/release-smoke-${vs_version/vs/msvc}-x86"; then
+                    FAILED_TASKS+=("$vs_version-x86-test")
+                fi
             else
                 echo "Skipping test for $vs_version x86 due to build failures"
             fi
@@ -151,9 +197,23 @@ msvcBuild "vs2015" "v140" "$BUILD_MSVC2015"
 
 if [[ "$BUILD_MSVC2010" == "true" ]]; then
     echo "Building vs2010 (x64 and x86, handling UTF-8 encoding for old MSVC)..."
+    BOM_CLEANUP_REQUIRED=true
+    cleanup_source_encoding() {
+        if [[ "${BOM_CLEANUP_REQUIRED:-false}" == "true" ]]; then
+            if ! ./utils/handle_utf8_encoding.sh v100 remove_bom; then
+                echo "Error: failed to restore source encoding after VS2010 build" >&2
+                return 1
+            fi
+            BOM_CLEANUP_REQUIRED=false
+        fi
+    }
+    trap cleanup_source_encoding EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
     ./utils/handle_utf8_encoding.sh v100 add_bom
     msvcBuild "vs2010" "v100" "$BUILD_MSVC2010"
-    ./utils/handle_utf8_encoding.sh v100 remove_bom
+    cleanup_source_encoding || exit 1
+    trap - EXIT INT TERM
 else
     echo "Skipping vs2010 build (BUILD_MSVC2010 != true)"
 fi

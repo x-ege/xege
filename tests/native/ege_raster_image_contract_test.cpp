@@ -1,5 +1,6 @@
 #include "test_support.h"
 
+#include <algorithm>
 #include <array>
 #include <filesystem>
 #include <iostream>
@@ -125,6 +126,142 @@ void testCopyAndRasterOps()
     ege::setwritemode(R2_COPYPEN, target.value);
 }
 
+void testBasicLineAntialiasingAndXor()
+{
+    ege_test::Image image(16, 16);
+    EGE_CHECK(image.value != nullptr);
+    ege::setbkcolor(kBackground, image.value);
+    ege::cleardevice(image.value);
+    ege::ege_enable_aa(false, image.value);
+    ege::setlinecolor(kLine, image.value);
+    ege::setlinestyle(PS_SOLID, 0, 1, image.value);
+
+    ege::line(2, 4, 12, 4, image.value);
+    EGE_CHECK(ege::getpixel(6, 4, image.value) == kLine);
+    EGE_CHECK(ege::getpixel(6, 3, image.value) == kBackground);
+    EGE_CHECK(ege::getpixel(6, 5, image.value) == kBackground);
+
+    ege::line(8, 7, 8, 13, image.value);
+    EGE_CHECK(ege::getpixel(8, 10, image.value) == kLine);
+    EGE_CHECK(ege::getpixel(7, 10, image.value) == kBackground);
+    EGE_CHECK(ege::getpixel(9, 10, image.value) == kBackground);
+
+    ege::cleardevice(image.value);
+    ege::setwritemode(R2_XORPEN, image.value);
+    ege::line(2, 4, 12, 4, image.value);
+    const ege::color_t xorResult = (kBackground & 0xFF000000U) |
+        ((kBackground ^ kLine) & 0x00FFFFFFU);
+    EGE_CHECK(ege::getpixel(6, 4, image.value) == xorResult);
+    EGE_CHECK(EGEGET_A(ege::getpixel(6, 4, image.value)) ==
+        EGEGET_A(kBackground));
+    ege::line(2, 4, 12, 4, image.value);
+    EGE_CHECK(ege::getpixel(6, 4, image.value) == kBackground);
+    ege::setwritemode(R2_COPYPEN, image.value);
+}
+
+void testAllPrimitiveRasterOps()
+{
+    ege_test::Image image(16, 16);
+    EGE_CHECK(image.value != nullptr);
+    ege::ege_enable_aa(false, image.value);
+    ege::setlinecolor(kLine, image.value);
+    ege::setlinestyle(PS_SOLID, 0, 1, image.value);
+
+    const auto withDestinationAlpha = [](ege::color_t rgb) {
+        return (kBackground & 0xFF000000U) | (rgb & 0x00FFFFFFU);
+    };
+    const std::array<std::pair<int, ege::color_t>, 16> operations = {{
+        {R2_BLACK, withDestinationAlpha(0x00000000U)},
+        {R2_NOTMERGEPEN, withDestinationAlpha(~(kBackground | kLine))},
+        {R2_MASKNOTPEN, withDestinationAlpha(kBackground & ~kLine)},
+        {R2_NOTCOPYPEN, withDestinationAlpha(~kLine)},
+        {R2_MASKPENNOT, withDestinationAlpha(kLine & ~kBackground)},
+        {R2_NOT, withDestinationAlpha(~kBackground)},
+        {R2_XORPEN, withDestinationAlpha(kBackground ^ kLine)},
+        {R2_NOTMASKPEN, withDestinationAlpha(~(kBackground & kLine))},
+        {R2_MASKPEN, withDestinationAlpha(kBackground & kLine)},
+        {R2_NOTXORPEN, withDestinationAlpha(~(kBackground ^ kLine))},
+        {R2_NOP, kBackground},
+        {R2_MERGENOTPEN, withDestinationAlpha(kBackground | ~kLine)},
+        {R2_COPYPEN, kLine},
+        {R2_MERGEPENNOT, withDestinationAlpha(kLine | ~kBackground)},
+        {R2_MERGEPEN, withDestinationAlpha(kBackground | kLine)},
+        {R2_WHITE, withDestinationAlpha(0x00FFFFFFU)},
+    }};
+
+    for (const auto& operation : operations) {
+        ege::setbkcolor(kBackground, image.value);
+        ege::cleardevice(image.value);
+        ege::setwritemode(operation.first, image.value);
+        ege::line(2, 4, 12, 4, image.value);
+        EGE_CHECK(ege::getpixel(6, 4, image.value) == operation.second);
+    }
+    ege::setwritemode(R2_COPYPEN, image.value);
+}
+
+void testRasterOpMiterBoundsUnderTransform()
+{
+    constexpr int size = 200;
+    ege_test::Image copyImage(size, size);
+    ege_test::Image xorImage(size, size);
+    EGE_CHECK(copyImage.value != nullptr && xorImage.value != nullptr);
+
+    const ege::color_t black = EGERGB(0, 0, 0);
+    const ege::color_t white = EGERGB(255, 255, 255);
+    const int narrowTriangle[] = {85, 170, 100, 80, 115, 170};
+    const ege::ege_transform_matrix transform = {
+        1.0f, 0.15f, 0.35f, 1.0f, -30.0f, -5.0f};
+
+    ege::PIMAGE images[] = {copyImage.value, xorImage.value};
+    for (ege::PIMAGE image : images) {
+        ege::setbkcolor(black, image);
+        ege::cleardevice(image);
+        ege::ege_enable_aa(false, image);
+        ege::setlinecolor(white, image);
+        ege::setlinestyle(PS_SOLID, 0, 20, image);
+        ege::setlinejoin(ege::LINEJOIN_MITER, 10.0f, image);
+        ege::ege_set_transform(&transform, image);
+    }
+
+    ege::drawpoly(3, narrowTriangle, copyImage.value);
+    ege::setwritemode(R2_XORPEN, xorImage.value);
+    ege::drawpoly(3, narrowTriangle, xorImage.value);
+
+    const ege::color_t* copyPixels = ege::getbuffer(copyImage.value);
+    const ege::color_t* xorPixels = ege::getbuffer(xorImage.value);
+    EGE_CHECK(copyPixels != nullptr && xorPixels != nullptr);
+    const std::size_t pixelCount = static_cast<std::size_t>(size) * size;
+    EGE_CHECK(std::count(copyPixels, copyPixels + pixelCount, white) > 1000);
+    // On black, COPY white and XOR white have identical output.  Comparing the
+    // full transformed acute join catches any pixels omitted from the ROP dirty
+    // region rather than sampling only the triangle's ordinary edges.
+    EGE_CHECK(std::equal(copyPixels, copyPixels + pixelCount, xorPixels));
+}
+
+void testRasterOpPreservesPremultipliedAlpha()
+{
+    ege_test::Image image(16, 16);
+    EGE_CHECK(image.value != nullptr);
+    const ege::color_t destination = EGEARGB(128, 200, 0, 0);
+    const ege::color_t source = EGERGB(255, 255, 255);
+    ege::setbkcolor(destination, image.value);
+    ege::cleardevice(image.value);
+    ege::ege_enable_aa(false, image.value);
+    ege::setlinecolor(source, image.value);
+    ege::setlinestyle(PS_SOLID, 0, 1, image.value);
+    ege::setwritemode(R2_XORPEN, image.value);
+    ege::line(2, 4, 12, 4, image.value);
+
+    const ege::color_t actual = ege::getpixel(6, 4, image.value);
+    const ege::color_t expected = ege::color_premultiply(
+        EGEARGB(128, 200 ^ 255, 0 ^ 255, 0 ^ 255));
+    EGE_CHECK(actual == expected);
+    EGE_CHECK(EGEGET_A(actual) == 128);
+    EGE_CHECK(EGEGET_R(actual) <= EGEGET_A(actual));
+    EGE_CHECK(EGEGET_G(actual) <= EGEGET_A(actual));
+    EGE_CHECK(EGEGET_B(actual) <= EGEGET_A(actual));
+}
+
 void testPatternFillContract()
 {
     ege_test::Image image(kWidth, kHeight);
@@ -226,6 +363,10 @@ int main()
 {
     testRasterAndPixelAccess();
     testCopyAndRasterOps();
+    testBasicLineAntialiasingAndXor();
+    testAllPrimitiveRasterOps();
+    testRasterOpMiterBoundsUnderTransform();
+    testRasterOpPreservesPremultipliedAlpha();
     testPatternFillContract();
     testFailedResizePreservesImage();
     testBufferAndStorageErrors();

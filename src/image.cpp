@@ -890,6 +890,9 @@ void IMAGE::set_pattern(Gdiplus::Brush* brush)
 void IMAGE::enable_anti_alias(bool enable)
 {
     m_aa = enable;
+    if (m_renderTarget != NULL) {
+        m_renderTarget->setAntialiasing(enable);
+    }
 #ifdef EGE_GDIPLUS
     if (NULL != m_graphics) {
         m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);

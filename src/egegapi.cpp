@@ -22,9 +22,15 @@
 #include "ege_extension.h"
 #include "gdi_conv.h"
 
+#if defined(EGE_BACKEND_COREGRAPHICS)
+#include "backend/macos/MacWindow.h"
+#endif
+
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
+#include <cwchar>
 #include <algorithm>
 #include <vector>
 
@@ -3011,9 +3017,72 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     getflush();
     return ret;
 }
+#elif defined(EGE_BACKEND_COREGRAPHICS)
+static std::size_t completeUTF8PrefixLength(
+    const std::string& value, std::size_t capacity)
+{
+    std::size_t count = std::min(value.size(), capacity);
+    // If the first omitted byte is a continuation byte, capacity split a
+    // multibyte scalar. Back up to (and exclude) that scalar's lead byte.
+    while (count > 0 && count < value.size() &&
+           (static_cast<unsigned char>(value[count]) & 0xC0U) == 0x80U) {
+        --count;
+    }
+    return count;
+}
+
+int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
+{
+    if (buf == nullptr || len <= 0) {
+        return 0;
+    }
+    buf[0] = '\0';
+    std::string value;
+    if (!backend::MacWindow::inputBox(title, text, &value)) {
+        return 0;
+    }
+    const std::size_t count = completeUTF8PrefixLength(
+        value, static_cast<std::size_t>(len - 1));
+    std::memcpy(buf, value.data(), count);
+    buf[count] = '\0';
+    return static_cast<int>(count);
+}
+
+int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len)
+{
+    if (buf == nullptr || len <= 0) {
+        return 0;
+    }
+    buf[0] = L'\0';
+    std::string value;
+    const std::string titleUTF8 = w2utf8(title ? title : L"");
+    const std::string textUTF8 = w2utf8(text ? text : L"");
+    if (!backend::MacWindow::inputBox(
+            titleUTF8.c_str(), textUTF8.c_str(), &value)) {
+        return 0;
+    }
+    const std::wstring wideValue = utf82w(value.c_str());
+    const std::size_t count = std::min<std::size_t>(
+        wideValue.size(), static_cast<std::size_t>(len - 1));
+    std::wmemcpy(buf, wideValue.data(), count);
+    buf[count] = L'\0';
+    return static_cast<int>(count);
+}
 #else
-int inputbox_getline(const char* title, const char* text, LPSTR buf, int len) { return 0; }
-int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int len) { return 0; }
+int inputbox_getline(const char*, const char*, LPSTR buf, int len)
+{
+    if (buf != nullptr && len > 0) {
+        buf[0] = '\0';
+    }
+    return 0;
+}
+int inputbox_getline(const wchar_t*, const wchar_t*, LPWSTR buf, int len)
+{
+    if (buf != nullptr && len > 0) {
+        buf[0] = L'\0';
+    }
+    return 0;
+}
 #endif
 
 static double static_frameRate = 0.0;         /* 帧率 */

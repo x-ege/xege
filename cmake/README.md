@@ -3,11 +3,28 @@
 CMake 现在把“目标平台”和“绘制后端”作为两个独立概念：宿主机是
 macOS/Linux 不再自动切换为 Windows 交叉编译。
 
+## 主要选项
+
+| 选项 | 默认值 | 说明 |
+| --- | --- | --- |
+| `EGE_BUILD_DEMO` | 根项目 ON | 生成 demo 目标 |
+| `EGE_BUILD_TEST` | 根项目 ON | 注册目标平台的 CTest 套件 |
+| `EGE_ENABLE_WINDOW_TESTS` | OFF | 注册会显示窗口的 macOS 测试；不应在 headless CI 开启 |
+| `EGE_BUILD_TEMP` | 根项目 ON | 构建 gitignored `temp/` 中的本地程序 |
+| `EGE_DEFAULT_BACKEND` | `AUTO` | Windows→`GDI`，macOS→`COREGRAPHICS`；Linux `CAIRO` 尚未实现 |
+| `EGE_ENABLE_OPENGL` | OFF | 实验后端开关；当前源码不完整时 fail-fast |
+| `EGE_ENABLE_CAMERA_CAPTURE` | 动态 | C++17 且 ccap 子模块完整时 ON，否则 OFF |
+| `EGE_ENABLE_CPP17` | 编译器探测 | 启用 C++17 内部路径 |
+| `EGE_DISABLE_DEBUG_INFO` | OFF | MSVC 下禁用调试信息，用于特定发布兼容场景 |
+| `EGE_CLEAR_OPTIONS_CACHE` | OFF | 一次性清除上述 EGE 选项缓存并重新探测 |
+| `CMAKE_OSX_DEPLOYMENT_TARGET` | macOS 原生为 `11.0` | 可由调用者显式覆盖；正式制品固定 11.0 |
+
 ## macOS 原生构建
 
 ```sh
 cmake -S . -B build/native-coregraphics \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
   -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
   -DEGE_ENABLE_OPENGL=OFF \
   -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
@@ -16,7 +33,7 @@ cmake -S . -B build/native-coregraphics \
   -DEGE_BUILD_TEMP=OFF
 cmake --build build/native-coregraphics --parallel
 cmake --build build/native-coregraphics --target graph_5star --parallel
-ctest --test-dir build/native-coregraphics --output-on-failure
+cmake -E chdir build/native-coregraphics ctest --output-on-failure
 file build/native-coregraphics/demo/graph_5star
 ```
 

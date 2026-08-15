@@ -1,11 +1,47 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: utils/release-mingw.sh [--force-clean]
+
+Build the local MinGW release libraries in architecture-specific build
+directories. No directory is bulk-deleted by default, although generated
+library files may be overwritten. --force-clean removes exactly build/ and
+Release/ first; use it only when their generated contents can be discarded.
+EOF
+}
+
+FORCE_CLEAN=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    --force-clean)
+        FORCE_CLEAN=true
+        shift
+        ;;
+    *)
+        echo "Unknown option: $1" >&2
+        usage >&2
+        exit 2
+        ;;
+    esac
+done
+
 cd "$(dirname "$0")/.." || exit 1
 
 EGE_DIR=$(pwd)
 
-git clean -ffdx build Release
-set -e
+if [[ "$FORCE_CLEAN" == "true" ]]; then
+    echo "Removing generated release directories: $EGE_DIR/build $EGE_DIR/Release"
+    cmake -E remove_directory "$EGE_DIR/build"
+    cmake -E remove_directory "$EGE_DIR/Release"
+fi
 set -x
 
 # 环境变量默认值
@@ -154,12 +190,13 @@ function mingwBuild() {
     local arch="$1"
     local arch_flag="$2"
     local output_dir="$3"
+    local build_dir="$EGE_DIR/build/release-mingw-$arch"
 
     echo "Building MinGW $arch..."
 
     if ./tasks.sh --release \
+        --build-dir "$build_dir" \
         --target xege \
-        --clean \
         --load \
         --build \
         -- \
@@ -173,30 +210,18 @@ function mingwBuild() {
 
         echo "Build $arch successful!"
 
-        # 显示生成的文件（新的目录结构: build/Release）
+        # Copy only the public EGE archive; never collect test/helper archives.
         echo "Generated files:"
         mkdir -p "Release/lib/$output_dir"
-        # MinGW 环境下，Release 构建产物在 build/Release 目录
-        find build/Release -type f -name "*.a" -exec cp {} "Release/lib/$output_dir/" \; 2>/dev/null ||
-            find build -maxdepth 1 -type f -name "*.a" -exec cp {} "Release/lib/$output_dir/" \;
+        cp -f "$build_dir/libgraphics.a" "Release/lib/$output_dir/"
         ls -l "Release/lib/$output_dir"
 
         # 验证生成的库文件架构
         echo ""
         echo "Verifying library architecture for $arch build..."
         local verify_failed=false
-        local found_libs=false
-        for lib_file in "Release/lib/$output_dir"/*.a; do
-            if [[ -f "$lib_file" ]]; then
-                found_libs=true
-                if ! verifyLibArchitecture "$lib_file" "$arch"; then
-                    verify_failed=true
-                fi
-            fi
-        done
-
-        if [[ "$found_libs" != "true" ]]; then
-            echo "✗ Error: No .a library files found in Release/lib/$output_dir"
+        local lib_file="Release/lib/$output_dir/libgraphics.a"
+        if ! verifyLibArchitecture "$lib_file" "$arch"; then
             verify_failed=true
         fi
 
@@ -208,17 +233,16 @@ function mingwBuild() {
         fi
         echo ""
 
-        ./utils/test-release-libs.sh \
-            --build-dir "build-mingw-$arch" \
-            -- \
-            -G "MinGW Makefiles" \
-            -DCMAKE_C_COMPILER="$CC" \
-            -DCMAKE_CXX_COMPILER="$CXX" \
-            -DCMAKE_RC_COMPILER="$RC" \
-            -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)" \
-            -DCMAKE_C_FLAGS="$arch_flag" \
-            -DCMAKE_CXX_FLAGS="$arch_flag"
-        if [[ $? -ne 0 ]]; then
+        if ! TEST_RELEASE_LIBS=true ./utils/test-release-libs.sh \
+                --build-dir "$EGE_DIR/build/release-smoke-mingw-$arch" \
+                -- \
+                -G "MinGW Makefiles" \
+                -DCMAKE_C_COMPILER="$CC" \
+                -DCMAKE_CXX_COMPILER="$CXX" \
+                -DCMAKE_RC_COMPILER="$RC" \
+                -DCMAKE_MAKE_PROGRAM="$(which mingw32-make)" \
+                -DCMAKE_C_FLAGS="$arch_flag" \
+                -DCMAKE_CXX_FLAGS="$arch_flag"; then
             echo "Test for $arch failed!"
             FAILED_TASKS+=("mingw-$arch-test")
         fi

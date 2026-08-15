@@ -104,12 +104,21 @@ jobs:
           # Create build-type specific directory structure
           mkdir -p ${BUILD_TYPE}/lib/mingw64-msys2
 
-          # Copy built libraries
-          find build-mingw -type f -name "*.a" -exec cp {} ${BUILD_TYPE}/lib/mingw64-msys2/ \;
+          # Publish only the SDK library; test_framework is an internal target.
+          test -f build-mingw/libgraphics.a
+          cp build-mingw/libgraphics.a ${BUILD_TYPE}/lib/mingw64-msys2/
 
           # List generated files
           echo "Generated MinGW libraries for $BUILD_TYPE:"
           ls -la ${BUILD_TYPE}/lib/mingw64-msys2/
+
+      - name: Run deterministic CMake contract tests
+        shell: msys2 {0}
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+        run: >-
+          ctest --test-dir build-mingw -C "$BUILD_TYPE"
+          --output-on-failure --timeout 60 -LE performance
 
       - name: Upload MinGW artifacts
         uses: actions/upload-artifact@v4
@@ -181,7 +190,11 @@ jobs:
         run: |
           $buildType = $env:BUILD_TYPE
           New-Item -ItemType Directory -Force -Path "$buildType/lib/mingw64-codeblocks"
-          Get-ChildItem -Path "build-winlibs-gcc14" -Recurse -Filter "*.a" | Copy-Item -Destination "$buildType/lib/mingw64-codeblocks/"
+          $library = "build-winlibs-gcc14/libgraphics.a"
+          if (-not (Test-Path -Path $library -PathType Leaf)) {
+            throw "Expected SDK library was not built: $library"
+          }
+          Copy-Item $library -Destination "$buildType/lib/mingw64-codeblocks/"
           echo "Generated libraries:"
           Get-ChildItem "$buildType/lib/mingw64-codeblocks/"
 
@@ -255,7 +268,11 @@ jobs:
         run: |
           $buildType = $env:BUILD_TYPE
           New-Item -ItemType Directory -Force -Path "$buildType/lib/mingw64-clion"
-          Get-ChildItem -Path "build-winlibs-gcc13" -Recurse -Filter "*.a" | Copy-Item -Destination "$buildType/lib/mingw64-clion/"
+          $library = "build-winlibs-gcc13/libgraphics.a"
+          if (-not (Test-Path -Path $library -PathType Leaf)) {
+            throw "Expected SDK library was not built: $library"
+          }
+          Copy-Item $library -Destination "$buildType/lib/mingw64-clion/"
           echo "Generated libraries:"
           Get-ChildItem "$buildType/lib/mingw64-clion/"
 

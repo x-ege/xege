@@ -121,6 +121,7 @@ public:
     virtual void setFillStyle(FillStyle style, color_t color) = 0;
     virtual void setRasterOp(RasterOp rop) = 0;
     virtual void setWritingMode(int mode) = 0;
+    virtual void setAntialiasing(bool enabled) = 0;
 
     // --- Color queries ---
     virtual color_t getLineColor()  const = 0;

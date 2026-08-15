@@ -27,10 +27,20 @@ public:
         lastWidth  = width;
         lastHeight = height;
     }
-    void onKey(std::uint32_t, bool, bool) override { ++keyEvents; }
+    void onKey(std::uint32_t key, bool pressed, bool) override
+    {
+        ++keyEvents;
+        recordedKeys.emplace_back(key, pressed);
+    }
     void onText(std::uint32_t) override { ++textEvents; }
     void onMouseMove(int, int) override { ++mouseMoveEvents; }
-    void onMouseButton(int, bool, int, int) override { ++mouseButtonEvents; }
+    void onMouseButton(int button, bool, int, int, int clickCount) override
+    {
+        ++mouseButtonEvents;
+        lastMouseButton = button;
+        lastClickCount = clickCount;
+        maxClickCount = std::max(maxClickCount, clickCount);
+    }
     void onMouseWheel(float, float, int, int) override { ++mouseWheelEvents; }
 
     int closeRequests{0};
@@ -42,6 +52,10 @@ public:
     int mouseWheelEvents{0};
     int lastWidth{0};
     int lastHeight{0};
+    int lastMouseButton{-1};
+    int lastClickCount{0};
+    int maxClickCount{0};
+    std::vector<std::pair<std::uint32_t, bool>> recordedKeys;
     bool allowClose{true};
 };
 
@@ -182,9 +196,30 @@ int main()
                                            eventNumber:3
                                             clickCount:1
                                               pressure:0];
+        NSEvent* doubleClick = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown
+                                                    location:NSMakePoint(6, 6)
+                                               modifierFlags:0
+                                                   timestamp:0
+                                                windowNumber:nativeWindow.windowNumber
+                                                     context:nil
+                                                 eventNumber:4
+                                                  clickCount:2
+                                                    pressure:1];
         [contentView mouseMoved:mouseMove];
         [contentView mouseDown:mouseDown];
         [contentView mouseUp:mouseUp];
+        [contentView mouseDown:doubleClick];
+
+        CGEventRef xButtonCGEvent = CGEventCreateMouseEvent(
+            nullptr, kCGEventOtherMouseDown, CGPointMake(7, 7), kCGMouseButtonCenter);
+        NSEvent* xButtonEvent = nil;
+        if (xButtonCGEvent != nullptr) {
+            CGEventSetIntegerValueField(
+                xButtonCGEvent, kCGMouseEventButtonNumber, 3);
+            xButtonEvent = [NSEvent eventWithCGEvent:xButtonCGEvent];
+            [contentView otherMouseDown:xButtonEvent];
+            CFRelease(xButtonCGEvent);
+        }
 
         CGEventRef scrollCGEvent = CGEventCreateScrollWheelEvent(
             nullptr, kCGScrollEventUnitLine, 1, 1);
@@ -199,10 +234,97 @@ int main()
         if (sink.keyEvents - keyEventsBefore != 2
             || sink.textEvents - textEventsBefore != 1
             || sink.mouseMoveEvents - mouseMoveEventsBefore != 1
-            || sink.mouseButtonEvents - mouseButtonEventsBefore != 2
+            || sink.mouseButtonEvents - mouseButtonEventsBefore != 4
             || sink.mouseWheelEvents - mouseWheelEventsBefore != 1) {
             return fail("keyboard, text, mouse, or wheel event forwarding is incomplete");
         }
+        if (sink.lastMouseButton != 3 || sink.lastClickCount != 1
+            || sink.maxClickCount != 2) {
+            return fail("double-click or extended mouse button forwarding is incomplete");
+        }
+
+        const auto sendModifier = ^(unsigned short keyCode,
+                                    NSEventModifierFlags flags) {
+            NSEvent* event = [NSEvent keyEventWithType:NSEventTypeFlagsChanged
+                                              location:NSZeroPoint
+                                         modifierFlags:flags
+                                             timestamp:0
+                                          windowNumber:nativeWindow.windowNumber
+                                               context:nil
+                                            characters:@""
+                           charactersIgnoringModifiers:@""
+                                             isARepeat:NO
+                                               keyCode:keyCode];
+            [contentView flagsChanged:event];
+        };
+        const std::size_t modifierStart = sink.recordedKeys.size();
+        sendModifier(0x38, NSEventModifierFlagShift); // left down
+        sendModifier(0x3C, NSEventModifierFlagShift); // right down
+        sendModifier(0x38, NSEventModifierFlagShift); // left up
+        sendModifier(0x3C, 0);                        // right up
+        sendModifier(0x3B, NSEventModifierFlagControl); // left down
+        sendModifier(0x3E, NSEventModifierFlagControl); // right down
+        sendModifier(0x3B, NSEventModifierFlagControl); // left up
+        sendModifier(0x3E, 0);                          // right up
+        const std::vector<std::pair<std::uint32_t, bool>> expectedModifiers = {
+            {0xA0, true}, {0xA1, true}, {0xA0, false}, {0xA1, false},
+            {0xA2, true}, {0xA3, true}, {0xA2, false}, {0xA3, false},
+        };
+        if (sink.recordedKeys.size() - modifierStart != expectedModifiers.size()
+            || !std::equal(expectedModifiers.begin(), expectedModifiers.end(),
+                sink.recordedKeys.begin() + static_cast<std::ptrdiff_t>(modifierStart))) {
+            return fail("left/right modifier state became stuck");
+        }
+
+        // Losing key status must release every held physical modifier through
+        // the delegate, otherwise graphics.cpp can retain a generic modifier
+        // after the user releases it in another application. The reset is
+        // idempotent, and Caps Lock must not be treated as a held key.
+        sendModifier(0x38, NSEventModifierFlagShift); // left Shift down
+        sendModifier(0x3C, NSEventModifierFlagShift); // right Shift down
+        sendModifier(0x3B, NSEventModifierFlagShift | NSEventModifierFlagControl);
+        sendModifier(0x3E, NSEventModifierFlagShift | NSEventModifierFlagControl);
+        sendModifier(0x3A, NSEventModifierFlagShift |
+            NSEventModifierFlagControl | NSEventModifierFlagOption);
+        sendModifier(0x3D, NSEventModifierFlagShift |
+            NSEventModifierFlagControl | NSEventModifierFlagOption);
+        sendModifier(0x37, NSEventModifierFlagShift |
+            NSEventModifierFlagControl | NSEventModifierFlagOption |
+            NSEventModifierFlagCommand);
+        sendModifier(0x36, NSEventModifierFlagShift |
+            NSEventModifierFlagControl | NSEventModifierFlagOption |
+            NSEventModifierFlagCommand);
+        const std::size_t focusResetStart = sink.recordedKeys.size();
+        [nativeWindow.delegate windowDidResignKey:
+            [NSNotification notificationWithName:NSWindowDidResignKeyNotification
+                                          object:nativeWindow]];
+        const std::vector<std::pair<std::uint32_t, bool>> expectedFocusReset = {
+            {0xA0, false}, {0xA1, false}, {0xA2, false}, {0xA3, false},
+            {0xA4, false}, {0xA5, false}, {0x5B, false}, {0x5C, false},
+        };
+        if (sink.recordedKeys.size() - focusResetStart != expectedFocusReset.size()
+            || !std::equal(expectedFocusReset.begin(), expectedFocusReset.end(),
+                sink.recordedKeys.begin() + static_cast<std::ptrdiff_t>(focusResetStart))) {
+            return fail("window focus loss did not release held modifiers");
+        }
+        const std::size_t afterFocusReset = sink.recordedKeys.size();
+        [nativeWindow.delegate windowDidResignKey:
+            [NSNotification notificationWithName:NSWindowDidResignKeyNotification
+                                          object:nativeWindow]];
+        if (sink.recordedKeys.size() != afterFocusReset) {
+            return fail("window focus loss emitted duplicate modifier releases");
+        }
+
+        const std::size_t capsStart = sink.recordedKeys.size();
+        sendModifier(0x39, NSEventModifierFlagCapsLock);
+        [nativeWindow.delegate windowDidResignKey:
+            [NSNotification notificationWithName:NSWindowDidResignKeyNotification
+                                          object:nativeWindow]];
+        if (sink.recordedKeys.size() != capsStart + 1
+            || sink.recordedKeys.back() != std::make_pair<std::uint32_t, bool>(0x14, true)) {
+            return fail("Caps Lock focus-loss semantics changed unexpectedly");
+        }
+        sendModifier(0x39, 0);
 
         // Exercise padded input rows. MacWindow must copy only the visible
         // BGRA/PARGB pixels and must not retain this vector's data pointer.

@@ -11,12 +11,12 @@
 **特性：**
 - 自动检测编译器类型和版本
 - 自动选择对应的静态库目录
-- 支持 MSVC (VS2017-VS2026) 和 MinGW-w64 编译器
+- 支持发布包实际携带的 MSVC (VS2019/VS2022) 和 MinGW-w64 编译器
 - 支持 macOS AppleClang 原生构建和 Linux MinGW 交叉编译环境
 - 包含 demo 目录下所有示例程序的编译配置
 
 **库目录映射：**
-- MSVC: 根据编译器版本自动选择 `lib/vs2017/`, `lib/vs2019/`, `lib/vs2022/` 等
+- MSVC: 根据编译器版本自动选择 `lib/vs2019/` 或 `lib/vs2022/`
 - MinGW (Windows): 默认使用 `lib/mingw64/`
 - MinGW (Ubuntu): 使用 `lib/mingw-w64-debian/`
 - AppleClang (macOS): 使用 `lib/macOS/` 原生通用静态库
@@ -25,15 +25,18 @@
 
 ## 发布包结构
 
-发布包（如 `ege-25.11.7z`）解压后的目录结构如下：
+下一版本发布包（如 `ege-{version}.7z`）解压后的目录结构如下：
 
 ```
-ege-25.11/
+ege-{version}/
 ├── CMakeLists.txt          # 根目录 CMake 配置（来自本目录）
+├── README.md / BUILD.md   # 使用与构建指南
+├── RELEASE.md / LICENSE  # 变更记录与许可证
 ├── demo/                   # 示例程序源代码（不含编译配置）
 │   ├── *.cpp               # 示例程序
 │   ├── *.rc                # 资源文件
 │   ├── *.jpg, *.png        # 图片资源
+│   ├── macos-camera-info.plist # macOS camera demo 权限说明
 │   └── gmp-demo/           # GMP 示例（如果有）
 ├── doc/                    # 文档
 ├── include/                # 头文件
@@ -57,7 +60,7 @@ ege-25.11/
 用户下载并解压发布包后，可以直接使用 CMake 编译示例程序：
 
 ```bash
-cd ege-25.11
+cd ege-<version>
 mkdir build
 cd build
 cmake ..
@@ -117,8 +120,9 @@ cmake --build .
 
 1. **build-msvc-libraries**: 编译 MSVC 版本静态库
 2. **build-mingw-windows-libraries**: 编译 MinGW Windows 版本静态库
-3. **build-cross-libraries**: 编译交叉编译版本静态库
-4. **create-release-package**: 组装发布包并创建压缩包
+3. **build-linux-cross-library**: 在 Linux 上交叉编译 Windows/MinGW 静态库
+4. **build-macos-native-library**: 生成 arm64/x86_64 universal macOS 静态库
+5. **create-release-package**: 组装发布包并创建压缩包
 
 ### 添加新的编译器支持
 
@@ -139,8 +143,14 @@ cmake --build .
 3. **Demo 文件**: 发布包中的 demo 目录不包含 `CMakeLists.txt` 和 `ege_release.cmake`，这些文件仅用于源码编译
 
 4. **版本兼容性**: 
-   - VS2022/2019/2017 的静态库相互兼容
+   - 当前正式包仅提供 VS2022/VS2019 目录；旧 MSVC 需从源码构建
    - 不同 MinGW 版本的静态库可能不兼容，因此分别提供
+
+5. **macOS**:
+   - 原生库是 `arm64`/`x86_64` universal archive，最低目标为 macOS 11.0
+   - CMake 会链接 AppKit、CoreGraphics、CoreText、ImageIO、Foundation、
+     AVFoundation、CoreVideo、CoreMedia、Accelerate、AVFAudio 和 AudioToolbox
+   - camera demo 已内嵌 `NSCameraUsageDescription`，首次运行仍会由系统请求摄像头权限
 
 ## 相关链接
 

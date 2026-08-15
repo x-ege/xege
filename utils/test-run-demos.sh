@@ -1,118 +1,128 @@
 #!/usr/bin/env bash
 
-# 自动化测试 Demo 可执行文件
-# 每个 Demo 运行最多 5 秒，超时后自动终止
-# 如果 Demo 在超时前异常退出，则视为错误
+# Launch demo executables one at a time. Surviving the timeout is a smoke-test
+# success; exiting early with a non-zero status is a failure. This test creates
+# visible windows and must be run only in an interactive desktop session.
 
-set -e
+set -u
 
 cd "$(dirname "$0")/.." || exit 1
-
-RELEASE_DIR="$(pwd)/Release"
+RELEASE_DIR="$(pwd -P)/Release"
 TIMEOUT_SECONDS=5
+INCLUDE_CAMERA=false
 
-# 检查 Release 目录是否存在
-if [[ ! -d "$RELEASE_DIR" ]]; then
-    echo "Error: Release directory not found at $RELEASE_DIR"
-    echo "Please run the release script first to generate executables:"
-    echo "  ./utils/release.sh"
-    exit 1
-fi
-
-# 搜索所有 exe 文件
-mapfile -t EXE_FILES < <(find "$RELEASE_DIR" -name "*.exe" -type f 2>/dev/null | sort)
-
-if [[ ${#EXE_FILES[@]} -eq 0 ]]; then
-    echo "Error: No executable files found in $RELEASE_DIR"
-    echo "Please run the release script first to generate executables:"
-    echo "  ./utils/release.sh"
-    exit 1
-fi
-
-TOTAL_COUNT=${#EXE_FILES[@]}
-TOTAL_TIME=$((TOTAL_COUNT * TIMEOUT_SECONDS))
-
-echo "Found ${TOTAL_COUNT} executable(s) to test:"
-for exe in "${EXE_FILES[@]}"; do
-    # 显示相对于 Release 目录的路径
-    rel_path="${exe#$RELEASE_DIR/}"
-    echo "  - $rel_path"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --directory)
+        [[ $# -ge 2 ]] || { echo "--directory requires a path" >&2; exit 2; }
+        RELEASE_DIR="$2"
+        shift 2
+        ;;
+    --timeout)
+        [[ $# -ge 2 && "$2" =~ ^[1-9][0-9]*$ ]] || {
+            echo "--timeout requires a positive integer" >&2
+            exit 2
+        }
+        TIMEOUT_SECONDS="$2"
+        shift 2
+        ;;
+    --include-camera)
+        INCLUDE_CAMERA=true
+        shift
+        ;;
+    -h|--help)
+        echo "usage: $0 [--directory path] [--timeout seconds] [--include-camera]"
+        exit 0
+        ;;
+    *)
+        echo "Unknown option: $1" >&2
+        exit 2
+        ;;
+    esac
 done
-echo ""
-echo "Estimated total time: ${TOTAL_TIME}s (max ${TIMEOUT_SECONDS}s per demo)"
-echo ""
 
-# 记录成功运行的可执行文件
-declare -a SUCCESS_EXES=()
-CURRENT_INDEX=0
+if [[ ! -d "$RELEASE_DIR" ]]; then
+    echo "Error: demo directory not found: $RELEASE_DIR" >&2
+    exit 1
+fi
 
-# 依次执行每个可执行文件
-for exe in "${EXE_FILES[@]}"; do
-    CURRENT_INDEX=$((CURRENT_INDEX + 1))
-    # 使用相对于 Release 目录的路径
-    exe_rel_path="${exe#$RELEASE_DIR/}"
+declare -a DEMO_FILES=()
+declare -a RUNNER=()
+HOST_SYSTEM=$(uname -s)
+SEARCH_ROOT="$RELEASE_DIR"
+if [[ -d "$RELEASE_DIR/demo" ]]; then
+    SEARCH_ROOT="$RELEASE_DIR/demo"
+fi
 
-    echo "[${CURRENT_INDEX}/${TOTAL_COUNT}] Running: $exe_rel_path ..."
+if [[ "$HOST_SYSTEM" == "Darwin" ]]; then
+    while IFS= read -r candidate; do
+        case "$candidate" in
+        */CMakeFiles/*|*/tests/*|*/Testing/*) continue ;;
+        esac
+        if [[ "$INCLUDE_CAMERA" != true && $(basename "$candidate") == camera_* ]]; then
+            continue
+        fi
+        if [[ -x "$candidate" ]] &&
+           file "$candidate" | grep -q "Mach-O.*executable"; then
+            DEMO_FILES+=("$candidate")
+        fi
+    done < <(find "$SEARCH_ROOT" -type f -perm -111 2>/dev/null | sort)
+else
+    while IFS= read -r candidate; do
+        if [[ "$INCLUDE_CAMERA" != true && $(basename "$candidate") == camera_*.exe ]]; then
+            continue
+        fi
+        DEMO_FILES+=("$candidate")
+    done < <(find "$SEARCH_ROOT" -type f -name "*.exe" 2>/dev/null | sort)
+    if [[ "$HOST_SYSTEM" == "Linux" ]]; then
+        if ! command -v wine >/dev/null 2>&1; then
+            echo "Error: Wine is required to launch Windows demos on Linux" >&2
+            exit 1
+        fi
+        RUNNER=(wine)
+    fi
+fi
 
-    # 在后台运行可执行文件
-    "$exe" &
+if [[ ${#DEMO_FILES[@]} -eq 0 ]]; then
+    echo "Error: no platform demo executables found in $RELEASE_DIR" >&2
+    exit 1
+fi
+
+echo "Found ${#DEMO_FILES[@]} demo executable(s); timeout=${TIMEOUT_SECONDS}s"
+current=0
+for demo in "${DEMO_FILES[@]}"; do
+    current=$((current + 1))
+    relative="${demo#$RELEASE_DIR/}"
+    echo "[$current/${#DEMO_FILES[@]}] $relative"
+    "${RUNNER[@]}" "$demo" &
     pid=$!
-    TIMEOUT_REACHED=false
+    started=$(date +%s)
+    timed_out=false
 
-    # 等待指定时间或进程退出
-    start_time=$(date +%s)
     while kill -0 "$pid" 2>/dev/null; do
-        current_time=$(date +%s)
-        elapsed=$((current_time - start_time))
-
-        if [[ $elapsed -ge $TIMEOUT_SECONDS ]]; then
-            # 超时，正常终止进程
-            echo "  Timeout reached, terminating $exe_rel_path..."
+        now=$(date +%s)
+        if [[ $((now - started)) -ge $TIMEOUT_SECONDS ]]; then
+            timed_out=true
             kill "$pid" 2>/dev/null || true
-            wait "$pid" 2>/dev/null || true
-            echo "  ✓ $exe_rel_path completed (timeout)"
-            SUCCESS_EXES+=("$exe_rel_path")
-            TIMEOUT_REACHED=true
+            if wait "$pid" 2>/dev/null; then :; fi
+            echo "  PASS (survived timeout)"
             break
         fi
-
         sleep 0.1
     done
 
-    # 检查进程是否在超时前退出（仅当非超时情况）
-    if [[ "$TIMEOUT_REACHED" != "true" ]]; then
-        # 进程已退出，获取退出码
-        wait "$pid" || true
-        exit_code=$?
-
-        current_time=$(date +%s)
-        elapsed=$((current_time - start_time))
-
-        if [[ $exit_code -ne 0 ]]; then
-            echo "  ✗ $exe_rel_path exited abnormally with code $exit_code after ${elapsed}s"
-            echo ""
-            echo "Error: Demo test failed!"
-            echo "Failed executable: $exe_rel_path"
-            exit 1
+    if [[ "$timed_out" == false ]]; then
+        if wait "$pid"; then
+            exit_code=0
         else
-            # 正常退出（退出码为 0）
-            echo "  ✓ $exe_rel_path completed normally (${elapsed}s)"
-            SUCCESS_EXES+=("$exe_rel_path")
+            exit_code=$?
         fi
+        if [[ $exit_code -ne 0 ]]; then
+            echo "  FAIL (early exit $exit_code)" >&2
+            exit 1
+        fi
+        echo "  PASS (normal early exit)"
     fi
-
-    # 打印进度信息
-    REMAINING_COUNT=$((TOTAL_COUNT - CURRENT_INDEX))
-    REMAINING_TIME=$((REMAINING_COUNT * TIMEOUT_SECONDS))
-    echo "  Progress: ${CURRENT_INDEX}/${TOTAL_COUNT} completed, ~${REMAINING_TIME}s remaining"
-    echo ""
 done
 
-# 打印成功执行的可执行文件
-echo "========================================"
-echo "All demos completed successfully!"
-echo "========================================"
-echo "Total: ${#SUCCESS_EXES[@]} executable(s) tested:"
-for exe in "${SUCCESS_EXES[@]}"; do
-    echo "  ✓ $exe"
-done
+echo "All ${#DEMO_FILES[@]} demos passed the launch smoke test."
