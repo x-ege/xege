@@ -122,9 +122,10 @@ if(NOT CMAKE_HOST_UNIX)
   # If the exclusion is intended for specific Unix-like environments, refine the condition below.
   message(STATUS "Finding GMP Library")
   find_path(GMPXX_INCLUDE_DIR NAMES gmpxx.h)
+  find_library(GMPXX_LIBRARY NAMES gmpxx)
   find_library(GMP_LIBRARY NAMES gmp)
 
-  if(GMPXX_INCLUDE_DIR AND GMP_LIBRARY)
+  if(GMPXX_INCLUDE_DIR AND GMPXX_LIBRARY AND GMP_LIBRARY)
     message(STATUS "GMP Library found")
     file(
       GLOB GMP_DEMO_SRCS
@@ -137,7 +138,7 @@ if(NOT CMAKE_HOST_UNIX)
       get_filename_component(DEMO_NAME ${GMP_DEMO_SRC} NAME_WE)
       ege_add_executable_demo(${DEMO_NAME} ${GMP_DEMO_SRC})
       target_include_directories(${DEMO_NAME} PRIVATE ${GMPXX_INCLUDE_DIR})
-      target_link_libraries(${DEMO_NAME} ${GMP_LIBRARY})
+      target_link_libraries(${DEMO_NAME} ${GMPXX_LIBRARY} ${GMP_LIBRARY})
     endforeach()
   else()
     message(STATUS "GMP Library not found")
