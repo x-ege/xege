@@ -34,6 +34,9 @@ target_compile_definitions(ege_native_public_headers_zh PRIVATE EGE_TEST_ZH_HEAD
 ege_add_native_test(ege_native_pixel_surface native.pixel_surface
     pixel_surface_test.cpp)
 
+ege_add_native_test(ege_native_camera_frame_copy native.camera_frame_copy
+    camera_frame_copy_test.cpp)
+
 ege_add_native_test(ege_native_raster_image_contract
     native.ege_raster_image_contract
     ege_raster_image_contract_test.cpp)

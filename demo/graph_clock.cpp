@@ -47,7 +47,7 @@ void draw()
 	{
 		char str[8];
 		ege::ege_point p = getpos(center, float(num * pi2 / 12), r);
-		sprintf(str, "%d", num);
+		snprintf(str, sizeof(str), "%d", num);
 		ege::outtextxy((int)p.x, (int)p.y, str);
 	}
 
@@ -57,7 +57,7 @@ void draw()
 	ege::setcolor(EGEARGB(0xff, 0x0, 0x0, 0xff));
 	ege::setlinewidth(10.0f);
 
-    char str[32];
+    char str[64];
     ege::ege_point p;
 
     float h = float(t->tm_hour + t->tm_min / 60.0);
@@ -81,7 +81,7 @@ void draw()
     ege::ege_fillellipse(center.x - r * 0.05f, center.y - r * 0.05f,
         r * 0.1f, r * 0.1f);
 
-    sprintf(str, "%d/%02d/%02d %2d:%02d:%02d",
+    snprintf(str, sizeof(str), "%d/%02d/%02d %2d:%02d:%02d",
         t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
         t->tm_hour, t->tm_min, t->tm_sec);
     ege::setcolor(EGERGB(0xff, 0xff, 0));
@@ -119,4 +119,3 @@ int main()
 	ege::closegraph();
 	return 0;
 }
-

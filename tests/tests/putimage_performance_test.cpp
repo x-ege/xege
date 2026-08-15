@@ -341,7 +341,9 @@ int main() {
     testFramework.printResults();    // 保存结果到文件
     testFramework.saveResultsToFile("putimage_performance_results.txt");
     
-    // 清理
+    // Release global image owners before the framework tears down graphics.
+    cleanupDestinationImage();
+    imageManager.cleanup();
     testFramework.cleanup();
 
     std::cout << "\nAll tests completed!" << std::endl;
