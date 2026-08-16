@@ -1,8 +1,8 @@
 # EGE 编译指南
 
-EGE 源码使用 CMake 3.13 或更高版本构建。Windows 默认使用 GDI；macOS 现在可用
+EGE 源码使用 CMake 3.13 或更高版本构建。Windows 默认使用 GDI；macOS 可用
 AppleClang 直接生成 Mach-O 原生程序，默认绘制后端为 Core Graphics，窗口后端为
-AppKit。macOS 原生构建不需要 MinGW、Wine 或 OpenGL。
+AppKit；Linux 默认使用 Cairo 绘制与 Xlib 窗口。原生构建不需要 MinGW、Wine 或 OpenGL。
 
 EGE 的可选子模块由 Git submodule 管理。CMake 配置阶段不会访问网络或修改
 源码目录。默认关闭 camera 时不需要拉取 `ccap`；如果需要 camera，请在配置前执行：
@@ -12,8 +12,37 @@ git submodule update --init --recursive 3rdparty/ccap
 ```
 
 请安装 CMake 和目标平台的原生编译器。macOS 使用 Xcode Command Line Tools；Windows
-使用 MSVC 或 MinGW-w64。Linux 主机仍可通过显式 toolchain 交叉编译 Windows 版，但
-Linux 原生 Cairo 后端尚未实现，配置会 fail-fast，不会默认生成依赖 Wine 的 `.exe`。
+使用 MSVC 或 MinGW-w64；Linux 使用 GCC/Clang、Cairo 与 X11 开发包。Linux 主机仍可
+通过显式 toolchain 交叉编译 Windows 版，但默认会生成原生 ELF。
+
+## Linux 原生 Cairo/Xlib 构建
+
+Debian/Ubuntu 安装依赖并构建：
+
+```sh
+sudo apt-get install build-essential cmake ninja-build pkg-config libcairo2-dev libx11-dev
+cmake -S . -B build/native-cairo -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DEGE_DEFAULT_BACKEND=CAIRO \
+  -DEGE_ENABLE_OPENGL=OFF \
+  -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
+  -DEGE_BUILD_TEST=ON \
+  -DEGE_BUILD_DEMO=ON \
+  -DEGE_BUILD_TEMP=OFF
+cmake --build build/native-cairo --parallel
+cmake --build build/native-cairo --target demos --parallel
+ctest --test-dir build/native-cairo --output-on-failure
+```
+
+窗口集成测试额外需要 `xvfb`，配置时加入
+`-DEGE_ENABLE_WINDOW_TESTS=ON`，再运行
+`xvfb-run -a ctest --test-dir build/native-cairo --output-on-failure`。
+完整 Linux CI 验收还会递归检出 `ccap`，设置
+`-DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_ENABLE_CAMERA_TESTS=ON`，并使用测试专用的
+用户态 V4L2 仿真器运行相机枚举、格式协商、mmap streaming、YUYV→BGRA 和
+`CameraFrame`/`IMAGE` 像素测试。仿真器不进入正式库，也不新增运行时依赖。
+默认只直接链接系统 `libcairo` 和 `libX11`，不链接 GTK、wxWidgets、SDL 或 Pango。
+更详细的设计与依赖取舍见 [Linux native backend](docs/linux-native-backend.md)。
 
 ## macOS 原生 Core Graphics 构建
 
@@ -67,6 +96,9 @@ bash tasks.sh --debug --show-config
 脚本会拒绝删除仓库根目录或无法确认属于本项目的自定义目录，
 但调用前仍应检查 `--show-config` 输出。
 
+Linux 上同一脚本会显式选择 `CAIRO`，使用 `build/linux/Debug` 或
+`build/linux/Release`，`--run` 直接启动无扩展名 ELF，不再追加 `.exe` 或调用 Wine。
+
 `utils/release.sh` 在 macOS 上生成的 AppleClang 静态库位于
 `Release/lib/macOS`。脚本分别构建 arm64/x86_64，用 `lipo` 合成 universal
 archive，检查每个 slice 的 macOS 11.0 标记，并使用与官方包相同的
@@ -89,14 +121,15 @@ Windows 专用的 `utils/release-msvc.sh`、`utils/release-mingw.sh` 和
 `utils/release.sh` 的 macOS 路径也不清理工作树，并可用上述环境变量完全隔离输出。
 
 `utils/test-run-demos.sh --directory <demo-build-dir>` 可在交互式桌面会话中启动
-已构建 demo：macOS 直接运行 Mach-O，Linux 对 Windows `.exe` 明确使用 Wine。
+已构建 demo：macOS 直接运行 Mach-O，Linux 优先直接运行原生 ELF；目录中只有
+Windows `.exe` 时才明确使用 Wine。
 camera demo 默认排除，只有显式传 `--include-camera` 才会触发其权限/设备路径。
 
 ### 逐像素 CPU buffer 语义
 
-macOS 后端以 CPU `PixelSurface` 作为图像像素的权威存储。`getbuffer()` 返回可直接
+macOS 与 Linux 后端都以 CPU `PixelSurface` 作为图像像素的权威存储。`getbuffer()` 返回可直接
 读写的、从上到下排列的连续像素：每行是 `width * sizeof(color_t)` 字节，在小端
-macOS 上数值表示为 `0xAARRGGBB`，内存字节顺序为预乘 Alpha 的 BGRA。Core Graphics
+平台上数值表示为 `0xAARRGGBB`，内存字节顺序为预乘 Alpha 的 BGRA。Core Graphics/Cairo
 直接绘制到同一块 CPU buffer，所以常规逐像素读写不发生 GPU readback 或 CPU/GPU
 双向同步。指针在对应 `IMAGE` 不重建、不缩放且不销毁期间有效。
 
@@ -134,9 +167,9 @@ sudo apt-get install mingw-w64 wine
 sudo pacman -S mingw-w64 wine
 ```
 
-Linux 原生后端尚未完成，因此 Linux 发布和 CI 继续通过
-`cmake/toolchains/mingw-w64.cmake` 显式生成 Windows 静态库及 `.exe`。macOS
-不再支持或发布这条交叉编译路径。
+Linux 默认构建原生 Cairo/Xlib 后端。只有明确传入
+`-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake` 时才生成 Windows
+静态库及 `.exe`。macOS 不再支持或发布这条交叉编译路径。
 
 ## 基本编译步骤
 

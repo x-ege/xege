@@ -2477,36 +2477,51 @@ void ege_path_widen(ege_path* path, float lineWidth, const ege_transform_matrix*
     const float halfWidth = lineWidth * 0.5f;
     for (std::size_t figureIndex = 0; figureIndex < source.size(); ++figureIndex) {
         const FlatFigure& figure = source[figureIndex];
-        if (figure.points.empty()) continue;
+        if (figure.points.size() < 2) continue;
         const std::size_t edgeCount = figure.closed ? figure.points.size() : figure.points.size() - 1;
+        std::vector<ege_point> normals(edgeCount);
         for (std::size_t edge = 0; edge < edgeCount; ++edge) {
             const ege_point& first = figure.points[edge];
             const ege_point& second = figure.points[(edge + 1) % figure.points.size()];
             const float dx = second.x - first.x;
             const float dy = second.y - first.y;
             const float length = std::sqrt(dx * dx + dy * dy);
-            if (length <= 1e-6f) continue;
-            const float nx = -dy * halfWidth / length;
-            const float ny = dx * halfWidth / length;
-            FlatFigure quad;
-            quad.closed = true;
-            quad.points.push_back({first.x + nx, first.y + ny});
-            quad.points.push_back({second.x + nx, second.y + ny});
-            quad.points.push_back({second.x - nx, second.y - ny});
-            quad.points.push_back({first.x - nx, first.y - ny});
-            widened.push_back(quad);
+            if (length > 1e-6f) normals[edge] = {-dy * halfWidth / length, dx * halfWidth / length};
         }
-        for (std::size_t vertex = 0; vertex < figure.points.size(); ++vertex) {
-            FlatFigure cap;
-            cap.closed = true;
-            const int segments = 16;
-            for (int segment = 0; segment < segments; ++segment) {
-                const float angle = 2.0f * kPi * segment / segments;
-                cap.points.push_back({figure.points[vertex].x + std::cos(angle) * halfWidth,
-                                      figure.points[vertex].y + std::sin(angle) * halfWidth});
-            }
-            widened.push_back(cap);
-        }
+        const auto offsetVertex = [&](std::size_t vertex, float side) {
+            if (!figure.closed && vertex == 0) return ege_point{
+                figure.points[0].x + side * normals[0].x,
+                figure.points[0].y + side * normals[0].y};
+            if (!figure.closed && vertex + 1 == figure.points.size()) return ege_point{
+                figure.points[vertex].x + side * normals[edgeCount - 1].x,
+                figure.points[vertex].y + side * normals[edgeCount - 1].y};
+            const std::size_t previous = (vertex + edgeCount - 1) % edgeCount;
+            const std::size_t next = vertex % edgeCount;
+            const ege_point p = figure.points[vertex];
+            const ege_point a = figure.points[previous];
+            const ege_point b = figure.points[(next + 1) % figure.points.size()];
+            const float d1x = p.x - a.x, d1y = p.y - a.y;
+            const float d2x = b.x - p.x, d2y = b.y - p.y;
+            const float denominator = d1x * d2y - d1y * d2x;
+            if (std::abs(denominator) <= 1e-6f) return ege_point{
+                p.x + side * (normals[previous].x + normals[next].x) * 0.5f,
+                p.y + side * (normals[previous].y + normals[next].y) * 0.5f};
+            const float qx = side * (normals[next].x - normals[previous].x);
+            const float qy = side * (normals[next].y - normals[previous].y);
+            const float amount = (qx * d2y - qy * d2x) / denominator;
+            const ege_point candidate = {
+                p.x + side * normals[previous].x + amount * d1x,
+                p.y + side * normals[previous].y + amount * d1y};
+            return point_distance(candidate, p) <= lineWidth * 10.0f
+                ? candidate : ege_point{p.x + side * normals[next].x, p.y + side * normals[next].y};
+        };
+        FlatFigure outline;
+        outline.closed = true;
+        for (std::size_t vertex = 0; vertex < figure.points.size(); ++vertex)
+            outline.points.push_back(offsetVertex(vertex, 1.0f));
+        for (std::size_t vertex = figure.points.size(); vertex-- > 0;)
+            outline.points.push_back(offsetVertex(vertex, -1.0f));
+        widened.push_back(outline);
     }
     assign_flattened(*data, widened);
     data->fillMode = FILLMODE_WINDING;
@@ -2602,7 +2617,10 @@ bool ege_path_inpath(const ege_path* path, float x, float y, PCIMAGE pimg)
         point_in_figures(flatten_figures(*data), data->fillMode, source.x, source.y);
 }
 
-static bool path_point_in_stroke(const ege_path* path, float x, float y, float lineWidth)
+static bool path_point_in_stroke(const ege_path* path, float x, float y, float lineWidth,
+                                 int lineStyle = PS_SOLID,
+                                 line_cap_type startCap = LINECAP_FLAT,
+                                 line_cap_type endCap = LINECAP_FLAT)
 {
     const PathData* data = path_data(path);
     if (data == NULL) return false;
@@ -2612,9 +2630,28 @@ static bool path_point_in_stroke(const ege_path* path, float x, float y, float l
         const FlatFigure& figure = figures[figureIndex];
         if (figure.points.size() < 2) continue;
         const std::size_t edgeCount = figure.closed ? figure.points.size() : figure.points.size() - 1;
+        float distanceAlongFigure = 0.0f;
         for (std::size_t edge = 0; edge < edgeCount; ++edge) {
-            if (distance_to_segment(x, y, figure.points[edge],
-                figure.points[(edge + 1) % figure.points.size()]) <= tolerance) return true;
+            const ege_point& first = figure.points[edge];
+            const ege_point& second = figure.points[(edge + 1) % figure.points.size()];
+            const float dx = second.x - first.x, dy = second.y - first.y;
+            const float length = std::sqrt(dx * dx + dy * dy);
+            if (length <= 1e-6f) continue;
+            const float projection = ((x - first.x) * dx + (y - first.y) * dy) / length;
+            float minimum = 0.0f, maximum = length;
+            if (!figure.closed && edge == 0 && startCap == LINECAP_SQUARE) minimum -= tolerance;
+            if (!figure.closed && edge + 1 == edgeCount && endCap == LINECAP_SQUARE) maximum += tolerance;
+            if (projection >= minimum && projection <= maximum &&
+                distance_to_segment(x, y, first, second) <= tolerance) {
+                float onLength = 1e9f, offLength = 0.0f;
+                if (lineStyle == PS_DASH) { onLength = 3.0f; offLength = 3.0f; }
+                else if (lineStyle == PS_DOT) { onLength = 1.0f; offLength = 2.0f; }
+                else if (lineStyle == PS_DASHDOT) { onLength = 3.0f; offLength = 2.0f; }
+                const float period = onLength + offLength;
+                if (offLength == 0.0f || std::fmod(distanceAlongFigure + std::max(0.0f, projection), period) < onLength)
+                    return true;
+            }
+            distanceAlongFigure += length;
         }
     }
     return false;
@@ -2652,7 +2689,8 @@ bool ege_path_instroke(const ege_path* path, float x, float y, PCIMAGE pimg)
         y - static_cast<float>(image->m_vpt.top)};
     ege_point source;
     return inverse_transform_point(viewportLocal, transform, source) &&
-        path_point_in_stroke(path, source.x, source.y, image->m_linewidth);
+        path_point_in_stroke(path, source.x, source.y, image->m_linewidth,
+            image->m_linestyle.linestyle, image->m_linestartcap, image->m_lineendcap);
 #endif
 }
 
@@ -2876,6 +2914,10 @@ void ege_path_addtext(ege_path* path, float x, float y, const char* text, float 
     if (add_coretext_outlines(path, x, y, utf8, height, fontName, fontStyle)) return;
 #else
     (void)typeface;
+    const std::wstring wide = utf82w(std::string(text, text + count).c_str());
+    ege_path_addtext(path, x, y, wide.c_str(), height,
+        static_cast<int>(wide.size()), static_cast<const wchar_t*>(NULL), fontStyle);
+    return;
 #endif
     std::unique_ptr<bool[]> drawable(new(std::nothrow) bool[count]);
     if (!drawable && count != 0) return;

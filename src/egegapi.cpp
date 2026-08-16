@@ -24,6 +24,8 @@
 
 #if defined(EGE_BACKEND_COREGRAPHICS)
 #include "backend/macos/MacWindow.h"
+#elif defined(EGE_BACKEND_CAIRO)
+#include "backend/linux/LinuxWindow.h"
 #endif
 
 #include <cmath>
@@ -3017,7 +3019,7 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     getflush();
     return ret;
 }
-#elif defined(EGE_BACKEND_COREGRAPHICS)
+#elif defined(EGE_BACKEND_COREGRAPHICS) || defined(EGE_BACKEND_CAIRO)
 static std::size_t completeUTF8PrefixLength(
     const std::string& value, std::size_t capacity)
 {
@@ -3038,7 +3040,11 @@ int inputbox_getline(const char* title, const char* text, LPSTR buf, int len)
     }
     buf[0] = '\0';
     std::string value;
+#if defined(EGE_BACKEND_COREGRAPHICS)
     if (!backend::MacWindow::inputBox(title, text, &value)) {
+#else
+    if (!backend::LinuxWindow::inputBox(title, text, &value)) {
+#endif
         return 0;
     }
     const std::size_t count = completeUTF8PrefixLength(
@@ -3057,7 +3063,11 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     std::string value;
     const std::string titleUTF8 = w2utf8(title ? title : L"");
     const std::string textUTF8 = w2utf8(text ? text : L"");
+#if defined(EGE_BACKEND_COREGRAPHICS)
     if (!backend::MacWindow::inputBox(
+#else
+    if (!backend::LinuxWindow::inputBox(
+#endif
             titleUTF8.c_str(), textUTF8.c_str(), &value)) {
         return 0;
     }

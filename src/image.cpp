@@ -117,6 +117,8 @@ inline FILE* openWideFile(const wchar_t* filename, const wchar_t* mode) {
 #include "image.h"
 #ifdef EGE_BACKEND_COREGRAPHICS
 #include "backend/macos/CoreGraphicsRenderTarget.h"
+#elif defined(EGE_BACKEND_CAIRO)
+#include "backend/linux/CairoRenderTarget.h"
 #endif
 // #ifdef _ITERATOR_DEBUG_LEVEL
 // #undef _ITERATOR_DEBUG_LEVEL
@@ -470,6 +472,16 @@ void IMAGE::initimage(HDC refDC, int width, int height)
         m_pBuffer = NULL;
         internal_panic(L"Fatal Error: create Core Graphics bitmap context failed in 'IMAGE::initimage'");
     }
+#elif defined(EGE_BACKEND_CAIRO)
+    try {
+        m_renderTarget = new backend::CairoRenderTarget(
+            std::max(1, width), std::max(1, height), false);
+        m_pBuffer = reinterpret_cast<PDWORD>(m_renderTarget->getPixelBuffer());
+    } catch (const std::exception&) {
+        m_renderTarget = NULL;
+        m_pBuffer = NULL;
+        internal_panic(L"Fatal Error: create Cairo bitmap context failed in 'IMAGE::initimage'");
+    }
 #else
     m_pBuffer = width > 0 && height > 0 ? new DWORD[width * height]() : NULL;
 #endif
@@ -621,7 +633,7 @@ int IMAGE::updatebuffer(int x, int y, int width, int height,
 
 image_storage_mode IMAGE::getStorageMode() const
 {
-#ifdef EGE_BACKEND_COREGRAPHICS
+#if defined(EGE_BACKEND_COREGRAPHICS) || defined(EGE_BACKEND_CAIRO)
     return IMAGE_STORAGE_CPU_BITMAP;
 #else
     return m_renderTarget ? IMAGE_STORAGE_GPU : IMAGE_STORAGE_CPU_BITMAP;
@@ -636,9 +648,9 @@ int IMAGE::setStorageMode(image_storage_mode mode, bool preservePixels)
     if (mode == getStorageMode()) {
         return grOk;
     }
-#ifdef EGE_BACKEND_COREGRAPHICS
+#if defined(EGE_BACKEND_COREGRAPHICS) || defined(EGE_BACKEND_CAIRO)
     (void)preservePixels;
-    // Core Graphics always draws directly into the CPU-authoritative surface.
+    // Native CPU renderers always draw directly into the authoritative surface.
     return grInvalidMode;
 #else
     if (mode == IMAGE_STORAGE_GPU) {
@@ -973,6 +985,21 @@ int IMAGE::resize_f(int width, int height)
             dynamic_cast<backend::CoreGraphicsRenderTarget*>(m_renderTarget);
         // A generated texture wraps the current target buffer. Release it
         // before resize can replace that storage.
+        if (regenerateTexture) {
+            gentexture(false);
+        }
+        if (!target || !target->resize(std::max(1, width), std::max(1, height), false)) {
+            if (regenerateTexture) {
+                gentexture(true);
+            }
+            return grAllocError;
+        }
+        m_pBuffer = reinterpret_cast<PDWORD>(target->getPixelBuffer());
+    }
+#elif defined(EGE_BACKEND_CAIRO)
+    if (m_renderTarget && (width != oldWindowSize.width || height != oldWindowSize.height)) {
+        backend::CairoRenderTarget* target =
+            dynamic_cast<backend::CairoRenderTarget*>(m_renderTarget);
         if (regenerateTexture) {
             gentexture(false);
         }

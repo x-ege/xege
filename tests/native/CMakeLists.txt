@@ -1,4 +1,6 @@
-if(NOT APPLE OR NOT EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
+if(NOT (APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
+        AND NOT (CMAKE_SYSTEM_NAME STREQUAL "Linux"
+            AND EGE_RESOLVED_BACKEND STREQUAL "CAIRO"))
     return()
 endif()
 
@@ -55,11 +57,13 @@ ege_add_native_test(ege_native_control_focus_contract
     native.ege_control_focus_contract
     ege_control_focus_contract_test.cpp)
 
-ege_add_native_test(ege_native_music_contract
-    native.ege_music_contract
-    ege_music_contract_test.cpp)
-target_compile_definitions(ege_native_music_contract PRIVATE
-    EGE_TEST_ARTIFACT_DIR="${CMAKE_BINARY_DIR}/test-artifacts")
+if(APPLE)
+    ege_add_native_test(ege_native_music_contract
+        native.ege_music_contract
+        ege_music_contract_test.cpp)
+    target_compile_definitions(ege_native_music_contract PRIVATE
+        EGE_TEST_ARTIFACT_DIR="${CMAKE_BINARY_DIR}/test-artifacts")
+endif()
 
 add_executable(ege_native_process_exit_contract
     ege_process_exit_contract.cpp)
@@ -152,5 +156,61 @@ if(APPLE AND EGE_RESOLVED_BACKEND STREQUAL "COREGRAPHICS")
             "${EGE_TEST_APPKIT_FRAMEWORK}"
             "${EGE_TEST_COREFOUNDATION_FRAMEWORK}"
             "${EGE_TEST_COREGRAPHICS_FRAMEWORK}")
+    endif()
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND EGE_RESOLVED_BACKEND STREQUAL "CAIRO")
+    ege_add_native_test(ege_native_cairo_render_target
+        native.cairo_render_target
+        cairo_render_target_test.cpp)
+    target_link_libraries(ege_native_cairo_render_target PRIVATE
+        PkgConfig::EGE_CAIRO)
+
+    ege_add_native_test(ege_native_api_smoke native.ege_api_smoke
+        ege_api_smoke.cpp)
+    target_compile_definitions(ege_native_api_smoke PRIVATE
+        EGE_TEST_ARTIFACT_DIR="${CMAKE_BINARY_DIR}/test-artifacts")
+    set_tests_properties(native.ege_api_smoke PROPERTIES
+        ENVIRONMENT "EGE_HEADLESS=1"
+        TIMEOUT 15)
+
+    if(EGE_ENABLE_WINDOW_TESTS)
+        ege_add_native_test(ege_native_linux_window_smoke
+            native.linux_window_smoke
+            linux_window_smoke.cpp)
+        target_link_libraries(ege_native_linux_window_smoke PRIVATE
+            PkgConfig::EGE_X11)
+        set_tests_properties(native.linux_window_smoke PROPERTIES
+            RUN_SERIAL TRUE
+            TIMEOUT 15)
+    endif()
+
+    if(EGE_ENABLE_CAMERA_TESTS)
+        if(NOT EGE_ENABLE_CAMERA_CAPTURE)
+            message(FATAL_ERROR
+                "EGE_ENABLE_CAMERA_TESTS=ON requires EGE_ENABLE_CAMERA_CAPTURE=ON")
+        endif()
+
+        add_library(ege_native_fake_v4l2 SHARED fake_v4l2_preload.cpp)
+        target_compile_features(ege_native_fake_v4l2 PRIVATE cxx_std_17)
+        target_link_libraries(ege_native_fake_v4l2 PRIVATE ${CMAKE_DL_LIBS})
+
+        add_executable(ege_native_camera_capture_virtual
+            ege_camera_capture_virtual_test.cpp)
+        target_compile_features(ege_native_camera_capture_virtual PRIVATE cxx_std_17)
+        target_include_directories(ege_native_camera_capture_virtual PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}")
+        target_compile_definitions(ege_native_camera_capture_virtual PRIVATE
+            EGE_TEST_ARTIFACT_DIR="${CMAKE_BINARY_DIR}/test-artifacts")
+        target_link_libraries(ege_native_camera_capture_virtual PRIVATE xege)
+
+        add_test(NAME native.ege_camera_capture_virtual
+            COMMAND "${CMAKE_COMMAND}" -E env
+                "EGE_TEST_V4L2_PATH=/dev/video99"
+                "LD_PRELOAD=$<TARGET_FILE:ege_native_fake_v4l2>"
+                "$<TARGET_FILE:ege_native_camera_capture_virtual>")
+        set_tests_properties(native.ege_camera_capture_virtual PROPERTIES
+            RUN_SERIAL TRUE
+            TIMEOUT 15)
     endif()
 endif()

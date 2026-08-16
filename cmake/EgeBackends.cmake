@@ -136,22 +136,28 @@ function(ege_configure_backend target)
             "${EGE_CORETEXT_FRAMEWORK}"
             "${EGE_IMAGEIO_FRAMEWORK}")
     elseif(EGE_RESOLVED_BACKEND STREQUAL "CAIRO")
+        set(_ege_cairo_required_sources
+            src/backend/linux/CairoRenderTarget.cpp
+            src/backend/linux/LinuxWindow.cpp)
+        foreach(_ege_source IN LISTS _ege_cairo_required_sources)
+            if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_ege_source}")
+                message(FATAL_ERROR
+                    "The Cairo backend is incomplete: missing ${_ege_source}")
+            endif()
+        endforeach()
         _ege_add_existing_sources(${target} _ege_cairo_sources
-            src/backend/linux/CairoSurface.cpp
             src/backend/linux/CairoRenderTarget.cpp
             src/backend/linux/LinuxWindow.cpp
         )
-        if(NOT _ege_cairo_sources)
-            message(FATAL_ERROR
-                "The Cairo backend is not implemented yet. Expected explicit "
-                "sources under src/backend/linux.")
-        endif()
         find_package(PkgConfig REQUIRED)
         pkg_check_modules(EGE_CAIRO REQUIRED IMPORTED_TARGET cairo)
+        pkg_check_modules(EGE_X11 REQUIRED IMPORTED_TARGET x11)
         target_compile_definitions(${target} PRIVATE EGE_BACKEND_CAIRO=1)
         target_include_directories(${target} PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/src/backend/linux")
-        target_link_libraries(${target} PRIVATE PkgConfig::EGE_CAIRO)
+        target_link_libraries(${target} PRIVATE
+            PkgConfig::EGE_CAIRO
+            PkgConfig::EGE_X11)
     elseif(EGE_RESOLVED_BACKEND STREQUAL "OPENGL")
         target_compile_definitions(${target} PRIVATE EGE_BACKEND_OPENGL=1)
     endif()

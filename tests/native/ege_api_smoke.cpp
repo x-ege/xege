@@ -55,7 +55,7 @@ int main()
     ege::setfillcolor(fill);
     ege::bar(20, 10, 30, 20);
     if (ege::getpixel(25, 15) != fill) {
-        return fail("Core Graphics primitive drawing did not update the CPU surface");
+        return fail("native primitive drawing did not update the CPU surface");
     }
 
     ege::PIMAGE image = ege::newimage(13, 7);

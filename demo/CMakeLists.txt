@@ -46,6 +46,10 @@ macro(ege_add_executable name source)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_HOST_UNIX)
       target_compile_definitions(${name} PRIVATE _FORTIFY_SOURCE=0)
+    endif()
+    # The MinGW SDK demos are distributed as self-contained Windows binaries.
+    # Native Linux demos must remain dynamically linked to system Cairo/X11.
+    if(MINGW)
       target_link_options(${name}
         PRIVATE -static)
     endif()
