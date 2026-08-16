@@ -54,7 +54,7 @@ if [[ -d "$RELEASE_DIR/demo" ]]; then
     SEARCH_ROOT="$RELEASE_DIR/demo"
 fi
 
-if [[ "$HOST_SYSTEM" == "Darwin" ]]; then
+if [[ "$HOST_SYSTEM" == "Darwin" || "$HOST_SYSTEM" == "Linux" ]]; then
     while IFS= read -r candidate; do
         case "$candidate" in
         */CMakeFiles/*|*/tests/*|*/Testing/*) continue ;;
@@ -62,11 +62,30 @@ if [[ "$HOST_SYSTEM" == "Darwin" ]]; then
         if [[ "$INCLUDE_CAMERA" != true && $(basename "$candidate") == camera_* ]]; then
             continue
         fi
-        if [[ -x "$candidate" ]] &&
-           file "$candidate" | grep -q "Mach-O.*executable"; then
+        if [[ -x "$candidate" ]] && {
+           { [[ "$HOST_SYSTEM" == "Darwin" ]] && file "$candidate" | grep -q "Mach-O.*executable"; } ||
+           { [[ "$HOST_SYSTEM" == "Linux" ]] && file "$candidate" | grep -q "ELF.*executable"; }; }; then
             DEMO_FILES+=("$candidate")
         fi
     done < <(find "$SEARCH_ROOT" -type f -perm -111 2>/dev/null | sort)
+
+    # A Linux directory can still intentionally contain MinGW demo artifacts.
+    # Fall back to Wine only when no native ELF demos were found.
+    if [[ "$HOST_SYSTEM" == "Linux" && ${#DEMO_FILES[@]} -eq 0 ]]; then
+        while IFS= read -r candidate; do
+            if [[ "$INCLUDE_CAMERA" != true && $(basename "$candidate") == camera_*.exe ]]; then
+                continue
+            fi
+            DEMO_FILES+=("$candidate")
+        done < <(find "$SEARCH_ROOT" -type f -name "*.exe" 2>/dev/null | sort)
+        if [[ ${#DEMO_FILES[@]} -gt 0 ]]; then
+            if ! command -v wine >/dev/null 2>&1; then
+                echo "Error: Wine is required to launch Windows demos on Linux" >&2
+                exit 1
+            fi
+            RUNNER=(wine)
+        fi
+    fi
 else
     while IFS= read -r candidate; do
         if [[ "$INCLUDE_CAMERA" != true && $(basename "$candidate") == camera_*.exe ]]; then
@@ -74,13 +93,6 @@ else
         fi
         DEMO_FILES+=("$candidate")
     done < <(find "$SEARCH_ROOT" -type f -name "*.exe" 2>/dev/null | sort)
-    if [[ "$HOST_SYSTEM" == "Linux" ]]; then
-        if ! command -v wine >/dev/null 2>&1; then
-            echo "Error: Wine is required to launch Windows demos on Linux" >&2
-            exit 1
-        fi
-        RUNNER=(wine)
-    fi
 fi
 
 if [[ ${#DEMO_FILES[@]} -eq 0 ]]; then

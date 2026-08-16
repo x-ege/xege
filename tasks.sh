@@ -42,6 +42,12 @@ function isNativeMacOS() {
         ! cmakeDefinitionEquals "CMAKE_SYSTEM_NAME" "Windows"
 }
 
+function isNativeLinux() {
+    [[ "$(uname -s)" == "Linux" ]] && ! isWindows &&
+        ! hasCMakeDefinition "CMAKE_TOOLCHAIN_FILE" &&
+        ! cmakeDefinitionEquals "CMAKE_SYSTEM_NAME" "Windows"
+}
+
 function hasCMakeDefinition() {
     local definition="$1"
     local argument
@@ -149,6 +155,10 @@ function getBuildDir() {
     # The platform component also makes the output type obvious in VS Code.
     if isNativeMacOS; then
         echo "$base_dir/macos/$CMAKE_BUILD_TYPE"
+        return
+    fi
+    if isNativeLinux; then
+        echo "$base_dir/linux/$CMAKE_BUILD_TYPE"
         return
     fi
 
@@ -482,12 +492,26 @@ if isNativeMacOS; then
     fi
 fi
 
+if isNativeLinux; then
+    if ! hasCMakeDefinition "EGE_DEFAULT_BACKEND"; then
+        CMAKE_CONFIG_DEFINE+=("-DEGE_DEFAULT_BACKEND=CAIRO")
+    fi
+    if ! hasCMakeDefinition "EGE_ENABLE_OPENGL"; then
+        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_OPENGL=OFF")
+    fi
+    if ! hasCMakeDefinition "EGE_ENABLE_WINDOW_TESTS"; then
+        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_WINDOW_TESTS=OFF")
+    fi
+fi
+
 # 参数解析完成后，初始化 CMAKE_BUILD_DIR
 CMAKE_BUILD_DIR="$(getBuildDir)"
 export CMAKE_BUILD_DIR
 echo "Build directory: $CMAKE_BUILD_DIR (BUILD_TYPE: $CMAKE_BUILD_TYPE)"
 if isNativeMacOS; then
     echo "macOS native build: AppleClang/CoreGraphics (headless tests by default)"
+elif isNativeLinux; then
+    echo "Linux native build: Cairo/Xlib (headless tests by default)"
 fi
 
 if [[ "$DO_SHOW_CONFIG" == true ]]; then
@@ -565,13 +589,17 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
         mkdir -p "$OUTPUT_DIR"
         echo "Copying executables to $OUTPUT_DIR"
         cd "$CMAKE_BUILD_DIR"
-        if isNativeMacOS; then
-            # Standalone prebuilt-package demos are extensionless Mach-O
-            # executables in the build root. Exclude CMake probes and metadata.
+        if isNativeMacOS || isNativeLinux; then
+            # Native package demos are extensionless executables. Exclude
+            # CMake probes and metadata.
             find . -maxdepth 2 -type f -perm -111 -print0 |
                 while IFS= read -r -d '' file; do
                     [[ "$file" == */CMakeFiles/* ]] && continue
-                    file "$file" | grep -q "Mach-O.*executable" || continue
+                    if isNativeMacOS; then
+                        file "$file" | grep -q "Mach-O.*executable" || continue
+                    else
+                        file "$file" | grep -q "ELF.*executable" || continue
+                    fi
                     relative_path="${file#./}"
                     mkdir -p "$OUTPUT_DIR/$(dirname "$relative_path")"
                     cp "$file" "$OUTPUT_DIR/$relative_path"
@@ -598,8 +626,8 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
         [[ "$RUN_EXECUTABLE" == *.exe ]] || RUN_EXECUTABLE="${RUN_EXECUTABLE}.exe"
         exe_path="$CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
     else
-        if isNativeMacOS; then
-            # Native CMake targets are extensionless Mach-O executables.
+        if isNativeMacOS || isNativeLinux; then
+            # Native CMake targets are extensionless executables.
             RUN_EXECUTABLE="${RUN_EXECUTABLE%.exe}"
         elif [[ "$RUN_EXECUTABLE" != *.exe ]] && ! isWindows; then
             # Non-native Unix invocations historically cross-compile Windows.
@@ -608,7 +636,7 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
         exe_path="$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
     fi
 
-    if isWindows || isNativeMacOS; then
+    if isWindows || isNativeMacOS || isNativeLinux; then
         echo "run $exe_path"
         "$exe_path"
     else

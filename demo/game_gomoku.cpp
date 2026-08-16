@@ -8,6 +8,7 @@
  */
 
 #include "graphics.h"
+#include <cstdlib>
 #include <vector>
 
 /// 是否禁用音效. 如果存在编译问题， 可以把下面这行的值改成 0

@@ -30,6 +30,7 @@
 #include <math.h>
 #include <limits.h>
 #include <cstdio>
+#include <cwctype>
 #include <string>
 
 namespace ege

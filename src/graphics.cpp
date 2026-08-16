@@ -51,6 +51,8 @@
 #include "window.h"
 #if defined(EGE_BACKEND_COREGRAPHICS)
 #include "backend/macos/MacWindow.h"
+#elif defined(EGE_BACKEND_CAIRO)
+#include "backend/linux/LinuxWindow.h"
 #endif
 
 #ifdef _ITERATOR_DEBUG_LEVEL
@@ -89,7 +91,7 @@ namespace ege
 // 静态分配，零初始化
 struct _graph_setting graph_setting;
 
-#if defined(EGE_BACKEND_COREGRAPHICS)
+#if defined(EGE_BACKEND_COREGRAPHICS) || defined(EGE_BACKEND_CAIRO)
 static bool is_headless_mode()
 {
     const char* value = getenv("EGE_HEADLESS");
@@ -468,6 +470,10 @@ void setmode(int gdriver, int gmode)
         int desktopWidth = 640;
         int desktopHeight = 480;
         (void)backend::MacWindow::primaryScreenSize(&desktopWidth, &desktopHeight);
+#elif defined(EGE_BACKEND_CAIRO)
+        int desktopWidth = 640;
+        int desktopHeight = 480;
+        (void)backend::LinuxWindow::primaryScreenSize(&desktopWidth, &desktopHeight);
 #endif
         pg->dc_w = (short)(gmode & 0xFFFF);
         pg->dc_h = (short)((unsigned int)gmode >> 16);
@@ -475,6 +481,8 @@ void setmode(int gdriver, int gmode)
 #ifdef _WIN32
             pg->dc_w = rect.right - rect.left;
 #elif defined(EGE_BACKEND_COREGRAPHICS)
+            pg->dc_w = desktopWidth;
+#elif defined(EGE_BACKEND_CAIRO)
             pg->dc_w = desktopWidth;
 #else
             pg->dc_w = 640;
@@ -484,6 +492,8 @@ void setmode(int gdriver, int gmode)
 #ifdef _WIN32
             pg->dc_h = rect.bottom - rect.top;
 #elif defined(EGE_BACKEND_COREGRAPHICS)
+            pg->dc_h = desktopHeight;
+#elif defined(EGE_BACKEND_CAIRO)
             pg->dc_h = desktopHeight;
 #else
             pg->dc_h = 480;
@@ -713,7 +723,7 @@ static void push_mouse_msg(struct _graph_setting* pg, UINT message, WPARAM wpara
     pg->msgmouse_queue->push(msg);
 }
 
-#if defined(EGE_BACKEND_COREGRAPHICS)
+#if defined(EGE_BACKEND_COREGRAPHICS) || defined(EGE_BACKEND_CAIRO)
 class NativeWindowEventSink final : public WindowEventSink
 {
 public:
@@ -1274,6 +1284,28 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     if (!is_headless_mode()) {
         static NativeWindowEventSink nativeEventSink(pg);
         pg->window = new backend::MacWindow();
+        WindowOptions windowOptions;
+        windowOptions.borderless = (g_initoption & INIT_NOBORDER) != 0;
+        windowOptions.topmost = (g_initoption & INIT_TOPMOST) != 0;
+        if (!pg->window->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
+            delete pg->window;
+            pg->window = NULL;
+            pg->exit_window = 1;
+            pg->exit_flag = 1;
+            return;
+        }
+        pg->hwnd = reinterpret_cast<HWND>(pg->window->getNativeHandle());
+    }
+    if (pg->dc == 0) {
+        graph_init(pg);
+    }
+    pg->init_sem.add_permit();
+#elif defined(EGE_BACKEND_CAIRO)
+    pg->window = NULL;
+    pg->hwnd = NULL;
+    if (!is_headless_mode()) {
+        static NativeWindowEventSink nativeEventSink(pg);
+        pg->window = new backend::LinuxWindow();
         WindowOptions windowOptions;
         windowOptions.borderless = (g_initoption & INIT_NOBORDER) != 0;
         windowOptions.topmost = (g_initoption & INIT_TOPMOST) != 0;
