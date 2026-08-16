@@ -37,6 +37,10 @@ ctest --test-dir build/native-cairo --output-on-failure
 窗口集成测试额外需要 `xvfb`，配置时加入
 `-DEGE_ENABLE_WINDOW_TESTS=ON`，再运行
 `xvfb-run -a ctest --test-dir build/native-cairo --output-on-failure`。
+完整 Linux CI 验收还会递归检出 `ccap`，设置
+`-DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_ENABLE_CAMERA_TESTS=ON`，并使用测试专用的
+用户态 V4L2 仿真器运行相机枚举、格式协商、mmap streaming、YUYV→BGRA 和
+`CameraFrame`/`IMAGE` 像素测试。仿真器不进入正式库，也不新增运行时依赖。
 默认只直接链接系统 `libcairo` 和 `libX11`，不链接 GTK、wxWidgets、SDL 或 Pango。
 更详细的设计与依赖取舍见 [Linux native backend](docs/linux-native-backend.md)。
 

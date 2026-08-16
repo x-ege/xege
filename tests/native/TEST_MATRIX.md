@@ -26,8 +26,9 @@ condition, not a pass by omission.
 | macOS prebuilt SDK | `Release Package` and `macOS Native CoreGraphics Build` workflows | Universal `arm64`/`x86_64` archive validation and all-demo link against the packaged CMake configuration |
 | Windows compatibility | `cmake.mingw_toolchain_contract` plus Windows/Linux workflows | The local contract validates toolchain isolation and only configures when a compiler exists; actual library/demo builds belong to Windows or Linux-MinGW CI |
 | Camera samples | `camera_base`, `camera_wave`; enabling camera capture requires the `3rdparty/ccap` sources to already be present (normally via a recursive submodule checkout; CMake never initializes the submodule) | Compile/link in the `demos` target; live camera startup is an explicit hardware test so ordinary CTest does not access devices or show permission UI |
+| Linux camera capture bridge | `native.ege_camera_capture_virtual` | Opt-in `/dev/video99` placeholder plus userspace V4L2 emulation covers device enumeration, format negotiation, mmap streaming, YUYV-to-BGRA conversion, `CameraFrame`/`IMAGE` and saved-PNG assertions; enabled in Linux CI without camera hardware |
 | `graph_star` | Windows screensaver with Win32 preview-parent APIs | Windows-only exclusion on macOS/Linux |
-| Linux native backend | `Linux native Cairo build` workflow | Cairo/Xlib build, headless contracts, Xvfb window integration and dependency-boundary check |
+| Linux native backend | `Linux native Cairo build` workflow | Recursive ccap checkout, all 570 ccap tests with a virtual V4L2 camera, Cairo/Xlib build, 16 XEGE contracts, camera demos, Xvfb window integration and dependency-boundary check |
 
 ## Acceptance commands
 
@@ -54,7 +55,8 @@ window, encode their result, decode it through EGE, and assert characteristic
 pixels. Default test commands must never enable `EGE_ENABLE_WINDOW_TESTS`.
 
 Linux CI uses the equivalent Cairo configuration with
-`EGE_ENABLE_WINDOW_TESTS=ON` and runs CTest inside `xvfb-run`.
+`EGE_ENABLE_WINDOW_TESTS=ON`, `EGE_ENABLE_CAMERA_TESTS=ON`, and runs CTest
+inside `xvfb-run`.
 
 Known exclusions are part of the contract: `sys_edit`, Win32 handles/resources,
 `graph_star`, live camera permission/device behavior, audible output and

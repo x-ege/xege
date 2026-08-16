@@ -67,10 +67,19 @@ cmake -S . -B build -G Ninja \
   -DEGE_DEFAULT_BACKEND=CAIRO \
   -DEGE_BUILD_TEST=ON \
   -DEGE_ENABLE_WINDOW_TESTS=ON \
-  -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+  -DEGE_ENABLE_CAMERA_CAPTURE=ON \
+  -DEGE_ENABLE_CAMERA_TESTS=ON
 cmake --build build
+sudo install -m 666 /dev/null /dev/video99
 xvfb-run -a ctest --test-dir build --output-on-failure
+sudo unlink /dev/video99
 ```
+
+The camera test preloads a test-only userspace V4L2 implementation for
+`/dev/video99`. It exercises enumeration, format negotiation, mmap streaming,
+YUYV-to-BGRA conversion and the public EGE camera/image bridge without loading a
+kernel module or adding a runtime dependency. The Linux workflow also builds the
+ccap CLI and runs its complete test suite against the same virtual device.
 
 ## Packaging and compatibility
 
