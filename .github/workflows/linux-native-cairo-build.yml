@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install native dependencies
         run: |
@@ -36,16 +38,38 @@ jobs:
           -DEGE_BUILD_TEMP=OFF
           -DEGE_BUILD_TEST=ON
           -DEGE_ENABLE_WINDOW_TESTS=ON
-          -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+          -DEGE_ENABLE_CAMERA_TESTS=ON
+          -DEGE_ENABLE_CAMERA_CAPTURE=ON
 
       - name: Build
         run: cmake --build build --parallel 2
 
       - name: Build all portable demos
-        run: cmake --build build --target demos --parallel 2
+        run: |
+          cmake --build build --target demos --parallel 2
+          test -x build/demo/camera_base
+          test -x build/demo/camera_wave
 
-      - name: Test headless and X11 integration
-        run: xvfb-run -a ctest --test-dir build --output-on-failure
+      - name: Build ccap tests and CLI
+        run: |
+          cmake -S 3rdparty/ccap -B build/ccap-tests -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCCAP_BUILD_CLI=ON \
+            -DCCAP_BUILD_TESTS=ON \
+            -DCCAP_BUILD_EXAMPLES=OFF \
+            -DCCAP_ENABLE_FILE_PLAYBACK=OFF \
+            -DCCAP_ENABLE_VIDEO_WRITER=OFF
+          cmake --build build/ccap-tests --parallel 2
+
+      - name: Test ccap, headless rendering and X11 integration
+        run: |
+          sudo install -m 666 /dev/null /dev/video99
+          trap 'sudo unlink /dev/video99' EXIT
+          export EGE_TEST_V4L2_PATH=/dev/video99
+          export LD_PRELOAD="$PWD/build/tests/native/libege_native_fake_v4l2.so"
+          ctest --test-dir build/ccap-tests --output-on-failure
+          unset LD_PRELOAD
+          xvfb-run -a ctest --test-dir build --output-on-failure
 
       - name: Enforce lightweight GUI dependency boundary
         shell: bash

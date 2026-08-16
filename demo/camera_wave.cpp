@@ -27,6 +27,7 @@
 #include <string>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <algorithm>
 
 // 文本本地化宏定义

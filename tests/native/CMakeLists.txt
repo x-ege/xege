@@ -184,4 +184,33 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND EGE_RESOLVED_BACKEND STREQUAL "CAIRO")
             RUN_SERIAL TRUE
             TIMEOUT 15)
     endif()
+
+    if(EGE_ENABLE_CAMERA_TESTS)
+        if(NOT EGE_ENABLE_CAMERA_CAPTURE)
+            message(FATAL_ERROR
+                "EGE_ENABLE_CAMERA_TESTS=ON requires EGE_ENABLE_CAMERA_CAPTURE=ON")
+        endif()
+
+        add_library(ege_native_fake_v4l2 SHARED fake_v4l2_preload.cpp)
+        target_compile_features(ege_native_fake_v4l2 PRIVATE cxx_std_17)
+        target_link_libraries(ege_native_fake_v4l2 PRIVATE ${CMAKE_DL_LIBS})
+
+        add_executable(ege_native_camera_capture_virtual
+            ege_camera_capture_virtual_test.cpp)
+        target_compile_features(ege_native_camera_capture_virtual PRIVATE cxx_std_17)
+        target_include_directories(ege_native_camera_capture_virtual PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}")
+        target_compile_definitions(ege_native_camera_capture_virtual PRIVATE
+            EGE_TEST_ARTIFACT_DIR="${CMAKE_BINARY_DIR}/test-artifacts")
+        target_link_libraries(ege_native_camera_capture_virtual PRIVATE xege)
+
+        add_test(NAME native.ege_camera_capture_virtual
+            COMMAND "${CMAKE_COMMAND}" -E env
+                "EGE_TEST_V4L2_PATH=/dev/video99"
+                "LD_PRELOAD=$<TARGET_FILE:ege_native_fake_v4l2>"
+                "$<TARGET_FILE:ege_native_camera_capture_virtual>")
+        set_tests_properties(native.ege_camera_capture_virtual PROPERTIES
+            RUN_SERIAL TRUE
+            TIMEOUT 15)
+    endif()
 endif()

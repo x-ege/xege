@@ -10,6 +10,7 @@ macOS/Linux 不再自动切换为 Windows 交叉编译。
 | `EGE_BUILD_DEMO` | 根项目 ON | 生成 demo 目标 |
 | `EGE_BUILD_TEST` | 根项目 ON | 注册目标平台的 CTest 套件 |
 | `EGE_ENABLE_WINDOW_TESTS` | OFF | 注册真实窗口测试；Linux CI 可在 Xvfb 中开启 |
+| `EGE_ENABLE_CAMERA_TESTS` | OFF | 注册 Linux 用户态虚拟 V4L2 相机测试；需要同时启用 camera capture |
 | `EGE_BUILD_TEMP` | 根项目 ON | 构建 gitignored `temp/` 中的本地程序 |
 | `EGE_DEFAULT_BACKEND` | `AUTO` | Windows→`GDI`，macOS→`COREGRAPHICS`，Linux→`CAIRO` |
 | `EGE_ENABLE_OPENGL` | OFF | 实验后端开关；当前源码不完整时 fail-fast |
@@ -84,3 +85,6 @@ git submodule update --init --recursive 3rdparty/ccap
 
 未初始化 ccap 时，camera 默认关闭；如果显式设置
 `EGE_ENABLE_CAMERA_CAPTURE=ON`，配置会给出可操作的错误信息。
+Linux CI 还会设置 `EGE_ENABLE_CAMERA_TESTS=ON`，通过测试专用的用户态
+V4L2 仿真器验证设备枚举、格式协商、流式抓帧和 `CameraFrame` 转换；该仿真器
+只编译进测试目标，不进入 `libgraphics.a` 或发布包。

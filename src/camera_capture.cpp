@@ -8,6 +8,7 @@
 #if EGE_ENABLE_CAMERA_CAPTURE
 
 #include <ccap.h>
+#include <cstring>
 #include <cstdint>
 #include <memory>
 #include <algorithm>
