@@ -1,0 +1,60 @@
+name: Linux native Cairo build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-cairo-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends \
+            build-essential cmake ninja-build pkg-config \
+            libcairo2-dev libx11-dev xvfb
+
+      - name: Configure
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DEGE_DEFAULT_BACKEND=CAIRO
+          -DEGE_BUILD_DEMO=ON
+          -DEGE_BUILD_TEMP=OFF
+          -DEGE_BUILD_TEST=ON
+          -DEGE_ENABLE_WINDOW_TESTS=ON
+          -DEGE_ENABLE_CAMERA_CAPTURE=OFF
+
+      - name: Build
+        run: cmake --build build --parallel 2
+
+      - name: Build all portable demos
+        run: cmake --build build --target demos --parallel 2
+
+      - name: Test headless and X11 integration
+        run: xvfb-run -a ctest --test-dir build --output-on-failure
+
+      - name: Enforce lightweight GUI dependency boundary
+        shell: bash
+        run: |
+          dependencies="$(ldd build/tests/native/ege_native_linux_window_smoke)"
+          echo "$dependencies"
+          if grep -Eiq 'lib(Qt|gtk|gdk|wx|SDL|glfw|webkit|electron|pango)' <<<"$dependencies"; then
+            echo "Unexpected GUI framework dependency detected" >&2
+            exit 1
+          fi
+          test -s build/libgraphics.a
+          size -t build/libgraphics.a | tail -1

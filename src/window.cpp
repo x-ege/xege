@@ -5,6 +5,8 @@
 
 #if defined(EGE_BACKEND_COREGRAPHICS)
 #include "backend/macos/MacWindow.h"
+#elif defined(EGE_BACKEND_CAIRO)
+#include "backend/linux/LinuxWindow.h"
 #endif
 
 #define STYLE_NORMAL  (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN)
@@ -191,6 +193,11 @@ void getParentSize(int* width, int* height)
     *height = rect.bottom - rect.top;
 #elif defined(EGE_BACKEND_COREGRAPHICS)
     if (!backend::MacWindow::primaryScreenSize(width, height)) {
+        *width = 640;
+        *height = 480;
+    }
+#elif defined(EGE_BACKEND_CAIRO)
+    if (!backend::LinuxWindow::primaryScreenSize(width, height)) {
         *width = 640;
         *height = 480;
     }
