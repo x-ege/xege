@@ -1250,6 +1250,7 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             pg->window->show();
         }
 #endif
+		graphupdate(pg); // 立即刷新，否则会体现为不变或残影
         return;
     }
 
