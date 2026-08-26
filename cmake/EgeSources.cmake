@@ -1,8 +1,7 @@
 include_guard(GLOBAL)
 
-# Source ownership is intentionally explicit.  A new source file must be added
-# to the appropriate list instead of being picked up implicitly by a recursive
-# glob, otherwise two platform backends can accidentally be linked together.
+# 源文件按平台显式归属，新增文件必须加入对应列表，不能依赖递归 glob；否则不同平台
+# 后端可能被误链接到同一目标。
 
 set(EGE_FRONTEND_SOURCES
     src/camera_capture.cpp

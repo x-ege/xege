@@ -61,8 +61,7 @@ public:
 
         HWND parentWindow = getHWnd();
         if (isWindowOwnedByCurrentThread(parentWindow)) {
-            // A same-thread owner can create the native child directly;
-            // cross-thread legacy windows still use the private message path.
+            // 同线程宿主可直接创建原生子窗口；跨线程的历史窗口仍走私有消息路径。
             msg.hwnd = ::CreateWindowExW(msg.exstyle, msg.classname, NULL,
                 msg.style, 0, 0, 0, 0, parentWindow, (HMENU)msg.id,
                 getHInstance(), NULL);
@@ -98,8 +97,8 @@ public:
 
         if (msg.hEvent) ::CloseHandle(msg.hEvent);
 #else
-        // sys_edit wraps a native Win32 EDIT child. Reporting success here
-        // would leave Unix callers waiting on a control that does not exist.
+        // sys_edit 包装的是 Win32 EDIT 子窗口；非 Windows 平台不能对不存在的控件
+        // 返回成功。
         (void)multiline;
         (void)scrollbar;
         return grError;

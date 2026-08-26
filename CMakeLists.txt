@@ -11,10 +11,9 @@ if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
 endif()
 cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 
-# Keep native Apple builds compatible with the oldest supported macOS release.
-# This must be set before project()/enable_language(), otherwise objects inherit
-# the SDK version of the (rolling) build machine as their deployment target.
-# Explicit caller values always win. Cross-compilation toolchains are excluded.
+# 保持 macOS 原生构建与最低支持版本兼容。此值必须在 project()/enable_language()
+# 之前设置，否则目标文件会继承构建机 SDK 的版本；调用方显式指定的值优先，
+# 交叉编译工具链不受影响。
 if(CMAKE_HOST_APPLE
         AND NOT CMAKE_TOOLCHAIN_FILE
         AND (NOT DEFINED CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -23,9 +22,8 @@ if(CMAKE_HOST_APPLE
         "Minimum macOS version supported by native XEGE builds")
 endif()
 
-# Cross-compilers belong in a toolchain file and must be selected before this
-# project() call.  In particular, a Unix host no longer implies a Windows
-# target; CMAKE_SYSTEM_NAME always describes the actual target platform.
+# 交叉编译器必须通过 toolchain 文件在 project() 前选择。Unix 宿主机不再隐式代表
+# Windows 目标，实际目标平台始终以 CMAKE_SYSTEM_NAME 为准。
 project(XEGE LANGUAGES C CXX)
 
 option(EGE_CLEAR_OPTIONS_CACHE "Clear XEGE option caches before configuring" OFF)
@@ -37,14 +35,12 @@ if(EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
             EGE_ENABLE_CAMERA_TESTS
             EGE_BUILD_TEMP
             EGE_DEFAULT_BACKEND
-            EGE_ENABLE_OPENGL
             EGE_ENABLE_CAMERA_CAPTURE
             EGE_ENABLE_CPP17
             EGE_DISABLE_DEBUG_INFO)
         unset(${_ege_cached_option} CACHE)
     endforeach()
-    # Treat this cache reset as a one-shot request instead of leaving every
-    # future configure in reset mode.
+    # 缓存清理是一次性操作，避免后续每次配置都重复清理。
     set(EGE_CLEAR_OPTIONS_CACHE OFF CACHE BOOL
         "Clear XEGE option caches before configuring" FORCE)
 endif()
@@ -57,6 +53,7 @@ option(EGE_ENABLE_CAMERA_TESTS
     "Register tests that exercise a virtual native camera (never enabled by default)" OFF)
 option(EGE_BUILD_TEMP "Build EGE temporary programs" ${EGE_IS_ROOT_PROJECT})
 
+# EGE_DISABLE_DEBUG_INFO：优先使用 CMake 参数，其次检查环境变量，默认关闭。
 if(NOT DEFINED EGE_DISABLE_DEBUG_INFO)
     if(DEFINED ENV{EGE_DISABLE_DEBUG_INFO}
             AND "$ENV{EGE_DISABLE_DEBUG_INFO}" MATCHES
@@ -73,15 +70,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(EgeBackends)
 include(EgeSources)
 
-# project() creates an empty CMAKE_BUILD_TYPE cache entry for single-config
-# generators.  Multi-config generators intentionally keep it empty.
+# 单配置生成器默认使用 Release；多配置生成器保持 CMAKE_BUILD_TYPE 为空。
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
         Debug Release RelWithDebInfo MinSizeRel)
 endif()
 
-# ccache is a developer convenience, never a target-platform decision.
+# 检查并启用 ccache；它只影响编译缓存，不参与目标平台判断。
 if(EGE_IS_ROOT_PROJECT AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
     find_program(EGE_CCACHE_PROGRAM ccache)
     if(EGE_CCACHE_PROGRAM)
@@ -105,6 +101,7 @@ if(EGE_IS_ROOT_PROJECT AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
 endif()
 
 include(CheckCXXSourceCompiles)
+# 检查编译器是否支持 C++17；相机模块据此决定默认值。
 if(MSVC)
     set(CMAKE_REQUIRED_FLAGS "/std:c++17")
 else()
@@ -121,9 +118,8 @@ else()
     set(EGE_ENABLE_CPP17 OFF CACHE BOOL "Enable C++17 features" FORCE)
 endif()
 
-# CMake configuration must never mutate the source checkout or access the
-# network.  A recursive clone keeps camera support enabled by default; a clone
-# without ccap remains configurable and prints the exact recovery command.
+# CMake 配置阶段不修改源码目录，也不访问网络。完整递归克隆默认启用相机；缺少
+# ccap 时仍允许配置，并提示明确的恢复命令。
 set(_ege_ccap_ready OFF)
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ccap/include/ccap.h"
         AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ccap/src/ccap_core.cpp")
@@ -160,6 +156,7 @@ target_include_directories(xege
 )
 
 if(EGE_ENABLE_CPP17)
+    # 仅在库内部启用 C++17，不改变对外接口要求。
     target_compile_features(xege PRIVATE cxx_std_17)
     set_target_properties(xege PROPERTIES CXX_EXTENSIONS OFF)
     target_compile_definitions(xege PRIVATE EGE_ENABLE_CPP17=1)
@@ -167,6 +164,7 @@ endif()
 
 if(EGE_ENABLE_CAMERA_CAPTURE)
     include(CheckCXXCompilerFlag)
+    # 检查编译器是否支持 AVX2。
     if(MSVC)
         check_cxx_compiler_flag("/arch:AVX2" CCAP_SUPPORTS_AVX2)
     else()
@@ -247,6 +245,7 @@ endif()
 
 ege_configure_backend(xege)
 
+# 设置库文件名：MSVC Debug 使用 graphicsd，其余配置统一使用 graphics。
 if(MSVC)
     set_target_properties(xege PROPERTIES
         OUTPUT_NAME_DEBUG graphicsd
@@ -267,6 +266,7 @@ target_compile_definitions(xege
 )
 
 if(MSVC)
+    # 禁用调试信息时移除对象文件中的 PDB 路径，避免使用者链接时出现 LNK4099。
     if(EGE_DISABLE_DEBUG_INFO)
         foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
             foreach(_language C CXX)
@@ -280,6 +280,7 @@ if(MSVC)
         endforeach()
     endif()
 
+    # MSVC 2015 及以上支持 /utf-8，旧版本由发布脚本处理源码编码。
     if(MSVC_VERSION GREATER_EQUAL 1900)
         target_compile_options(xege PRIVATE /utf-8 /MP /Zl)
     else()
@@ -290,6 +291,7 @@ if(MSVC)
         /D_CRT_SECURE_NO_WARNINGS=1
         /Zc:__cplusplus
     )
+    # 以下兼容选项仅在 EGE 内部生效；对外发布仍保障运行库与内存分配匹配。
     target_compile_definitions(xege PRIVATE
         _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH=1
         _ALLOW_RUNTIME_LIBRARY_MISMATCH=1
@@ -298,6 +300,7 @@ if(MSVC)
         _CRT_SECURE_NO_DEPRECATE=1
     )
     if(MSVC_VERSION EQUAL 1200)
+        # VC6 默认使用 /ML(d)，这里覆盖 CMake 的运行库选择；D4025 警告可忽略。
         target_compile_options(xege PRIVATE
             $<$<CONFIG:Debug>:/MLd>
             $<$<CONFIG:Release>:/ML>)
@@ -315,13 +318,11 @@ else()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
-# enable_testing() has directory scope: it must run here so tests registered by
-# subdirectories are visible from the top-level build directory.
+# enable_testing() 具有目录作用域，必须在此调用，子目录注册的测试才能从顶层看到。
 if(EGE_BUILD_TEST)
     enable_testing()
-    # The historical putimage suite links Win32 libraries directly.  Keep it
-    # intact for GDI regression coverage, while native platform tests live in
-    # tests/native and carry no Windows linkage.
+    # 历史 putimage 测试直接链接 Win32 库，只用于 GDI 回归；原生平台测试放在
+    # tests/native，不携带 Windows 链接依赖。
     if(WIN32 AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)
     endif()
@@ -330,9 +331,8 @@ if(EGE_BUILD_TEST)
     endif()
     if(EGE_IS_ROOT_PROJECT)
         if(CMAKE_GENERATOR STREQUAL "Xcode")
-            # Xcode's OBJECT_FILE_DIR_normal is derived from the target name
-            # (`xege.build`), not the CMake project name (`XEGE.build`). These
-            # differ on case-sensitive macOS volumes.
+            # Xcode 的 OBJECT_FILE_DIR_normal 来自目标名 xege.build，而非项目名
+            # XEGE.build；二者在大小写敏感的 macOS 卷上不同。
             set(_ege_native_object_dir
                 "${CMAKE_CURRENT_BINARY_DIR}/build/xege.build/$<CONFIG>/Objects-normal")
         else()
@@ -345,6 +345,7 @@ if(EGE_BUILD_TEST)
                 -DEGE_CONTRACT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/cmake/backend-default
                 -DEGE_EXPECTED_BACKEND=${EGE_RESOLVED_BACKEND}
                 -DEGE_GENERATOR=${CMAKE_GENERATOR}
+                -DEGE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/backend_contract.cmake)
         add_test(NAME cmake.mingw_toolchain_contract
             COMMAND "${CMAKE_COMMAND}"
@@ -388,7 +389,6 @@ endif()
 message(STATUS "XEGE configuration")
 message(STATUS "  Target platform: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "  Default backend: ${EGE_RESOLVED_BACKEND}")
-message(STATUS "  Optional OpenGL: ${EGE_ENABLE_OPENGL}")
 message(STATUS "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 if(APPLE)
     message(STATUS "  macOS deployment target: ${CMAKE_OSX_DEPLOYMENT_TARGET}")

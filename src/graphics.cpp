@@ -1265,9 +1265,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     SetCloseHandler((g_initoption & INIT_NOFORCEEXIT) ? DefCloseHandler : NULL);
 #endif
 
-    // setmode() resolves legacy negative dimensions (for example -1 means the
-    // default/desktop-sized canvas). Window creation must use those resolved
-    // values rather than the raw packed request.
+    // setmode() 会解析历史负尺寸参数（例如 -1 表示默认桌面尺寸）；创建窗口时必须使用
+    // 解析后的宽高，不能再次读取原始打包参数。
     int width  = pg->dc_w;
     int height = pg->dc_h;
 

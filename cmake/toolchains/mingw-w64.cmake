@@ -1,6 +1,6 @@
-# Explicit mingw-w64 cross-compilation toolchain.
+# 显式的 mingw-w64 交叉编译工具链。
 #
-# Example:
+# 示例：
 #   cmake -S . -B build/mingw \
 #     -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake
 

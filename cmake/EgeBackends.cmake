@@ -1,17 +1,12 @@
 include_guard(GLOBAL)
 
 set(EGE_DEFAULT_BACKEND "AUTO" CACHE STRING
-    "Default rendering backend: AUTO, GDI, COREGRAPHICS, CAIRO, or OPENGL")
+    "Default rendering backend: AUTO, GDI, COREGRAPHICS, or CAIRO")
 set_property(CACHE EGE_DEFAULT_BACKEND PROPERTY STRINGS
-    AUTO GDI COREGRAPHICS CAIRO OPENGL)
+    AUTO GDI COREGRAPHICS CAIRO)
 
-option(EGE_ENABLE_OPENGL
-    "Compile the optional OpenGL backend in addition to the platform backend"
-    OFF)
-
-# find_library(... REQUIRED) was introduced in CMake 3.18. Keep the project
-# compatible with its declared 3.13 minimum while still failing clearly when
-# an Apple SDK framework is unavailable.
+# find_library(... REQUIRED) 从 CMake 3.18 才支持。这里兼容项目声明的 3.13 下限，
+# 同时在 Apple SDK framework 缺失时明确失败。
 function(_ege_find_required_framework output_variable framework_name)
     find_library(${output_variable} NAMES ${framework_name})
     if(NOT ${output_variable})
@@ -22,13 +17,13 @@ function(_ege_find_required_framework output_variable framework_name)
 endfunction()
 
 string(TOUPPER "${EGE_DEFAULT_BACKEND}" _EGE_REQUESTED_BACKEND)
-set(_EGE_VALID_BACKENDS AUTO GDI COREGRAPHICS CAIRO OPENGL)
+set(_EGE_VALID_BACKENDS AUTO GDI COREGRAPHICS CAIRO)
 list(FIND _EGE_VALID_BACKENDS "${_EGE_REQUESTED_BACKEND}"
     _EGE_BACKEND_INDEX)
 if(_EGE_BACKEND_INDEX EQUAL -1)
     message(FATAL_ERROR
         "EGE_DEFAULT_BACKEND='${EGE_DEFAULT_BACKEND}' is invalid. "
-        "Expected one of: AUTO, GDI, COREGRAPHICS, CAIRO, OPENGL.")
+        "Expected one of: AUTO, GDI, COREGRAPHICS, CAIRO.")
 endif()
 
 if(_EGE_REQUESTED_BACKEND STREQUAL "AUTO")
@@ -58,33 +53,12 @@ elseif(_EGE_RESOLVED_BACKEND STREQUAL "CAIRO"
     message(FATAL_ERROR "The Cairo backend currently requires a Linux target.")
 endif()
 
-if(_EGE_RESOLVED_BACKEND STREQUAL "OPENGL" AND NOT EGE_ENABLE_OPENGL)
-    message(FATAL_ERROR
-        "EGE_DEFAULT_BACKEND=OPENGL requires -DEGE_ENABLE_OPENGL=ON. "
-        "OpenGL is intentionally opt-in.")
-endif()
-
 set(EGE_RESOLVED_BACKEND "${_EGE_RESOLVED_BACKEND}" CACHE INTERNAL
     "Resolved EGE rendering backend" FORCE)
 
-function(_ege_add_existing_sources target output_var)
-    set(_added_sources)
-    foreach(_source IN LISTS ARGN)
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_source}")
-            list(APPEND _added_sources "${_source}")
-        endif()
-    endforeach()
-    if(_added_sources)
-        target_sources(${target} PRIVATE ${_added_sources})
-    endif()
-    set(${output_var} "${_added_sources}" PARENT_SCOPE)
-endfunction()
-
 function(ege_configure_backend target)
-    if(NOT EGE_RESOLVED_BACKEND STREQUAL "GDI" OR EGE_ENABLE_OPENGL)
-        _ege_add_existing_sources(${target} _ege_common_backend_sources
-            src/backend/common/PixelSurface.cpp
-        )
+    if(NOT EGE_RESOLVED_BACKEND STREQUAL "GDI")
+        target_sources(${target} PRIVATE src/backend/common/PixelSurface.cpp)
     endif()
     target_include_directories(${target} PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/backend/interface"
@@ -92,10 +66,6 @@ function(ege_configure_backend target)
     )
 
     if(EGE_RESOLVED_BACKEND STREQUAL "GDI")
-        _ege_add_existing_sources(${target} _ege_gdi_sources
-            src/backend/win32/GDIGraphicsContext.cpp
-            src/backend/win32/GDIWindow.cpp
-        )
         target_compile_definitions(${target} PRIVATE EGE_BACKEND_GDI=1)
         target_link_libraries(${target} INTERFACE
             gdiplus
@@ -113,18 +83,12 @@ function(ege_configure_backend target)
             set_source_files_properties(src/backend/macos/MacWindow.mm
                 PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
         endif()
-        _ege_add_existing_sources(${target} _ege_coregraphics_sources
+        target_sources(${target} PRIVATE
             src/backend/macos/CoreGraphicsSurface.cpp
             src/backend/macos/CoreGraphicsRenderTarget.cpp
             src/backend/macos/CoreTextRenderer.cpp
-            src/backend/macos/MacWindow.cpp
             src/backend/macos/MacWindow.mm
         )
-        if(NOT _ege_coregraphics_sources)
-            message(FATAL_ERROR
-                "The Core Graphics backend was selected, but no implementation "
-                "source exists under src/backend/macos.")
-        endif()
         target_compile_definitions(${target} PRIVATE EGE_BACKEND_COREGRAPHICS=1)
         target_include_directories(${target} PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/src/backend/macos")
@@ -147,7 +111,7 @@ function(ege_configure_backend target)
                     "The Cairo backend is incomplete: missing ${_ege_source}")
             endif()
         endforeach()
-        _ege_add_existing_sources(${target} _ege_cairo_sources
+        target_sources(${target} PRIVATE
             src/backend/linux/CairoRenderTarget.cpp
             src/backend/linux/LinuxWindow.cpp
         )
@@ -160,29 +124,5 @@ function(ege_configure_backend target)
         target_link_libraries(${target} PRIVATE
             PkgConfig::EGE_CAIRO
             PkgConfig::EGE_X11)
-    elseif(EGE_RESOLVED_BACKEND STREQUAL "OPENGL")
-        target_compile_definitions(${target} PRIVATE EGE_BACKEND_OPENGL=1)
-    endif()
-
-    if(EGE_ENABLE_OPENGL)
-        _ege_add_existing_sources(${target} _ege_opengl_sources
-            src/backend/opengl/GLFWWindow.cpp
-            src/backend/opengl/GlFontCache.cpp
-            src/backend/opengl/GlRenderTarget.cpp
-            src/backend/opengl/GlShader.cpp
-            src/backend/opengl/OpenGLGraphicsContext.cpp
-            src/backend/opengl/glad/gl_loader.cpp
-        )
-        if(NOT _ege_opengl_sources)
-            message(FATAL_ERROR
-                "EGE_ENABLE_OPENGL=ON, but the OpenGL backend sources are absent. "
-                "Forward-port src/backend/opengl before enabling it.")
-        endif()
-        find_package(OpenGL REQUIRED)
-        find_package(glfw3 REQUIRED)
-        target_compile_definitions(${target} PRIVATE EGE_ENABLE_OPENGL=1)
-        target_include_directories(${target} PRIVATE
-            "${CMAKE_CURRENT_SOURCE_DIR}/src/backend/opengl")
-        target_link_libraries(${target} PRIVATE glfw OpenGL::GL)
     endif()
 endfunction()

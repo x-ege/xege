@@ -68,7 +68,6 @@ foreach(_ege_expected_text
         "/build/macos/Debug"
         "macOS native build: AppleClang/CoreGraphics (headless tests by default)"
         "-DEGE_DEFAULT_BACKEND=COREGRAPHICS"
-        "-DEGE_ENABLE_OPENGL=OFF"
         "-DEGE_ENABLE_WINDOW_TESTS=OFF"
         "-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=11.0")
     string(FIND "${_ege_tasks_stdout}" "${_ege_expected_text}" _ege_text_match)
@@ -85,18 +84,15 @@ endforeach()
 foreach(_ege_definition_style untyped typed)
     if(_ege_definition_style STREQUAL "typed")
         set(_ege_backend_definition "-DEGE_DEFAULT_BACKEND:STRING=COREGRAPHICS")
-        set(_ege_opengl_definition "-DEGE_ENABLE_OPENGL:BOOL=OFF")
         set(_ege_window_definition "-DEGE_ENABLE_WINDOW_TESTS:BOOL=OFF")
     else()
         set(_ege_backend_definition "-DEGE_DEFAULT_BACKEND=COREGRAPHICS")
-        set(_ege_opengl_definition "-DEGE_ENABLE_OPENGL=OFF")
         set(_ege_window_definition "-DEGE_ENABLE_WINDOW_TESTS=OFF")
     endif()
 
     execute_process(
         COMMAND bash -l tasks.sh --debug --show-config --
             "${_ege_backend_definition}"
-            "${_ege_opengl_definition}"
             "${_ege_window_definition}"
         WORKING_DIRECTORY "${EGE_SOURCE_DIR}"
         RESULT_VARIABLE _ege_definition_probe_result
@@ -111,7 +107,7 @@ foreach(_ege_definition_style untyped typed)
     endif()
 
     foreach(_ege_definition_name
-            EGE_DEFAULT_BACKEND EGE_ENABLE_OPENGL EGE_ENABLE_WINDOW_TESTS
+            EGE_DEFAULT_BACKEND EGE_ENABLE_WINDOW_TESTS
             CMAKE_OSX_DEPLOYMENT_TARGET)
         string(REGEX MATCHALL
             "-D${_ege_definition_name}(:[A-Za-z_]+)?=[^ \t\r\n]+"
@@ -247,7 +243,6 @@ foreach(_ege_expected_text
         "/build/macos/Release"
         "macOS native build: AppleClang/CoreGraphics (headless tests by default)"
         "-DEGE_DEFAULT_BACKEND=COREGRAPHICS"
-        "-DEGE_ENABLE_OPENGL=OFF"
         "-DEGE_ENABLE_WINDOW_TESTS=OFF"
         "-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=11.0")
     string(FIND "${_ege_release_tasks_stdout}" "${_ege_expected_text}"

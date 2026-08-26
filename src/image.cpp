@@ -100,9 +100,8 @@ inline FILE* openWideFile(const wchar_t* filename, const wchar_t* mode) {
     if (filename == NULL || mode == NULL) {
         return NULL;
     }
-    // Unix paths are byte strings. Use EGE's locale-independent UTF-8
-    // conversion instead of wcstombs(), which fails in the C locale and used
-    // to leave unterminated stack buffers for non-ASCII filenames.
+    // Unix 路径是字节串。使用 EGE 与 locale 无关的 UTF-8 转换，避免 wcstombs()
+    // 在 C locale 下处理非 ASCII 文件名失败或留下未终止的栈缓冲区。
     const std::string utf8Filename = ege::w2mb(filename);
     const std::string utf8Mode = ege::w2mb(mode);
     if (utf8Filename.empty() || utf8Mode.empty()) {
@@ -151,8 +150,8 @@ graphics_errors getimage_from_memory_stb(PIMAGE image, const void* memory, long 
 
 static color_t colorForOpaqueFileOutput(color_t color)
 {
-    // Win32 GDI commonly leaves the unused alpha byte at zero for visible
-    // RGB32 pixels. Preserve those RGB channels in opaque file formats.
+    // Win32 GDI 的 RGB32 可见像素通常将未使用的 Alpha 字节保留为零；写入不透明
+    // 文件格式时仍需保留其 RGB 通道。
     return EGEGET_A(color) == 0 ? color : color_unpremultiply(color);
 }
 
@@ -564,9 +563,8 @@ Gdiplus::Graphics* IMAGE::getGraphics()
                 m_width, m_height, m_width * static_cast<int>(sizeof(color_t)),
                 PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(buffer));
             m_graphics = new Gdiplus::Graphics(m_graphicsBitmap);
-            // Match the state configured for the legacy HDC-backed Graphics
-            // object below. PixelOffsetModeHalf in particular affects source
-            // rectangles and scaled image sampling by a full edge pixel.
+            // 与下方基于 HDC 的历史 Graphics 对象保持一致；PixelOffsetModeHalf 会影响
+            // 源矩形和缩放采样的边缘像素。
             m_graphics->SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
             m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);
             m_graphics->SetTextRenderingHint(
@@ -691,9 +689,8 @@ int IMAGE::resize_f(int width, int height)
             return grAllocError;
         }
 
-        // m_texture is a GDI+ Bitmap that directly wraps the current DIB
-        // storage. Destroy that wrapper while the old pixels are still valid;
-        // otherwise replacing the selected bitmap leaves a dangling pointer.
+        // m_texture 是直接包装当前 DIB 存储的 GDI+ Bitmap。必须在旧像素仍有效时销毁
+        // 该包装，否则替换选中的位图后会留下悬空指针。
         if (regenerateTexture) {
             gentexture(false);
         }
@@ -1301,9 +1298,8 @@ static void fix_rect_1size(PCIMAGE imgDest, PCIMAGE imgSrc, int* xDest, int* yDe
         return;
     }
 
-    // Parameterize both rectangles by the same source-to-destination offset.
-    // Keeping the arithmetic in 64 bits avoids the old INT_MIN translation,
-    // which relied on signed overflow for every positive destination origin.
+    // 源矩形和目标矩形使用同一个偏移量参数化；64 位运算避免旧 INT_MIN 平移在正
+    // 目标原点上依赖有符号整数溢出。
     const long long startX = std::max({0LL, -sourceX, clipLeft - destinationX});
     const long long startY = std::max({0LL, -sourceY, clipTop - destinationY});
     const long long endX = std::min({requestedWidth,
@@ -3900,8 +3896,7 @@ int savebmp(PCIMAGE pimg, FILE* file, bool withAlphaChannel)
         const unsigned char zeroPadding[4] = {0, 0, 0, 0};
 
         for (int row = rowCnt-1; row >= 0; row--) {
-            // Convert PRGB32 to RGB while preserving GDI RGB32 pixels whose
-            // unused alpha byte is zero.
+            // 将 PRGB32 转为 RGB，同时保留未使用 Alpha 字节为零的 GDI RGB32 像素。
             for (int col = 0; col < colCnt; ++col) {
                 rowBuffer[col] = colorForOpaqueFileOutput(buffer[row * colCnt + col]);
             }
