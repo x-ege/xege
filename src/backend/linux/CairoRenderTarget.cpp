@@ -1256,8 +1256,11 @@ const color_t* CairoRenderTarget::getPixelBuffer() const
 
 color_t* CairoRenderTarget::getPixelBufferForWrite(int x, int y, int width, int height)
 {
-    (void)x; (void)y; (void)width; (void)height;
-    cairo_surface_flush(cairoSurface_); return surface_->data();
+    cairo_surface_flush(cairoSurface_);
+    if (width > 0 && height > 0) {
+        cairo_surface_mark_dirty_rectangle(cairoSurface_, x, y, width, height);
+    }
+    return surface_->data();
 }
 
 bool CairoRenderTarget::updatePixelBuffer(int x, int y, int width, int height,

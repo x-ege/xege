@@ -413,7 +413,8 @@ static bool fill_cpu_shape(PIMAGE pimg, float left, float top, float right, floa
 
     if (right < left) std::swap(left, right);
     if (bottom < top) std::swap(top, bottom);
-    color_t* pixels = target->getbuffer();
+    color_t* pixels = target->getbuffer_for_write(
+        0, 0, target->getwidth(), target->getheight());
     if (!pixels) return true;
     const float corners[4][2] = {
         {left, top}, {right, top}, {right, bottom}, {left, bottom}};
@@ -667,7 +668,8 @@ static bool stroke_cpu_polyline(PIMAGE pimg, const ege_point* points, int count,
             std::sqrt(dx * dx + dy * dy);
     }
 
-    color_t* pixels = target->getbuffer();
+    color_t* pixels = target->getbuffer_for_write(
+        0, 0, target->getwidth(), target->getheight());
     if (pixels == NULL) return true;
     const int clipLeft = target->m_enableclip ? std::max(0, target->m_vpt.left) : 0;
     const int clipTop = target->m_enableclip ? std::max(0, target->m_vpt.top) : 0;
@@ -2154,7 +2156,8 @@ static void put_texture_snapshot(PCIMAGE srcimg, const ege_rect& destination,
         bottom = std::max(bottom, corner.y);
     }
 
-    color_t* pixels = target->getbuffer();
+    color_t* pixels = target->getbuffer_for_write(
+        0, 0, target->getwidth(), target->getheight());
     if (pixels == NULL) return;
     const int clipLeft = target->m_enableclip ? std::max(0, target->m_vpt.left) : 0;
     const int clipTop = target->m_enableclip ? std::max(0, target->m_vpt.top) : 0;

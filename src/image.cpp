@@ -500,15 +500,9 @@ void IMAGE::setdefaultattribute()
     enable_anti_alias(false);
 }
 
-#ifndef _WIN32
-color_t* IMAGE::getbuffer()
-{
-    if (getNativeRenderTarget()) {
-        color_t* buffer = getNativeRenderTarget()->getPixelBuffer();
-        m_pBuffer = reinterpret_cast<PDWORD>(buffer);
-        return buffer;
-    }
 #ifdef _WIN32
+void IMAGE::syncBuffer() const
+{
 #ifdef EGE_GDIPLUS
     if (m_graphics) {
         m_graphics->Flush(Gdiplus::FlushIntentionSync);
@@ -517,7 +511,18 @@ color_t* IMAGE::getbuffer()
     if (m_hDC) {
         GdiFlush();
     }
+}
 #endif
+
+#ifndef _WIN32
+color_t* IMAGE::getbuffer()
+{
+    if (getNativeRenderTarget()) {
+        color_t* buffer = getNativeRenderTarget()->getPixelBufferForWrite(
+            0, 0, m_width, m_height);
+        m_pBuffer = reinterpret_cast<PDWORD>(buffer);
+        return buffer;
+    }
     return reinterpret_cast<color_t*>(m_pBuffer);
 }
 
@@ -527,16 +532,6 @@ const color_t* IMAGE::getbuffer() const
         const RenderTarget* renderTarget = getNativeRenderTarget();
         return renderTarget->getPixelBuffer();
     }
-#ifdef _WIN32
-#ifdef EGE_GDIPLUS
-    if (m_graphics) {
-        m_graphics->Flush(Gdiplus::FlushIntentionSync);
-    }
-#endif
-    if (m_hDC) {
-        GdiFlush();
-    }
-#endif
     return reinterpret_cast<const color_t*>(m_pBuffer);
 }
 
@@ -548,16 +543,6 @@ color_t* IMAGE::getbuffer_for_write(int x, int y, int width, int height)
         m_pBuffer = reinterpret_cast<PDWORD>(buffer);
         return buffer;
     }
-#ifdef _WIN32
-#ifdef EGE_GDIPLUS
-    if (m_graphics) {
-        m_graphics->Flush(Gdiplus::FlushIntentionSync);
-    }
-#endif
-    if (m_hDC) {
-        GdiFlush();
-    }
-#endif
     return reinterpret_cast<color_t*>(m_pBuffer);
 }
 #endif
@@ -3521,7 +3506,7 @@ color_t* getbuffer(PIMAGE pImg)
 {
     PIMAGE img = CONVERT_IMAGE_CONST(pImg);
     CONVERT_IMAGE_END;
-    return img ? img->getbuffer() : NULL;
+    return img ? img->getbuffer_for_write(0, 0, img->getwidth(), img->getheight()) : NULL;
 }
 
 const color_t* getbuffer(PCIMAGE pImg)

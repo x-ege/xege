@@ -125,6 +125,9 @@ private:
     void setdefaultattribute();
     int  deleteimage();
     void reset();
+#ifdef _WIN32
+    void syncBuffer() const;
+#endif
 
 public:
     Bound            m_vpt;
@@ -157,10 +160,19 @@ public:
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
 #ifdef _WIN32
-    color_t* getbuffer() { return reinterpret_cast<color_t*>(m_pBuffer); }
-    const color_t* getbuffer() const { return reinterpret_cast<const color_t*>(m_pBuffer); }
+    color_t* getbuffer()
+    {
+        syncBuffer();
+        return reinterpret_cast<color_t*>(m_pBuffer);
+    }
+    const color_t* getbuffer() const
+    {
+        syncBuffer();
+        return reinterpret_cast<const color_t*>(m_pBuffer);
+    }
     color_t* getbuffer_for_write(int, int, int, int)
     {
+        syncBuffer();
         return reinterpret_cast<color_t*>(m_pBuffer);
     }
 #else
