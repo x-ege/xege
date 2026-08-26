@@ -1,6 +1,6 @@
 # Easy Graphics Engine 25.11 发布公告
 
-**发布日期**: 2025 年 12 月 15 日
+**发布日期**: 2025 年 11 月
 
 我们非常高兴地宣布 **EGE (Easy Graphics Engine) 25.11** 正式发布！这是继 24.04 版本之后的又一重要更新，带来了大量令人兴奋的新特性、性能改进和问题修复。
 
@@ -145,11 +145,11 @@
 
 - 移除 `libpng` 和 `zlib` 依赖，简化编译配置
 - 优化 CMake 配置，添加构建选项允许设置不构建示例程序
-- 优化 GitHub Actions 工作流，增加 MinGW Windows 构建
+- 优化 GitHub Actions 工作流，增加 MinGW Windows 构建和 macOS 交叉编译支持
 - 增加编译测试模块，用于发现编译兼容性问题
 - 添加单元测试相关模块和性能测试逻辑
 - 优化发布脚本，支持跨平台（macOS/Linux/Windows）
-- 新增 `test-run-demos.sh` 脚本，用于对 Windows demo 进行带超时控制的冒烟测试
+- 新增 `test-run-demos.sh` 脚本，支持自动化运行示例程序进行冒烟测试，带超时控制
 - 文档更新：修正多处文档错误，更新示例代码，补充新功能说明
 
 ---
@@ -171,7 +171,7 @@
 
 - ✨ 一键创建 EGE 项目，自动配置 CMake 构建系统
 - 🔧 支持预编译库模式和源码模式两种使用方式
-- 🌍 Windows MinGW/MSVC 项目模板；macOS/Linux 支持在后续版本继续完善
+- 🌍 完整的多平台支持（Windows MinGW/MSVC、macOS、Linux）
 - 🌐 中英文双语界面，根据系统语言自动切换
 
 **安装方式**：
@@ -193,7 +193,7 @@
 
 - 📁 一键生成 EGE 项目（支持预编译库和源码两种模板）
 - ▶️ 单文件快速编译运行，无需复杂配置
-- 🍎 macOS/Linux 主机仍通过 mingw-w64 + Wine 交叉编译 Windows 版
+- 🍎 支持 macOS/Linux（通过 mingw-w64 + wine 跨平台编译）
 - 🌐 中英文双语界面，自动适配 VS Code 语言设置
 
 **安装方式**：

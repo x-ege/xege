@@ -10,7 +10,6 @@
 #include "egecontrolbase.h"
 
 #include <algorithm>
-#include <cstring>
 
 #ifdef DEBUG
 #include "ege/label.h"
@@ -112,6 +111,7 @@ public:
     button(CTL_DEFPARAM) : CTL_INITBASE(egeControlBase)
     {
         CTL_INIT; // must be the first line
+        size(64, 32);
         _caption[0]   = '\0';
         _font_height = 12;
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -125,6 +125,8 @@ public:
         _text_color   = BLACK;
         _shadow_color = EGERGB(50, 50, 50);
 
+        updatesidewidth();
+
         _on_click      = NULL;
         callback_param = NULL;
         _pushed        = false;
@@ -132,9 +134,6 @@ public:
 #ifdef DEBUG
         _logger = NULL;
 #endif
-        // size() dispatches to button::onSize(), which redraws the control.
-        // Initialize every property consumed by redraw() first.
-        size(64, 32);
         // redraw();
         // blendmode(true);
     }

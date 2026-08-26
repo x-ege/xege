@@ -1,7 +1,6 @@
 #include "ege_def.h"
 #include "ege_dllimport.h"
 
-#ifdef _WIN32
 #include <windef.h>
 #include <windows.h>
 #include <stdio.h>
@@ -281,5 +280,4 @@ namespace dll
     }
 
 }
-#endif
 

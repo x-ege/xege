@@ -1,8 +1,6 @@
 #include "ege_head.h"
 
 #include <stdio.h>
-
-#ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #include <wincon.h>
@@ -146,28 +144,18 @@ bool clear_console()
 
 bool show_console()
 {
-    if (hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
-        return false;
-    }
-    ShowWindow(hConsoleWnd, SW_SHOW);
-    return true;
+    CHECK_CONSOLE_HANDLE(hConsoleWnd);
+    return ShowWindow(hConsoleWnd, SW_SHOW);
 }
 
 bool hide_console()
 {
-    if (hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
-        return false;
-    }
-    ShowWindow(hConsoleWnd, SW_HIDE);
-    return true;
+    CHECK_CONSOLE_HANDLE(hConsoleWnd);
+    return ShowWindow(hConsoleWnd, SW_HIDE);
 }
 
 bool close_console()
 {
-    if (hInput == NULL || hOutput == NULL ||
-        hConsoleWnd == NULL || !IsWindow(hConsoleWnd)) {
-        return false;
-    }
     if (!FreeConsole()) {
         return false;
     }
@@ -201,69 +189,3 @@ int kbhit_console()
 }
 
 } // namespace ege
-#else
-#include <fcntl.h>
-#include <sys/select.h>
-#include <termios.h>
-#include <unistd.h>
-
-namespace ege
-{
-    bool init_console() { return ::isatty(STDIN_FILENO) != 0; }
-
-    bool clear_console()
-    {
-        if (::isatty(STDOUT_FILENO) == 0) {
-            return false;
-        }
-        return ::fputs("\033[2J\033[H", stdout) >= 0 &&
-               ::fflush(stdout) == 0;
-    }
-
-    // A terminal is owned by its host application on Unix. EGE cannot show,
-    // hide, or close that window, so report the unsupported operation.
-    bool show_console() { return false; }
-    bool hide_console() { return false; }
-    bool close_console() { return false; }
-
-    int getch_console()
-    {
-        termios original{};
-        if (::tcgetattr(STDIN_FILENO, &original) != 0) {
-            return ::getchar();
-        }
-        termios raw = original;
-        raw.c_lflag &= static_cast<tcflag_t>(~(ICANON | ECHO));
-        raw.c_cc[VMIN] = 1;
-        raw.c_cc[VTIME] = 0;
-        if (::tcsetattr(STDIN_FILENO, TCSANOW, &raw) != 0) {
-            return ::getchar();
-        }
-        const int character = ::getchar();
-        (void)::tcsetattr(STDIN_FILENO, TCSANOW, &original);
-        return character;
-    }
-
-    int kbhit_console()
-    {
-        termios original{};
-        if (::tcgetattr(STDIN_FILENO, &original) != 0) {
-            return 0;
-        }
-        termios polling = original;
-        polling.c_lflag &= static_cast<tcflag_t>(~ICANON);
-        polling.c_cc[VMIN] = 0;
-        polling.c_cc[VTIME] = 0;
-        if (::tcsetattr(STDIN_FILENO, TCSANOW, &polling) != 0) {
-            return 0;
-        }
-        fd_set input;
-        FD_ZERO(&input);
-        FD_SET(STDIN_FILENO, &input);
-        timeval timeout{};
-        const int ready = ::select(STDIN_FILENO + 1, &input, nullptr, nullptr, &timeout);
-        (void)::tcsetattr(STDIN_FILENO, TCSANOW, &original);
-        return ready > 0 ? 1 : 0;
-    }
-}
-#endif

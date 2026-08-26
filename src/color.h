@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef _WIN32
 #include <windef.h>
-#endif
 
 #include "ege/stdint.h"
 

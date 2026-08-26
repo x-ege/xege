@@ -1,143 +1,24 @@
 # EGE 编译指南
 
-EGE 源码使用 CMake 3.13 或更高版本构建。Windows 默认使用 GDI；macOS 可用
-AppleClang 直接生成 Mach-O 原生程序，默认绘制后端为 Core Graphics，窗口后端为
-AppKit；Linux 默认使用 Cairo 绘制与 Xlib 窗口。原生构建不需要 MinGW、Wine 或 OpenGL。
+EGE 源码使用 CMake 构建编译系统，以支持各种编译器和 IDE。
 
-EGE 的可选子模块由 Git submodule 管理。CMake 配置阶段不会访问网络或修改
-源码目录。默认关闭 camera 时不需要拉取 `ccap`；如果需要 camera，请在配置前执行：
+EGE 的子模块已使用 git submodule 进行管理，在克隆源代码后运行 `git submodule update --init --recursive` 来同步源代码，或者
+直接执行 CMake 构建步骤，CMake 中已配置了自动同步子模块的指令。同步后的子模块被放置在 3rdparty 子目录下。当然，同步功能是由 [Git](https://git-scm.com/) 
+支持的，用户需要预先安装好 Git 。
 
-```sh
-git submodule update --init --recursive 3rdparty/ccap
-```
+请在 [cmake.org](https://cmake.org) 下载最新版 CMake，并在安装时选择将 CMake
+目录添加到 `PATH` 环境变量中。本指南默认在 CMD 或者 PowerShell 命令行下进行编译，
+但仍使用 `$` 作为提示符。如果您对 CMake 有足够的把握，亦可使用 CMake GUI
+进行配置和生成。
 
-请安装 CMake 和目标平台的原生编译器。macOS 使用 Xcode Command Line Tools；Windows
-使用 MSVC 或 MinGW-w64；Linux 使用 GCC/Clang、Cairo 与 X11 开发包。Linux 主机仍可
-通过显式 toolchain 交叉编译 Windows 版，但默认会生成原生 ELF。
+在 Linux 环境下编译需要安装 [mingw-w64](https://www.mingw-w64.org/) 工具链，
+`CMakeLists.txt`已经配置好了环境，在 Linux 下会自动改用 mingw-w64 工具链。
+Linux 环境下运行相关程序需要使用 [wine](https://www.winehq.org/) 模拟层，并在 wine
+配置中修改 `libgcc_s_seh-1.dll` 、 `libssp-0.dll` 、 `libstdc++-6.dll` 的
+函数库顶替配置，方便起见，可以添加 `-static` 配置编译，免去配置过程（`CMakeLists.txt`
+中在 Linux 环境下默认开启）。
 
-## Linux 原生 Cairo/Xlib 构建
-
-Debian/Ubuntu 安装依赖并构建：
-
-```sh
-sudo apt-get install build-essential cmake ninja-build pkg-config libcairo2-dev libx11-dev
-cmake -S . -B build/native-cairo -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DEGE_DEFAULT_BACKEND=CAIRO \
-  -DEGE_ENABLE_OPENGL=OFF \
-  -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
-  -DEGE_BUILD_TEST=ON \
-  -DEGE_BUILD_DEMO=ON \
-  -DEGE_BUILD_TEMP=OFF
-cmake --build build/native-cairo --parallel
-cmake --build build/native-cairo --target demos --parallel
-ctest --test-dir build/native-cairo --output-on-failure
-```
-
-窗口集成测试额外需要 `xvfb`，配置时加入
-`-DEGE_ENABLE_WINDOW_TESTS=ON`，再运行
-`xvfb-run -a ctest --test-dir build/native-cairo --output-on-failure`。
-完整 Linux CI 验收还会递归检出 `ccap`，设置
-`-DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_ENABLE_CAMERA_TESTS=ON`，并使用测试专用的
-用户态 V4L2 仿真器运行相机枚举、格式协商、mmap streaming、YUYV→BGRA 和
-`CameraFrame`/`IMAGE` 像素测试。仿真器不进入正式库，也不新增运行时依赖。
-默认只直接链接系统 `libcairo` 和 `libX11`，不链接 GTK、wxWidgets、SDL 或 Pango。
-更详细的设计与依赖取舍见 [Linux native backend](docs/linux-native-backend.md)。
-
-## macOS 原生 Core Graphics 构建
-
-安装 Xcode Command Line Tools 后，在仓库根目录执行：
-
-```sh
-cmake -S . -B build/native-coregraphics \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-  -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
-  -DEGE_ENABLE_OPENGL=OFF \
-  -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
-  -DEGE_BUILD_TEST=ON \
-  -DEGE_BUILD_DEMO=ON \
-  -DEGE_BUILD_TEMP=OFF
-cmake --build build/native-coregraphics --parallel
-cmake --build build/native-coregraphics --target graph_5star --parallel
-cmake -E chdir build/native-coregraphics ctest --output-on-failure
-file build/native-coregraphics/demo/graph_5star
-```
-
-`file` 的最后一行应包含 `Mach-O`，而不是 `PE32` 或 `.exe`。`COREGRAPHICS` 是 macOS
-的默认后端，但建议 CI 与验收脚本显式指定，避免缓存污染。
-macOS 11.0 是当前支持下限。根项目和发布工作流会固定该值，
-以免滚动 Xcode SDK 将制品错标成只支持构建机的新系统。
-
-默认 CTest 严格使用无头模式，不创建 `NSApplication` 或 `NSWindow`。公共 API 测试通过
-`EGE_HEADLESS=1` 初始化全局画布，将结果写入
-`build/native-coregraphics/test-artifacts/ege-api-headless.png`，再解码并逐像素验证。
-会显示真实窗口的 `native.mac_window_smoke`、
-`native.public_close_callback_contract` 和 `demo.*.launch` 不会注册到默认测试集；
-只有人工明确配置 `-DEGE_ENABLE_WINDOW_TESTS=ON` 时才启用。
-`native.ege_music_contract` 会打开自动生成的静音 WAV 并测试损坏输入，
-不做可听播放；camera 目标在默认 CI 中只编译/链接，不访问真实设备。
-
-### VS Code 与 `tasks.sh`
-
-仓库自带的 VS Code 任务统一调用 `tasks.sh`。在 macOS 上，脚本会显式配置
-`EGE_DEFAULT_BACKEND=COREGRAPHICS` 和 `EGE_ENABLE_OPENGL=OFF`，并使用独立的
-`build/macos/Debug`、`build/macos/Release` 目录，避免复用旧 MinGW CMake cache。
-运行 demo 时传入的是无扩展名的 CMake target 名称，脚本直接启动 Mach-O 文件，
-不会查找 `.exe` 或调用 Wine。只有显式传入 Windows toolchain 时才进入交叉编译路径。
-
-可以先用下面的只读命令检查任务将使用的配置：
-
-```sh
-bash tasks.sh --debug --show-config
-```
-
-`tasks.sh --clean` 和 `--reload` 会删除当前选中的 CMake build 目录。
-脚本会拒绝删除仓库根目录或无法确认属于本项目的自定义目录，
-但调用前仍应检查 `--show-config` 输出。
-
-Linux 上同一脚本会显式选择 `CAIRO`，使用 `build/linux/Debug` 或
-`build/linux/Release`，`--run` 直接启动无扩展名 ELF，不再追加 `.exe` 或调用 Wine。
-
-`utils/release.sh` 在 macOS 上生成的 AppleClang 静态库位于
-`Release/lib/macOS`。脚本分别构建 arm64/x86_64，用 `lipo` 合成 universal
-archive，检查每个 slice 的 macOS 11.0 标记，并使用与官方包相同的
-`.github/release-assets/CMakeLists.txt` 链接所有 demo。构建中间件默认位于
-`build/release-local`，可用 `EGE_RELEASE_BUILD_ROOT` 改变；测试或自动化可用
-`EGE_RELEASE_DIR` 把输出定向到隔离目录。脚本会启用 camera，因此必须先初始化
-`3rdparty/ccap`。`EGE_MACOS_DEPLOYMENT_TARGET` 可覆盖本地试验目标，但正式发布与
-兼容性验收固定为 11.0。
-
-仓库和发布包中的 camera demo 已内嵌 `NSCameraUsageDescription`。自行创建的 macOS
-camera 可执行文件或 app bundle 也必须在其 Info.plist 中提供该键，否则系统可能在
-首次访问摄像头时终止程序；同时仍需由用户授予相机权限。
-
-Windows 专用的 `utils/release-msvc.sh`、`utils/release-mingw.sh` 和
-`utils/test-release-libs.sh` 不会隐式执行 `git clean`。前两个脚本默认使用按工具集/架构
-隔离的构建目录，仅在显式传入 `--force-clean` 时删除仓库内准确的 `build/` 与
-`Release/` 目录；调用前请先确认其中没有需要保留的生成物。`--help` 只显示帮助，
-不修改工作树。VS2010 构建需要临时为
-部分源码添加 BOM，脚本通过退出 trap 恢复编码；仍建议在专用发布工作树中运行。
-`utils/release.sh` 的 macOS 路径也不清理工作树，并可用上述环境变量完全隔离输出。
-
-`utils/test-run-demos.sh --directory <demo-build-dir>` 可在交互式桌面会话中启动
-已构建 demo：macOS 直接运行 Mach-O，Linux 优先直接运行原生 ELF；目录中只有
-Windows `.exe` 时才明确使用 Wine。
-camera demo 默认排除，只有显式传 `--include-camera` 才会触发其权限/设备路径。
-
-### 逐像素 CPU buffer 语义
-
-macOS 与 Linux 后端都以 CPU `PixelSurface` 作为图像像素的权威存储。`getbuffer()` 返回可直接
-读写的、从上到下排列的连续像素：每行是 `width * sizeof(color_t)` 字节，在小端
-平台上数值表示为 `0xAARRGGBB`，内存字节顺序为预乘 Alpha 的 BGRA。Core Graphics/Cairo
-直接绘制到同一块 CPU buffer，所以常规逐像素读写不发生 GPU readback 或 CPU/GPU
-双向同步。指针在对应 `IMAGE` 不重建、不缩放且不销毁期间有效。
-
-OpenGL 实验分支只作为 CMake 分层和后端接口的参考，不作为原生构建的默认依赖。
-`EGE_ENABLE_OPENGL` 默认为 `OFF`；本分支未携带 OpenGL 实现源码时，显式开启也会
-fail-fast。
-
-## Windows 快速编译
+## 快速编译
 
 windows端可以通过运行根目录下的`build_commands.bat`批处理脚本快速在windows下编译代码，
 此代码会尝试检查计算机中是否有配置好的MinGW、Visual Studio 2022等环境，并尝试编译，
@@ -157,7 +38,7 @@ windows端可以通过运行根目录下的`build_commands.bat`批处理脚本�
 
 详细信息请检查脚本具体内容。
 
-## 在 Linux 上交叉编译 Windows 版
+## 常见部分 Linux 发行版以及 MacOS 安装编译运行环境
 
 ```sh
 # Ubuntu 16.04及以上发行版
@@ -165,11 +46,10 @@ sudo apt-get install mingw-w64 wine
 
 # Arch Linux
 sudo pacman -S mingw-w64 wine
-```
 
-Linux 默认构建原生 Cairo/Xlib 后端。只有明确传入
-`-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake` 时才生成 Windows
-静态库及 `.exe`。macOS 不再支持或发布这条交叉编译路径。
+# MacOS
+brew install mingw-w64 wine
+```
 
 ## 基本编译步骤
 
@@ -378,8 +258,7 @@ cmake --build . --target demos
 
 即可在构建目录下的 `demo` 文件夹中生成各可执行文件。
 
-`graph_rotateimage` 的 Windows 资源文件已使用跨工具链可识别的路径，
-无需在 Linux MinGW 交叉编译前修改源文件。
+Linux 环境下，需要修改 `demo/egelogo.rc` 文件，将路径分隔符 `\\` 改为 `/`。
 
 ## 编译临时测试文件
 
@@ -428,13 +307,11 @@ int main(int argc, char const *argv[])
 
 ```
 
-执行前文所述编译步骤后会在 build 目录的 `temp/` 下生成可执行文件：
-Windows 为 `temp_test.exe`，macOS 为无扩展名的 `temp_test`。
+执行前文所述编译步骤后在 `build/temp` 目录下就会生成可执行文件 `temp_test.exe`。
 
-## Linux 主机上交叉编译 Windows 例程
+## Linux 环境下编译例程
 
-本节说明的是在 Linux 主机上生成 Windows `.exe`，不是 Linux 原生构建。编译这类
-依赖 EGE 的程序需使用 `mingw-w64` 工具链中的 `g++`，并且根据
+在 Linux 系统下，编译依赖 EGE 的程序，同样要使用 `mingw-w64` 工具链中的 `g++`，并且根据
 环境可能需要添加额外的编译参数 `-D_FORTIFY_SOURCE=0`
 （参考链接 [undefined reference to `__memcpy_chk'](https://github.com/msys2/MINGW-packages/issues/5868)。
 为了简化单文件编译指令，EGE `utils` 目录下提供了`ege_g++.sh` 脚本，可按需使用。

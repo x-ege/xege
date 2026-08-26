@@ -29,56 +29,6 @@ function isWindows() {
     fi
 }
 
-function isMacOS() {
-    [[ "$(uname -s)" == "Darwin" ]]
-}
-
-# A macOS host builds a native Mach-O target unless the caller explicitly
-# supplies a cross-compilation toolchain/system. Keep this decision independent
-# from the presence of mingw-w64 or Wine on the developer machine.
-function isNativeMacOS() {
-    isMacOS &&
-        ! hasCMakeDefinition "CMAKE_TOOLCHAIN_FILE" &&
-        ! cmakeDefinitionEquals "CMAKE_SYSTEM_NAME" "Windows"
-}
-
-function isNativeLinux() {
-    [[ "$(uname -s)" == "Linux" ]] && ! isWindows &&
-        ! hasCMakeDefinition "CMAKE_TOOLCHAIN_FILE" &&
-        ! cmakeDefinitionEquals "CMAKE_SYSTEM_NAME" "Windows"
-}
-
-function hasCMakeDefinition() {
-    local definition="$1"
-    local argument
-    for argument in "${CMAKE_CONFIG_DEFINE[@]}"; do
-        case "$argument" in
-        -D"${definition}"=* | -D"${definition}":*=*)
-            return 0
-            ;;
-        esac
-    done
-    return 1
-}
-
-function cmakeDefinitionEquals() {
-    local definition="$1"
-    local expected_value="$2"
-    local argument
-    local value
-    for argument in "${CMAKE_CONFIG_DEFINE[@]}"; do
-        case "$argument" in
-        -D"${definition}"=* | -D"${definition}":*=*)
-            value="${argument#*=}"
-            if [[ "$value" == "$expected_value" ]]; then
-                return 0
-            fi
-            ;;
-        esac
-    done
-    return 1
-}
-
 if isWsl && isWindows; then
     # Switch to Git Bash when running in WSL and in a Windows directory
     echo "Detected WSL environment in Windows directory, switching to Git Bash..."
@@ -137,7 +87,7 @@ function isMinGW() {
 # MSVC: build/ (CMake 自动处理 Debug/Release 子目录)
 # MinGW/其他: build/Debug 或 build/Release
 function getBuildDir() {
-    local base_dir="${EGE_BUILD_ROOT:-$PROJECT_DIR/build}"
+    local base_dir="$PROJECT_DIR/build"
 
     # 如果用户已经通过 --build-dir 指定了目录，使用用户指定的
     if [[ -n "$USER_SPECIFIED_BUILD_DIR" ]]; then
@@ -148,17 +98,6 @@ function getBuildDir() {
     # MSVC 使用单一 build 目录（CMake 会自动创建 Debug/Release 子目录）
     if isMSVC; then
         echo "$base_dir"
-        return
-    fi
-
-    # Never reuse a historical MinGW/Windows CMake cache for native macOS.
-    # The platform component also makes the output type obvious in VS Code.
-    if isNativeMacOS; then
-        echo "$base_dir/macos/$CMAKE_BUILD_TYPE"
-        return
-    fi
-    if isNativeLinux; then
-        echo "$base_dir/linux/$CMAKE_BUILD_TYPE"
         return
     fi
 
@@ -191,7 +130,7 @@ function MY_CMAKE_BUILD_DEFINE() {
     printf '%q ' "${args[@]}"
 }
 
-if ! command -v grealpath >/dev/null 2>&1 && command -v realpath >/dev/null 2>&1; then
+if ! command -v grealpath && command -v realpath; then
     function grealpath() {
         realpath $@
     }
@@ -202,27 +141,22 @@ function loadCMakeProject() {
     local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
 
-    # Always pass an absolute source path. Build directories are intentionally
-    # platform-specific (for example build/macos/Debug), so deriving the source
-    # with a fixed number of '..' components is both fragile and unnecessary.
-    local source_path="${EGE_SOURCE_PATH:-$PROJECT_DIR}"
-    case "$source_path" in
-    /* | [A-Za-z]:[\\/]*)
-        ;;
-    *)
-        source_path="$PROJECT_DIR/$source_path"
-        ;;
-    esac
-
-    # Resolve relative components before changing into the build directory.
-    # CMake must receive a stable source directory even when EGE_SOURCE_PATH is
-    # supplied as ".", "demo", or another path relative to the checkout.
-    if [[ "$source_path" != [A-Za-z]:[\\/]* ]]; then
-        if [[ ! -d "$source_path" ]]; then
-            echo "Error: EGE source directory does not exist: $source_path" >&2
-            return 1
+    # 确定源代码路径（相对于 build 目录）
+    local source_path
+    if [[ -z "$EGE_SOURCE_PATH" ]]; then
+        # 计算从 CMAKE_BUILD_DIR 到 PROJECT_DIR 的相对路径
+        # 如果是 build/Debug 或 build/Release，则需要 ../..
+        # 如果是 build，则需要 ..
+        if [[ "$CMAKE_BUILD_DIR" == "$PROJECT_DIR/build" ]]; then
+            source_path=".."
+        elif [[ "$CMAKE_BUILD_DIR" == "$PROJECT_DIR/build/"* ]]; then
+            source_path="../.."
+        else
+            # 用户自定义路径，使用绝对路径
+            source_path="$PROJECT_DIR"
         fi
-        source_path="$(cd "$source_path" && pwd -P)"
+    else
+        source_path="$EGE_SOURCE_PATH"
     fi
     cmake_args+=("$source_path")
 
@@ -236,43 +170,20 @@ function loadCMakeProject() {
 }
 
 function cmakeCleanAll() {
-    if [[ -z "$CMAKE_BUILD_DIR" || "$CMAKE_BUILD_DIR" == "/" ||
-          "$CMAKE_BUILD_DIR" == "$PROJECT_DIR" ]]; then
-        echo "Error: refusing unsafe build-directory cleanup: $CMAKE_BUILD_DIR" >&2
-        return 1
-    fi
+    pushd "$PROJECT_DIR"
 
-    # --clean/--reload remove only the selected configuration directory. If a
-    # custom non-empty directory is supplied, require proof that it is an EGE
-    # CMake tree before deleting it.
-    if [[ -d "$CMAKE_BUILD_DIR" && -n "$(ls -A "$CMAKE_BUILD_DIR" 2>/dev/null)" ]]; then
-        local cache_file="$CMAKE_BUILD_DIR/CMakeCache.txt"
-        local cache_home=""
-        local canonical_cache_home=""
-        local canonical_project_dir=""
-        if [[ -f "$cache_file" ]]; then
-            cache_home=$(sed -n \
-                's/^CMAKE_HOME_DIRECTORY:INTERNAL=//p' "$cache_file" | head -n 1)
-        fi
-        # CMake may store a physical path or a Windows drive path while Git
-        # Bash exposes the checkout through a symlink or /c/... spelling.
-        if [[ -n "$cache_home" ]] && command -v cygpath >/dev/null 2>&1; then
-            cache_home=$(cygpath -u "$cache_home" 2>/dev/null || printf '%s' "$cache_home")
-        fi
-        if [[ -n "$cache_home" && -d "$cache_home" ]]; then
-            canonical_cache_home=$(cd "$cache_home" && pwd -P)
-        fi
-        canonical_project_dir=$(cd "$PROJECT_DIR" && pwd -P)
-        if [[ -z "$canonical_cache_home" ||
-              "$canonical_cache_home" != "$canonical_project_dir" ]]; then
-            echo "Error: refusing to remove an unrecognized build directory:" >&2
-            echo "  $CMAKE_BUILD_DIR" >&2
-            return 1
+    # 先清理 build 目录
+    git clean -ffdx build
+
+    if [[ -n "$CMAKE_BUILD_DIR" ]] && [[ "$CMAKE_BUILD_DIR" != "$PROJECT_DIR/build" ]]; then
+        # 清理特定的 build 子目录
+        if [[ -d "$CMAKE_BUILD_DIR" ]]; then
+            echo "Cleaning $CMAKE_BUILD_DIR..."
+            rm -rf "$CMAKE_BUILD_DIR"
         fi
     fi
 
-    echo "Removing selected CMake build directory: $CMAKE_BUILD_DIR"
-    cmake -E remove_directory "$CMAKE_BUILD_DIR"
+    popd
 }
 
 function reloadCMakeProject() {
@@ -306,32 +217,8 @@ function cmakeBuildAll() {
     popd
 }
 
-function runCTest() {
-    if [[ ! -f "$CMAKE_BUILD_DIR/CMakeCache.txt" ]]; then
-        echo "Error: CMake project is not configured: $CMAKE_BUILD_DIR" >&2
-        return 1
-    fi
-    # --test-dir was added after the project's CMake/CTest 3.13 minimum.
-    # Running from a subshell preserves compatibility without changing the
-    # caller's working directory.
-    (
-        cd "$CMAKE_BUILD_DIR"
-        ctest --build-config "$CMAKE_BUILD_TYPE" --output-on-failure
-    )
-}
-
-function printUsage() {
-    echo "usage: tasks.sh [--debug|--release] [--load|--reload|--clean] [--build] [--test]"
-    echo "                [--target name] [--run name] [--build-dir path]"
-    echo "                [--toolset name] [--arch name] [-G|--generator name]"
-    echo "                [--show-config] [--test-release-libs] [-- cmake-options...]"
-    echo "                [-h|--help]"
-    echo "  --clean/--reload remove only the selected CMake build directory."
-}
-
 if [[ $# -eq 0 ]]; then
-    printUsage
-    exit 0
+    echo "usage: [--load] [--reload] [--clean] [--build]"
 fi
 
 # 定义操作标志
@@ -339,8 +226,6 @@ DO_LOAD=false
 DO_RELOAD=false
 DO_CLEAN=false
 DO_BUILD=false
-DO_TEST=false
-DO_SHOW_CONFIG=false
 RUN_EXECUTABLE=""
 
 # 第一遍：解析所有参数并设置配置
@@ -349,10 +234,6 @@ while [[ $# -gt 0 ]]; do
     PARSE_KEY="$1"
 
     case "$PARSE_KEY" in
-    -h | --help)
-        printUsage
-        exit 0
-        ;;
     --load)
         export DO_LOAD=true
         shift # past argument
@@ -368,14 +249,6 @@ while [[ $# -gt 0 ]]; do
     --build)
         export DO_BUILD=true
         shift # past argument
-        ;;
-    --test)
-        export DO_TEST=true
-        shift
-        ;;
-    --show-config)
-        export DO_SHOW_CONFIG=true
-        shift
         ;;
     --test-release-libs)
         echo "使用 ege 预编译包来编译所有 Demo..."
@@ -474,51 +347,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# CMake AUTO already resolves to CoreGraphics on Darwin. Make the VS Code/script
-# contract explicit as well, so an installed MinGW compiler cannot influence a
-# normal macOS invocation and OpenGL remains opt-in.
-if isNativeMacOS; then
-    if ! hasCMakeDefinition "EGE_DEFAULT_BACKEND"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_DEFAULT_BACKEND=COREGRAPHICS")
-    fi
-    if ! hasCMakeDefinition "EGE_ENABLE_OPENGL"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_OPENGL=OFF")
-    fi
-    if ! hasCMakeDefinition "EGE_ENABLE_WINDOW_TESTS"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_WINDOW_TESTS=OFF")
-    fi
-    if ! hasCMakeDefinition "CMAKE_OSX_DEPLOYMENT_TARGET"; then
-        CMAKE_CONFIG_DEFINE+=("-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=11.0")
-    fi
-fi
-
-if isNativeLinux; then
-    if ! hasCMakeDefinition "EGE_DEFAULT_BACKEND"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_DEFAULT_BACKEND=CAIRO")
-    fi
-    if ! hasCMakeDefinition "EGE_ENABLE_OPENGL"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_OPENGL=OFF")
-    fi
-    if ! hasCMakeDefinition "EGE_ENABLE_WINDOW_TESTS"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_WINDOW_TESTS=OFF")
-    fi
-fi
-
 # 参数解析完成后，初始化 CMAKE_BUILD_DIR
 CMAKE_BUILD_DIR="$(getBuildDir)"
 export CMAKE_BUILD_DIR
 echo "Build directory: $CMAKE_BUILD_DIR (BUILD_TYPE: $CMAKE_BUILD_TYPE)"
-if isNativeMacOS; then
-    echo "macOS native build: AppleClang/CoreGraphics (headless tests by default)"
-elif isNativeLinux; then
-    echo "Linux native build: Cairo/Xlib (headless tests by default)"
-fi
-
-if [[ "$DO_SHOW_CONFIG" == true ]]; then
-    printf 'CMake configure arguments:'
-    printf ' %q' "${CMAKE_CONFIG_DEFINE[@]}"
-    printf '\n'
-fi
 
 # 第二遍：按正确顺序执行操作
 
@@ -543,11 +375,6 @@ if [[ "$DO_BUILD" == true ]]; then
         loadCMakeProject
     fi
     cmakeBuildAll
-fi
-
-if [[ "$DO_TEST" == true ]]; then
-    echo "DO_TEST is true, start running CTest..."
-    runCTest
 fi
 
 if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
@@ -589,30 +416,12 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
         mkdir -p "$OUTPUT_DIR"
         echo "Copying executables to $OUTPUT_DIR"
         cd "$CMAKE_BUILD_DIR"
-        if isNativeMacOS || isNativeLinux; then
-            # Native package demos are extensionless executables. Exclude
-            # CMake probes and metadata.
-            find . -maxdepth 2 -type f -perm -111 -print0 |
-                while IFS= read -r -d '' file; do
-                    [[ "$file" == */CMakeFiles/* ]] && continue
-                    if isNativeMacOS; then
-                        file "$file" | grep -q "Mach-O.*executable" || continue
-                    else
-                        file "$file" | grep -q "ELF.*executable" || continue
-                    fi
-                    relative_path="${file#./}"
-                    mkdir -p "$OUTPUT_DIR/$(dirname "$relative_path")"
-                    cp "$file" "$OUTPUT_DIR/$relative_path"
-                done
-        else
-            # Preserve the relative layout of Windows demo executables.
-            find . -maxdepth 2 -type f -name "*.exe" -print0 |
-                while IFS= read -r -d '' file; do
-                    relative_path="${file#./}"
-                    mkdir -p "$OUTPUT_DIR/$(dirname "$relative_path")"
-                    cp "$file" "$OUTPUT_DIR/$relative_path"
-                done
-        fi
+        # 找到 $CMAKE_BUILD_DIR 里面的所有 exe 文件, 保持相对于 $CMAKE_BUILD_DIR 的目录结构, 并复制到 $OUTPUT_DIR 目录
+        find . -maxdepth 2 -type f -name "*.exe" -print0 | while IFS= read -r -d '' file; do
+            relative_path="${file#./}"
+            mkdir -p "$OUTPUT_DIR/$(dirname "$relative_path")"
+            cp "$file" "$OUTPUT_DIR/$relative_path"
+        done
     else
         echo "Release directory does not exist, skipping copy."
     fi
@@ -623,20 +432,13 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
     exe_path=""
     if isMSVC; then
         # MSVC: demo/<BuildType>/xxx.exe
-        [[ "$RUN_EXECUTABLE" == *.exe ]] || RUN_EXECUTABLE="${RUN_EXECUTABLE}.exe"
         exe_path="$CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
     else
-        if isNativeMacOS || isNativeLinux; then
-            # Native CMake targets are extensionless executables.
-            RUN_EXECUTABLE="${RUN_EXECUTABLE%.exe}"
-        elif [[ "$RUN_EXECUTABLE" != *.exe ]] && ! isWindows; then
-            # Non-native Unix invocations historically cross-compile Windows.
-            RUN_EXECUTABLE="${RUN_EXECUTABLE}.exe"
-        fi
+        # MinGW/其他: demo/xxx.exe (因为已经在 build/Debug 或 build/Release 目录下了)
         exe_path="$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"
     fi
 
-    if isWindows || isNativeMacOS || isNativeLinux; then
+    if isWindows; then
         echo "run $exe_path"
         "$exe_path"
     else

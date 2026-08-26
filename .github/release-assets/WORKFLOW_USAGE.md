@@ -89,9 +89,9 @@ When master branch is updated (not a tag push), a test release is automatically 
 - Code::Blocks GCC 14.2.0
 - CLion/小熊猫C++ (RedPanda C++) GCC 13.1.0
 
-**跨平台库:**
-- Ubuntu MinGW-w64 Windows 交叉编译库
-- macOS AppleClang/Core Graphics 原生通用静态库（arm64/x86_64）
+**交叉编译库:**
+- Ubuntu MinGW-w64
+- macOS MinGW-w64
 
 ### 阶段 2: 创建发布包 / Stage 2: Create Release Package
 
@@ -116,14 +116,9 @@ The workflow:
 ```
 ege-{version}/
 ├── CMakeLists.txt           # 根 CMake 配置 / Root CMake config
-├── README.md                # 使用说明 / Usage guide
-├── BUILD.md                 # 源码构建说明 / Source build guide
-├── RELEASE.md               # 变更记录 / Changelog
-├── LICENSE                  # 许可证 / License
 ├── demo/                    # 示例程序 / Demo programs
 │   ├── *.cpp
 │   ├── *.rc
-│   ├── macos-camera-info.plist # macOS camera permission text
 │   └── gmp-demo/
 ├── doc/                     # 文档 / Documentation
 ├── include/                 # 头文件 / Header files
@@ -135,7 +130,7 @@ ege-{version}/
 │   ├── codeblocks/         # Code::Blocks
 │   ├── redpanda/           # CLion/小熊猫C++
 │   ├── mingw-w64-debian/   # Ubuntu cross-compile
-│   └── macOS/              # macOS native universal archive
+│   └── macOS/              # macOS cross-compile
 ├── man/                     # API 文档 / API docs
 ├── egelogo.jpg
 ├── version.txt

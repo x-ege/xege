@@ -238,24 +238,15 @@ jobs:
         run: |
           mkdir build-${{ matrix.config }}-${{ matrix.arch }}
           cd build-${{ matrix.config }}-${{ matrix.arch }}
-          cmake .. -A ${{ matrix.cmake_arch }} -T ${{ matrix.toolset }} `
-            -DEGE_ENABLE_CAMERA_CAPTURE=ON `
-            -DEGE_BUILD_TEST=OFF `
-            -DEGE_BUILD_DEMO=OFF `
-            -DEGE_BUILD_TEMP=OFF
-          cmake --build . --target xege --config ${{ matrix.config }} --parallel
+          cmake .. -A ${{ matrix.cmake_arch }} -T ${{ matrix.toolset }} -DEGE_BUILD_DEMO=ON
+          cmake --build . --config ${{ matrix.config }} --parallel
       
       - name: Collect artifacts
         shell: powershell
         run: |
           $libDir = "${{ matrix.name }}/${{ matrix.arch }}/${{ matrix.config }}"
           New-Item -ItemType Directory -Force -Path "artifacts/$libDir"
-          $expectedName = if ("${{ matrix.config }}" -eq "Debug") { "graphicsd.lib" } else { "graphics.lib" }
-          $matches = @(Get-ChildItem -Path "build-${{ matrix.config }}-${{ matrix.arch }}" -Recurse -File -Filter $expectedName)
-          if ($matches.Count -ne 1) {
-            throw "Expected exactly one $expectedName, found $($matches.Count)"
-          }
-          Copy-Item $matches[0].FullName -Destination "artifacts/$libDir/$expectedName"
+          Get-ChildItem -Path "build-${{ matrix.config }}-${{ matrix.arch }}" -Recurse -Filter "*.lib" | Copy-Item -Destination "artifacts/$libDir/"
           Write-Host "Collected libraries:"
           Get-ChildItem "artifacts/$libDir/"
       
@@ -323,17 +314,11 @@ jobs:
           mkdir -p build-release
           cd build-release
           
-          cmake .. -G "MinGW Makefiles" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
-            -DEGE_BUILD_TEST=OFF \
-            -DEGE_BUILD_DEMO=OFF \
-            -DEGE_BUILD_TEMP=OFF
-          cmake --build . --target xege --parallel $(nproc)
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
+          cmake --build . --parallel $(nproc)
           
           mkdir -p ../artifacts/${{ matrix.lib_dir }}
-          test -f libgraphics.a
-          cp libgraphics.a ../artifacts/${{ matrix.lib_dir }}/libgraphics.a
+          find . -name "*.a" -exec cp {} ../artifacts/${{ matrix.lib_dir }}/ \;
           
           echo "Collected libraries:"
           ls -la ../artifacts/${{ matrix.lib_dir }}/
@@ -373,19 +358,15 @@ jobs:
           mkdir build-release
           cd build-release
           
-          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_ENABLE_CAMERA_CAPTURE=ON -DEGE_BUILD_TEST=OFF -DEGE_BUILD_DEMO=OFF -DEGE_BUILD_TEMP=OFF
-          cmake --build . --target xege --parallel
+          cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
+          cmake --build . --parallel
       
       - name: Collect WinLibs artifacts
         if: ${{ !matrix.use_msys2 }}
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path "artifacts/${{ matrix.lib_dir }}"
-          $matches = @(Get-ChildItem -Path "build-release" -Recurse -File -Filter "libgraphics.a")
-          if ($matches.Count -ne 1) {
-            throw "Expected exactly one libgraphics.a, found $($matches.Count)"
-          }
-          Copy-Item $matches[0].FullName -Destination "artifacts/${{ matrix.lib_dir }}/libgraphics.a"
+          Get-ChildItem -Path "build-release" -Recurse -Filter "*.a" | Copy-Item -Destination "artifacts/${{ matrix.lib_dir }}/"
           Write-Host "Collected libraries:"
           Get-ChildItem "artifacts/${{ matrix.lib_dir }}/"
       
@@ -396,14 +377,24 @@ jobs:
           path: artifacts/${{ matrix.lib_dir }}/
           retention-days: 7
   
-  # Job 3: Build the Windows library from Linux with an explicit toolchain.
-  # Linux native support is not available yet, so keep this artifact unchanged.
-  build-linux-cross-library:
-    name: Build Linux MinGW Cross-Compile
+  # Job 3: Build cross-compile libraries
+  build-cross-libraries:
+    name: Build Cross-Compile (${{ matrix.name }})
     needs: validate-and-setup
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: Ubuntu-MinGW
+            os: ubuntu-latest
+            lib_dir: mingw-w64-debian
+          
+          - name: macOS-MinGW
+            os: macos-latest
+            lib_dir: macOS
+    
+    runs-on: ${{ matrix.os }}
     
     steps:
       - name: Checkout repository
@@ -411,130 +402,44 @@ jobs:
         with:
           submodules: recursive
       
-      - name: Install MinGW-w64
+      - name: Install MinGW-w64 (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 cmake make git
       
+      - name: Install MinGW-w64 (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update
+          brew install mingw-w64 cmake
+      
       - name: Build
         run: |
-          cmake -S . -B build-release \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake \
-            -DEGE_ENABLE_CAMERA_CAPTURE=ON \
-            -DEGE_BUILD_TEST=OFF \
-            -DEGE_BUILD_DEMO=OFF \
-            -DEGE_BUILD_TEMP=OFF
-          cmake --build build-release --target xege --parallel "$(nproc)"
-
-          mkdir -p artifacts/mingw-w64-debian
-          test -f build-release/libgraphics.a
-          cp build-release/libgraphics.a artifacts/mingw-w64-debian/libgraphics.a
+          rm -rf build-release
+          mkdir -p build-release
+          cd build-release
+          
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DEGE_BUILD_DEMO=ON
+          cmake --build . --parallel
+          
+          mkdir -p ../artifacts/${{ matrix.lib_dir }}
+          find . -name "*.a" -exec cp {} ../artifacts/${{ matrix.lib_dir }}/ \;
           
           echo "Collected libraries:"
-          ls -la artifacts/mingw-w64-debian/
+          ls -la ../artifacts/${{ matrix.lib_dir }}/
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-Ubuntu-MinGW
-          path: artifacts/mingw-w64-debian/
-          retention-days: 7
-
-  # Job 4: Build the native macOS library. The published archive replaces the
-  # former macOS-hosted MinGW/Windows artifact at lib/macOS/libgraphics.a.
-  build-macos-native-library:
-    name: Build macOS Native Universal Library
-    needs: validate-and-setup
-    permissions:
-      contents: read
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Build arm64 and x86_64 static libraries
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          for arch in arm64 x86_64; do
-            cmake -S . -B "build-release-${arch}" \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_OSX_ARCHITECTURES="${arch}" \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-              -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
-              -DEGE_ENABLE_OPENGL=OFF \
-              -DEGE_ENABLE_CAMERA_CAPTURE=ON \
-              -DEGE_BUILD_TEST=OFF \
-              -DEGE_BUILD_DEMO=OFF \
-              -DEGE_BUILD_TEMP=OFF
-            cmake --build "build-release-${arch}" --target xege --parallel 3
-            test -f "build-release-${arch}/libgraphics.a"
-            minos_values="$(find "build-release-${arch}/CMakeFiles/xege.dir" \
-              -name '*.o' -print0 | while IFS= read -r -d '' object; do \
-                xcrun vtool -show-build "$object"; \
-              done | awk '$1 == "minos" { print $2 }' | sort -u)"
-            echo "${arch} macOS deployment targets: ${minos_values}"
-            test "$minos_values" = "11.0"
-          done
-
-          mkdir -p artifacts/macOS
-          xcrun lipo -create \
-            build-release-arm64/libgraphics.a \
-            build-release-x86_64/libgraphics.a \
-            -output artifacts/macOS/libgraphics.a
-          xcrun lipo artifacts/macOS/libgraphics.a -verify_arch arm64 x86_64
-          xcrun lipo -info artifacts/macOS/libgraphics.a
-
-      - name: Verify packaged native library consumers
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mkdir -p release-smoke/lib/macOS
-          cp -R include demo release-smoke/
-          cp .github/release-assets/CMakeLists.txt release-smoke/
-          cp artifacts/macOS/libgraphics.a release-smoke/lib/macOS/
-
-          cmake -S release-smoke -B build-release-smoke \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-          cmake --build build-release-smoke --target demos --parallel 3
-
-          demo_type="$(file build-release-smoke/graph_5star)"
-          echo "$demo_type"
-          grep -q "Mach-O" <<<"$demo_type"
-
-          # Link one consumer for each archive slice, independent of the
-          # runner's host architecture.
-          for arch in arm64 x86_64; do
-            cmake -S release-smoke -B "build-release-smoke-${arch}" \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_OSX_ARCHITECTURES="${arch}" \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-            cmake --build "build-release-smoke-${arch}" \
-              --target graph_5star camera_base --parallel 3
-            for consumer in graph_5star camera_base; do
-              xcrun lipo "build-release-smoke-${arch}/${consumer}" \
-                -verify_arch "${arch}"
-            done
-          done
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: libs-macOS-Native
-          path: artifacts/macOS/
+          name: libs-${{ matrix.name }}
+          path: artifacts/${{ matrix.lib_dir }}/
           retention-days: 7
   
-  # Job 5: Create release package
+  # Job 4: Create release package
   create-release-package:
     name: Create Release Package
-    needs: [validate-and-setup, build-msvc-libraries, build-mingw-windows-libraries, build-linux-cross-library, build-macos-native-library]
+    needs: [validate-and-setup, build-msvc-libraries, build-mingw-windows-libraries, build-cross-libraries]
     permissions:
       contents: write  # Required for creating releases and uploading assets
     runs-on: ubuntu-latest
@@ -620,12 +525,10 @@ jobs:
             cp egelogo.jpg "$RELEASE_DIR/"
           fi
           
-          # Keep linked documentation and the license intact inside the SDK.
+          # Copy README as 说明.txt
           if [ -f "README.md" ]; then
-            cp README.md "$RELEASE_DIR/"
             cp README.md "$RELEASE_DIR/说明.txt"
           fi
-          cp BUILD.md RELEASE.md LICENSE "$RELEASE_DIR/"
           
           # Organize library artifacts
           echo "Organizing library artifacts..."
@@ -676,13 +579,14 @@ jobs:
         run: |
           RELEASE_DIR="ege-${VERSION}"
           
-          # Windows MinGW libraries (64-bit only as per user requirement).
-          # Linux remains an explicit Windows cross-compile host.
+          # MinGW libraries (64-bit only as per user requirement)
+          # Artifacts: libs-MSYS2-GCC-Latest, libs-CodeBlocks-GCC14, libs-CLion-GCC13
           declare -A mingw_mappings=(
             ["MSYS2-GCC-Latest"]="mingw64"
             ["CodeBlocks-GCC14"]="codeblocks"
             ["CLion-GCC13"]="redpanda"
             ["Ubuntu-MinGW"]="mingw-w64-debian"
+            ["macOS-MinGW"]="macOS"
           )
           
           for artifact_name in "${!mingw_mappings[@]}"; do
@@ -704,31 +608,15 @@ jobs:
               exit 1
             fi
           done
-
-      - name: Organize native macOS library
-        env:
-          VERSION: ${{ steps.version.outputs.VERSION }}
-        run: |
-          RELEASE_DIR="ege-${VERSION}"
-          artifact_dir="artifacts/libs-macOS-Native"
-          target_dir="$RELEASE_DIR/lib/macOS"
-
-          if [ ! -f "$artifact_dir/libgraphics.a" ]; then
-            echo "ERROR: Native macOS libgraphics.a was not found"
-            exit 1
-          fi
-
-          mkdir -p "$target_dir"
-          cp "$artifact_dir/libgraphics.a" "$target_dir/"
-          echo "✓ Copied universal native macOS library to lib/macOS"
-
-          # Show the final structure only after every platform has been added.
+          
+          # Show the structure
           echo "Release package structure:"
           tree -L 3 "$RELEASE_DIR" || find "$RELEASE_DIR" -type d | sort
-
+          
           echo "Library files:"
           find "$RELEASE_DIR/lib" -type f
-
+          
+          # Create version.txt
           echo "$VERSION" > "$RELEASE_DIR/version.txt"
       
       - name: Create archives
@@ -784,13 +672,9 @@ jobs:
               - codeblocks - Code::Blocks 25.03 静态库 (x64)
               - redpanda - CLion/小熊猫C++ (RedPanda C++) 静态库 (x64)
               - mingw-w64-debian - Ubuntu 交叉编译静态库 (x64)
-              - macOS - AppleClang/Core Graphics 原生通用静态库 (arm64/x86_64)
+              - macOS - macOS 交叉编译静态库 (x64)
             - **man/** - API 文档
             - **CMakeLists.txt** - CMake 项目文件
-            - **README.md / 说明.txt** - 中英文入口说明
-            - **BUILD.md / RELEASE.md** - 构建指南与发布记录
-            - **LICENSE** - 开源许可证
-            - **version.txt** - 发布版本信息
       
       - name: Verify official release completion
         if: needs.validate-and-setup.outputs.is_official_release == 'true'

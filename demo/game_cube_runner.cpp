@@ -1110,15 +1110,11 @@ int main(int argc, char** argv)
     setrendermode(RENDER_MANUAL);
 
     auto closeWindow = [] {
-        SetCloseHandler(nullptr);
-#ifdef _WIN32
         const HWND window = getHWnd();
+        SetCloseHandler(nullptr);
         if (::IsWindow(window)) {
             ::SendMessageW(window, WM_CLOSE, 0, 0);
         }
-#else
-        closegraph();
-#endif
     };
 
     PIMAGE frameImage = newimage(width, height);
@@ -1186,3 +1182,4 @@ int main(int argc, char** argv)
     closeWindow();
     return 0;
 }
+

@@ -9,8 +9,7 @@ EGE（Easy Graphics Engine）是一个适用于初学者的图形库，具有类
 - **兼容性强**：支持 Visual Studio 6.0 至 Visual Studio 2022，MinGW，小熊猫C++等多种开发环境
 - **功能丰富**：提供基础绘图、高级绘图（抗锯齿、透明度）、图像处理、动画编程等功能
 - **多媒体支持**：支持多种图像格式（BMP, JPG, PNG, GIF）和音频播放
-- **跨平台**：支持 Windows 原生开发、macOS Core Graphics/AppKit 原生开发，
-  以及 Linux 下的 Windows 交叉编译
+- **跨平台**：支持 Windows 原生开发，以及 Linux/macOS 下的交叉编译
 
 ## API 模块概览
 
@@ -404,18 +403,12 @@ int main() {
 
 ## 音乐 (music)
 
-音乐模块通过 `MUSIC` 类提供音频播放功能：Windows 使用 MCI，
-原生 macOS 使用 AVFAudio/AudioToolbox。
+音乐模块提供音频播放功能。
 
 ### 音频播放
 
-- `MUSIC::OpenFile(...)` - 打开音频或 MIDI 文件
-- `MUSIC::Play(...)` / `RepeatPlay(...)` - 播放或循环播放
-- `MUSIC::Pause()` / `Stop()` / `Close()` - 控制生命周期
-- `MUSIC::Seek(...)` / `SetVolume(...)` - 调整位置和音量
-- `MUSIC::GetPosition()` / `GetLength()` / `GetPlayStatus()` - 查询状态
-
-格式支持以操作系统后端为准；WAV 是建议的跨平台基线。
+- `ege_enable_music(bool enable)` - 启用/禁用音乐功能
+- `music(LPCSTR filename)` - 播放音乐文件
 
 ---
 
@@ -526,5 +519,4 @@ int main() {
 
 ---
 
-本文档以 EGE 25.11 API 结构为基础，并包含随 master 更新的平台差异说明；
-原生 macOS 支持属于下一版本，而非历史 25.11 发布包。
+本文档基于 EGE 25.11 版本编写

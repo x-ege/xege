@@ -1,6 +1,5 @@
 // @warning 该示例程序文本输出乱码了
 #include "graphics.h"
-#include <cstdlib>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -1718,11 +1717,7 @@ public:
         memset(m_str, 0, sizeof(m_str));
         // 此处没有直接用宽字符串字面量初始化 m_str, 因为 VC6 会转出乱码
         const char* str = str_18;
-#ifdef _WIN32
         MultiByteToWideChar(getcodepage(), 0, str, -1, m_str, 1024);
-#else
-        std::mbstowcs(m_str, str, 1023);
-#endif
 
         // 理想状态:
         // wcscpy(m_str, Lstr_19);
@@ -1787,3 +1782,4 @@ int main()
     closegraph();
     return 0;
 }
+

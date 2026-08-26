@@ -2,17 +2,11 @@
 
 [![MSVC Build](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/msvc-build.yml)
 [![MinGW Windows Build](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-windows-build.yml)
-[![MinGW Linux Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
-[![macOS Native CoreGraphics Build](https://github.com/x-ege/xege/actions/workflows/macos-native-coregraphics-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/macos-native-coregraphics-build.yml)
-[![Linux Native Cairo Build](https://github.com/x-ege/xege/actions/workflows/linux-native-cairo-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/linux-native-cairo-build.yml)
+[![MinGW Cross-Compile Build](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml/badge.svg)](https://github.com/x-ege/xege/actions/workflows/mingw-crosscompile-build.yml)
 [![License](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/x-ege/xege)
+[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/x-ege/xege)
 
-EGE (Easy Graphics Engine) 是一个提供类似 BGI (`graphics.h`) 接口的简易绘图库，
-支持 Windows GDI、macOS Core Graphics/AppKit 和 Linux Cairo/Xlib 原生后端，专为 C/C++ 初学者设计。
-
-> 原生 macOS 支持已合入 `master`，将在下一个正式 SDK 发布；
-> 已发布的 v25.11 不包含这个后端。当前可从源码构建或使用 CI 预览制品。
+EGE (Easy Graphics Engine) 是一个 Windows 下的简易绘图库，提供类似 BGI (`graphics.h`) 的接口，专为 C/C++ 初学者设计。
 
 ## 目录
 
@@ -64,25 +58,10 @@ EGE 支持以下 开发工具/编译器：
 | [小熊猫 C++](http://royqh.net/redpandacpp/) | 支持 | ✅ **推荐** 已内置 EGE, 下载即可用 |
 | Code::Blocks | 支持 | 已测试版本: 25.03 (最新) |
 | MinGW / MinGW-w64 | 支持 | ✅ 支持, SDK 发布时会基于最新版本进行测试 |
-| AppleClang / Xcode Command Line Tools | macOS | ✅ Core Graphics + AppKit 原生 Mach-O 构建，不需要 Wine |
-| GCC / Clang | Linux | ✅ Cairo + Xlib 原生 ELF 构建；Wayland 会话通过 XWayland 运行 |
 | 老版本 Visual Studio | 2010 ~ 2015 | ⚠️ 支持，但不推荐（不支持 C++17） |
 | Visual C++ 6.0 | aka vc6.0 | ⚠️ 旧版支持，可从[官网](https://xege.org/install_and_config)下载内嵌版本 |
 | Dev-C++ | 支持 | ⚠️ 十年未更新, 不那么推荐 </br> 已测试版本: 5.11 (最新) |
 | Eclipse for C/C++、 C-Free 等 | 支持 | ⚠️ 需自行配置 |
-
-### 平台状态与差异
-
-| 目标 | 当前状态 | 说明 |
-|------|----------|------|
-| Windows | 稳定 | GDI/GDI+ 后端，保留 HWND/HDC、资源和 `sys_edit` 等 Win32 能力 |
-| macOS 11.0+ | `master` 预览 | Core Graphics/AppKit 原生后端，支持 arm64/x86_64；`MUSIC` 使用 AVFAudio |
-| Linux 原生 | `master` 预览 | Cairo/Xlib CPU 后端；只直接依赖系统 `libcairo` 与 `libX11`，Wayland 通过 XWayland |
-
-macOS/Linux 上的 Win32 句柄/资源接口（如 `attachHWND`、`seticon(int)`、
-`getHDC`）只保留源码兼容签名，不等价于 Windows 资源模型；`sys_edit`
-仍仅在 Windows 实现。`graph_star` 是 Win32 屏保 demo，不在 macOS 构建。
-摄像头 demo 首次运行时会请求系统权限。
 
 ## 文档与资源
 
@@ -112,10 +91,7 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
    - `EGE: 在当前工作区设置 ege 项目` - 使用预编译库创建项目
    - `EGE: 在当前工作区设置带有 EGE 源代码的 ege 项目` - 使用源码创建项目
    - `EGE: 构建并运行当前文件` - 快速编译运行单个 cpp 文件
-3. 下一个正式 SDK 将提供 `lib/macOS/libgraphics.a`，这是
-   AppleClang/Core Graphics 原生 universal 静态库；
-   不再提供 macOS 主机上的 MinGW/Wine 交叉编译产物。旧版插件若仍固定调用
-   Wine，请升级插件，或参考 [编译指南](BUILD.md#macos-原生-core-graphics-构建)
+3. 插件支持 Windows、macOS（需 mingw-w64 + wine）和 Linux
 
 > 更多详情请访问插件主页：[CLion 插件](https://github.com/x-ege/ege-clion-plugin) | [VS Code 插件](https://github.com/x-ege/ege-vscode-plugin)
 
@@ -133,10 +109,10 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 
 | 特点 | 说明 |
 |------|------|
-| 轻量依赖 | 图片编解码使用内置 `stb_image` 和 `sdefl/sinfl`；Linux 只链接系统 Cairo/X11，不引入 GUI 框架 |
-| 直接像素访问 | `getbuffer` 返回 CPU 权威的顶向下、连续预乘 BGRA 像素；Core Graphics/Cairo 直接复用该 buffer，无 GPU readback |
-| 抗锯齿支持 | Windows 使用 GDI+；macOS Core Graphics 与 Linux Cairo 后端共享 `ege_enable_aa` 状态 |
-| 预乘 Alpha 优化 | 默认使用 PRGB32；Windows 可调用 `AlphaBlend`，macOS/Linux 在 CPU PixelSurface 上混合后原生呈现 |
+| 零依赖轻量级 | 使用 `stb_image` 和 `sdefl/sinfl` 替代 `libpng`/`zlib`，无外部依赖，单库即可使用 |
+| 直接像素访问 | 提供 `getbuffer` 接口直接访问图像像素数据，实现高效的软件渲染和图像处理 |
+| 抗锯齿支持 | 内置 GDI+ 支持，`ege_` 系列函数提供高质量抗锯齿绘图 |
+| 预乘 Alpha 优化 | 默认使用 PRGB32 (预乘 Alpha) 格式，配合 `AlphaBlend` 实现 GPU 加速混合 |
 | 多图像格式支持 | 支持 PNG, JPEG, BMP, GIF, TGA, PSD, HDR 等常见图像格式 |
 | 灵活的图像操作 | 支持图像旋转、缩放、透明贴图、Alpha 滤镜等高级变换 |
 | 坐标变换系统 | 提供 `ege_transform_*` 系列函数，支持平移、旋转、缩放等矩阵变换 |
@@ -149,34 +125,6 @@ EGE 提供官方 IDE 插件，让项目配置更加简单：
 EGE 使用 [CMake](https://cmake.org) 作为构建系统。
 
 详细编译步骤请参阅 [编译指南](BUILD.md)。
-
-macOS 原生构建的最小配置为：
-
-```sh
-cmake -S . -B build/native \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-  -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
-  -DEGE_ENABLE_OPENGL=OFF \
-  -DEGE_ENABLE_CAMERA_CAPTURE=OFF
-cmake --build build/native --target xege
-```
-
-`11.0` 是当前原生库的最低支持版本；可以显式设置更高值，
-但发布制品和 CI 会固定在 11.0，避免继承构建机的最新 SDK 版本。
-
-Linux 原生最小构建为：
-
-```sh
-sudo apt-get install build-essential cmake pkg-config libcairo2-dev libx11-dev
-cmake -S . -B build/linux \
-  -DEGE_DEFAULT_BACKEND=CAIRO \
-  -DEGE_ENABLE_OPENGL=OFF \
-  -DEGE_ENABLE_CAMERA_CAPTURE=OFF
-cmake --build build/linux --target xege
-```
-
-实现边界、依赖与测试方法见 [Linux native backend](docs/linux-native-backend.md)。
-OpenGL 实验分支只作为构建分层和后端接口参考，不默认启用。
 
 ## 社区与支持
 

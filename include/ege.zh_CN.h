@@ -78,17 +78,14 @@
 #define __STDC_CONSTANT_MACROS
 #endif
 
-#if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include "ege/stdint.h"
+
+#if defined(EGE_FOR_AUTO_CODE_COMPLETETION_ONLY)
 #include <windef.h>
 #include <winuser.h>
 #include <wingdi.h>
-#elif defined(_WIN32)
-#include "ege/stdint.h"
-#include <windows.h>
 #else
-#include <stdint.h>
-#include "ege/win32_compat.h"
+#include <windows.h>
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1300)
@@ -234,7 +231,7 @@ enum initmode_flag
 {
     INIT_DEFAULT         = 0x0,   ///< 默认模式
     INIT_NOBORDER        = 0x1,   ///< 无边框窗口
-    INIT_CHILD           = 0x2,   ///< 子窗口模式（仅 Windows；需配合 attachHWND）
+    INIT_CHILD           = 0x2,   ///< 子窗口模式
     INIT_TOPMOST         = 0x4,   ///< 置顶窗口
     INIT_RENDERMANUAL    = 0x8,   ///< 手动渲染模式
     INIT_NOFORCEEXIT     = 0x10,  ///< 关闭窗口时不强制退出程序，只设置内部标志位，is_run() 可以获取标志位
@@ -1241,19 +1238,6 @@ typedef IMAGE *PIMAGE;
 /// @brief 常量图像对象指针类型
 typedef const IMAGE *PCIMAGE;
 
-enum image_storage_mode
-{
-    IMAGE_STORAGE_GPU = 0,
-    IMAGE_STORAGE_CPU_BITMAP = 1
-};
-
-enum image_buffer_access
-{
-    IMAGE_BUFFER_READ = 0,
-    IMAGE_BUFFER_READ_WRITE = 1,
-    IMAGE_BUFFER_WRITE_DISCARD = 2
-};
-
 /**
  * @brief 设置代码页
  *
@@ -1389,7 +1373,6 @@ void EGEAPI setcaption(const wchar_t* caption);
 /**
  * @brief 设置窗口图标
  * @param icon_id 图标资源ID
- * @note Windows 资源 ID 接口；原生 macOS 当前不修改图标，打包应用请使用 bundle 图标。
  */
 void EGEAPI seticon(int icon_id);
 
@@ -1397,7 +1380,6 @@ void EGEAPI seticon(int icon_id);
  * @brief 附加到已有的窗口句柄
  * @param hWnd 要附加的窗口句柄
  * @return 操作结果代码
- * @note 仅 Windows 支持；原生 macOS 返回 grError，不执行附加。
  */
 int  EGEAPI attachHWND(HWND hWnd);
 
@@ -4146,7 +4128,6 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * @note 返回的指针可以直接操作像素数据，修改后会立即生效
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
-color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
 
 /**
  * @brief 获取图像像素缓冲区指针（只读版本）
@@ -4156,11 +4137,6 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
  * @note 返回的指针只能读取像素数据，不能修改
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
-
-int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
-                        const color_t* pixels, int pitchBytes = 0);
-image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
-int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief 调整图像尺寸（快速版本）
@@ -4840,16 +4816,16 @@ int EGEAPI putimage_rotatetransparent(
 
 /**
  * @brief 获取绘图窗口的窗口句柄
- * @return Windows HWND；原生 macOS 返回内部 NSWindow 的不透明指针；未初始化时返回 NULL
- * @note macOS 兼容值不能传给 Win32 API，也不能由调用者释放，只可作为原生窗口标识。
+ * @return 绘图窗口的窗口句柄(HWND)
+ * @note 返回的是 Windows 系统的窗口句柄，可用于 Windows API 调用
  * @see getHInstance(), getHDC()
  */
 HWND        EGEAPI getHWnd();
 
 /**
  * @brief 获取绘图窗口的实例句柄
- * @return Windows 应用程序实例句柄；原生非 Windows 后端返回 NULL
- * @note 仅 Windows 返回值可用于 Windows API。
+ * @return 应用程序实例句柄(HINSTANCE)
+ * @note 返回的是 Windows 系统的应用程序实例句柄，可用于 Windows API 调用
  * @see getHWnd(), getHDC()
  */
 HINSTANCE   EGEAPI getHInstance();
@@ -4857,9 +4833,9 @@ HINSTANCE   EGEAPI getHInstance();
 /**
  * @brief 获取绘图设备上下文
  * @param pimg 图像对象指针，如果为 NULL 则获取绘图窗口的设备上下文
- * @return Windows 设备上下文句柄；原生非 Windows 后端返回 NULL
- * @note 仅 Windows 返回值可用于 GDI 绘图操作。
- * @warning 在 Windows 上不要手动释放返回的 HDC，由 EGE 库管理。
+ * @return 设备上下文句柄(HDC)
+ * @note 返回的是 Windows 系统的设备上下文句柄，可用于 GDI 绘图操作
+ * @warning 不要手动释放返回的 HDC，由 EGE 库自动管理
  * @see getHWnd(), getHInstance()
  */
 HDC         EGEAPI getHDC(PCIMAGE pimg = NULL);
@@ -5166,11 +5142,11 @@ int EGEAPI SetCloseHandler(LPCALLBACK_PROC func);
 /**
  * @brief 音乐播放类
  *
- * MUSIC 在 Windows 上使用 MCI，在原生 macOS 上使用
- * AVFAudio/AudioToolbox，支持的格式以当前平台后端为准。
+ * MUSIC 类提供了基于 Windows Media Control Interface (MCI) 的音乐播放功能，
+ * 支持播放 WAV、MP3、MIDI 等多种音频格式。
  *
- * @note 支持 Windows 和原生 macOS。WAV 可作为跨平台格式；
- *       MP3/MIDI 是否可用由操作系统编解码能力决定。
+ * @note 该类基于 Windows MCI 实现，仅支持 Windows 平台
+ * @note 支持的音频格式包括：WAV, MP3, MIDI 等
  * @see music_state_flag, MUSIC_ERROR
  */
 class MUSIC
@@ -5190,8 +5166,8 @@ public:
 
     /**
      * @brief 类型转换操作符
-     * @return 返回历史 Windows 回调句柄；macOS 上为空
-     * @note 仅为源码和 ABI 兼容保留，新代码不应依赖它
+     * @return 返回窗口句柄(HWND)
+     * @note 用于与 Windows API 交互
      */
     operator HWND() const { return (HWND)m_dwCallBack; }
 
@@ -5256,7 +5232,8 @@ public:
      * @brief 定位播放位置
      * @param dwTo 目标播放位置（毫秒）
      * @return 操作成功返回 0，操作失败返回非 0
-     * @note 目标位置不能超过 GetLength()
+     * @note 目前此函数无效，建议使用 Play(dwTo) 代替
+     * @deprecated 推荐使用 Play(dwTo) 实现定位播放
      * @see Play()
      */
     DWORD Seek(DWORD dwTo);
@@ -5317,8 +5294,8 @@ public:
     DWORD GetPlayStatus();
 
 private:
-    DWORD m_DID;        ///< 历史 ABI 状态，Windows 上为 MCI 设备 ID
-    PVOID m_dwCallBack; ///< 历史 Windows 回调句柄
+    DWORD m_DID;        ///< MCI 设备 ID
+    PVOID m_dwCallBack; ///< 回调句柄
 };
 
 uint32_t EGEAPI ege_compress_bound(uint32_t dataSize);
