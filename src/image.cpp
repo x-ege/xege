@@ -169,7 +169,9 @@ void IMAGE::reset()
 {
     m_initflag  = IMAGE_INIT_FLAG;
     m_hDC       = NULL;
+#ifndef _WIN32
     m_renderTarget = NULL;
+#endif
     m_hBmp      = NULL;
     m_width     = 0;
     m_height    = 0;
@@ -178,10 +180,6 @@ void IMAGE::reset()
     m_fillcolor = 0;
     m_textcolor = 0;
     m_bk_color  = 0;
-    m_fontBkColor = 0;
-    m_bkMode    = OPAQUE;
-    m_writeMode = R2_COPYPEN;
-    m_fillstyle = SOLID_FILL;
     m_aa        = false;
     memset(&m_vpt, 0, sizeof(m_vpt));
     memset(&m_texttype, 0, sizeof(m_texttype));
@@ -194,7 +192,6 @@ void IMAGE::reset()
     m_texture      = NULL;
 #ifdef EGE_GDIPLUS
     m_graphics = NULL;
-    m_graphicsBitmap = NULL;
     m_pen      = NULL;
     m_brush    = NULL;
 #endif
@@ -356,10 +353,6 @@ int IMAGE::deleteimage()
         delete m_graphics;
     }
     m_graphics = NULL;
-    if (NULL != m_graphicsBitmap) {
-        delete m_graphicsBitmap;
-    }
-    m_graphicsBitmap = NULL;
     if (NULL != m_pen) {
         delete m_pen;
     }
@@ -370,11 +363,13 @@ int IMAGE::deleteimage()
     m_brush = NULL;
 #endif
 
-    if (getNativeRenderTarget()) {
+#ifndef _WIN32
+    if (m_renderTarget) {
         delete m_renderTarget;
         m_renderTarget = NULL;
         m_pBuffer = NULL;
     }
+#endif
 
 #ifdef _WIN32
     HBITMAP hbmp  = (HBITMAP)GetCurrentObject(m_hDC, OBJ_BITMAP);
@@ -511,6 +506,32 @@ void IMAGE::syncBuffer() const
         GdiFlush();
     }
 }
+
+#if defined(_MSC_VER)
+#define EGE_IMAGE_NOINLINE __declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+#define EGE_IMAGE_NOINLINE __attribute__((noinline))
+#else
+#define EGE_IMAGE_NOINLINE
+#endif
+
+EGE_IMAGE_NOINLINE color_t* IMAGE::getbuffer()
+{
+    syncBuffer();
+    return reinterpret_cast<color_t*>(m_pBuffer);
+}
+
+EGE_IMAGE_NOINLINE const color_t* IMAGE::getbuffer() const
+{
+    return const_cast<IMAGE*>(this)->getbuffer();
+}
+
+EGE_IMAGE_NOINLINE color_t* IMAGE::getbuffer_for_write(int, int, int, int)
+{
+    return getbuffer();
+}
+
+#undef EGE_IMAGE_NOINLINE
 #endif
 
 #ifndef _WIN32
@@ -555,23 +576,6 @@ RenderTarget* IMAGE::getRenderTargetForSampling() const
 
 Gdiplus::Graphics* IMAGE::getGraphics()
 {
-    bool createdRenderTargetGraphics = false;
-    if (getNativeRenderTarget()) {
-        color_t* buffer = getbuffer();
-        if (NULL == m_graphics && buffer != NULL && m_width > 0 && m_height > 0) {
-            m_graphicsBitmap = new Gdiplus::Bitmap(
-                m_width, m_height, m_width * static_cast<int>(sizeof(color_t)),
-                PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(buffer));
-            m_graphics = new Gdiplus::Graphics(m_graphicsBitmap);
-            // 与下方基于 HDC 的历史 Graphics 对象保持一致；PixelOffsetModeHalf 会影响
-            // 源矩形和缩放采样的边缘像素。
-            m_graphics->SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
-            m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);
-            m_graphics->SetTextRenderingHint(
-                m_aa ? Gdiplus::TextRenderingHintAntiAlias : Gdiplus::TextRenderingHintSystemDefault);
-            createdRenderTargetGraphics = true;
-        }
-    }
     if (NULL == m_graphics) {
         POINT origin;
         SetViewportOrgEx(m_hDC, 0, 0, &origin);
@@ -591,9 +595,6 @@ Gdiplus::Graphics* IMAGE::getGraphics()
         m_graphics->SetSmoothingMode(m_aa ? Gdiplus::SmoothingModeAntiAlias : Gdiplus::SmoothingModeNone);
         m_graphics->SetTextRenderingHint(
             m_aa ? Gdiplus::TextRenderingHintAntiAlias : Gdiplus::TextRenderingHintSystemDefault);
-    }
-    if (createdRenderTargetGraphics) {
-        syncGraphicsViewport(0, 0);
     }
     return m_graphics;
 }
@@ -761,21 +762,10 @@ int IMAGE::resize_f(int width, int height)
 
     // BITMAP 更换后需重新创建 Graphics 对象(否则会在已销毁的 old_bitmap 上绘制，引发异常)
 #ifdef EGE_GDIPLUS
-    Gdiplus::Matrix savedRenderTargetTransform;
-    bool restoreRenderTargetTransform = false;
     if (m_graphics != NULL) {
-        if (getNativeRenderTarget()) {
-            m_graphics->GetTransform(&savedRenderTargetTransform);
-            restoreRenderTargetTransform = true;
-            delete m_graphics;
-            m_graphics = NULL;
-            delete m_graphicsBitmap;
-            m_graphicsBitmap = NULL;
-        } else {
-            Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
-            delete m_graphics;
-            m_graphics = newGraphics;
-        }
+        Gdiplus::Graphics* newGraphics = recreateGdiplusGraphics(m_hDC, m_graphics);
+        delete m_graphics;
+        m_graphics = newGraphics;
     }
 #endif
 
@@ -787,15 +777,6 @@ int IMAGE::resize_f(int width, int height)
     }
 
     setviewport(viewport.left, viewport.top, viewport.right, viewport.bottom, m_enableclip, this);
-
-#ifdef EGE_GDIPLUS
-    if (restoreRenderTargetTransform && width > 0 && height > 0) {
-        Gdiplus::Graphics* graphics = getGraphics();
-        if (graphics != NULL) {
-            graphics->SetTransform(&savedRenderTargetTransform);
-        }
-    }
-#endif
 
     if (regenerateTexture && width > 0 && height > 0) {
         gentexture(true);

@@ -87,7 +87,9 @@ private:
 
 public:
     HDC     m_hDC;
+#ifndef _WIN32
     RenderTarget* m_renderTarget;  // 原生后端的渲染目标；传统 GDI 路径始终为空。
+#endif
 
     RenderTarget* getNativeRenderTarget() const
     {
@@ -106,15 +108,10 @@ public:
     color_t m_fillcolor;
     color_t m_textcolor;
     color_t m_bk_color;
-    color_t m_fontBkColor;
-    int     m_bkMode;
-    int     m_writeMode;
-    int     m_fillstyle;
 
 private:
 #ifdef EGE_GDIPLUS
     Gdiplus::Graphics* m_graphics;
-    Gdiplus::Bitmap*   m_graphicsBitmap;
     Gdiplus::Pen*      m_pen;
     Gdiplus::Brush*    m_brush;
 #endif
@@ -160,21 +157,9 @@ public:
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
 #ifdef _WIN32
-    color_t* getbuffer()
-    {
-        syncBuffer();
-        return reinterpret_cast<color_t*>(m_pBuffer);
-    }
-    const color_t* getbuffer() const
-    {
-        syncBuffer();
-        return reinterpret_cast<const color_t*>(m_pBuffer);
-    }
-    color_t* getbuffer_for_write(int, int, int, int)
-    {
-        syncBuffer();
-        return reinterpret_cast<color_t*>(m_pBuffer);
-    }
+    color_t*       getbuffer();
+    const color_t* getbuffer() const;
+    color_t*       getbuffer_for_write(int x, int y, int width, int height);
 #else
     color_t*       getbuffer();
     const color_t* getbuffer() const;

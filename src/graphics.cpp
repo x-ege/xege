@@ -408,7 +408,15 @@ int dealmessage(_graph_setting* pg, bool force_update)
 }
 
 /*private function*/
-void guiupdate(_graph_setting* pg, egeControlBase* root)
+#if defined(_MSC_VER)
+#define EGE_GRAPHICS_NOINLINE __declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+#define EGE_GRAPHICS_NOINLINE __attribute__((noinline))
+#else
+#define EGE_GRAPHICS_NOINLINE
+#endif
+
+EGE_GRAPHICS_NOINLINE void guiupdate(_graph_setting* pg, egeControlBase* root)
 {
     // During early initialization and shutdown these pointers may be null.
     if (pg == NULL || root == NULL) {
@@ -422,6 +430,8 @@ void guiupdate(_graph_setting* pg, egeControlBase* root)
     }
     root->update();
 }
+
+#undef EGE_GRAPHICS_NOINLINE
 
 /*private function*/
 int waitdealmessage(_graph_setting* pg)
@@ -1271,7 +1281,6 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     int height = pg->dc_h;
 
 #ifdef _WIN32
-    pg->window = NULL;
     pg->instance = GetModuleHandle(NULL);
     initicon();
     // 注册窗口类，设置默认消息处理函数，此处创建 Unicode 窗口。

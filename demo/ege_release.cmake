@@ -79,6 +79,10 @@ if(MSVC)
         "$<$<CONFIG:RELEASE>:/DNDEBUG>"
         "$<$<CONFIG:RELWITHDEBINFO>:/DNDEBUG>"
         "$<$<CONFIG:MINSIZEREL>:/DNDEBUG>")
+    target_link_options(xege INTERFACE
+        "$<$<CONFIG:RELEASE>:/OPT:REF>"
+        "$<$<CONFIG:RELWITHDEBINFO>:/OPT:REF>"
+        "$<$<CONFIG:MINSIZEREL>:/OPT:REF>")
 endif()
 
 if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
@@ -114,7 +118,11 @@ elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set_target_properties(xege PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../Release/lib/${osLibDir}/libgraphics.a)
 
     target_compile_options(xege INTERFACE -D_FORTIFY_SOURCE=0)
-    target_link_options(xege INTERFACE -mwindows -static -static-libgcc -static-libstdc++)
+    target_link_options(xege INTERFACE
+        -mwindows -static -static-libgcc -static-libstdc++
+        "$<$<CONFIG:RELEASE>:-Wl,--gc-sections>"
+        "$<$<CONFIG:RELWITHDEBINFO>:-Wl,--gc-sections>"
+        "$<$<CONFIG:MINSIZEREL>:-Wl,--gc-sections>")
     target_link_libraries(xege INTERFACE gdiplus gdi32 imm32 msimg32 ole32 oleaut32 winmm uuid)
 elseif(NOT MSVC)
     message(FATAL_ERROR

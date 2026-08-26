@@ -207,6 +207,7 @@ void getParentSize(int* width, int* height)
 #endif
 }
 
+#ifndef _WIN32
 void resize_window_surface(int width, int height)
 {
     if (width <= 0 || height <= 0) {
@@ -225,6 +226,7 @@ void resize_window_surface(int width, int height)
     pg->base_w = width;
     pg->base_h = height;
 }
+#endif
 
 void EGEAPI resizewindow(int width, int height)
 {
@@ -239,11 +241,27 @@ void EGEAPI resizewindow(int width, int height)
     }
 
     _graph_setting* pg = &graph_setting;
+#ifdef _WIN32
+    if (width == getwidth() && height == getheight()) {
+        return;
+    }
+
+    setmode(TRUECOLORSIZE, width | (height << 16));
+    for (int i = 0; i < BITMAP_PAGE_SIZE; ++i) {
+        if (pg->img_page[i] != NULL) {
+            resize(pg->img_page[i], width, height);
+        }
+    }
+
+    pg->base_w = width;
+    pg->base_h = height;
+#else
     resize_window_surface(width, height);
 
     if (pg->getNativeWindow() != NULL) {
         pg->getNativeWindow()->setSize(width, height);
     }
+#endif
 }
 
 int attachHWND(HWND hWnd)

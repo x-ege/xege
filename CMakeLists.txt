@@ -318,6 +318,30 @@ else()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
+# Windows 发布构建按函数组织静态库，并在最终可执行文件中移除未引用段。原生后端
+# 增加的跨平台 API 不应迫使只使用 GDI 的程序携带未调用实现。
+if(WIN32)
+    if(MSVC)
+        target_compile_options(xege PRIVATE
+            $<$<CONFIG:Release>:/Gy>
+            $<$<CONFIG:RelWithDebInfo>:/Gy>
+            $<$<CONFIG:MinSizeRel>:/Gy>)
+        target_link_options(xege INTERFACE
+            $<$<CONFIG:Release>:/OPT:REF>
+            $<$<CONFIG:RelWithDebInfo>:/OPT:REF>
+            $<$<CONFIG:MinSizeRel>:/OPT:REF>)
+    elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(xege PRIVATE
+            $<$<CONFIG:Release>:-ffunction-sections>
+            $<$<CONFIG:RelWithDebInfo>:-ffunction-sections>
+            $<$<CONFIG:MinSizeRel>:-ffunction-sections>)
+        target_link_options(xege INTERFACE
+            $<$<CONFIG:Release>:-Wl,--gc-sections>
+            $<$<CONFIG:RelWithDebInfo>:-Wl,--gc-sections>
+            $<$<CONFIG:MinSizeRel>:-Wl,--gc-sections>)
+    endif()
+endif()
+
 # enable_testing() 具有目录作用域，必须在此调用，子目录注册的测试才能从顶层看到。
 if(EGE_BUILD_TEST)
     enable_testing()

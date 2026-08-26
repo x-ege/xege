@@ -76,7 +76,6 @@ int mousepos(int* x, int* y)
 void setwritemode(int mode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    img->m_writeMode = mode;
     if (img->getNativeRenderTarget()) {
         img->getNativeRenderTarget()->setRasterOp((RasterOp)mode);
     } else {
@@ -817,7 +816,6 @@ void setfillcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
-    img->m_fillstyle = SOLID_FILL;
     if (img->getNativeRenderTarget()) {
         // The Win32 backend replaces the current brush with a solid brush.
         // Preserve that observable behavior for the portable renderer too.
@@ -892,7 +890,6 @@ void EGEAPI setbkcolor_f(color_t color, PIMAGE pimg)
 
     if (img) {
         img->m_bk_color = color;
-        img->m_fontBkColor = color;
         if (img->m_hDC) {
 #ifdef _WIN32
             SetBkColor(img->m_hDC, ARGBTOZBGR(color));
@@ -933,9 +930,6 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img) {
-        img->m_fontBkColor = color;
-    }
     if (img && img->m_hDC) {
 #ifdef _WIN32
         SetBkColor(img->m_hDC, ARGBTOZBGR(color));
@@ -950,9 +944,6 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
 void setbkmode(int bkMode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img) {
-        img->m_bkMode = bkMode;
-    }
     if (img && img->m_hDC) {
 #ifdef _WIN32
         SetBkMode(img->m_hDC, bkMode);
@@ -1955,7 +1946,6 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
-    img->m_fillstyle = pattern;
     if (img->getNativeRenderTarget()) {
         const FillStyle style = (pattern >= EMPTY_FILL && pattern <= USER_FILL)
             ? static_cast<FillStyle>(pattern) : FILL_SOLID;
@@ -2992,8 +2982,14 @@ int inputbox_getline(const wchar_t* title, const wchar_t* text, LPWSTR buf, int 
     setfont(18, 0, L"Tahoma", &window);
     outtextxy(3, 3, title ? title : L"", &window);
     setcolor(0x0, &window);
-    settextjustify(LEFT_TEXT, TOP_TEXT, &window);
-    outtextrect(30, 32, w - 60, 128 - 3 - 32, text ? text : L"", &window);
+
+    RECT textRect = {30, 32, w - 30, 128 - 3};
+    DrawTextW(window.m_hDC,
+              text ? text : L"",
+              -1,
+              &textRect,
+              DT_NOPREFIX | DT_LEFT | DT_TOP | TA_NOUPDATECP |
+                  DT_WORDBREAK | DT_EDITCONTROL | DT_EXPANDTABS);
 
     putimage(0, 0, &bg);
     putimage(x, y, &window);
@@ -3159,16 +3155,6 @@ double fclock()
 
 LRESULT sys_edit::onMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	// 单行模式下拦截回车以屏蔽响铃，多行模式交由 EDIT 控件处理换行
-	if (message == WM_CHAR && wParam == VK_RETURN) {
-		// 检查是否为多行模式（通过窗口样式判断）
-		LONG style = ::GetWindowLongW(m_hwnd, GWL_STYLE);
-		if (!(style & ES_MULTILINE)) {
-			return 0;   // 单行模式，屏蔽响铃
-		}
-		// 多行模式不拦截，让 EDIT 处理换行（插入\r\n）
-	}
-
     switch (message) {
     case WM_CTLCOLOREDIT: {
         HDC dc = (HDC)wParam;

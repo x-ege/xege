@@ -212,7 +212,9 @@ struct _graph_setting
     std::wstring window_caption;
     HICON        window_hicon;
     color_t      window_initial_color;
+#ifndef _WIN32
     Window*      window = nullptr;
+#endif
 
     Window* getNativeWindow() const
     {

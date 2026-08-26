@@ -606,15 +606,7 @@ void setfont(int height,
     BYTE pitchAndFamily,
     PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->getNativeRenderTarget()) {
-        const std::wstring wideFace = mb2w(typeface);
-        const std::string utf8Face = w2utf8(wideFace.c_str());
-        img->getNativeRenderTarget()->setFont(height, width, utf8Face.c_str(), escapement, orientation,
-                                     weight, italic, underline, strikeOut);
-        CONVERT_IMAGE_END;
-        return;
-    }
+#ifdef _WIN32
     const std::wstring& wFace = mb2w(typeface);
 
     setfont(
@@ -632,8 +624,19 @@ void setfont(int height,
         clipPrecision,
         quality,
         pitchAndFamily,
-        img
+        pimg
     );
+#else
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->getNativeRenderTarget()) {
+        const std::wstring wideFace = mb2w(typeface);
+        const std::string utf8Face = w2utf8(wideFace.c_str());
+        img->getNativeRenderTarget()->setFont(height, width, utf8Face.c_str(), escapement, orientation,
+                                     weight, italic, underline, strikeOut);
+        CONVERT_IMAGE_END;
+        return;
+    }
+#endif
 }
 
 void setfont(int height,
@@ -652,14 +655,6 @@ void setfont(int height,
     BYTE pitchAndFamily,
     PIMAGE pimg)
 {
-    PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->getNativeRenderTarget()) {
-        const std::string face = w2utf8(typeface);
-        img->getNativeRenderTarget()->setFont(height, width, face.c_str(), escapement, orientation,
-                                     weight, italic, underline, strikeOut);
-        CONVERT_IMAGE_END;
-        return;
-    }
 #ifdef _WIN32
     LOGFONTW lf = {0};
     lf.lfHeight = height;
@@ -678,6 +673,15 @@ void setfont(int height,
     lstrcpyW(lf.lfFaceName, typeface);
 
     setfont(&lf, pimg);
+#else
+    PIMAGE img = CONVERT_IMAGE(pimg);
+    if (img && img->getNativeRenderTarget()) {
+        const std::string face = w2utf8(typeface);
+        img->getNativeRenderTarget()->setFont(height, width, face.c_str(), escapement, orientation,
+                                     weight, italic, underline, strikeOut);
+        CONVERT_IMAGE_END;
+        return;
+    }
 #endif
 }
 

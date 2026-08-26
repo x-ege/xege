@@ -2,6 +2,14 @@
 
 #define NULL_PTR 0
 
+#if defined(_MSC_VER)
+#define EGE_SBT_NOINLINE __declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+#define EGE_SBT_NOINLINE __attribute__((noinline))
+#else
+#define EGE_SBT_NOINLINE
+#endif
+
 namespace ege
 {
 
@@ -43,7 +51,7 @@ public:
     SBT& operator=(const SBT& sbt) { _copy(NULL_PTR, root(), sbt.root()); }
 
 protected:
-    TreeType _clear(TreeType t)
+    EGE_SBT_NOINLINE TreeType _clear(TreeType t)
     {
         if (t == NULL_PTR) {
             return NULL_PTR;
@@ -426,3 +434,5 @@ protected:
 };
 
 } // namespace ege
+
+#undef EGE_SBT_NOINLINE
