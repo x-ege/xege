@@ -4,6 +4,7 @@ if(NOT DEFINED EGE_SOURCE_DIR)
 endif()
 
 find_program(_ege_real_mingw_c_compiler x86_64-w64-mingw32-gcc)
+find_program(_ege_ninja ninja)
 
 set(EGE_MINGW_TRIPLE "contract-w64-mingw32" CACHE STRING "" FORCE)
 include("${EGE_SOURCE_DIR}/cmake/toolchains/mingw-w64.cmake")
@@ -27,13 +28,15 @@ if(NOT CMAKE_FIND_ROOT_PATH_MODE_PROGRAM STREQUAL "NEVER"
     message(FATAL_ERROR "mingw-w64 find-root modes are not isolated")
 endif()
 
-# When mingw-w64 is installed, exercise the complete configure path too.  CI
-# jobs without the compiler still validate the deterministic toolchain values
-# above instead of failing for a missing optional host package.
-if(_ege_real_mingw_c_compiler AND DEFINED EGE_TOOLCHAIN_BINARY_DIR)
+# When mingw-w64 and Ninja are installed, exercise the complete configure path
+# too. CI jobs without either tool still validate the deterministic toolchain
+# values above instead of failing for a missing optional host package. Ninja is
+# explicit because compile_commands.json is unavailable with Visual Studio.
+if(_ege_real_mingw_c_compiler AND _ege_ninja AND DEFINED EGE_TOOLCHAIN_BINARY_DIR)
     file(REMOVE_RECURSE "${EGE_TOOLCHAIN_BINARY_DIR}")
     execute_process(
         COMMAND "${CMAKE_COMMAND}"
+            -G Ninja
             -S "${EGE_SOURCE_DIR}"
             -B "${EGE_TOOLCHAIN_BINARY_DIR}"
             -DCMAKE_TOOLCHAIN_FILE=${EGE_SOURCE_DIR}/cmake/toolchains/mingw-w64.cmake
