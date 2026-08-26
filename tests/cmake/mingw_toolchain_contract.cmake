@@ -43,6 +43,7 @@ if(_ege_real_mingw_c_compiler AND DEFINED EGE_TOOLCHAIN_BINARY_DIR)
             -DEGE_BUILD_TEMP=OFF
             -DEGE_ENABLE_CAMERA_CAPTURE=OFF
             -DEGE_DEFAULT_BACKEND=AUTO
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
         RESULT_VARIABLE _ege_mingw_configure_result
         OUTPUT_VARIABLE _ege_mingw_configure_stdout
         ERROR_VARIABLE _ege_mingw_configure_stderr
@@ -60,4 +61,18 @@ if(_ege_real_mingw_c_compiler AND DEFINED EGE_TOOLCHAIN_BINARY_DIR)
         message(FATAL_ERROR
             "AUTO did not resolve to GDI for the Windows toolchain")
     endif()
+
+    file(READ "${EGE_TOOLCHAIN_BINARY_DIR}/compile_commands.json"
+        _ege_mingw_compile_commands)
+    foreach(_ege_native_only_source IN ITEMS
+            "src/backend/common/PixelSurface.cpp"
+            "src/ege_gdiplus_fallback.cpp"
+            "src/diagnostics.cpp")
+        string(FIND "${_ege_mingw_compile_commands}"
+            "${_ege_native_only_source}" _ege_native_source_match)
+        if(NOT _ege_native_source_match EQUAL -1)
+            message(FATAL_ERROR
+                "GDI build unexpectedly compiles ${_ege_native_only_source}")
+        endif()
+    endforeach()
 endif()

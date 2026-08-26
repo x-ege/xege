@@ -29,17 +29,17 @@ void setcaption(const wchar_t* caption)
 {
     struct _graph_setting* pg = &graph_setting;
 #ifdef _WIN32
-    if (pg->window != NULL) {
+    if (pg->getNativeWindow() != NULL) {
         const std::string utf8Caption = w2utf8(caption);
-        pg->window->setTitle(utf8Caption.c_str());
+        pg->getNativeWindow()->setTitle(utf8Caption.c_str());
     } else if (pg->init_sem.acquirable()) {
         ::SetWindowTextW(getHWnd(), caption);
         ::UpdateWindow(getHWnd()); // for vc6
     }
 #else
-    if (pg->window != NULL) {
+    if (pg->getNativeWindow() != NULL) {
         const std::string utf8Caption = w2utf8(caption);
-        pg->window->setTitle(utf8Caption.c_str());
+        pg->getNativeWindow()->setTitle(utf8Caption.c_str());
     }
 #endif
 
@@ -60,7 +60,7 @@ void seticon(int icon_id)
     }
     if (hIcon) {
         pg->window_hicon = hIcon;
-        if (pg->window == NULL && pg->init_sem.acquirable()) {
+        if (pg->getNativeWindow() == NULL && pg->init_sem.acquirable()) {
 #ifdef _WIN64
             ::SetClassLongPtrW(getHWnd(), GCLP_HICON, (LONG_PTR)hIcon);
 #else
@@ -97,16 +97,16 @@ void showwindow()
     }
 
 #ifdef _WIN32
-    if (pg->window != NULL) {
-        pg->window->show();
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->show();
     } else {
         ShowWindow(pg->hwnd, SW_SHOWNORMAL);
         BringWindowToTop(pg->hwnd);
         SetForegroundWindow(pg->hwnd);
     }
 #else
-    if (pg->window != NULL) {
-        pg->window->show();
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->show();
     }
 #endif
 
@@ -133,14 +133,14 @@ void hidewindow()
 {
     struct _graph_setting* pg = &graph_setting;
 #ifdef _WIN32
-    if (pg->window != NULL) {
-        pg->window->hide();
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->hide();
     } else {
         ShowWindow(pg->hwnd, SW_HIDE);
     }
 #else
-    if (pg->window != NULL) {
-        pg->window->hide();
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->hide();
     }
 #endif
 }
@@ -149,17 +149,17 @@ void movewindow(int x, int y, bool redraw)
 {
 #ifdef _WIN32
     _graph_setting* pg = &graph_setting;
-    if (pg->window != NULL) {
+    if (pg->getNativeWindow() != NULL) {
         (void)redraw;
-        pg->window->setPosition(x, y);
+        pg->getNativeWindow()->setPosition(x, y);
     } else {
         ::MoveWindow(getHWnd(), x, y, getwidth(), getheight(), redraw);
     }
 #else
     (void)redraw;
     _graph_setting* pg = &graph_setting;
-    if (pg->window != NULL) {
-        pg->window->setPosition(x, y);
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->setPosition(x, y);
     }
 #endif
 }
@@ -241,8 +241,8 @@ void EGEAPI resizewindow(int width, int height)
     _graph_setting* pg = &graph_setting;
     resize_window_surface(width, height);
 
-    if (pg->window != NULL) {
-        pg->window->setSize(width, height);
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->setSize(width, height);
     }
 }
 

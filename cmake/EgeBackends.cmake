@@ -81,9 +81,11 @@ function(_ege_add_existing_sources target output_var)
 endfunction()
 
 function(ege_configure_backend target)
-    _ege_add_existing_sources(${target} _ege_common_backend_sources
-        src/backend/common/PixelSurface.cpp
-    )
+    if(NOT EGE_RESOLVED_BACKEND STREQUAL "GDI" OR EGE_ENABLE_OPENGL)
+        _ege_add_existing_sources(${target} _ege_common_backend_sources
+            src/backend/common/PixelSurface.cpp
+        )
+    endif()
     target_include_directories(${target} PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/backend/interface"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/backend/common"

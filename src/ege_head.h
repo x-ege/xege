@@ -212,7 +212,17 @@ struct _graph_setting
     std::wstring window_caption;
     HICON        window_hicon;
     color_t      window_initial_color;
-    Window*      window = nullptr; // Native window interface; null for the legacy Win32 path.
+    Window*      window = nullptr;
+
+    Window* getNativeWindow() const
+    {
+#ifdef _WIN32
+        return NULL;
+#else
+        return window;
+#endif
+    }
+
     int          exit_flag;
     int          exit_window;
     int          update_mark_count; // 更新标记

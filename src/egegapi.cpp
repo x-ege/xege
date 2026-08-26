@@ -59,8 +59,8 @@ int showmouse(int bShow)
     struct _graph_setting* pg = &graph_setting;
     int ret = pg->mouse_show;
     pg->mouse_show = bShow;
-    if (pg->window) {
-        pg->window->setCursorVisible(bShow != 0);
+    if (pg->getNativeWindow()) {
+        pg->getNativeWindow()->setCursorVisible(bShow != 0);
     }
     return ret;
 }
@@ -77,8 +77,8 @@ void setwritemode(int mode, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_writeMode = mode;
-    if (img->m_renderTarget) {
-        img->m_renderTarget->setRasterOp((RasterOp)mode);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->setRasterOp((RasterOp)mode);
     } else {
 #ifdef _WIN32
         SetROP2(img->m_hDC, mode);
@@ -99,8 +99,8 @@ color_t getpixel(int x, int y, PCIMAGE pimg)
 
     // RenderTarget coordinates are viewport-relative.  Let the backend map
     // them to physical image coordinates exactly once.
-    if (img->m_renderTarget) {
-        return img->m_renderTarget->getPixel(x, y);
+    if (img->getNativeRenderTarget()) {
+        return img->getNativeRenderTarget()->getPixel(x, y);
     }
 
     x += img->m_vpt.left;
@@ -349,8 +349,8 @@ void putpixel_alphablend_f(int x, int y, color_t color, unsigned char alphaFacto
 void moveto(int x, int y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img->m_renderTarget) {
-        img->m_renderTarget->moveTo(x, y);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->moveTo(x, y);
     } else {
 #ifdef _WIN32
         MoveToEx(img->m_hDC, x, y, NULL);
@@ -362,8 +362,8 @@ void moveto(int x, int y, PIMAGE pimg)
 void moverel(int dx, int dy, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img->m_renderTarget) {
-        img->m_renderTarget->moveRel(dx, dy);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->moveRel(dx, dy);
     } else {
 #ifdef _WIN32
         POINT pt;
@@ -381,8 +381,8 @@ void line(int x1, int y1, int x2, int y2, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         if (img->m_linestyle.linestyle != NULL_LINE) {
-            if (img->m_renderTarget) {
-                img->m_renderTarget->drawLine(x1, y1, x2, y2);
+            if (img->getNativeRenderTarget()) {
+                img->getNativeRenderTarget()->drawLine(x1, y1, x2, y2);
             } else {
 #ifdef _WIN32
                 MoveToEx(img->m_hDC, x1, y1, NULL);
@@ -399,8 +399,8 @@ void linerel(int dx, int dy, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->lineRel(dx, dy);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->lineRel(dx, dy);
         } else {
 #ifdef _WIN32
             POINT pt;
@@ -422,8 +422,8 @@ void lineto(int x, int y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->lineTo(x, y);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->lineTo(x, y);
         } else {
 #ifdef _WIN32
             if (img->m_linestyle.linestyle != NULL_LINE) {
@@ -582,8 +582,8 @@ void lineto_f(float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->lineTo((int)round(x), (int)round(y));
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->lineTo((int)round(x), (int)round(y));
         } else {
 #ifdef _WIN32
         POINT pt;
@@ -600,8 +600,8 @@ void linerel_f(float dx, float dy, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->lineRel((int)round(dx), (int)round(dy));
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->lineRel((int)round(dx), (int)round(dy));
         } else {
 #ifdef _WIN32
         POINT pt;
@@ -619,8 +619,8 @@ void line_f(float x1, float y1, float x2, float y2, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->drawLineF(x1, y1, x2, y2);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->drawLineF(x1, y1, x2, y2);
         } else {
             line_base(x1, y1, x2, y2, img);
         }
@@ -657,8 +657,8 @@ static int saveBrush(PIMAGE img, int save) // 此函数调用前，已经有Lock
 void rectangle(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img->m_renderTarget) {
-        img->m_renderTarget->drawRect(left, top, right - left, bottom - top);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->drawRect(left, top, right - left, bottom - top);
     } else {
 #ifdef _WIN32
         if (saveBrush(img, 1)) {
@@ -804,8 +804,8 @@ void setlinecolor(color_t color, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
         img->m_linecolor = color;
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setLineColor(color);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setLineColor(color);
         }
         // RenderTarget primitives and enhanced GDI+ routes share IMAGE state.
         update_pen(img);
@@ -818,10 +818,10 @@ void setfillcolor(color_t color, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
     img->m_fillstyle = SOLID_FILL;
-    if (img->m_renderTarget) {
+    if (img->getNativeRenderTarget()) {
         // The Win32 backend replaces the current brush with a solid brush.
         // Preserve that observable behavior for the portable renderer too.
-        img->m_renderTarget->setFillStyle(FILL_SOLID, color);
+        img->getNativeRenderTarget()->setFillStyle(FILL_SOLID, color);
     } else {
 #ifdef _WIN32
         HBRUSH hbr = CreateSolidBrush(ARGBTOZBGR(color));
@@ -898,8 +898,8 @@ void EGEAPI setbkcolor_f(color_t color, PIMAGE pimg)
             SetBkColor(img->m_hDC, ARGBTOZBGR(color));
 #endif
         }
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setBkColor(color);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setBkColor(color);
         }
     } else {
         _graph_setting* pg = &graph_setting;
@@ -922,8 +922,8 @@ void settextcolor(color_t color, PIMAGE pimg)
             SetTextColor(img->m_hDC, ARGBTOZBGR(color));
         }
 #endif
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setTextColor(color);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setTextColor(color);
         }
     }
     CONVERT_IMAGE_END;
@@ -941,8 +941,8 @@ void setfontbkcolor(color_t color, PIMAGE pimg)
         SetBkColor(img->m_hDC, ARGBTOZBGR(color));
 #endif
     }
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->setBkColor(color);
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->setBkColor(color);
     }
     CONVERT_IMAGE_END;
 }
@@ -958,8 +958,8 @@ void setbkmode(int bkMode, PIMAGE pimg)
         SetBkMode(img->m_hDC, bkMode);
 #endif
     }
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->setBkMode(bkMode != TRANSPARENT);
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->setBkMode(bkMode != TRANSPARENT);
     }
     CONVERT_IMAGE_END;
 }
@@ -988,8 +988,8 @@ void cleardevice(PIMAGE pimg)
 
     if (img) {
         color_t c = getbkcolor(img);
-        if (img->m_renderTarget) {
-            img->m_renderTarget->clear(c);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->clear(c);
         } else if (img->m_hDC) {
             for (color_t *p = (color_t*)img->getbuffer(), *e = (color_t*)&img->getbuffer()[img->m_width * img->m_height];
                  p != e;
@@ -1023,8 +1023,8 @@ void ellipse(int x, int y, int startAngle, int endAngle, int xRadius, int yRadiu
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
 
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->drawEllipse(x - xRadius, y - yRadius, startAngle, endAngle, 2 * xRadius, 2 * yRadius);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->drawEllipse(x - xRadius, y - yRadius, startAngle, endAngle, 2 * xRadius, 2 * yRadius);
         } else {
 #ifdef _WIN32
             Arc(img->m_hDC,
@@ -1049,8 +1049,8 @@ void ellipsef(float x, float y, float startAngle, float endAngle, float xRadius,
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
 
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->drawEllipse((int)round(x - xRadius), (int)round(y - yRadius),
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->drawEllipse((int)round(x - xRadius), (int)round(y - yRadius),
                                               (int)round(startAngle), (int)round(endAngle),
                                               (int)round(2 * xRadius), (int)round(2 * yRadius));
         } else {
@@ -1093,8 +1093,8 @@ void sectorf(float x, float y, float startAngle, float endAngle, float xRadius, 
 void pie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->drawPie(x - xRadius, y - yRadius, startAngle, endAngle,
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->drawPie(x - xRadius, y - yRadius, startAngle, endAngle,
                                      2 * xRadius, 2 * yRadius);
     } else {
 #ifdef _WIN32
@@ -1109,8 +1109,8 @@ void pie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, P
 void pief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->drawPie((int)round(x - xRadius), (int)round(y - yRadius),
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->drawPie((int)round(x - xRadius), (int)round(y - yRadius),
                                      (int)round(startAngle), (int)round(endAngle),
                                      (int)round(2 * xRadius), (int)round(2 * yRadius));
     } else {
@@ -1128,9 +1128,9 @@ void fillpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadiu
     PIMAGE img = CONVERT_IMAGE(pimg);
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->fillPie(x - xRadius, y - yRadius, startAngle, endAngle, 2 * xRadius, 2 * yRadius);
-            img->m_renderTarget->drawPie(x - xRadius, y - yRadius, startAngle, endAngle,
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->fillPie(x - xRadius, y - yRadius, startAngle, endAngle, 2 * xRadius, 2 * yRadius);
+            img->getNativeRenderTarget()->drawPie(x - xRadius, y - yRadius, startAngle, endAngle,
                                          2 * xRadius, 2 * yRadius);
         } else {
 #ifdef _WIN32
@@ -1154,11 +1154,11 @@ void fillpief(float x, float y, float startAngle, float endAngle, float xRadius,
     PIMAGE img = CONVERT_IMAGE(pimg);
     double sr = startAngle / 180.0 * PI, er = endAngle / 180.0 * PI;
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->fillPie((int)round(x - xRadius), (int)round(y - yRadius),
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->fillPie((int)round(x - xRadius), (int)round(y - yRadius),
                                          (int)round(startAngle), (int)round(endAngle),
                                          (int)round(2 * xRadius), (int)round(2 * yRadius));
-            img->m_renderTarget->drawPie((int)round(x - xRadius), (int)round(y - yRadius),
+            img->getNativeRenderTarget()->drawPie((int)round(x - xRadius), (int)round(y - yRadius),
                                          (int)round(startAngle), (int)round(endAngle),
                                          (int)round(2 * xRadius), (int)round(2 * yRadius));
         } else {
@@ -1181,8 +1181,8 @@ void fillpief(float x, float y, float startAngle, float endAngle, float xRadius,
 void solidpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillPie(x - xRadius, y - yRadius, startAngle, endAngle,
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillPie(x - xRadius, y - yRadius, startAngle, endAngle,
                                      2 * xRadius, 2 * yRadius);
     } else {
 #ifdef _WIN32
@@ -1197,8 +1197,8 @@ void solidpie(int x, int y, int startAngle, int endAngle, int xRadius, int yRadi
 void solidpief(float x, float y, float startAngle, float endAngle, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillPie((int)round(x - xRadius), (int)round(y - yRadius),
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillPie((int)round(x - xRadius), (int)round(y - yRadius),
                                      (int)round(startAngle), (int)round(endAngle),
                                      (int)round(2 * xRadius), (int)round(2 * yRadius));
     } else {
@@ -1215,9 +1215,9 @@ void fillellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->fillEllipse(x - xRadius, y - yRadius, 0, 360, 2 * xRadius, 2 * yRadius);
-            img->m_renderTarget->drawEllipse(x - xRadius, y - yRadius, 0, 360,
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->fillEllipse(x - xRadius, y - yRadius, 0, 360, 2 * xRadius, 2 * yRadius);
+            img->getNativeRenderTarget()->drawEllipse(x - xRadius, y - yRadius, 0, 360,
                                              2 * xRadius, 2 * yRadius);
         } else {
 #ifdef _WIN32
@@ -1232,10 +1232,10 @@ void fillellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->fillEllipse((int)round(x - xRadius), (int)round(y - yRadius),
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->fillEllipse((int)round(x - xRadius), (int)round(y - yRadius),
                                               0, 360, (int)round(2 * xRadius), (int)round(2 * yRadius));
-            img->m_renderTarget->drawEllipse((int)round(x - xRadius), (int)round(y - yRadius),
+            img->getNativeRenderTarget()->drawEllipse((int)round(x - xRadius), (int)round(y - yRadius),
                                               0, 360, (int)round(2 * xRadius), (int)round(2 * yRadius));
         } else {
 #ifdef _WIN32
@@ -1249,8 +1249,8 @@ void fillellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 void solidellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillEllipse(x - xRadius, y - yRadius, 0, 360,
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillEllipse(x - xRadius, y - yRadius, 0, 360,
                                          2 * xRadius, 2 * yRadius);
     } else {
 #ifdef _WIN32
@@ -1265,8 +1265,8 @@ void solidellipse(int x, int y, int xRadius, int yRadius, PIMAGE pimg)
 void solidellipsef(float x, float y, float xRadius, float yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillEllipse((int)round(x - xRadius), (int)round(y - yRadius), 0, 360,
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillEllipse((int)round(x - xRadius), (int)round(y - yRadius), 0, 360,
                                          (int)round(2 * xRadius), (int)round(2 * yRadius));
     } else {
 #ifdef _WIN32
@@ -1291,8 +1291,8 @@ void fillcirclef(float x, float y, float radius, PIMAGE pimg)
 void solidcircle(int x, int y, int radius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillCircle(x, y, radius);
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillCircle(x, y, radius);
     } else {
 #ifdef _WIN32
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
@@ -1306,8 +1306,8 @@ void solidcircle(int x, int y, int radius, PIMAGE pimg)
 void solidcirclef(float x, float y, float radius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillCircle((int)std::lround(x), (int)std::lround(y),
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillCircle((int)std::lround(x), (int)std::lround(y),
                                         (int)std::lround(radius));
     } else {
 #ifdef _WIN32
@@ -1322,8 +1322,8 @@ void solidcirclef(float x, float y, float radius, PIMAGE pimg)
 void bar(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img->m_renderTarget) {
-        img->m_renderTarget->fillRect(left, top, right - left, bottom - top);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillRect(left, top, right - left, bottom - top);
     } else {
 #ifdef _WIN32
         RECT rect = {left, top, right, bottom};
@@ -1341,8 +1341,8 @@ void roundrect(int left, int top, int right, int bottom, int xRadius, int yRadiu
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->drawRoundRect(left, top, right - left, bottom - top, xRadius * 2, yRadius * 2);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->drawRoundRect(left, top, right - left, bottom - top, xRadius * 2, yRadius * 2);
         } else {
 #ifdef _WIN32
             HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
@@ -1367,8 +1367,8 @@ void fillroundrect(int left, int top, int right, int bottom, int radius,  PIMAGE
 void solidroundrect(int left, int top, int right, int bottom, int radius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillRoundRect(left, top, right - left, bottom - top,
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillRoundRect(left, top, right - left, bottom - top,
                                            radius * 2, radius * 2);
     } else {
 #ifdef _WIN32
@@ -1384,9 +1384,9 @@ void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yR
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->fillRoundRect(left, top, right - left, bottom - top, xRadius * 2, yRadius * 2);
-            img->m_renderTarget->drawRoundRect(left, top, right - left, bottom - top,
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->fillRoundRect(left, top, right - left, bottom - top, xRadius * 2, yRadius * 2);
+            img->getNativeRenderTarget()->drawRoundRect(left, top, right - left, bottom - top,
                                                xRadius * 2, yRadius * 2);
         } else {
 #ifdef _WIN32
@@ -1400,8 +1400,8 @@ void fillroundrect(int left, int top, int right, int bottom, int xRadius, int yR
 void solidroundrect(int left, int top, int right, int bottom, int xRadius, int yRadius, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillRoundRect(left, top, right - left, bottom - top,
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillRoundRect(left, top, right - left, bottom - top,
                                            xRadius * 2, yRadius * 2);
     } else {
 #ifdef _WIN32
@@ -1416,9 +1416,9 @@ void solidroundrect(int left, int top, int right, int bottom, int xRadius, int y
 void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img->m_renderTarget) {
-        img->m_renderTarget->fillRect(left, top, right - left, bottom - top);
-        img->m_renderTarget->drawRect(left, top, right - left, bottom - top);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillRect(left, top, right - left, bottom - top);
+        img->getNativeRenderTarget()->drawRect(left, top, right - left, bottom - top);
     } else {
 #ifdef _WIN32
         Rectangle(img->m_hDC, left, top, right, bottom);
@@ -1430,8 +1430,8 @@ void fillrect(int left, int top, int right, int bottom, PIMAGE pimg)
 void solidrect(int left, int top, int right, int bottom, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillRect(left, top, right - left, bottom - top);
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillRect(left, top, right - left, bottom - top);
     } else {
 #ifdef _WIN32
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
@@ -1491,9 +1491,9 @@ void fillpoly(int numOfPoints, const int* points, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->fillPolygon(points, numOfPoints);
-            img->m_renderTarget->drawPolygon(points, numOfPoints);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->fillPolygon(points, numOfPoints);
+            img->getNativeRenderTarget()->drawPolygon(points, numOfPoints);
         } else {
 #ifdef _WIN32
             Polygon(img->m_hDC, (const POINT*)points, numOfPoints);
@@ -1506,8 +1506,8 @@ void fillpoly(int numOfPoints, const int* points, PIMAGE pimg)
 void solidpoly(int numOfPoints, const int *points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->fillPolygon(points, numOfPoints);
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->fillPolygon(points, numOfPoints);
     } else {
 #ifdef _WIN32
     HBRUSH oldPen = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_PEN));
@@ -1522,8 +1522,8 @@ void polyline(int numOfPoints, const int *points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->drawPolyline(points, numOfPoints);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->drawPolyline(points, numOfPoints);
         } else {
 #ifdef _WIN32
             Polyline(img->m_hDC, (const POINT*)points, numOfPoints);
@@ -1537,8 +1537,8 @@ void polygon(int numOfPoints, const int *points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->drawPolygon(points, numOfPoints);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->drawPolygon(points, numOfPoints);
         } else {
 #ifdef _WIN32
             HBRUSH oldBrush = (HBRUSH)SelectObject(img->m_hDC, GetStockObject(NULL_BRUSH));
@@ -1557,7 +1557,7 @@ void fillpoly_gradient(int numOfPoints, const ege_colpoint* points, PIMAGE pimg)
     }
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
+        if (img->getNativeRenderTarget()) {
             color_t* pixels = img->getbuffer();
             if (pixels == NULL) {
                 CONVERT_IMAGE_END;
@@ -1655,7 +1655,7 @@ void drawbezier(int numOfPoints, const int* points, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget && points && numOfPoints >= 4) {
+        if (img->getNativeRenderTarget() && points && numOfPoints >= 4) {
             const int usablePoints = 1 + ((numOfPoints - 1) / 3) * 3;
             for (int segment = 0; segment + 3 < usablePoints; segment += 3) {
                 const float x0 = (float)points[(segment + 0) * 2];
@@ -1679,7 +1679,7 @@ void drawbezier(int numOfPoints, const int* points, PIMAGE pimg)
                                     3 * u * t * t * x2 + t * t * t * x3;
                     const float y = u * u * u * y0 + 3 * u * u * t * y1 +
                                     3 * u * t * t * y2 + t * t * t * y3;
-                    img->m_renderTarget->drawLineF(previousX, previousY, x, y);
+                    img->getNativeRenderTarget()->drawLineF(previousX, previousY, x, y);
                     previousX = x;
                     previousY = y;
                 }
@@ -1704,10 +1704,10 @@ void drawlines(int numlines, const int* points, PIMAGE pimg)
         return;
     }
     if (img) {
-        if (img->m_renderTarget) {
+        if (img->getNativeRenderTarget()) {
             for (int lineIndex = 0; lineIndex < numlines; ++lineIndex) {
                 const int* linePoints = points + lineIndex * 4;
-                img->m_renderTarget->drawLine(linePoints[0], linePoints[1],
+                img->getNativeRenderTarget()->drawLine(linePoints[0], linePoints[1],
                                               linePoints[2], linePoints[3]);
             }
         } else {
@@ -1734,8 +1734,8 @@ void floodfill(int x, int y, int borderColor, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->floodFill(x, y, (color_t)borderColor);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->floodFill(x, y, (color_t)borderColor);
         } else {
 #ifdef _WIN32
             FloodFill(img->m_hDC, x, y, ARGBTOZBGR(borderColor));
@@ -1749,8 +1749,8 @@ void floodfillsurface(int x, int y, color_t areacolor, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->floodFillSurface(x, y, areacolor);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->floodFillSurface(x, y, areacolor);
         } else {
 #ifdef _WIN32
         ExtFloodFill(img->m_hDC, x, y, ARGBTOZBGR(areacolor), FLOODFILLSURFACE);
@@ -1785,8 +1785,8 @@ void setlinestyle(int linestyle, unsigned short pattern, int thickness, PIMAGE p
         img->m_linestyle.linestyle = linestyle;
         img->m_linestyle.upattern = pattern;
 
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setLineStyle((LineStyle)linestyle, pattern, thickness);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setLineStyle((LineStyle)linestyle, pattern, thickness);
         }
 
 #ifdef _WIN32
@@ -1805,8 +1805,8 @@ void setlinewidth(float width, PIMAGE pimg)
         img->m_linestyle.thickness = (int)width;
         img->m_linewidth = width;
 
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setLineWidth(width);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setLineWidth(width);
         }
 
         update_pen(img);
@@ -1848,8 +1848,8 @@ void setlinecap(line_cap_type linecap, PIMAGE pimg)
         img->m_linestartcap = linecap;
         img->m_lineendcap   = linecap;
 
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setLineCap((RTLineCap)linecap, (RTLineCap)linecap);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setLineCap((RTLineCap)linecap, (RTLineCap)linecap);
         }
 
         update_pen(img);
@@ -1865,8 +1865,8 @@ void setlinecap(line_cap_type startCap, line_cap_type endCap, PIMAGE pimg)
         img->m_linestartcap = startCap;
         img->m_lineendcap   = endCap;
 
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setLineCap((RTLineCap)startCap, (RTLineCap)endCap);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setLineCap((RTLineCap)startCap, (RTLineCap)endCap);
         }
 
         update_pen(img);
@@ -1916,8 +1916,8 @@ void setlinejoin(line_join_type linejoin, float miterLimit, PIMAGE pimg)
         img->m_linejoin = linejoin;
         img->m_linejoinmiterlimit = miterLimit;
 
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setLineJoin((RTLineJoin)linejoin, miterLimit);
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setLineJoin((RTLineJoin)linejoin, miterLimit);
         }
 
         update_pen(img);
@@ -1956,11 +1956,11 @@ void setfillstyle(int pattern, color_t color, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
     img->m_fillcolor = color;
     img->m_fillstyle = pattern;
-    if (img->m_renderTarget) {
+    if (img->getNativeRenderTarget()) {
         const FillStyle style = (pattern >= EMPTY_FILL && pattern <= USER_FILL)
             ? static_cast<FillStyle>(pattern) : FILL_SOLID;
-        img->m_renderTarget->setFillStyle(style, color);
-        img->m_renderTarget->setFillColor(color);
+        img->getNativeRenderTarget()->setFillStyle(style, color);
+        img->getNativeRenderTarget()->setFillColor(color);
     }
 #ifdef _WIN32
     LOGBRUSH lbr = {0};
@@ -2173,11 +2173,11 @@ void setviewport(int left, int top, int right, int bottom, int clip, PIMAGE pimg
 
     Point oldOrigin(img->m_vpt.left, img->m_vpt.top);
 
-    if (img->m_renderTarget) {
+    if (img->getNativeRenderTarget()) {
         img->m_vpt = viewport;
         img->m_enableclip = clip;
-        img->m_renderTarget->setViewport(left, top, right, bottom, clip);
-        img->m_renderTarget->moveTo(0, 0);
+        img->getNativeRenderTarget()->setViewport(left, top, right, bottom, clip);
+        img->getNativeRenderTarget()->moveTo(0, 0);
 #ifdef EGE_GDIPLUS
         img->syncGraphicsViewport(oldOrigin.x, oldOrigin.y);
 #endif
@@ -2222,8 +2222,8 @@ void clearviewport(PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
 
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->clearViewport();
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->clearViewport();
     } else if (img && img->m_hDC) {
 #ifdef _WIN32
         RECT rect = {0, 0, img->m_vpt.right - img->m_vpt.left, img->m_vpt.bottom - img->m_vpt.top};
@@ -2457,7 +2457,7 @@ void ege_drawbezier(int numOfPoints, const ege_point* points, PIMAGE pimg)
         if (img->m_linestyle.linestyle == PS_NULL) {
             return;
         }
-        if (img->m_renderTarget && points && numOfPoints >= 4) {
+        if (img->getNativeRenderTarget() && points && numOfPoints >= 4) {
             std::vector<int> integerPoints(static_cast<size_t>(numOfPoints) * 2);
             for (int i = 0; i < numOfPoints; ++i) {
                 integerPoints[i * 2] = (int)std::lround(points[i].x);
@@ -2649,8 +2649,8 @@ void ege_fillellipse(float x, float y, float w, float h, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            img->m_renderTarget->fillEllipse(
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->fillEllipse(
                 static_cast<int>(x), static_cast<int>(y), 0, 360,
                 static_cast<int>(w), static_cast<int>(h));
         } else {

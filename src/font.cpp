@@ -128,7 +128,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
     PIMAGE img = CONVERT_IMAGE(pimg);
 
     if (img) {
-        if (img->m_renderTarget) {
+        if (img->getNativeRenderTarget()) {
             if (text && *text && w > 0 && h > 0) {
                 std::vector<std::wstring> lines;
                 std::wstring current;
@@ -147,7 +147,7 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                     }
 
                     const int characterWidth = cachedCharacterWidth(
-                        img->m_renderTarget, character, characterWidths);
+                        img->getNativeRenderTarget(), character, characterWidths);
                     current.push_back(character);
                     currentWidth += characterWidth;
                     if (current.size() > 1 && currentWidth > w) {
@@ -162,14 +162,14 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                     }
                 }
 
-                const int lineHeight = std::max(1, img->m_renderTarget->getTextHeight(L"Ag"));
+                const int lineHeight = std::max(1, img->getNativeRenderTarget()->getTextHeight(L"Ag"));
                 const int blockHeight = static_cast<int>(lines.size()) * lineHeight;
                 int topOffset = 0;
                 if (img->m_texttype.vert == CENTER_TEXT) topOffset = (h - blockHeight) / 2;
                 else if (img->m_texttype.vert == BOTTOM_TEXT) topOffset = h - blockHeight;
 
                 int oldLeft, oldTop, oldRight, oldBottom, oldClip;
-                img->m_renderTarget->getViewport(
+                img->getNativeRenderTarget()->getViewport(
                     &oldLeft, &oldTop, &oldRight, &oldBottom, &oldClip);
                 const int boxLeft = oldLeft + x;
                 const int boxTop = oldTop + y;
@@ -183,25 +183,25 @@ void outtextrect(int x, int y, int w, int h, const wchar_t* text, PIMAGE pimg)
                 const int clipBottom = std::min(previousClipBottom, boxTop + h);
 
                 if (clipLeft < clipRight && clipTop < clipBottom) {
-                    img->m_renderTarget->setViewport(clipLeft, clipTop, clipRight, clipBottom, true);
-                    img->m_renderTarget->setTextJustify(TEXT_LEFT, TEXT_TOP);
+                    img->getNativeRenderTarget()->setViewport(clipLeft, clipTop, clipRight, clipBottom, true);
+                    img->getNativeRenderTarget()->setTextJustify(TEXT_LEFT, TEXT_TOP);
                     for (size_t lineIndex = 0; lineIndex < lines.size(); ++lineIndex) {
-                        const int lineWidth = img->m_renderTarget->getTextWidth(lines[lineIndex].c_str());
+                        const int lineWidth = img->getNativeRenderTarget()->getTextWidth(lines[lineIndex].c_str());
                         int lineX = boxLeft;
                         if (img->m_texttype.horiz == CENTER_TEXT) lineX += (w - lineWidth) / 2;
                         else if (img->m_texttype.horiz == RIGHT_TEXT) lineX += w - lineWidth;
                         const int lineY = boxTop + topOffset + static_cast<int>(lineIndex) * lineHeight;
                         if (lineY < boxTop + h && lineY + lineHeight > boxTop) {
-                            img->m_renderTarget->drawText(
+                            img->getNativeRenderTarget()->drawText(
                                 static_cast<float>(lineX - clipLeft),
                                 static_cast<float>(lineY - clipTop),
                                 lines[lineIndex].c_str());
                         }
                     }
-                    img->m_renderTarget->setTextJustify(
+                    img->getNativeRenderTarget()->setTextJustify(
                         toRenderTextHAlign(img->m_texttype.horiz),
                         toRenderTextVAlign(img->m_texttype.vert));
-                    img->m_renderTarget->setViewport(
+                    img->getNativeRenderTarget()->setViewport(
                         oldLeft, oldTop, oldRight, oldBottom, oldClip != 0);
                 }
             }
@@ -379,8 +379,8 @@ int textwidth(const wchar_t* text, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            const int width = img->m_renderTarget->getTextWidth(text);
+        if (img->getNativeRenderTarget()) {
+            const int width = img->getNativeRenderTarget()->getTextWidth(text);
             CONVERT_IMAGE_END;
             return width;
         }
@@ -417,8 +417,8 @@ int textheight(const wchar_t* text, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img) {
-        if (img->m_renderTarget) {
-            const int height = img->m_renderTarget->getTextHeight(text);
+        if (img->getNativeRenderTarget()) {
+            const int height = img->getNativeRenderTarget()->getTextHeight(text);
             CONVERT_IMAGE_END;
             return height;
         }
@@ -455,8 +455,8 @@ void measuretext(const wchar_t* text, float* width, float* height, PCIMAGE pimg)
 {
     float textWidth = 0.0f, textHeight = 0.0f;
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
-    if (!isEmpty(text) && img && img->m_renderTarget) {
-        img->m_renderTarget->measureText(text, &textWidth, &textHeight);
+    if (!isEmpty(text) && img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->measureText(text, &textWidth, &textHeight);
     } else if (!isEmpty(text) && img && img->m_hDC) {
 #ifdef EGE_GDIPLUS
         using namespace Gdiplus;
@@ -582,8 +582,8 @@ void settextjustify(int horiz, int vert, PIMAGE pimg)
     if (img) {
         img->m_texttype.horiz = horiz;
         img->m_texttype.vert = vert;
-        if (img->m_renderTarget) {
-            img->m_renderTarget->setTextJustify(
+        if (img->getNativeRenderTarget()) {
+            img->getNativeRenderTarget()->setTextJustify(
                 toRenderTextHAlign(horiz), toRenderTextVAlign(vert));
         }
     }
@@ -607,10 +607,10 @@ void setfont(int height,
     PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
+    if (img && img->getNativeRenderTarget()) {
         const std::wstring wideFace = mb2w(typeface);
         const std::string utf8Face = w2utf8(wideFace.c_str());
-        img->m_renderTarget->setFont(height, width, utf8Face.c_str(), escapement, orientation,
+        img->getNativeRenderTarget()->setFont(height, width, utf8Face.c_str(), escapement, orientation,
                                      weight, italic, underline, strikeOut);
         CONVERT_IMAGE_END;
         return;
@@ -653,9 +653,9 @@ void setfont(int height,
     PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
+    if (img && img->getNativeRenderTarget()) {
         const std::string face = w2utf8(typeface);
-        img->m_renderTarget->setFont(height, width, face.c_str(), escapement, orientation,
+        img->getNativeRenderTarget()->setFont(height, width, face.c_str(), escapement, orientation,
                                      weight, italic, underline, strikeOut);
         CONVERT_IMAGE_END;
         return;
@@ -802,7 +802,7 @@ void setfont(const LOGFONTA* font, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget && font) {
+        if (img->getNativeRenderTarget() && font) {
             wchar_t wideFace[LF_FACESIZE] = {};
 #ifdef _WIN32
             MultiByteToWideChar(CP_ACP, 0, font->lfFaceName, -1,
@@ -814,7 +814,7 @@ void setfont(const LOGFONTA* font, PIMAGE pimg)
                         wideFace);
 #endif
             const std::string utf8Face = w2utf8(wideFace);
-            img->m_renderTarget->setFont(font->lfHeight, font->lfWidth, utf8Face.c_str(),
+            img->getNativeRenderTarget()->setFont(font->lfHeight, font->lfWidth, utf8Face.c_str(),
                                          font->lfEscapement, font->lfOrientation, font->lfWeight,
                                          font->lfItalic != 0, font->lfUnderline != 0, font->lfStrikeOut != 0);
         } else {
@@ -831,9 +831,9 @@ void setfont(const LOGFONTW* font, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
     if (img) {
-        if (img->m_renderTarget && font) {
+        if (img->getNativeRenderTarget() && font) {
             const std::string face = w2utf8(font->lfFaceName);
-            img->m_renderTarget->setFont(font->lfHeight, font->lfWidth, face.c_str(),
+            img->getNativeRenderTarget()->setFont(font->lfHeight, font->lfWidth, face.c_str(),
                                          font->lfEscapement, font->lfOrientation, font->lfWeight,
                                          font->lfItalic != 0, font->lfUnderline != 0, font->lfStrikeOut != 0);
         } else {
@@ -850,7 +850,7 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && font) {
-        if (img->m_renderTarget) {
+        if (img->getNativeRenderTarget()) {
             char faceName[128] = {};
             int height = 0;
             int width = 0;
@@ -861,7 +861,7 @@ void getfont(LOGFONTA* font, PCIMAGE pimg)
             bool underline = false;
             bool strikeOut = false;
             std::memset(font, 0, sizeof(*font));
-            img->m_renderTarget->getFont(
+            img->getNativeRenderTarget()->getFont(
                 &height, &width,
                 faceName, static_cast<int>(sizeof(faceName)),
                 &escapement, &orientation, &weight,
@@ -895,7 +895,7 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
 {
     PCIMAGE img = CONVERT_IMAGE_CONST(pimg);
     if (img && font) {
-        if (img->m_renderTarget) {
+        if (img->getNativeRenderTarget()) {
             char faceName[128] = {};
             int height = 0;
             int width = 0;
@@ -906,7 +906,7 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
             bool underline = false;
             bool strikeOut = false;
             std::memset(font, 0, sizeof(*font));
-            img->m_renderTarget->getFont(
+            img->getNativeRenderTarget()->getFont(
                 &height, &width,
                 faceName, static_cast<int>(sizeof(faceName)),
                 &escapement, &orientation, &weight,
@@ -937,9 +937,9 @@ void getfont(LOGFONTW* font, PCIMAGE pimg)
 void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
+    if (img && img->getNativeRenderTarget()) {
         const std::wstring wideText = mb2w(text);
-        img->m_renderTarget->drawText(x, y, wideText.c_str());
+        img->getNativeRenderTarget()->drawText(x, y, wideText.c_str());
     } else if (img && img->m_hDC) {
 #ifdef _WIN32
         int bufferSize = MultiByteToWideChar(getcodepage(), 0, text, -1, NULL, 0);
@@ -959,8 +959,8 @@ void EGEAPI ege_drawtext(const char* text, float x, float y, PIMAGE pimg)
 void EGEAPI ege_drawtext(const wchar_t* text, float x, float y, PIMAGE pimg)
 {
     PIMAGE img = CONVERT_IMAGE(pimg);
-    if (img && img->m_renderTarget) {
-        img->m_renderTarget->drawText(x, y, text);
+    if (img && img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->drawText(x, y, text);
     } else if (img && img->m_hDC) {
         ege_drawtext_p(text, x, y, img);
     }
@@ -1029,9 +1029,9 @@ static Point private_escapementToOffset(int textHeight, int textEscapement)
 
 static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
 {
-    if (img->m_renderTarget) {
-        img->m_renderTarget->drawText((float)img->m_renderTarget->getCurrentX(),
-                                      (float)img->m_renderTarget->getCurrentY(), text);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->drawText((float)img->getNativeRenderTarget()->getCurrentX(),
+                                      (float)img->getNativeRenderTarget()->getCurrentY(), text);
         return;
     }
 #ifdef _WIN32
@@ -1064,8 +1064,8 @@ static void private_textOutAtCurPos(PIMAGE img, const wchar_t* text)
 
 static void private_textout(PIMAGE img, const wchar_t* text, int x, int y)
 {
-    if (img->m_renderTarget) {
-        img->m_renderTarget->drawText((float)x, (float)y, text);
+    if (img->getNativeRenderTarget()) {
+        img->getNativeRenderTarget()->drawText((float)x, (float)y, text);
         return;
     }
 #ifdef _WIN32

@@ -135,10 +135,7 @@ _graph_setting::_graph_setting() : init_sem{0}
 _graph_setting::~_graph_setting()
 {
 #ifdef _WIN32
-    // closegraph() intentionally only hides the reusable legacy window. At
-    // process teardown, however, the UI thread must destroy its own HWND so
-    // GetMessage() can finish before join(). A private window message avoids
-    // invoking an application close callback during static destruction.
+    // closegraph() 只隐藏可复用窗口；进程退出时通知 UI 线程销毁 HWND。
     if (threadui.joinable() && hwnd != NULL && IsWindow(hwnd)) {
         PostMessageW(hwnd, EGE_WM_PROCESS_SHUTDOWN, 0, 0);
     }
@@ -151,13 +148,16 @@ _graph_setting::~_graph_setting()
     on_destroy(this);
 #endif
     if (threadui.joinable()) {
-        threadui.join();
+        if (threadui.get_id() == std::this_thread::get_id()) {
+            // 点击关闭按钮时 exit() 可能在 UI 线程析构全局状态，不能等待自身。
+            threadui.detach();
+        } else {
+            threadui.join();
+        }
     }
 
-    // closegraph() keeps resources alive so legacy programs can initialize
-    // the same environment again. Static destruction is the final ownership
-    // boundary: release EGE-owned pages before destroying queues and the
-    // native window itself.
+#ifndef _WIN32
+    // closegraph() 允许再次初始化；进程退出时再释放原生后端持有的资源。
     PIMAGE ownedPages[BITMAP_PAGE_SIZE] = {};
     for (int index = 0; index < BITMAP_PAGE_SIZE; ++index) {
         ownedPages[index] = img_page[index];
@@ -193,6 +193,7 @@ _graph_setting::~_graph_setting()
     delete window;
     window = NULL;
     hwnd = NULL;
+#endif
 }
 
 /*private function*/
@@ -303,12 +304,12 @@ int swapbuffers()
 
     struct _graph_setting* pg = &graph_setting;
 
-    if (pg->window) {
+    if (pg->getNativeWindow()) {
         PIMAGE visualPage = (pg->visual_page >= 0 && pg->visual_page < BITMAP_PAGE_SIZE)
             ? pg->img_page[pg->visual_page] : NULL;
         if (visualPage != NULL) {
             const color_t* pixels = static_cast<const IMAGE*>(visualPage)->getbuffer();
-            pg->window->present(pixels, visualPage->getwidth(), visualPage->getheight(),
+            pg->getNativeWindow()->present(pixels, visualPage->getwidth(), visualPage->getheight(),
                                 static_cast<size_t>(visualPage->getwidth()) * sizeof(color_t));
         }
         return grOk;
@@ -394,9 +395,9 @@ static void handle_native_window_close(_graph_setting* pg)
 int dealmessage(_graph_setting* pg, bool force_update)
 {
     // Native backends own their event loop on the drawing thread.
-    if (pg->window) {
-        pg->window->processEvents();
-        if (pg->window->isClosed()) {
+    if (pg->getNativeWindow()) {
+        pg->getNativeWindow()->processEvents();
+        if (pg->getNativeWindow()->isClosed()) {
             handle_native_window_close(pg);
         }
     }
@@ -429,9 +430,9 @@ int waitdealmessage(_graph_setting* pg)
         return 0;
     }
 
-    if (pg->window) {
-        pg->window->processEvents();
-        if (pg->window->isClosed()) {
+    if (pg->getNativeWindow()) {
+        pg->getNativeWindow()->processEvents();
+        if (pg->getNativeWindow()->isClosed()) {
             handle_native_window_close(pg);
         }
     }
@@ -1237,8 +1238,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         int height = (short)((unsigned int)(*gmode) >> 16);
         resizewindow(width, height);
 #ifdef _WIN32
-        if (pg->window != NULL) {
-            pg->window->show();
+        if (pg->getNativeWindow() != NULL) {
+            pg->getNativeWindow()->show();
         } else {
             HWND hwnd = getHWnd();
             if (!::IsWindowVisible(hwnd)) {
@@ -1246,8 +1247,8 @@ void initgraph(int* gdriver, int* gmode, const char* path)
             }
         }
 #else
-        if (pg->window != NULL) {
-            pg->window->show();
+        if (pg->getNativeWindow() != NULL) {
+            pg->getNativeWindow()->show();
         }
 #endif
 		graphupdate(pg); // 立即刷新，否则会体现为不变或残影
@@ -1271,10 +1272,10 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     int height = pg->dc_h;
 
 #ifdef _WIN32
-    // Preserve the established HWND/message-thread/BitBlt implementation.
     pg->window = NULL;
     pg->instance = GetModuleHandle(NULL);
     initicon();
+    // 注册窗口类，设置默认消息处理函数，此处创建 Unicode 窗口。
     register_classW(pg, pg->instance);
     pg->threadui = std::thread{messageloopthread, pg};
     pg->init_sem.acquire();
@@ -1288,14 +1289,14 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         WindowOptions windowOptions;
         windowOptions.borderless = (g_initoption & INIT_NOBORDER) != 0;
         windowOptions.topmost = (g_initoption & INIT_TOPMOST) != 0;
-        if (!pg->window->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
-            delete pg->window;
+        if (!pg->getNativeWindow()->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
+            delete pg->getNativeWindow();
             pg->window = NULL;
             pg->exit_window = 1;
             pg->exit_flag = 1;
             return;
         }
-        pg->hwnd = reinterpret_cast<HWND>(pg->window->getNativeHandle());
+        pg->hwnd = reinterpret_cast<HWND>(pg->getNativeWindow()->getNativeHandle());
     }
     if (pg->dc == 0) {
         graph_init(pg);
@@ -1310,14 +1311,14 @@ void initgraph(int* gdriver, int* gmode, const char* path)
         WindowOptions windowOptions;
         windowOptions.borderless = (g_initoption & INIT_NOBORDER) != 0;
         windowOptions.topmost = (g_initoption & INIT_TOPMOST) != 0;
-        if (!pg->window->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
-            delete pg->window;
+        if (!pg->getNativeWindow()->create(width, height, "EGE Window", windowOptions, &nativeEventSink)) {
+            delete pg->getNativeWindow();
             pg->window = NULL;
             pg->exit_window = 1;
             pg->exit_flag = 1;
             return;
         }
-        pg->hwnd = reinterpret_cast<HWND>(pg->window->getNativeHandle());
+        pg->hwnd = reinterpret_cast<HWND>(pg->getNativeWindow()->getNativeHandle());
     }
     if (pg->dc == 0) {
         graph_init(pg);
@@ -1350,16 +1351,16 @@ void initgraph(int* gdriver, int* gmode, const char* path)
     pg->mouse_pos = Point(pt.x, pt.y);
 #endif
 
-    if (pg->window != NULL) {
+    if (pg->getNativeWindow() != NULL) {
         const std::string utf8Caption = w2utf8(pg->window_caption.c_str());
-        pg->window->setTitle(utf8Caption.c_str());
+        pg->getNativeWindow()->setTitle(utf8Caption.c_str());
         if (g_windowpos_x != CW_USEDEFAULT && g_windowpos_y != CW_USEDEFAULT) {
-            pg->window->setPosition(g_windowpos_x, g_windowpos_y);
+            pg->getNativeWindow()->setPosition(g_windowpos_x, g_windowpos_y);
         }
         if (g_initoption & INIT_HIDE) {
-            pg->window->hide();
+            pg->getNativeWindow()->hide();
         } else {
-            pg->window->show();
+            pg->getNativeWindow()->show();
         }
     }
 
@@ -1397,14 +1398,14 @@ void closegraph()
 {
     struct _graph_setting* pg = &graph_setting;
 #ifdef _WIN32
-    if (pg->window != NULL) {
-        pg->window->hide();
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->hide();
     } else {
         ShowWindow(pg->hwnd, SW_HIDE);
     }
 #else
-    if (pg->window != NULL) {
-        pg->window->hide();
+    if (pg->getNativeWindow() != NULL) {
+        pg->getNativeWindow()->hide();
     }
 #endif
 }

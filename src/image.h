@@ -87,8 +87,17 @@ private:
 
 public:
     HDC     m_hDC;
-    RenderTarget* m_renderTarget;  // Native render target; null for legacy GDI images.
-    mutable RenderTarget* m_samplingTarget; // Optional future backend upload cache.
+    RenderTarget* m_renderTarget;  // 原生后端的渲染目标；传统 GDI 路径始终为空。
+
+    RenderTarget* getNativeRenderTarget() const
+    {
+#ifdef _WIN32
+        // Windows 固定使用 GDI，避免把原生后端分支编译进 Windows 二进制。
+        return NULL;
+#else
+        return m_renderTarget;
+#endif
+    }
     HBITMAP m_hBmp;
     int     m_width;
     int     m_height;
@@ -147,14 +156,18 @@ public:
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
+#ifdef _WIN32
+    color_t* getbuffer() { return reinterpret_cast<color_t*>(m_pBuffer); }
+    const color_t* getbuffer() const { return reinterpret_cast<const color_t*>(m_pBuffer); }
+    color_t* getbuffer_for_write(int, int, int, int)
+    {
+        return reinterpret_cast<color_t*>(m_pBuffer);
+    }
+#else
     color_t*       getbuffer();
-    color_t*       getbuffer(image_buffer_access access);
     const color_t* getbuffer() const;
     color_t*       getbuffer_for_write(int x, int y, int width, int height);
-    int            updatebuffer(int x, int y, int width, int height,
-                                const color_t* pixels, int pitchBytes);
-    image_storage_mode getStorageMode() const;
-    int setStorageMode(image_storage_mode mode, bool preservePixels = true);
+#endif
     RenderTarget* getRenderTargetForSampling() const;
 #ifdef EGE_GDIPLUS
     // TODO: thread safe?

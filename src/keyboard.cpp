@@ -34,7 +34,7 @@ static int peekkey(_graph_setting* pg)
                 // so discarding every key below Space would lose those keys.
                 const bool waitsForTranslatedCharacter =
 #ifdef _WIN32
-                    pg->window == NULL && msg.wParam <= key_space;
+                    pg->getNativeWindow() == NULL && msg.wParam <= key_space;
 #else
                     msg.wParam == key_space;
 #endif

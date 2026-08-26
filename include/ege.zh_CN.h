@@ -1241,19 +1241,6 @@ typedef IMAGE *PIMAGE;
 /// @brief 常量图像对象指针类型
 typedef const IMAGE *PCIMAGE;
 
-enum image_storage_mode
-{
-    IMAGE_STORAGE_GPU = 0,
-    IMAGE_STORAGE_CPU_BITMAP = 1
-};
-
-enum image_buffer_access
-{
-    IMAGE_BUFFER_READ = 0,
-    IMAGE_BUFFER_READ_WRITE = 1,
-    IMAGE_BUFFER_WRITE_DISCARD = 2
-};
-
 /**
  * @brief 设置代码页
  *
@@ -4146,7 +4133,6 @@ void           EGEAPI delimage(PCIMAGE pimg);
  * @note 返回的指针可以直接操作像素数据，修改后会立即生效
  */
 color_t*       EGEAPI getbuffer(PIMAGE pimg);
-color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
 
 /**
  * @brief 获取图像像素缓冲区指针（只读版本）
@@ -4156,11 +4142,6 @@ color_t*       EGEAPI getbuffer(PIMAGE pimg, image_buffer_access access);
  * @note 返回的指针只能读取像素数据，不能修改
  */
 const color_t* EGEAPI getbuffer(PCIMAGE pimg);
-
-int EGEAPI updatebuffer(PIMAGE pimg, int x, int y, int width, int height,
-                        const color_t* pixels, int pitchBytes = 0);
-image_storage_mode EGEAPI getimagestoragemode(PCIMAGE pimg);
-int EGEAPI setimagestoragemode(PIMAGE pimg, image_storage_mode mode);
 
 /**
  * @brief 调整图像尺寸（快速版本）
