@@ -22,7 +22,8 @@ endfunction()
 file(READ "${EGE_SOURCE_DIR}/CMakeLists.txt" _ege_root_cmake)
 foreach(_ege_required
         "CMAKE_OSX_DEPLOYMENT_TARGET \"11.0\""
-        "Minimum macOS version supported by native XEGE builds")
+        "Minimum macOS version supported by native XEGE builds"
+        "-Wl,-dead_strip")
     ege_assert_contains("${_ege_root_cmake}" "${_ege_required}"
         "root CMake configuration")
 endforeach()
@@ -111,6 +112,7 @@ foreach(_ege_required
         "if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES \"AppleClang|Clang\")"
         "set(osLibDir \"macOS\")"
         "AppKit CoreGraphics CoreText ImageIO"
+        "-Wl,-dead_strip"
         "elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES \"GNU\")"
         "set(osLibDir \"mingw-w64-debian\")")
     ege_assert_contains("${_ege_package_cmake}" "${_ege_required}"
@@ -157,6 +159,8 @@ file(READ "${EGE_SOURCE_DIR}/demo/ege_release.cmake"
     _ege_local_package_cmake)
 ege_assert_contains("${_ege_local_package_cmake}"
     "set(osLibDir \"macOS\")" "local release CMake")
+ege_assert_contains("${_ege_local_package_cmake}"
+    "-Wl,-dead_strip" "local release CMake")
 ege_assert_not_contains("${_ege_local_package_cmake}"
     "set(osLibDir \"macos-native\")" "local release CMake")
 

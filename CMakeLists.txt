@@ -11,10 +11,9 @@ if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
 endif()
 cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 
-# Keep native Apple builds compatible with the oldest supported macOS release.
-# This must be set before project()/enable_language(), otherwise objects inherit
-# the SDK version of the (rolling) build machine as their deployment target.
-# Explicit caller values always win. Cross-compilation toolchains are excluded.
+# 原生 Apple 构建兼容项目支持的最低 macOS 版本。该配置必须位于
+# project()/enable_language() 之前，否则对象文件会继承滚动更新的构建机 SDK 版本。
+# 调用方显式设置的值优先，交叉编译工具链不受影响。
 if(CMAKE_HOST_APPLE
         AND NOT CMAKE_TOOLCHAIN_FILE
         AND (NOT DEFINED CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -41,8 +40,7 @@ if(EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
             EGE_DISABLE_DEBUG_INFO)
         unset(${_ege_cached_option} CACHE)
     endforeach()
-    # Treat this cache reset as a one-shot request instead of leaving every
-    # future configure in reset mode.
+    # 缓存清理只执行一次，避免后续每次配置都再次重置。
     set(EGE_CLEAR_OPTIONS_CACHE OFF CACHE BOOL
         "Clear XEGE option caches before configuring" FORCE)
 endif()
@@ -342,6 +340,15 @@ if(WIN32)
             $<$<CONFIG:RelWithDebInfo>:-Wl,--gc-sections>
             $<$<CONFIG:MinSizeRel>:-Wl,--gc-sections>)
     endif()
+endif()
+
+# macOS 静态库包含完整的可移植增强绘图实现。发布构建让最终可执行文件移除
+# 未引用的函数，避免仅使用基础 API 的程序携带整个 fallback 对象。
+if(APPLE)
+    target_link_options(xege INTERFACE
+        $<$<CONFIG:Release>:-Wl,-dead_strip>
+        $<$<CONFIG:RelWithDebInfo>:-Wl,-dead_strip>
+        $<$<CONFIG:MinSizeRel>:-Wl,-dead_strip>)
 endif()
 
 # enable_testing() 具有目录作用域，必须在此调用，子目录注册的测试才能从顶层看到。

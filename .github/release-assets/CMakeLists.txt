@@ -40,6 +40,10 @@ if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
         IMPORTED_LOCATION
             "${CMAKE_CURRENT_SOURCE_DIR}/lib/${osLibDir}/libgraphics.a")
     target_link_libraries(ege-common INTERFACE ege-macos)
+    target_link_options(ege-common INTERFACE
+        "$<$<CONFIG:RELEASE>:-Wl,-dead_strip>"
+        "$<$<CONFIG:RELWITHDEBINFO>:-Wl,-dead_strip>"
+        "$<$<CONFIG:MINSIZEREL>:-Wl,-dead_strip>")
 
     foreach(framework
             AppKit CoreGraphics CoreText ImageIO Foundation AVFoundation
