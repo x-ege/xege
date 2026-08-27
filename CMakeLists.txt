@@ -11,9 +11,10 @@ if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
 endif()
 cmake_policy(VERSION ${CMAKE_POLICY_VERSION_MINIMUM})
 
-# 保持 macOS 原生构建与最低支持版本兼容。此值必须在 project()/enable_language()
-# 之前设置，否则目标文件会继承构建机 SDK 的版本；调用方显式指定的值优先，
-# 交叉编译工具链不受影响。
+# Keep native Apple builds compatible with the oldest supported macOS release.
+# This must be set before project()/enable_language(), otherwise objects inherit
+# the SDK version of the (rolling) build machine as their deployment target.
+# Explicit caller values always win. Cross-compilation toolchains are excluded.
 if(CMAKE_HOST_APPLE
         AND NOT CMAKE_TOOLCHAIN_FILE
         AND (NOT DEFINED CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -40,7 +41,8 @@ if(EGE_CLEAR_OPTIONS_CACHE AND EGE_IS_ROOT_PROJECT)
             EGE_DISABLE_DEBUG_INFO)
         unset(${_ege_cached_option} CACHE)
     endforeach()
-    # 缓存清理是一次性操作，避免后续每次配置都重复清理。
+    # Treat this cache reset as a one-shot request instead of leaving every
+    # future configure in reset mode.
     set(EGE_CLEAR_OPTIONS_CACHE OFF CACHE BOOL
         "Clear XEGE option caches before configuring" FORCE)
 endif()
@@ -355,8 +357,9 @@ if(EGE_BUILD_TEST)
     endif()
     if(EGE_IS_ROOT_PROJECT)
         if(CMAKE_GENERATOR STREQUAL "Xcode")
-            # Xcode 的 OBJECT_FILE_DIR_normal 来自目标名 xege.build，而非项目名
-            # XEGE.build；二者在大小写敏感的 macOS 卷上不同。
+            # Xcode's OBJECT_FILE_DIR_normal is derived from the target name
+            # (`xege.build`), not the CMake project name (`XEGE.build`). These
+            # differ on case-sensitive macOS volumes.
             set(_ege_native_object_dir
                 "${CMAKE_CURRENT_BINARY_DIR}/build/xege.build/$<CONFIG>/Objects-normal")
         else()

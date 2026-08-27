@@ -238,8 +238,9 @@ function cmakeCleanAll() {
         return 1
     fi
 
-    # --clean/--reload 只删除当前配置目录；自定义非空目录必须先证明属于 EGE 的
-    # CMake 构建树。
+    # --clean/--reload remove only the selected configuration directory. If a
+    # custom non-empty directory is supplied, require proof that it is an EGE
+    # CMake tree before deleting it.
     if [[ -d "$CMAKE_BUILD_DIR" && -n "$(ls -A "$CMAKE_BUILD_DIR" 2>/dev/null)" ]]; then
         local cache_file="$CMAKE_BUILD_DIR/CMakeCache.txt"
         local cache_home=""
@@ -249,8 +250,8 @@ function cmakeCleanAll() {
             cache_home=$(sed -n \
                 's/^CMAKE_HOME_DIRECTORY:INTERNAL=//p' "$cache_file" | head -n 1)
         fi
-        # CMake 可能记录物理路径或 Windows 盘符，而 Git Bash 可能通过符号链接或
-        # /c/... 形式访问同一仓库。
+        # CMake may store a physical path or a Windows drive path while Git
+        # Bash exposes the checkout through a symlink or /c/... spelling.
         if [[ -n "$cache_home" ]] && command -v cygpath >/dev/null 2>&1; then
             cache_home=$(cygpath -u "$cache_home" 2>/dev/null || printf '%s' "$cache_home")
         fi
@@ -306,8 +307,9 @@ function runCTest() {
         echo "Error: CMake project is not configured: $CMAKE_BUILD_DIR" >&2
         return 1
     fi
-    # --test-dir 晚于项目支持的 CMake/CTest 3.13；使用子 shell 保持兼容，且不改变
-    # 调用方的工作目录。
+    # --test-dir was added after the project's CMake/CTest 3.13 minimum.
+    # Running from a subshell preserves compatibility without changing the
+    # caller's working directory.
     (
         cd "$CMAKE_BUILD_DIR"
         ctest --build-config "$CMAKE_BUILD_TYPE" --output-on-failure
@@ -577,7 +579,8 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
         echo "Copying executables to $OUTPUT_DIR"
         cd "$CMAKE_BUILD_DIR"
         if isNativeMacOS || isNativeLinux; then
-            # 原生包中的 demo 没有扩展名，并排除 CMake 探测文件和元数据。
+            # Native package demos are extensionless executables. Exclude
+            # CMake probes and metadata.
             find . -maxdepth 2 -type f -perm -111 -print0 |
                 while IFS= read -r -d '' file; do
                     [[ "$file" == */CMakeFiles/* ]] && continue
@@ -591,7 +594,7 @@ if [[ "$DO_TEST_RELEASE_LIBS" == true ]]; then
                     cp "$file" "$OUTPUT_DIR/$relative_path"
                 done
         else
-            # 保留 Windows demo 可执行文件的相对目录结构。
+            # Preserve the relative layout of Windows demo executables.
             find . -maxdepth 2 -type f -name "*.exe" -print0 |
                 while IFS= read -r -d '' file; do
                     relative_path="${file#./}"
@@ -613,7 +616,7 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
         exe_path="$CMAKE_BUILD_DIR/demo/$CMAKE_BUILD_TYPE/$RUN_EXECUTABLE"
     else
         if isNativeMacOS || isNativeLinux; then
-            # 原生 CMake 目标没有扩展名。
+            # Native CMake targets are extensionless executables.
             RUN_EXECUTABLE="${RUN_EXECUTABLE%.exe}"
         elif [[ "$RUN_EXECUTABLE" != *.exe ]] && ! isWindows; then
             # 非原生 Unix 调用沿用历史行为，交叉编译 Windows 目标。

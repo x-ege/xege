@@ -3155,6 +3155,16 @@ double fclock()
 
 LRESULT sys_edit::onMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
+	// 单行模式下拦截回车以屏蔽响铃，多行模式交由 EDIT 控件处理换行
+	if (message == WM_CHAR && wParam == VK_RETURN) {
+		// 检查是否为多行模式（通过窗口样式判断）
+		LONG style = ::GetWindowLongW(m_hwnd, GWL_STYLE);
+		if (!(style & ES_MULTILINE)) {
+			return 0;   // 单行模式，屏蔽响铃
+		}
+		// 多行模式不拦截，让 EDIT 处理换行（插入\r\n）
+	}
+
     switch (message) {
     case WM_CTLCOLOREDIT: {
         HDC dc = (HDC)wParam;

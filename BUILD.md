@@ -2,7 +2,7 @@
 
 EGE 源码使用 CMake 3.13 或更高版本构建。Windows 默认使用 GDI；macOS 可用
 AppleClang 直接生成 Mach-O 原生程序，默认绘制后端为 Core Graphics，窗口后端为
-AppKit；Linux 默认使用 Cairo 绘制与 Xlib 窗口。
+AppKit；Linux 默认使用 Cairo 绘制与 Xlib 窗口。原生构建不需要 MinGW、Wine 或 OpenGL。
 
 EGE 的可选子模块由 Git submodule 管理。CMake 配置阶段不会访问网络或修改
 源码目录。默认关闭 camera 时不需要拉取 `ccap`；如果需要 camera，请在配置前执行：
