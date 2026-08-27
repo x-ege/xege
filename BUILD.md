@@ -24,7 +24,6 @@ sudo apt-get install build-essential cmake ninja-build pkg-config libcairo2-dev 
 cmake -S . -B build/native-cairo -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DEGE_DEFAULT_BACKEND=CAIRO \
-  -DEGE_ENABLE_OPENGL=OFF \
   -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
   -DEGE_BUILD_TEST=ON \
   -DEGE_BUILD_DEMO=ON \
@@ -53,7 +52,6 @@ cmake -S . -B build/native-coregraphics \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
   -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
-  -DEGE_ENABLE_OPENGL=OFF \
   -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
   -DEGE_BUILD_TEST=ON \
   -DEGE_BUILD_DEMO=ON \
@@ -81,7 +79,7 @@ macOS 11.0 是当前支持下限。根项目和发布工作流会固定该值，
 ### VS Code 与 `tasks.sh`
 
 仓库自带的 VS Code 任务统一调用 `tasks.sh`。在 macOS 上，脚本会显式配置
-`EGE_DEFAULT_BACKEND=COREGRAPHICS` 和 `EGE_ENABLE_OPENGL=OFF`，并使用独立的
+`EGE_DEFAULT_BACKEND=COREGRAPHICS`，并使用独立的
 `build/macos/Debug`、`build/macos/Release` 目录，避免复用旧 MinGW CMake cache。
 运行 demo 时传入的是无扩展名的 CMake target 名称，脚本直接启动 Mach-O 文件，
 不会查找 `.exe` 或调用 Wine。只有显式传入 Windows toolchain 时才进入交叉编译路径。
@@ -132,10 +130,6 @@ macOS 与 Linux 后端都以 CPU `PixelSurface` 作为图像像素的权威存�
 平台上数值表示为 `0xAARRGGBB`，内存字节顺序为预乘 Alpha 的 BGRA。Core Graphics/Cairo
 直接绘制到同一块 CPU buffer，所以常规逐像素读写不发生 GPU readback 或 CPU/GPU
 双向同步。指针在对应 `IMAGE` 不重建、不缩放且不销毁期间有效。
-
-OpenGL 实验分支只作为 CMake 分层和后端接口的参考，不作为原生构建的默认依赖。
-`EGE_ENABLE_OPENGL` 默认为 `OFF`；本分支未携带 OpenGL 实现源码时，显式开启也会
-fail-fast。
 
 ## Windows 快速编译
 

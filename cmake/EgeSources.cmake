@@ -1,11 +1,11 @@
 include_guard(GLOBAL)
 
-# Source ownership is intentionally explicit.  A new source file must be added
-# to the appropriate list instead of being picked up implicitly by a recursive
-# glob, otherwise two platform backends can accidentally be linked together.
+# 源文件按平台显式归属，新增文件必须加入对应列表，不能依赖递归 glob；否则不同平台
+# 后端可能被误链接到同一目标。
 
 set(EGE_FRONTEND_SOURCES
     src/camera_capture.cpp
+    src/camera_frame_copy.cpp
     src/color.cpp
     src/compress.cpp
     src/console.cpp
@@ -15,6 +15,7 @@ set(EGE_FRONTEND_SOURCES
     src/egecontrolbase.cpp
     src/egegapi.cpp
     src/encodeconv.cpp
+    src/encodeconv_utf8.cpp
     src/font.cpp
     src/gdi_conv.cpp
     src/graphics.cpp
@@ -35,25 +36,11 @@ set(EGE_FRONTEND_SOURCES
     src/window.cpp
 )
 
-# Files introduced by backend-foundation work can land independently.  Keep
-# the candidate list explicit while allowing a short-lived integration commit
-# to configure before every candidate exists.
-set(EGE_OPTIONAL_FRONTEND_SOURCES
-    src/camera_frame_copy.cpp
-    src/diagnostics.cpp
-    src/ege_gdiplus_fallback.cpp
-)
-
-foreach(_ege_source IN LISTS EGE_OPTIONAL_FRONTEND_SOURCES)
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_ege_source}")
-        list(APPEND EGE_FRONTEND_SOURCES "${_ege_source}")
-    endif()
-endforeach()
-
-# The native backend implements the enhanced path API in
-# ege_gdiplus_fallback.cpp. The extracted GDI+ implementation is Windows-only.
 if(WIN32)
     list(APPEND EGE_FRONTEND_SOURCES src/ege_path.cpp)
+else()
+    # 非 Windows 后端使用可移植的增强绘图实现；GDI 不编译这个空翻译单元。
+    list(APPEND EGE_FRONTEND_SOURCES src/ege_gdiplus_fallback.cpp)
 endif()
 
 set(EGE_CCAP_SOURCES

@@ -61,7 +61,6 @@ if [[ $(uname -s) == "Darwin" ]]; then
             -DCMAKE_OSX_ARCHITECTURES="$arch" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOS_DEPLOYMENT_TARGET" \
             -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
-            -DEGE_ENABLE_OPENGL=OFF \
             -DEGE_ENABLE_CAMERA_CAPTURE=ON \
             -DEGE_BUILD_TEST=OFF \
             -DEGE_BUILD_DEMO=OFF \

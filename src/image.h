@@ -87,8 +87,16 @@ private:
 
 public:
     HDC     m_hDC;
-    RenderTarget* m_renderTarget;  // Native render target; null for legacy GDI images.
-    mutable RenderTarget* m_samplingTarget; // Optional future backend upload cache.
+
+    RenderTarget* getNativeRenderTarget() const
+    {
+#ifdef _WIN32
+        // Windows 固定使用 GDI，避免把原生后端分支编译进 Windows 二进制。
+        return NULL;
+#else
+        return m_renderTarget;
+#endif
+    }
     HBITMAP m_hBmp;
     int     m_width;
     int     m_height;
@@ -97,15 +105,10 @@ public:
     color_t m_fillcolor;
     color_t m_textcolor;
     color_t m_bk_color;
-    color_t m_fontBkColor;
-    int     m_bkMode;
-    int     m_writeMode;
-    int     m_fillstyle;
 
 private:
 #ifdef EGE_GDIPLUS
     Gdiplus::Graphics* m_graphics;
-    Gdiplus::Bitmap*   m_graphicsBitmap;
     Gdiplus::Pen*      m_pen;
     Gdiplus::Brush*    m_brush;
 #endif
@@ -116,6 +119,7 @@ private:
     void setdefaultattribute();
     int  deleteimage();
     void reset();
+    void syncBuffer() const;
 
 public:
     Bound            m_vpt;
@@ -148,13 +152,8 @@ public:
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
     color_t*       getbuffer();
-    color_t*       getbuffer(image_buffer_access access);
     const color_t* getbuffer() const;
     color_t*       getbuffer_for_write(int x, int y, int width, int height);
-    int            updatebuffer(int x, int y, int width, int height,
-                                const color_t* pixels, int pitchBytes);
-    image_storage_mode getStorageMode() const;
-    int setStorageMode(image_storage_mode mode, bool preservePixels = true);
     RenderTarget* getRenderTargetForSampling() const;
 #ifdef EGE_GDIPLUS
     // TODO: thread safe?
@@ -324,6 +323,8 @@ public:
         int                        btransparent = 0,  // transparent (1) or not (0)
         int                        alpha        = -1, // in range[0, 256], alpha== -1 means no alpha
         int                        smooth       = 0);
+
+    RenderTarget* m_renderTarget;  // 原生后端的渲染目标；传统 GDI 路径始终为空。
 
     friend graphics_errors getimage_from_png_struct(PIMAGE, void*, void*);
 };

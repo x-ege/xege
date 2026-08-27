@@ -156,7 +156,6 @@ macOS 原生构建的最小配置为：
 cmake -S . -B build/native \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
   -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
-  -DEGE_ENABLE_OPENGL=OFF \
   -DEGE_ENABLE_CAMERA_CAPTURE=OFF
 cmake --build build/native --target xege
 ```
@@ -170,13 +169,11 @@ Linux 原生最小构建为：
 sudo apt-get install build-essential cmake pkg-config libcairo2-dev libx11-dev
 cmake -S . -B build/linux \
   -DEGE_DEFAULT_BACKEND=CAIRO \
-  -DEGE_ENABLE_OPENGL=OFF \
   -DEGE_ENABLE_CAMERA_CAPTURE=OFF
 cmake --build build/linux --target xege
 ```
 
 实现边界、依赖与测试方法见 [Linux native backend](docs/linux-native-backend.md)。
-OpenGL 实验分支只作为构建分层和后端接口参考，不默认启用。
 
 ## 社区与支持
 

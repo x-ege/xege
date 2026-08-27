@@ -97,9 +97,7 @@ egeControlBase::~egeControlBase()
     const bool restoreDescendantFocus = oldParent != NULL && focusedDescendant != NULL &&
         focusedDescendant != this && controlIsInSubtree(focusedDescendant, this);
 
-    // Focus is global to the control tree. Clear it before any children are
-    // detached or reparented, while their parent chain still identifies this
-    // complete subtree.
+    // 焦点属于整棵控件树；在子控件脱离或重新挂接前清除，此时父链仍能识别完整子树。
     clearFocusInSubtree(this);
 
     if (oldParent) {
@@ -125,9 +123,8 @@ egeControlBase::~egeControlBase()
         cvec = NULL;
     }
 
-    // Destroying an intermediate node reparents its surviving children to the
-    // old parent. Preserve focus on such a descendant after it is reachable
-    // again, but never restore focus to the object being destroyed.
+    // 销毁中间节点会把存活子控件重新挂到旧父节点；重新可达后保留后代焦点，但绝不
+    // 把焦点恢复到正在销毁的对象。
     if (restoreDescendantFocus && graph_setting.egectrl_focus == NULL &&
         controlIsInSubtree(focusedDescendant, oldParent)) {
         graph_setting.egectrl_focus = focusedDescendant;
@@ -257,8 +254,7 @@ int egeControlBase::delchild(egeControlBase* pChild)
     }
     egectlmap::iterator it = cmap->find(pChild);
     if (it != cmap->end()) {
-        // A detached control is no longer reachable through the active tree.
-        // Do not leave keyboard/mouse dispatch targeting it or a descendant.
+        // 脱离的控件已无法从活动树访问，键盘和鼠标事件不能继续指向它或其后代。
         clearFocusInSubtree(pChild);
         egectlvec::iterator itv = cvec->begin();
         for (; itv != cvec->end(); itv++) {

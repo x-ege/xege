@@ -43,6 +43,5 @@ namespace dll
 namespace dll {
     inline void loadDllsIfNot() {}
     inline void freeDlls() {}
-    inline int AlphaBlend(void* hdcDest,int xoriginDest,int yoriginDest,int wDest,int hDest,void* hdcSrc,int xoriginSrc,int yoriginSrc,int wSrc,int hSrc,int ftn) { return 0; }
 }
 #endif

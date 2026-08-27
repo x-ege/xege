@@ -33,9 +33,8 @@ function isMacOS() {
     [[ "$(uname -s)" == "Darwin" ]]
 }
 
-# A macOS host builds a native Mach-O target unless the caller explicitly
-# supplies a cross-compilation toolchain/system. Keep this decision independent
-# from the presence of mingw-w64 or Wine on the developer machine.
+# macOS 默认构建原生 Mach-O；只有调用方显式指定交叉编译工具链或目标系统时才切换。
+# 该判断不受开发机是否安装 mingw-w64 或 Wine 影响。
 function isNativeMacOS() {
     isMacOS &&
         ! hasCMakeDefinition "CMAKE_TOOLCHAIN_FILE" &&
@@ -151,8 +150,8 @@ function getBuildDir() {
         return
     fi
 
-    # Never reuse a historical MinGW/Windows CMake cache for native macOS.
-    # The platform component also makes the output type obvious in VS Code.
+    # macOS 原生构建不复用历史 MinGW/Windows CMake 缓存；平台目录也便于在
+    # VS Code 中识别产物类型。
     if isNativeMacOS; then
         echo "$base_dir/macos/$CMAKE_BUILD_TYPE"
         return
@@ -202,9 +201,7 @@ function loadCMakeProject() {
     local cmake_args=("-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
     cmake_args+=("${CMAKE_CONFIG_DEFINE[@]}")
 
-    # Always pass an absolute source path. Build directories are intentionally
-    # platform-specific (for example build/macos/Debug), so deriving the source
-    # with a fixed number of '..' components is both fragile and unnecessary.
+    # 始终传入绝对源码路径。构建目录按平台分层，不能再用固定数量的 .. 推导源码位置。
     local source_path="${EGE_SOURCE_PATH:-$PROJECT_DIR}"
     case "$source_path" in
     /* | [A-Za-z]:[\\/]*)
@@ -214,9 +211,8 @@ function loadCMakeProject() {
         ;;
     esac
 
-    # Resolve relative components before changing into the build directory.
-    # CMake must receive a stable source directory even when EGE_SOURCE_PATH is
-    # supplied as ".", "demo", or another path relative to the checkout.
+    # 进入构建目录前解析相对路径；即使 EGE_SOURCE_PATH 是相对仓库的路径，CMake
+    # 也必须收到稳定的源码目录。
     if [[ "$source_path" != [A-Za-z]:[\\/]* ]]; then
         if [[ ! -d "$source_path" ]]; then
             echo "Error: EGE source directory does not exist: $source_path" >&2
@@ -474,15 +470,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# CMake AUTO already resolves to CoreGraphics on Darwin. Make the VS Code/script
-# contract explicit as well, so an installed MinGW compiler cannot influence a
-# normal macOS invocation and OpenGL remains opt-in.
+# CMake 的 AUTO 在 macOS 上解析为 CoreGraphics。脚本也显式指定后端，避免本机
+# 安装的 MinGW 编译器影响原生构建。
 if isNativeMacOS; then
     if ! hasCMakeDefinition "EGE_DEFAULT_BACKEND"; then
         CMAKE_CONFIG_DEFINE+=("-DEGE_DEFAULT_BACKEND=COREGRAPHICS")
-    fi
-    if ! hasCMakeDefinition "EGE_ENABLE_OPENGL"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_OPENGL=OFF")
     fi
     if ! hasCMakeDefinition "EGE_ENABLE_WINDOW_TESTS"; then
         CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_WINDOW_TESTS=OFF")
@@ -495,9 +487,6 @@ fi
 if isNativeLinux; then
     if ! hasCMakeDefinition "EGE_DEFAULT_BACKEND"; then
         CMAKE_CONFIG_DEFINE+=("-DEGE_DEFAULT_BACKEND=CAIRO")
-    fi
-    if ! hasCMakeDefinition "EGE_ENABLE_OPENGL"; then
-        CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_OPENGL=OFF")
     fi
     if ! hasCMakeDefinition "EGE_ENABLE_WINDOW_TESTS"; then
         CMAKE_CONFIG_DEFINE+=("-DEGE_ENABLE_WINDOW_TESTS=OFF")
@@ -630,7 +619,7 @@ if [[ -n "$RUN_EXECUTABLE" ]]; then
             # Native CMake targets are extensionless executables.
             RUN_EXECUTABLE="${RUN_EXECUTABLE%.exe}"
         elif [[ "$RUN_EXECUTABLE" != *.exe ]] && ! isWindows; then
-            # Non-native Unix invocations historically cross-compile Windows.
+            # 非原生 Unix 调用沿用历史行为，交叉编译 Windows 目标。
             RUN_EXECUTABLE="${RUN_EXECUTABLE}.exe"
         fi
         exe_path="$CMAKE_BUILD_DIR/demo/$RUN_EXECUTABLE"

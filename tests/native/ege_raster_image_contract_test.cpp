@@ -73,11 +73,10 @@ void testRasterAndPixelAccess()
     EGE_CHECK(ege::getpixel(57, 62, image.value) == EGERGB(241, 196, 15));
     EGE_CHECK(countLinePixels(image.value) > 80);
 
-    ege::color_t* pixels = ege::getbuffer(image.value, ege::IMAGE_BUFFER_READ_WRITE);
+    ege::color_t* pixels = ege::getbuffer(image.value);
     EGE_CHECK(pixels != nullptr);
     pixels[2 * kWidth + 2] = kBlue;
     EGE_CHECK(ege::getpixel(2, 2, image.value) == kBlue);
-    EGE_CHECK(ege::updatebuffer(image.value, 2, 2, 1, 1, pixels + 2 * kWidth + 2) == ege::grOk);
 
     // Viewport clipping exercises the CPU target coordinate translation on a
     // clean surface so its samples cannot overlap the reference scene.
@@ -302,24 +301,6 @@ void testFailedResizePreservesImage()
     EGE_CHECK(ege::getpixel(1, 1, image.value) == kLine);
 }
 
-void testBufferAndStorageErrors()
-{
-    ege_test::Image image(4, 4);
-    const ege::color_t pixel = kBlue;
-    EGE_CHECK(ege::getimagestoragemode(image.value) == ege::IMAGE_STORAGE_CPU_BITMAP);
-    EGE_CHECK(ege::setimagestoragemode(image.value, ege::IMAGE_STORAGE_CPU_BITMAP) == ege::grOk);
-    EGE_CHECK(ege::setimagestoragemode(image.value, ege::IMAGE_STORAGE_GPU) == ege::grInvalidMode);
-    EGE_CHECK(ege::setimagestoragemode(image.value,
-        static_cast<ege::image_storage_mode>(99)) == ege::grParamError);
-
-    EGE_CHECK(ege::getbuffer(image.value,
-        static_cast<ege::image_buffer_access>(99)) == nullptr);
-    EGE_CHECK(ege::updatebuffer(image.value, 0, 0, 1, 1, nullptr) == ege::grNullPointer);
-    EGE_CHECK(ege::updatebuffer(image.value, -1, 0, 1, 1, &pixel) == ege::grInvalidRegion);
-    EGE_CHECK(ege::updatebuffer(image.value, 3, 3, 2, 2, &pixel) == ege::grInvalidRegion);
-    EGE_CHECK(ege::updatebuffer(image.value, 0, 0, 1, 1, &pixel, 1) == ege::grParamError);
-}
-
 void testSaveDecodeAndVisualRecognition()
 {
     ege_test::Image original(kWidth, kHeight);
@@ -369,7 +350,6 @@ int main()
     testRasterOpPreservesPremultipliedAlpha();
     testPatternFillContract();
     testFailedResizePreservesImage();
-    testBufferAndStorageErrors();
     testSaveDecodeAndVisualRecognition();
     return ege_test::finish("EGE raster/image contract");
 }

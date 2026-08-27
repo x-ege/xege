@@ -19,7 +19,6 @@ This deliberately avoids Qt, wxWidgets, GTK, SDL, GLFW and Pango. The only direc
 | wxWidgets | wxWidgets plus GTK on common Linux builds | Large toolkit and transitive widget stack | Rejected: duplicates XEGE's window and drawing abstractions |
 | GTK + Cairo | GTK, GLib/GObject and related desktop libraries | Cairo rendering fits, but the application inherits a full GUI runtime | Rejected: unnecessary widget/runtime surface |
 | SDL2 + Cairo | SDL2 plus Cairo | Portable and convenient but adds another abstraction and runtime | Rejected: XEGE already owns its platform abstraction |
-| GLFW + OpenGL | GLFW, OpenGL loader/driver stack | Good optional accelerated backend, not a minimal CPU default | Retained only as a future opt-in backend |
 | Direct Wayland + Cairo | Wayland client, xkbcommon and protocol generation | Lean at runtime but considerably more lifecycle/input work | Deferred until native Wayland is worth the maintenance cost |
 
 The Linux backend adds no vendored code. Dynamic linking also prevents Cairo and X11 from being copied into XEGE's static archive or application package. Cairo's own distribution dependencies remain the operating system's responsibility.

@@ -13,7 +13,6 @@ set(_ege_common_configure_args
     -DEGE_BUILD_TEST=OFF
     -DEGE_BUILD_TEMP=OFF
     -DEGE_ENABLE_CAMERA_CAPTURE=OFF
-    -DEGE_ENABLE_OPENGL=OFF
 )
 
 set(_ege_configure_command
@@ -25,6 +24,10 @@ set(_ege_configure_command
 )
 if(DEFINED EGE_GENERATOR AND NOT EGE_GENERATOR STREQUAL "")
     list(APPEND _ege_configure_command -G "${EGE_GENERATOR}")
+endif()
+if(DEFINED EGE_TOOLCHAIN_FILE AND NOT EGE_TOOLCHAIN_FILE STREQUAL "")
+    list(APPEND _ege_configure_command
+        "-DCMAKE_TOOLCHAIN_FILE=${EGE_TOOLCHAIN_FILE}")
 endif()
 
 execute_process(
@@ -61,6 +64,10 @@ set(_ege_invalid_configure_command
 )
 if(DEFINED EGE_GENERATOR AND NOT EGE_GENERATOR STREQUAL "")
     list(APPEND _ege_invalid_configure_command -G "${EGE_GENERATOR}")
+endif()
+if(DEFINED EGE_TOOLCHAIN_FILE AND NOT EGE_TOOLCHAIN_FILE STREQUAL "")
+    list(APPEND _ege_invalid_configure_command
+        "-DCMAKE_TOOLCHAIN_FILE=${EGE_TOOLCHAIN_FILE}")
 endif()
 
 execute_process(

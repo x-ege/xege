@@ -63,7 +63,7 @@ void delay_ms(long ms)
     }
 
 #ifdef _WIN32
-    if (pg->window == NULL) {
+    if (pg->getNativeWindow() == NULL) {
         // The legacy GDI backend already owns a dedicated Win32 message
         // thread. Preserve its established refresh/sleep timing instead of
         // pumping the new drawing-thread Window abstraction.

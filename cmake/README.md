@@ -13,7 +13,6 @@ macOS/Linux 不再自动切换为 Windows 交叉编译。
 | `EGE_ENABLE_CAMERA_TESTS` | OFF | 注册 Linux 用户态虚拟 V4L2 相机测试；需要同时启用 camera capture |
 | `EGE_BUILD_TEMP` | 根项目 ON | 构建 gitignored `temp/` 中的本地程序 |
 | `EGE_DEFAULT_BACKEND` | `AUTO` | Windows→`GDI`，macOS→`COREGRAPHICS`，Linux→`CAIRO` |
-| `EGE_ENABLE_OPENGL` | OFF | 实验后端开关；当前源码不完整时 fail-fast |
 | `EGE_ENABLE_CAMERA_CAPTURE` | 动态 | C++17 且 ccap 子模块完整时 ON，否则 OFF |
 | `EGE_ENABLE_CPP17` | 编译器探测 | 启用 C++17 内部路径 |
 | `EGE_DISABLE_DEBUG_INFO` | OFF | MSVC 下禁用调试信息，用于特定发布兼容场景 |
@@ -27,7 +26,6 @@ cmake -S . -B build/native-coregraphics \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
   -DEGE_DEFAULT_BACKEND=COREGRAPHICS \
-  -DEGE_ENABLE_OPENGL=OFF \
   -DEGE_ENABLE_CAMERA_CAPTURE=OFF \
   -DEGE_BUILD_TEST=ON \
   -DEGE_BUILD_DEMO=ON \
@@ -43,14 +41,9 @@ file build/native-coregraphics/demo/graph_5star
 
 `EGE_DEFAULT_BACKEND=AUTO` 的解析规则是：Windows 使用 `GDI`，macOS
 使用 `COREGRAPHICS`，Linux 使用 `CAIRO`。也可以显式传入
-`GDI|COREGRAPHICS|CAIRO|OPENGL`；平台与后端不兼容时，配置阶段会直接报错。
+`GDI|COREGRAPHICS|CAIRO`；平台与后端不兼容时，配置阶段会直接报错。
 Linux `CAIRO` 后端使用系统 Cairo 与 Xlib，直接生成原生 ELF；不会隐式改为
 MinGW 并生成 `.exe`。
-
-OpenGL 不是原生构建的前提。只有明确传入 `-DEGE_ENABLE_OPENGL=ON` 时才会
-查找 OpenGL 和 GLFW；把默认后端设为 `OPENGL` 时也必须同时启用该选项。
-旧 OpenGL 分支只作为 CMake 分层与后端接口的参考；它不是默认后端，也不是
-Core Graphics 构建依赖。当源码树没有 OpenGL 实现时，显式启用会 fail-fast。
 
 ## 原生像素内存契约
 
