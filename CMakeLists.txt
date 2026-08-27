@@ -320,27 +320,27 @@ endif()
 
 # Windows 发布构建按函数组织静态库，并在最终可执行文件中移除未引用段。原生后端
 # 增加的跨平台 API 不应迫使只使用 GDI 的程序携带未调用实现。
-if(WIN32)
-    if(MSVC)
-        target_compile_options(xege PRIVATE
-            $<$<CONFIG:Release>:/Gy>
-            $<$<CONFIG:RelWithDebInfo>:/Gy>
-            $<$<CONFIG:MinSizeRel>:/Gy>)
-        target_link_options(xege INTERFACE
-            $<$<CONFIG:Release>:/OPT:REF>
-            $<$<CONFIG:RelWithDebInfo>:/OPT:REF>
-            $<$<CONFIG:MinSizeRel>:/OPT:REF>)
-    elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(xege PRIVATE
-            $<$<CONFIG:Release>:-ffunction-sections>
-            $<$<CONFIG:RelWithDebInfo>:-ffunction-sections>
-            $<$<CONFIG:MinSizeRel>:-ffunction-sections>)
-        target_link_options(xege INTERFACE
-            $<$<CONFIG:Release>:-Wl,--gc-sections>
-            $<$<CONFIG:RelWithDebInfo>:-Wl,--gc-sections>
-            $<$<CONFIG:MinSizeRel>:-Wl,--gc-sections>)
-    endif()
-endif()
+#if(WIN32)
+#    if(MSVC)
+#        target_compile_options(xege PRIVATE
+#            $<$<CONFIG:Release>:/Gy>
+#            $<$<CONFIG:RelWithDebInfo>:/Gy>
+#            $<$<CONFIG:MinSizeRel>:/Gy>)
+#        target_link_options(xege INTERFACE
+#            $<$<CONFIG:Release>:/OPT:REF>
+#            $<$<CONFIG:RelWithDebInfo>:/OPT:REF>
+#            $<$<CONFIG:MinSizeRel>:/OPT:REF>)
+#    elseif(MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+#        target_compile_options(xege PRIVATE
+#            $<$<CONFIG:Release>:-ffunction-sections>
+#            $<$<CONFIG:RelWithDebInfo>:-ffunction-sections>
+#            $<$<CONFIG:MinSizeRel>:-ffunction-sections>)
+#        target_link_options(xege INTERFACE
+#            $<$<CONFIG:Release>:-Wl,--gc-sections>
+#            $<$<CONFIG:RelWithDebInfo>:-Wl,--gc-sections>
+#            $<$<CONFIG:MinSizeRel>:-Wl,--gc-sections>)
+#    endif()
+#endif() # 目前实测不会在可执行文件产生效果，仅会大幅增加静态库体积
 
 # macOS 静态库包含完整的可移植增强绘图实现。发布构建让最终可执行文件移除
 # 未引用的函数，避免仅使用基础 API 的程序携带整个 fallback 对象。
