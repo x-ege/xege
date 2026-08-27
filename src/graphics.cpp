@@ -130,6 +130,9 @@ _graph_setting::_graph_setting() : init_sem{0}
 {
     window_caption = EGE_TITLE_W;
     window_initial_color = IMAGE::initial_bk_color;
+#ifndef _WIN32
+    window = NULL;
+#endif
 }
 
 _graph_setting::~_graph_setting()

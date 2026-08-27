@@ -87,9 +87,6 @@ private:
 
 public:
     HDC     m_hDC;
-#ifndef _WIN32
-    RenderTarget* m_renderTarget;  // 原生后端的渲染目标；传统 GDI 路径始终为空。
-#endif
 
     RenderTarget* getNativeRenderTarget() const
     {
@@ -122,9 +119,7 @@ private:
     void setdefaultattribute();
     int  deleteimage();
     void reset();
-#ifdef _WIN32
     void syncBuffer() const;
-#endif
 
 public:
     Bound            m_vpt;
@@ -156,15 +151,9 @@ public:
     HDC      getdc() const { return m_hDC; }
     int      getwidth() const { return m_width; }
     int      getheight() const { return m_height; }
-#ifdef _WIN32
     color_t*       getbuffer();
     const color_t* getbuffer() const;
     color_t*       getbuffer_for_write(int x, int y, int width, int height);
-#else
-    color_t*       getbuffer();
-    const color_t* getbuffer() const;
-    color_t*       getbuffer_for_write(int x, int y, int width, int height);
-#endif
     RenderTarget* getRenderTargetForSampling() const;
 #ifdef EGE_GDIPLUS
     // TODO: thread safe?
@@ -334,6 +323,8 @@ public:
         int                        btransparent = 0,  // transparent (1) or not (0)
         int                        alpha        = -1, // in range[0, 256], alpha== -1 means no alpha
         int                        smooth       = 0);
+
+    RenderTarget* m_renderTarget;  // 原生后端的渲染目标；传统 GDI 路径始终为空。
 
     friend graphics_errors getimage_from_png_struct(PIMAGE, void*, void*);
 };

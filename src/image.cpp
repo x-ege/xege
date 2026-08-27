@@ -494,9 +494,9 @@ void IMAGE::setdefaultattribute()
     enable_anti_alias(false);
 }
 
-#ifdef _WIN32
 void IMAGE::syncBuffer() const
 {
+#ifdef _WIN32
 #ifdef EGE_GDIPLUS
     if (m_graphics) {
         m_graphics->Flush(Gdiplus::FlushIntentionSync);
@@ -505,8 +505,10 @@ void IMAGE::syncBuffer() const
     if (m_hDC) {
         GdiFlush();
     }
+#endif
 }
 
+#ifdef _WIN32
 #if defined(_MSC_VER)
 #define EGE_IMAGE_NOINLINE __declspec(noinline)
 #elif defined(__GNUC__) || defined(__clang__)
