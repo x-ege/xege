@@ -262,6 +262,8 @@ void EGEAPI resizewindow(int width, int height)
         pg->getNativeWindow()->setSize(width, height);
     }
 #endif
+	
+	pg->update_mark_count--;// 若resizewindow后没有任何绘图，也应更新窗口
 }
 
 int attachHWND(HWND hWnd)
