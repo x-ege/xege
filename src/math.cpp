@@ -166,8 +166,8 @@ float VECTOR3D::GetAngle(const VECTOR3D& _e, const VECTOR3D& _s)
     e.SetModule(1.0f);
 
     VECTOR3D a  = s & e;
-    float    sr = a.GetModule();
+    float    cr = s * e, sr = a.GetModule();
 
-    return (float)asin(sr);
+    return (float)atan2(sr, cr);
 }
 } // namespace ege
