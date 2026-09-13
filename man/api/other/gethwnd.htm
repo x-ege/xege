@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<pre><font size="4"><a href="../../index.htm">主页</a> / <a href="../index.htm">库函数目录</a> / <a href="index.htm">其它函数</a> / getHWnd</font>
+<pre><font size="4"><a href="../../index.htm">主页</a> / <a href="../index.htm">库函数目录</a> / <a href="index.htm">其它</a> / getHWnd</font>
 <font size="4">
 <font size="4" color="#0000FF"><strong>功能：</strong></font>
 
@@ -25,7 +25,8 @@
 macOS 上该类型只是源码兼容别名；当前值是内部 NSWindow 的不透明指针，
 不能传给 Win32 API，也不应由调用者释放。
 
-以下示例仅适用于 Windows；跨平台修改标题请使用 setcaption()：
+<font size="4" color="#0000FF"><strong>示例：</strong></font>
+仅适用于 Windows；跨平台修改标题请使用 setcaption()
 <pre><font color=#008000>// 获得窗口句柄
 </font><font color=#800080>HWND </font>hWnd = <font color=#008080>getHWnd</font>();
 <font color=#008000>// 使用 API 函数修改窗口名称
@@ -34,3 +35,4 @@ macOS 上该类型只是源码兼容别名；当前值是内部 NSWindow 的不�
 </pre>
 
 </body>
+
