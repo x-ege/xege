@@ -27,7 +27,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends \
             build-essential cmake ninja-build pkg-config \
-            libcairo2-dev libx11-dev xvfb
+            libcairo2-dev libx11-dev xvfb xfwm4 x11-utils xauth dbus-daemon
 
       - name: Configure
         run: >-
@@ -70,6 +70,38 @@ jobs:
           ctest --test-dir build/ccap-tests --output-on-failure
           unset LD_PRELOAD
           xvfb-run -a ctest --test-dir build --output-on-failure
+
+      - name: Repeat bare and managed X11 window smoke
+        run: |
+          xvfb-run -a ctest --test-dir build --output-on-failure \
+            -R '^native\.linux_window_smoke$' --repeat until-fail:20
+          xvfb-run -a dbus-run-session -- sh <<'EOF'
+          set -eu
+          xfwm4 --compositor=off --sm-client-disable >/tmp/xege-xfwm4.log 2>&1 &
+          wm_pid=$!
+          trap 'kill "$wm_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in $(seq 1 100); do
+            if kill -0 "$wm_pid" 2>/dev/null &&
+              xprop -root _NET_SUPPORTING_WM_CHECK | grep -Eq 'window id # 0x[0-9a-fA-F]*[1-9a-fA-F][0-9a-fA-F]*$'; then
+              ready=true
+              break
+            fi
+            if ! kill -0 "$wm_pid" 2>/dev/null; then
+              cat /tmp/xege-xfwm4.log
+              exit 1
+            fi
+            sleep 0.05
+          done
+          if [ "$ready" != true ]; then
+            echo 'Window manager did not become ready within 5 seconds' >&2
+            cat /tmp/xege-xfwm4.log
+            exit 1
+          fi
+          ctest --test-dir build --output-on-failure \
+            -R '^native\.linux_window_smoke$' --repeat until-fail:20
+          kill -0 "$wm_pid"
+          EOF
 
       - name: Enforce lightweight GUI dependency boundary
         shell: bash
