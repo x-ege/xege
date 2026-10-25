@@ -4,8 +4,10 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
+#include <chrono>
 #include <cstdint>
 #include <iostream>
+#include <thread>
 #include <vector>
 
 namespace
@@ -37,6 +39,22 @@ int fail(const char* message)
     return 1;
 }
 
+// Mapping and resizing a managed X11 window require another client's event
+// loop. XSync on our connection does not wait for the window manager to act.
+// Keep pumping until the expected result arrives, with a bounded failure path.
+template <typename Predicate>
+bool waitForEvents(ege::backend::LinuxWindow& window, Predicate ready)
+{
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+    do {
+        window.processEvents();
+        if (ready()) return true;
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    } while (std::chrono::steady_clock::now() < deadline);
+    window.processEvents();
+    return ready();
+}
+
 void send(Display* display, ::Window window, XEvent* event, long mask)
 {
     event->xany.display = display;
@@ -48,6 +66,12 @@ void send(Display* display, ::Window window, XEvent* event, long mask)
 
 int main()
 {
+    // Keep a test connection alive throughout setup. Otherwise a bare Xvfb
+    // can reset when primaryScreenSize() closes its temporary last client,
+    // racing with the connection opened by window.create().
+    Display* display = XOpenDisplay(nullptr);
+    if (!display) return fail("test X connection failed");
+
     int screenWidth = 0, screenHeight = 0;
     if (!ege::backend::LinuxWindow::primaryScreenSize(&screenWidth, &screenHeight)
         || screenWidth <= 0 || screenHeight <= 0) return fail("screen size unavailable");
@@ -58,15 +82,25 @@ int main()
     if (window.isClosed() || window.getWidth() != 96 || window.getHeight() != 64) return fail("initial size invalid");
     window.show();
     window.setTitle("EGE native Xlib smoke");
-    window.setPosition(12, 12);
-    window.setSize(80, 48);
 
-    Display* display = XOpenDisplay(nullptr);
-    if (!display) return fail("second X connection failed");
     const ::Window native = static_cast<::Window>(reinterpret_cast<std::uintptr_t>(window.getNativeHandle()));
     XWindowAttributes attributes{};
-    XGetWindowAttributes(display, native, &attributes);
-    if (attributes.map_state == IsUnmapped) return fail("window was not mapped");
+    if (!waitForEvents(window, [&] {
+            XGetWindowAttributes(display, native, &attributes);
+            return attributes.map_state == IsViewable;
+        })) return fail("window was not mapped within 2 seconds");
+
+    window.setPosition(12, 12);
+    window.setSize(80, 48);
+    if (!waitForEvents(window, [&] {
+            return window.getWidth() == 80 && window.getHeight() == 48
+                && sink.resizes > 0 && sink.lastWidth == 80 && sink.lastHeight == 48;
+        })) {
+        std::cerr << "Expected 80x48; window is " << window.getWidth() << 'x'
+                  << window.getHeight() << ", last resize is " << sink.lastWidth
+                  << 'x' << sink.lastHeight << " (" << sink.resizes << " events)\n";
+        return fail("resize event missing after 2 seconds");
+    }
 
     XEvent motion{};
     motion.type = MotionNotify;
@@ -96,8 +130,10 @@ int main()
 
     std::vector<std::uint32_t> pixels(80 * 48, 0xFF336699U);
     window.present(pixels.data(), 80, 48, 80 * sizeof(std::uint32_t));
-    window.processEvents();
-    if (window.getWidth() != 80 || window.getHeight() != 48 || sink.resizes == 0) return fail("resize event missing");
+    if (!waitForEvents(window, [&] {
+            return sink.moves > 0 && sink.maxClicks == 2 && sink.wheel > 0
+                && sink.keys.size() >= 2;
+        })) return fail("input events missing after 2 seconds");
     if (sink.moves == 0 || sink.lastButton != 0 || sink.maxClicks != 2 || sink.wheel <= 0) return fail("mouse mapping invalid");
     if (sink.keys.size() < 2 || sink.keys.front() != 'A' || sink.keyPressed.front() != true) return fail("key mapping invalid");
 
@@ -108,11 +144,13 @@ int main()
     close.xclient.format = 32;
     close.xclient.data.l[0] = static_cast<long>(wmDelete);
     send(display, native, &close, NoEventMask);
-    window.processEvents();
+    if (!waitForEvents(window, [&] { return sink.closes >= 1; }))
+        return fail("rejected close event missing after 2 seconds");
     if (window.isClosed() || sink.closes != 1) return fail("rejected close was not preserved");
     sink.allowClose = true;
     send(display, native, &close, NoEventMask);
-    window.processEvents();
+    if (!waitForEvents(window, [&] { return window.isClosed(); }))
+        return fail("accepted close event missing after 2 seconds");
     if (!window.isClosed() || sink.closes != 2) return fail("accepted close did not close");
     XCloseDisplay(display);
     std::cout << "LinuxWindow smoke passed\n";
