@@ -215,6 +215,15 @@ if(EGE_ENABLE_CAMERA_CAPTURE)
         target_link_libraries(xege PRIVATE Threads::Threads)
     elseif(WIN32)
         target_sources(xege PRIVATE ${EGE_CCAP_WINDOWS_SOURCES})
+        if(MINGW)
+            # mingw-w64 9.x 的 mfidl.h 缺少 MFCreateDeviceSource 声明（10.0.0 起才补齐），
+            # 但 mf.lib 一直导出该符号。编译器/运行时头文件补丁统一放在
+            # src/compiler_compat/<toolchain>/，这里只强制包含到实际用到它的 ccap MSMF 源文件。
+            set_source_files_properties(
+                "3rdparty/ccap/src/ccap_imp_windows_msmf.cpp"
+                PROPERTIES COMPILE_OPTIONS
+                "-include;${CMAKE_CURRENT_SOURCE_DIR}/src/compiler_compat/mingw-w64/mfidl_compat.h")
+        endif()
         target_link_libraries(xege PRIVATE
             mf mfplat mfreadwrite mfuuid shlwapi propsys)
         target_compile_definitions(xege PRIVATE
